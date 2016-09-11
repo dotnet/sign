@@ -9,7 +9,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SignService", "src\SignServ
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SignClient", "src\SignClient\SignClient.xproj", "{84FC3FBF-E14C-4268-8693-45CC82451DF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignServiceClient", "SignServiceClient\SignServiceClient.csproj", "{4914DBFA-736A-4B29-B5E0-426475C28B71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignServiceClient", "src\SignServiceClient\SignServiceClient.csproj", "{4914DBFA-736A-4B29-B5E0-426475C28B71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

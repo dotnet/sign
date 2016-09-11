@@ -16,7 +16,7 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SignServiceClient\SignServiceClient.csproj" />
+    <ProjectReference Include="..\SignServiceClient\SignServiceClient.csproj" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
