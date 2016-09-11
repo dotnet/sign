@@ -31,7 +31,7 @@ namespace SignService.Controllers
             ziptoolPath = Path.Combine(environment.ContentRootPath, "tools\\7za.exe");
         }
 
-     
+
 
         [HttpPost("singleFile")]
         public async Task<IActionResult> SignSingleFile(IFormFile source, string name, string description, string descriptionUrl)
@@ -53,7 +53,7 @@ namespace SignService.Controllers
                 // Do work and then load the file into memory so we can delete it before the response is complete
                 var fi = new FileInfo(fileName);
 
-                codeSignService.Submit(name, description, descriptionUrl, new[] { fileName });
+                codeSignService.Submit(name, description, descriptionUrl, new[] {fileName});
 
 
                 byte[] buffer;
@@ -67,7 +67,7 @@ namespace SignService.Controllers
                     buffer = ms.ToArray();
                 }
 
-               return File(buffer, "application/octet-stream", source.FileName);
+                return File(buffer, "application/octet-stream", source.FileName);
             }
             finally
             {
@@ -83,8 +83,8 @@ namespace SignService.Controllers
 
             var inputDir = Path.Combine(dataDir, "input");
             var outputDir = Path.Combine(dataDir, "output");
-         
-            
+
+
             Directory.CreateDirectory(inputDir);
             Directory.CreateDirectory(outputDir);
 
@@ -106,12 +106,14 @@ namespace SignService.Controllers
                 ZipFile.ExtractToDirectory(inputFileName, outputDir);
 
                 var filesToSign = Directory.EnumerateFiles(outputDir, "*.*", SearchOption.AllDirectories)
-                    .Where(f => f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || 
-                                f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                                           .Where(f => f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
+                                                       f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                                           .ToList();
 
+                
                 // This will block until it's done
-                codeSignService.Submit(name, description, descriptionUrl, filesToSign);
+                codeSignService.Submit(name, description, descriptionUrl, filesToSign); 
+               
 
                 // They were signed in-place, now zip them back up
                 // We need to use 7-Zip because the Fx zip doesn't create valid nuget archives

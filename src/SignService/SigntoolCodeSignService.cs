@@ -59,6 +59,7 @@ namespace SignService
                 if (signtool.ExitCode != 0)
                 {
                     logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
+                    throw new Exception($"Sign tool returned error with {signtool.StartInfo.Arguments}");
                 }
                 signtool.Dispose();
 
@@ -80,6 +81,7 @@ namespace SignService
                 if (signtool.ExitCode != 0)
                 {
                     logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
+                    throw new Exception($"Sign tool returned error with {signtool.StartInfo.Arguments}");
                 }
                 signtool.Dispose();
             });
