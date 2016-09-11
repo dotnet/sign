@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "buildOptions": {
     "emitEntryPoint": true
@@ -8,7 +8,11 @@
     "Microsoft.NETCore.App": {
       "type": "platform",
       "version": "1.0.0"
-    }
+    },
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.4",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0"
   },
 
   "frameworks": {
@@ -21,5 +25,6 @@
 
       }
     }
-  }
+  },
+  "userSecretsId": "aspnet-SignClient-20160911110819"
 }

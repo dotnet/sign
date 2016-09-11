@@ -8,6 +8,7 @@ using Refit;
 
 namespace SignServiceClient
 {
+    [Headers("Authorization: Bearer")]
     public interface ISignService
     {
         [Post("/sign/singleFile")]
