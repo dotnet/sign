@@ -12,5 +12,8 @@ namespace SignServiceClient
     {
         [Post("/sign/singleFile")]
         Task<HttpResponseMessage> SignSingleFile(HttpContent source, string name, string description, string descriptionUrl);
+
+        [Post("/sign/zipFile")]
+        Task<HttpResponseMessage> SignZipFile(HttpContent source, string name, string description, string descriptionUrl);
     }
 }

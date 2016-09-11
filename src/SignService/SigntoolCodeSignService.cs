@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +11,7 @@ namespace SignService
 {
     public interface ICodeSignService
     {
-        Task Submit(string name, string description, string descriptionUrl, string[] files);
+        Task Submit(string name, string description, string descriptionUrl, IEnumerable<string> files);
     }
 
     class SigntoolCodeSignService : ICodeSignService
@@ -30,9 +31,9 @@ namespace SignService
             signtoolPath = Path.Combine(contentPath, "tools\\signtool.exe");
         }
 
-        public Task Submit(string name, string description, string descriptionUrl, string[] files)
+        public Task Submit(string name, string description, string descriptionUrl, IEnumerable<string> files)
         {
-            logger.LogInformation("Signing job {0} with {1} files", name, files.Length);
+            logger.LogInformation("Signing job {0} with {1} files", name, files.Count());
          
 
             foreach (var file in files)

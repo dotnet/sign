@@ -29,30 +29,38 @@ namespace SignClient
 
         static async Task DoMain(string[] args)
         {
-
-            Console.WriteLine("Press any key to continue");
-            Console.ReadKey();
-
             var client = RestService.For<ISignService>(args[2]);
 
             var input = new FileInfo(args[0]);
             var output = new FileInfo(args[1]);
             Directory.CreateDirectory(output.DirectoryName);
 
-            if (args[3] == "zip")
-            {
+        
                 var mpContent = new MultipartFormDataContent("-----Boundary----");
                 var content = new StreamContent(input.OpenRead());
                 mpContent.Add(content, "source", input.Name);
 
-                var response = await client.SignSingleFile(mpContent, args[6], args[7], args[8]);
-                var str = await response.Content.ReadAsStreamAsync();
+            HttpResponseMessage response;
+            if (args[3] == "file")
+            {
+                 response = await client.SignSingleFile(mpContent, args[6], args[7], args[8]);
+            }
+            else if (args[3] == "zip")
+            {
+                response = await client.SignZipFile(mpContent, args[6], args[7], args[8]);
+            }
+            else
+            {
+                throw new ArgumentException("type must be either zip or file");
+            }
+
+            var str = await response.Content.ReadAsStreamAsync();
 
                 using (var fs = output.OpenWrite())
                 {
                     await str.CopyToAsync(fs);
                 }
-            }
+            
         }
     }
 }
