@@ -53,7 +53,7 @@ namespace SignService.Controllers
                 // Do work and then load the file into memory so we can delete it before the response is complete
                 var fi = new FileInfo(fileName);
 
-                await codeSignService.Submit(name, description, descriptionUrl, new[] { fileName });
+                codeSignService.Submit(name, description, descriptionUrl, new[] { fileName });
 
 
                 byte[] buffer;
@@ -110,7 +110,8 @@ namespace SignService.Controllers
                                 f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                await codeSignService.Submit(name, description, descriptionUrl, filesToSign);
+                // This will block until it's done
+                codeSignService.Submit(name, description, descriptionUrl, filesToSign);
 
                 // They were signed in-place, now zip them back up
                 // We need to use 7-Zip because the Fx zip doesn't create valid nuget archives

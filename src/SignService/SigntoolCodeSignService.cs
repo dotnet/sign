@@ -11,7 +11,7 @@ namespace SignService
 {
     public interface ICodeSignService
     {
-        Task Submit(string name, string description, string descriptionUrl, IEnumerable<string> files);
+        void Submit(string name, string description, string descriptionUrl, IList<string> files);
     }
 
     class SigntoolCodeSignService : ICodeSignService
@@ -22,6 +22,9 @@ namespace SignService
 
         readonly string signtoolPath;
 
+        // Four things at once as we're hitting the sign server
+        readonly ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 };
+
 
         public SigntoolCodeSignService(string timeStampUrl, string thumbprint, string contentPath, ILogger<SigntoolCodeSignService> logger)
         {
@@ -31,12 +34,12 @@ namespace SignService
             signtoolPath = Path.Combine(contentPath, "tools\\signtool.exe");
         }
 
-        public Task Submit(string name, string description, string descriptionUrl, IEnumerable<string> files)
+        public void Submit(string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing job {0} with {1} files", name, files.Count());
-         
 
-            foreach (var file in files)
+            
+            Parallel.ForEach(files, options, (file, state) =>
             {
                 // Sign it with sha1
                 var signtool = new Process
@@ -79,9 +82,7 @@ namespace SignService
                     logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
                 }
                 signtool.Dispose();
-            }
-
-            return Task.FromResult(true);
+            });
         }
     }
 }
