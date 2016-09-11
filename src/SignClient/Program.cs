@@ -62,14 +62,26 @@ namespace SignClient
                 var content = new StreamContent(input.OpenRead());
                 mpContent.Add(content, "source", input.Name);
 
+            var desc = string.Empty;
+            var descUrl = string.Empty;
+
+            if (args.Length >= 7)
+            {
+                desc = args[6];
+            }
+            if (args.Length >= 8)
+            {
+                descUrl = args[7];
+            }
+
             HttpResponseMessage response;
             if (args[3] == "file")
             {
-                 response = await client.SignSingleFile(mpContent, args[5], args[6], args[7]);
+                 response = await client.SignSingleFile(mpContent, args[5], desc, descUrl);
             }
             else if (args[3] == "zip")
             {
-                response = await client.SignZipFile(mpContent, args[5], args[6], args[7]);
+                response = await client.SignZipFile(mpContent, args[5], desc, descUrl);
             }
             else
             {

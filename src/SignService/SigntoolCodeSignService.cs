@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -38,6 +39,24 @@ namespace SignService
         {
             logger.LogInformation("Signing job {0} with {1} files", name, files.Count());
 
+            var descArgsList = new List<string>();
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                if (description.Contains("\""))
+                    throw new ArgumentException(nameof(description));
+
+                descArgsList.Add($@"/d ""{description}""");
+            }
+            if (!string.IsNullOrWhiteSpace(descriptionUrl))
+            {
+                if (descriptionUrl.Contains("\""))
+                    throw new ArgumentException(nameof(descriptionUrl));
+
+                descArgsList.Add($@"/du ""{descriptionUrl}""");
+            }
+
+            var descArgs = string.Join(" ", descArgsList);
+
             
             Parallel.ForEach(files, options, (file, state) =>
             {
@@ -50,7 +69,7 @@ namespace SignService
                         UseShellExecute = false,
                         RedirectStandardError = false,
                         RedirectStandardOutput = false,
-                        Arguments = $@"sign /t {timeStampUrl} /d ""{description}"" /du {descriptionUrl} /sha1 {thumbprint} ""{file}"""
+                        Arguments = $@"sign /t {timeStampUrl} {descArgs} /sha1 {thumbprint} ""{file}"""
                     }
                 };
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
@@ -72,7 +91,7 @@ namespace SignService
                         UseShellExecute = false,
                         RedirectStandardError = false,
                         RedirectStandardOutput = false,
-                        Arguments = $@"sign /tr {timeStampUrl} /as /fd sha256 /td sha256 /d ""{description}"" /du {descriptionUrl} /sha1 {thumbprint} ""{file}"""
+                        Arguments = $@"sign /tr {timeStampUrl} /as /fd sha256 /td sha256 {descArgs} /sha1 {thumbprint} ""{file}"""
                     }
                 };
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
