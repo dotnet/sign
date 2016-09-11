@@ -245,3 +245,4 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /src/SignClient/Properties/launchSettings.json
+/src/SignService/appsettings.development.json
