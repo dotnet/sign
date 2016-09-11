@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -35,6 +36,19 @@ namespace SignService
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
+
+            services.AddSingleton<ICodeSignService>(sp =>
+                                                    {
+
+                                                        var env = sp.GetService<IHostingEnvironment>();
+
+                                                        return new SigntoolCodeSignService(
+                                                            Configuration["CertificateInfo:TimeStampUrl"],
+                                                            Configuration["CertificateInfo:Thumbprint"],
+                                                            env.ContentRootPath, 
+                                                            sp.GetService<ILogger<SigntoolCodeSignService>>());
+                                                    });
+
             services.AddMvc();
         }
 
