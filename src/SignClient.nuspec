@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>SignClient</id>
+        <version>0.5.0-beta1</version>
+        <authors>onovotny</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Client-side tools for Sign Service</description>
+    </metadata>
+    <files>
+        <file src="SignClient\bin\Release\netcoreapp1.0\publish\**\*.*" target="tools\" />
+    </files>
+</package>
