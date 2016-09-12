@@ -61,6 +61,7 @@ go to the settings section and add the following setting entries:
 | Name | Value | Notes |
 |-------|------| ------ |
 | CertificateInfo:Thumbprint | *thumbprint of your cert* | Thumbprint of the cert to sign with |
+| CertificateInfo:TimeStampUrl | *url of timestamp server* | 
 | WEBSITE_LOAD_CERTIFICATES | *thumbprint of your cert* | This exposes the cert's private key to your app in the user store |
 | ApplicationInsights:InstrumentationKey | *guid of your app insights instance* | monitoring |
 | Authentication:AzureAd:Audience | *App ID URI of your service from the application entry* |
