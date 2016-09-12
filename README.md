@@ -39,7 +39,7 @@ In the `appRoles` element, add something like the following:
 }
 ```
 
-After updating the manifest, you'll likely want to edit the application configuration to enable "conditional access." This means that only assigned users and applications can get an access token to for this service. Otherwise, anyone who can authenticate in your directory can call the service.
+After updating the manifest, you'll likely want to edit the application configuration to enable "conditional access." This means that only assigned users and applications can get an access token to/for this service. Otherwise, anyone who can authenticate in your directory can call the service.
 
 ### Client
 Create a new application entry to represent your client application. The client will use the "client credetials" flow to login to Azure AD
