@@ -41,17 +41,17 @@ namespace SignClient
             {
                 AuthorizationHeaderValueGetter = async () =>
                 {
-                    var context = new AuthenticationContext($"{configuration["Authentication:AzureAd:AADInstance"]}{configuration["Authentication:AzureAd:TenantId"]}");
+                    var context = new AuthenticationContext($"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}");
 
-                    var res = await context.AcquireTokenAsync(configuration["Service:ResourceId"],
-                                                                    new ClientCredential(configuration["Authentication:AzureAd:ClientId"], args[4]));
+                    var res = await context.AcquireTokenAsync(configuration["SignClient:Service:ResourceId"],
+                                                                    new ClientCredential(configuration["SignClient:AzureAd:ClientId"], args[4]));
                     return res.AccessToken;
                 }
             };
 
 
 
-            var client = RestService.For<ISignService>(configuration["Service:Url"], settings);
+            var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
 
             var input = new FileInfo(args[1]);
             var output = new FileInfo(args[2]);
