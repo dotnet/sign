@@ -159,3 +159,6 @@ The parameters to the signing client aren't yet well documented, but the order i
 4. Type: either `zip` or `file`. `zip` supports any zip type archive of files and will sign all `.dll` and `.exe` files within. `file` supports any single file of any type that can be signed with `signtool`
 5. Description passed in to the `/d` switch to `signtool`. This is optional, but required if the destination url is used.
 6. Description url passed in to the `/du` switch to `signtool`. This is optional. If you want to use `/du` then `/d` must be passed in before.
+
+# Contributing
+I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/onovotny/SignService/issues) to discuss first. Security reviews are also much appreciated! 
