@@ -48,7 +48,7 @@ After updating the manifest, you'll likely want to edit the application configur
 
 
 ### Client
-Create a new application entry to represent your client application. The client will use the "client credetials" flow to login to Azure AD
+Create a new application entry to represent your client application. The client will use the "client credentials" flow to login to Azure AD
 and access the service as itself. For the application type, also choose "web/api" and use anything you want for the app id and sign in url.
 
 Under application access, click "Add Application" and browse for your service (you might need to hit the circled check to show all). Choose
@@ -154,7 +154,7 @@ Write-Host "Sign-package complete"
 
 The parameters to the signing client aren't yet well documented, but the order is as follows:
 
-1. Full path to the `config.json`
+1. Full path to the `appsettings.json`
 2. Full path to the file to sign (input)
 3. Full path to the output (can be the same as the input and will overwrite)
 4. Type: either `zip` or `file`. `zip` supports any zip type archive of files and will sign all `.dll` and `.exe` files within. `file` supports any single file of any type that can be signed with `signtool`
