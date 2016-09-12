@@ -60,8 +60,7 @@ Under application access, click "Add application" and browse for your service (y
 Finally, create a new client secret and save the value for later (along with the client id of your app).
 
 ## Server Configuration
-Create a new App Service on Azure (I used a B1 for this as it's not high-load). Build/deploy the service however you see fit. I used VSTS
-connected to this GitHub repo along with a Release Management to auto-deploy to my site.
+Create a new App Service on Azure (I used a B1 for this as it's not high-load). Build/deploy the service however you see fit. I used VSTS connected to this GitHub repo along with a Release Management build to auto-deploy to my site.
 
 In the Azure App Service, upload your code signing certificate and take note of the thumbprint id. In the Azure App Service,
 go to the settings section and add the following setting entries:
@@ -80,7 +79,7 @@ go to the settings section and add the following setting entries:
 Enable "always on" if you'd like and disable PHP then save changes. Your service should now be configured.
 
 ## Client Configuration
-The client is uses both a json config file and command line parameters. Common settings, like the client id and service url are stored in a config file, while per-file parameters and the client secret are passed in on the command line.
+The client is distributed via [NuGet](https://www.nuget.org/packages/SignClient) and uses both a json config file and command line parameters. Common settings, like the client id and service url are stored in a config file, while per-file parameters and the client secret are passed in on the command line.
 
 You'll need to create an `appsettings.json` similar to the following:
 
