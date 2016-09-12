@@ -51,8 +51,7 @@ After updating the manifest, you'll likely want to edit the application configur
 Create a new application entry to represent your client application. The client will use the "client credentials" flow to login to Azure AD
 and access the service as itself. For the application type, also choose "web/api" and use anything you want for the app id and sign in url.
 
-Under application access, click "Add Application" and browse for your service (you might need to hit the circled check to show all). Choose
-Your service app and select the application permission.
+Under application access, click "Add application" and browse for your service (you might need to hit the circled check to show all). Choose your service app and select the application permission.
 ![](docs/images/client-permissions-1.png?raw=true)
 ![](docs/images/client-permissions-2.png?raw=true)
 ![](docs/images/client-permissions-3.png?raw=true)
