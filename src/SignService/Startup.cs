@@ -37,9 +37,6 @@ namespace SignService
         {
             // Add framework services.
 
-            services.AddApplicationInsightsTelemetry(Configuration);
-
-
             services.AddSingleton<ICodeSignService>(sp =>
                                                     {
 
@@ -60,9 +57,7 @@ namespace SignService
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
-            app.UseApplicationInsightsExceptionTelemetry();
-            app.UseApplicationInsightsRequestTelemetry();
+           
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
