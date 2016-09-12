@@ -19,11 +19,15 @@ additional filters or functionality is required.
 
 You will need an Azure AD tenant. These are free if you don't already have one. In the "old" Azure Portal, you'll need to
 create two application entries: one for the server and one for your client.
+![](docs/images/app-entries.png?raw=true)
 
 ## Azure AD Configuration
 ### Server
-Create a new application entry for a web/api application. Use whatever you want for the sign-on URI and App ID Uri (but remember
-what you use for the App ID Uri as you'll need it later). On the application properties, edit the manifest to add an application role. 
+Create a new application entry for a web/api application. Use whatever you want for the sign-on URI and App ID Uri (but remember what you use for the App ID Uri as you'll need it later). On the application properties, edit the manifest to add an application role. 
+
+![](docs/images/service-manifest.png?raw=true)
+
+
 In the `appRoles` element, add something like the following:
 
 ```json
@@ -39,7 +43,9 @@ In the `appRoles` element, add something like the following:
 }
 ```
 
-After updating the manifest, you'll likely want to edit the application configuration to enable "conditional access." This means that only assigned users and applications can get an access token to/for this service. Otherwise, anyone who can authenticate in your directory can call the service.
+After updating the manifest, you'll likely want to edit the application configuration to enable "user assignment." This means that only assigned users and applications can get an access token to/for this service. Otherwise, anyone who can authenticate in your directory can call the service.
+![](docs/images/user-assignment.png?raw=true)
+
 
 ### Client
 Create a new application entry to represent your client application. The client will use the "client credetials" flow to login to Azure AD
@@ -47,6 +53,10 @@ and access the service as itself. For the application type, also choose "web/api
 
 Under application access, click "Add Application" and browse for your service (you might need to hit the circled check to show all). Choose
 Your service app and select the application permission.
+![](docs/images/client-permissions-1.png?raw=true)
+![](docs/images/client-permissions-2.png?raw=true)
+![](docs/images/client-permissions-3.png?raw=true)
+![](docs/images/client-permissions-4.png?raw=true)
 
 Finally, create a new client secret and save the value for later (along with the client id of your app).
 
