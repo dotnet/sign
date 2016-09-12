@@ -79,8 +79,8 @@ You'll need to create an `appsettings.json` similar to the following:
   "SignClient": {
     "AzureAd": {
       "AADInstance": "https://login.microsoftonline.com/",
-      "ClientId": "",
-      "TenantId": ""
+      "ClientId": "<client id of your client app entry>",
+      "TenantId": "<guid or domain name>"
     },
     "Service": {
       "Url": "https://<your-service>.azurewebsites.net/",
