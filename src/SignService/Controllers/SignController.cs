@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace SignService.Controllers
 {
     [Authorize]
+    [RequireHttps]
     [Route("[controller]")]
     public class SignController : Controller
     {
