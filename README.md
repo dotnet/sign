@@ -1,6 +1,6 @@
 # Authenticode Signing Service and Client
 
-This project aims to make it easier to integrate authenticode signing into a CI process by providing a secured API
+This project aims to make it easier to integrate Authenticode signing into a CI process by providing a secured API
 for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD with two application
 entries for security:
 
@@ -10,7 +10,7 @@ entries for security:
 Azure AD was chosen as it makes it easy to restrict access to a single application/user in a secure way. Azure App Services 
 also provide a secure location to store certificates, so the combination works well.
 
-The service currently supports either invividual files, anything that can be signed with `signtool` or a zip archive
+The service currently supports either individual files, anything that can be signed with `signtool` or a zip archive
 that contains `.dll` and `.exe` files to sign (works well for NuGet packages). The service code is easy to extend if
 additional filters or functionality is required.
 
@@ -38,6 +38,8 @@ In the `appRoles` element, add something like the following:
   "value": "application_access"
 }
 ```
+
+After updating the manifest, you'll likely want to edit the application configuration to enable "conditional access." This means that only assigned users and applications can get an access token to for this service. Otherwise, anyone who can authenticate in your directory can call the service.
 
 ### Client
 Create a new application entry to represent your client application. The client will use the "client credetials" flow to login to Azure AD
