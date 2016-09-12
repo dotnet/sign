@@ -74,7 +74,12 @@ namespace SignService
                 };
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
                 signtool.Start();
-                signtool.WaitForExit();
+                if (!signtool.WaitForExit(30 * 1000))
+                {
+                    signtool.Kill();
+                    logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
+                    throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
+                }
                 if (signtool.ExitCode != 0)
                 {
                     logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
@@ -96,7 +101,12 @@ namespace SignService
                 };
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
                 signtool.Start();
-                signtool.WaitForExit();
+                if (!signtool.WaitForExit(30 * 1000))
+                {
+                    signtool.Kill();
+                    logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
+                    throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
+                }
                 if (signtool.ExitCode != 0)
                 {
                     logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
