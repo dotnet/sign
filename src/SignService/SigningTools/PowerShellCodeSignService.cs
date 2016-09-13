@@ -66,7 +66,7 @@ namespace SignService
                 }
                 if (signtool.ExitCode != 0)
                 {
-                    logger.LogError("Error: Set-AuthenticodeSignaturel returned {0}", signtool.ExitCode);
+                    logger.LogError("Error: Set-AuthenticodeSignature returned {0}", signtool.ExitCode);
                     throw new Exception($"Set-AuthenticodeSignature returned error with {signtool.StartInfo.Arguments}");
                 }
                 signtool.Dispose();
