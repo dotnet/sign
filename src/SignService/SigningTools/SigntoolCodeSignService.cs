@@ -126,7 +126,18 @@ namespace SignService
             });
         }
 
-        public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>();
+        public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>()
+        {
+            ".msi",
+            ".msp",
+            ".msm",
+            ".cab",
+            ".dll",
+            ".exe",
+            ".sys",
+            ".vdx"
+        };
+
         public bool IsDefault => true;
     }
 }

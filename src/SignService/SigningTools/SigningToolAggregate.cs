@@ -25,7 +25,6 @@ namespace SignService.SigningTools
 
             var list = from cs in services
                        from ext in cs.SupportedFileExtensions
-                       where !cs.IsDefault
                        select new { cs, ext };
 
             this.codeSignServices = list.ToDictionary(k => k.ext.ToLowerInvariant(), v => v.cs);
@@ -42,7 +41,9 @@ namespace SignService.SigningTools
                       group file by kvp.Value into g
                       select g).ToList();
 
-            // get all files and exclude existing; create default group
+            // get all files and exclude existing; 
+
+            // This is to catch PE files that don't have the correct extension set
             var defaultFiles = files.Except(grouped.SelectMany(g => g))
                                     .Where(IsPeFile)
                                     .Select(f => new {defaultCodeSignService,f })
