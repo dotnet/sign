@@ -10,9 +10,13 @@ entries for security:
 Azure AD was chosen as it makes it easy to restrict access to a single application/user in a secure way. Azure App Services 
 also provide a secure location to store certificates, so the combination works well.
 
-The service currently supports either individual files, anything that can be signed with `signtool` or a zip archive
-that contains `.dll` and `.exe` files to sign (works well for NuGet packages). The service code is easy to extend if
+The service currently supports either individual files, or a zip archive
+that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if
 additional filters or functionality is required.
+
+## Supported File Types
+- Any PE file (via SignTool)
+- `.ps1` and `.psm1` via `Set-AuthenticodeSignature`
 
 
 # Deployment
@@ -154,7 +158,7 @@ The parameters to the signing client aren't yet well documented, but the order i
 1. Full path to the `appsettings.json`
 2. Full path to the file to sign (input)
 3. Full path to the output (can be the same as the input and will overwrite)
-4. Type: either `zip` or `file`. `zip` supports any zip type archive of files and will sign all `.dll` and `.exe` files within. `file` supports any single file of any type that can be signed with `signtool`
+4. Type: either `zip` or `file`. `zip` supports any zip type archive of files and will sign all supported files within. `file` supports any single file of any supported type.
 5. Description passed in to the `/d` switch to `signtool`. This is optional, but required if the destination url is used.
 6. Description url passed in to the `/du` switch to `signtool`. This is optional. If you want to use `/du` then `/d` must be passed in before.
 
