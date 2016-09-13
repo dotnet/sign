@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SignService.SigningTools;
 
 namespace SignService.Controllers
 {
@@ -18,12 +19,12 @@ namespace SignService.Controllers
     [Route("[controller]")]
     public class SignController : Controller
     {
-        readonly ICodeSignService codeSignService;
+        readonly ISigningToolAggregate codeSignService;
         readonly ILogger<SignController> logger;
 
         readonly string ziptoolPath;
 
-        public SignController(IHostingEnvironment environment, ICodeSignService codeSignService, ILogger<SignController> logger)
+        public SignController(IHostingEnvironment environment, ISigningToolAggregate codeSignService, ILogger<SignController> logger)
         {
             this.codeSignService = codeSignService;
             this.logger = logger;
@@ -52,7 +53,7 @@ namespace SignService.Controllers
                 // Do work and then load the file into memory so we can delete it before the response is complete
                 var fi = new FileInfo(fileName);
 
-                codeSignService.Submit(name, description, descriptionUrl, new[] {fileName});
+                await codeSignService.Submit(name, description, descriptionUrl, new[] {fileName});
 
 
                 byte[] buffer;
@@ -105,13 +106,11 @@ namespace SignService.Controllers
                 ZipFile.ExtractToDirectory(inputFileName, outputDir);
 
                 var filesToSign = Directory.EnumerateFiles(outputDir, "*.*", SearchOption.AllDirectories)
-                                           .Where(f => f.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ||
-                                                       f.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                                            .ToList();
 
                 
                 // This will block until it's done
-                codeSignService.Submit(name, description, descriptionUrl, filesToSign); 
+                await codeSignService.Submit(name, description, descriptionUrl, filesToSign); 
                
 
                 // They were signed in-place, now zip them back up

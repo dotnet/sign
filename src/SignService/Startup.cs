@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SignService.SigningTools;
 
 namespace SignService
 {
@@ -48,6 +49,14 @@ namespace SignService
                                                             env.ContentRootPath, 
                                                             sp.GetService<ILogger<SigntoolCodeSignService>>());
                                                     });
+
+            services.AddSingleton<ICodeSignService>(sp => new PowerShellCodeSignService(
+                                                        Configuration["CertificateInfo:TimeStampUrl"],
+                                                        Configuration["CertificateInfo:Thumbprint"],
+                                                        sp.GetService<ILogger<PowerShellCodeSignService>>()));
+
+
+            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList()));
 
             services.AddMvc();
         }

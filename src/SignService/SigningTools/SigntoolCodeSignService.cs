@@ -12,7 +12,11 @@ namespace SignService
 {
     public interface ICodeSignService
     {
-        void Submit(string name, string description, string descriptionUrl, IList<string> files);
+        Task Submit(string name, string description, string descriptionUrl, IList<string> files);
+
+        IReadOnlyCollection<string> SupportedFileExtensions { get; }
+
+        bool IsDefault { get; }
     }
 
     class SigntoolCodeSignService : ICodeSignService
@@ -35,9 +39,15 @@ namespace SignService
             signtoolPath = Path.Combine(contentPath, "tools\\signtool.exe");
         }
 
-        public void Submit(string name, string description, string descriptionUrl, IList<string> files)
+        public Task Submit(string name, string description, string descriptionUrl, IList<string> files)
         {
-            logger.LogInformation("Signing job {0} with {1} files", name, files.Count());
+            // Explicitly put this on a thread because Parallel.ForEach blocks
+            return Task.Run(() => SubmitInternal(name, description, descriptionUrl, files));
+        }
+
+        void SubmitInternal(string name, string description, string descriptionUrl, IList<string> files)
+        {
+            logger.LogInformation("Signing SignTool job {0} with {1} files", name, files.Count());
 
             var descArgsList = new List<string>();
             if (!string.IsNullOrWhiteSpace(description))
@@ -57,7 +67,7 @@ namespace SignService
 
             var descArgs = string.Join(" ", descArgsList);
 
-            
+
             Parallel.ForEach(files, options, (file, state) =>
             {
                 // Sign it with sha1
@@ -115,5 +125,8 @@ namespace SignService
                 signtool.Dispose();
             });
         }
+
+        public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>();
+        public bool IsDefault => true;
     }
 }
