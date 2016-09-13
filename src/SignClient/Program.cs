@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -13,18 +14,13 @@ namespace SignClient
 {
     public class Program
     {
+        enum Command
+        {
+            File,
+            Zip
+        }
         public static int Main(string[] args)
         {
-            // Args
-            // 0 config file
-            // 1 sourceFile
-            // 2 outputFile
-            // 3 type: zip/file
-            // 4 clientSecret
-            // 5 name
-            // 6 description
-            // 7 descriptionUrl
-
             return DoMain(args)
                 .Result;
         }
@@ -33,61 +29,115 @@ namespace SignClient
         {
             try
             {
+                // default args
+                var desc = string.Empty;
+                var descUrl = string.Empty;
+                var iFile = string.Empty;
+                var oFile = string.Empty;
+                var name = string.Empty;
+                var configFile = string.Empty;
+                var clientSecret = string.Empty;
+
+                var command = Command.File; 
+                ArgumentSyntax.Parse(args, syntax =>
+                {
+                    syntax.DefineCommand("file", ref command, Command.File, "Single file"); 
+                    syntax.DefineOption("c|config", ref configFile, "Full path to config json file");
+                    syntax.DefineOption("i|input", ref iFile, "Full path to input file");
+                    syntax.DefineOption("o|output", ref oFile, "Full path to output file. May be same as input to overwrite. Defaults to input file if ommited");
+                    syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
+                    syntax.DefineOption("n|name", ref name, "Name of project for tracking");
+                    syntax.DefineOption("d|description", ref desc, "Description");
+                    syntax.DefineOption("u|descriptionUrl", ref descUrl, "Description Url");
+                    
+
+                    syntax.DefineCommand("zip", ref command, Command.Zip, "Zip-type file (NuGet, etc)");
+                    syntax.DefineOption("c|config", ref configFile, "Full path to config json file");
+                    syntax.DefineOption("i|input", ref iFile, "Full path to input file");
+                    syntax.DefineOption("o|output", ref oFile, "Full path to output file. May be same as input to overwrite");
+                    syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
+                    syntax.DefineOption("n|name", ref name, "Name of project for tracking");
+                    syntax.DefineOption("d|description", ref desc, "Description");
+                    syntax.DefineOption("u|descriptionUrl", ref descUrl, "Description Url");
+                });
+
+                // verify required parameters
+                if (string.IsNullOrWhiteSpace(configFile))
+                {
+                    Console.Error.WriteLine("-config parameter is required");
+                    return -1;
+                }
+
+                if (string.IsNullOrWhiteSpace(iFile))
+                {
+                    Console.Error.WriteLine("-input parameter is required");
+                    return -1;
+                }
+
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    Console.Error.WriteLine("-name parameter is required");
+                    return -1;
+                }
+
+                if (string.IsNullOrWhiteSpace(oFile))
+                    oFile = iFile; oFile = iFile;
+
                 var builder = new ConfigurationBuilder()
-                    .AddJsonFile(args[0])
+                    .AddJsonFile(configFile)
                     .AddEnvironmentVariables();
 
                 var configuration = builder.Build();
 
+
+
+
+                // Setup Refit
                 var settings = new RefitSettings
                 {
                     AuthorizationHeaderValueGetter = async () =>
-                                                     {
-                                                         var context = new AuthenticationContext($"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}");
+                    {
+                        var context = new AuthenticationContext($"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}");
 
-                                                         var res = await context.AcquireTokenAsync(configuration["SignClient:Service:ResourceId"],
-                                                                                                   new ClientCredential(configuration["SignClient:AzureAd:ClientId"], args[4]));
-                                                         return res.AccessToken;
-                                                     }
+                        var res = await context.AcquireTokenAsync(configuration["SignClient:Service:ResourceId"],
+                                                                  new ClientCredential(configuration["SignClient:AzureAd:ClientId"], 
+                                                                  clientSecret));
+                        return res.AccessToken;
+                    }
                 };
 
 
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
-
-                var input = new FileInfo(args[1]);
-                var output = new FileInfo(args[2]);
+                
+                // Prepare input/output file
+                var input = new FileInfo(iFile);
+                var output = new FileInfo(oFile);
                 Directory.CreateDirectory(output.DirectoryName);
 
+                
+                // Do action
 
                 var mpContent = new MultipartFormDataContent("-----Boundary----");
                 var content = new StreamContent(input.OpenRead());
-                mpContent.Add(content, "source", input.Name);
+                mpContent.Add(content, "source", input.Name); 
 
-                var desc = string.Empty;
-                var descUrl = string.Empty;
-
-                if (args.Length >= 7)
-                {
-                    desc = args[6];
-                }
-                if (args.Length >= 8)
-                {
-                    descUrl = args[7];
-                }
 
                 HttpResponseMessage response;
-                if (args[3] == "file")
+                if (command == Command.File)
                 {
-                    response = await client.SignSingleFile(mpContent, args[5], desc, descUrl);
+                    response = await client.SignSingleFile(mpContent, name, desc, descUrl);
                 }
-                else if (args[3] == "zip")
+                else if (command == Command.Zip)
                 {
-                    response = await client.SignZipFile(mpContent, args[5], desc, descUrl);
+                    response = await client.SignZipFile(mpContent, name, desc, descUrl);
                 }
                 else
                 {
                     throw new ArgumentException("type must be either zip or file");
                 }
+
+
+                // Check response
 
                 if (!response.IsSuccessStatusCode)
                 {
