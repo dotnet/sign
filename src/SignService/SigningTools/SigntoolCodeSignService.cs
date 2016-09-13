@@ -135,7 +135,7 @@ namespace SignService
             ".dll",
             ".exe",
             ".sys",
-            ".vdx"
+            ".vxd"
         };
 
         public bool IsDefault => true;
