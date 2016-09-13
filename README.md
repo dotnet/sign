@@ -15,7 +15,7 @@ that contains supported files to sign (works well for NuGet packages). The servi
 additional filters or functionality is required.
 
 ## Supported File Types
-- Any PE file (via SignTool)
+- `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd` and Any PE file (via `SignTool`)
 - `.ps1` and `.psm1` via `Set-AuthenticodeSignature`
 
 
@@ -111,7 +111,7 @@ environment:
 
 install: 
   - cmd: appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/v3.5.0-rc1/NuGet.exe
-  - cmd: nuget install SignClient -Version 0.5.0-beta2 -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion -pre
+  - cmd: nuget install SignClient -Version 0.5.0-beta3 -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion -pre
 
 build: 
  ...
@@ -145,7 +145,7 @@ $nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	dotnet $appPath $appSettings $nupkg $nupkg 'zip' $env:SignClientSecret 'Zeroconf' 'https://github.com/onovotny/zeroconf' 
+	dotnet $appPath 'zip' -c $appSettings -i $nupkg -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf' 
 
 	Write-Host "Finished signing $nupkg"
 }
@@ -153,14 +153,57 @@ foreach ($nupkg in $nupgks){
 Write-Host "Sign-package complete"
 ```
 
-The parameters to the signing client aren't yet well documented, but the order is as follows:
+The parameters to the signing client are as follows. There are two modes, `file` for a single file and `zip` for a zip-type archive:
 
-1. Full path to the `appsettings.json`
-2. Full path to the file to sign (input)
-3. Full path to the output (can be the same as the input and will overwrite)
-4. Type: either `zip` or `file`. `zip` supports any zip type archive of files and will sign all supported files within. `file` supports any single file of any supported type.
-5. Description passed in to the `/d` switch to `signtool`. This is optional, but required if the destination url is used.
-6. Description url passed in to the `/du` switch to `signtool`. This is optional. If you want to use `/du` then `/d` must be passed in before.
+```
+usage: SignClient <command> [<args>]
+
+    file    Single file
+    zip     Zip-type file (NuGet, etc)
+```
+
+File mode:
+```
+usage: SignClient file [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
+                  [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
+
+    -c, --config <arg>            Full path to config json file
+    -i, --input <arg>             Full path to input file
+    -o, --output <arg>            Full path to output file. May be same
+                                  as input to overwrite. Defaults to
+                                  input file if ommited
+    -h, --hashmode <arg>          Hash mode: either dual or Sha256.
+                                  Default is dual, to sign with both
+                                  Sha-1 and Sha-256 for files that
+                                  support it. For files that don't
+                                  support dual, Sha-256 is used
+    -s, --secret <arg>            Client Secret
+    -n, --name <arg>              Name of project for tracking
+    -d, --description <arg>       Description
+    -u, --descriptionUrl <arg>    Description Url
+```
+
+Zip-type archive mode, including NuGet:
+```
+usage: SignClient zip [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
+                  [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
+
+    -c, --config <arg>            Full path to config json file
+    -i, --input <arg>             Full path to input file
+    -o, --output <arg>            Full path to output file. May be same
+                                  as input to overwrite
+    -h, --hashmode <arg>          Hash mode: either dual or Sha256.
+                                  Default is dual, to sign with both
+                                  Sha-1 and Sha-256 for files that
+                                  support it. For files that don't
+                                  support dual, Sha-256 is used
+    -f, --filter <arg>            Full path to file containing paths of
+                                  files to sign within an archive
+    -s, --secret <arg>            Client Secret
+    -n, --name <arg>              Name of project for tracking
+    -d, --description <arg>       Description
+    -u, --descriptionUrl <arg>    Description Url
+```
 
 # Contributing
 I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/onovotny/SignService/issues) to discuss first. Security reviews are also much appreciated! 
