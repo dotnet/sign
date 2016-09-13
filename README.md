@@ -10,9 +10,7 @@ entries for security:
 Azure AD was chosen as it makes it easy to restrict access to a single application/user in a secure way. Azure App Services 
 also provide a secure location to store certificates, so the combination works well.
 
-The service currently supports either individual files, or a zip archive
-that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if
-additional filters or functionality is required.
+The service currently supports either individual files, or a zip archive that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if additional filters or functionality is required.
 
 ## Supported File Types
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd` and Any PE file (via `SignTool`)
