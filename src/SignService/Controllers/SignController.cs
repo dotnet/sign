@@ -34,7 +34,7 @@ namespace SignService.Controllers
 
 
         [HttpPost("singleFile")]
-        public async Task<IActionResult> SignSingleFile(IFormFile source, string name, string description, string descriptionUrl)
+        public async Task<IActionResult> SignSingleFile(IFormFile source, HashMode hashMode, string name, string description, string descriptionUrl)
         {
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
@@ -53,7 +53,7 @@ namespace SignService.Controllers
                 // Do work and then load the file into memory so we can delete it before the response is complete
                 var fi = new FileInfo(fileName);
 
-                await codeSignService.Submit(name, description, descriptionUrl, new[] {fileName});
+                await codeSignService.Submit(hashMode, name, description, descriptionUrl, new[] {fileName});
 
 
                 byte[] buffer;
@@ -76,7 +76,7 @@ namespace SignService.Controllers
         }
 
         [HttpPost("zipFile")]
-        public async Task<IActionResult> SignZipFile(IFormFile source, string name, string description, string descriptionUrl)
+        public async Task<IActionResult> SignZipFile(IList<IFormFile> source, HashMode hashMode, string name, string description, string descriptionUrl)
         {
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
@@ -88,29 +88,49 @@ namespace SignService.Controllers
             Directory.CreateDirectory(inputDir);
             Directory.CreateDirectory(outputDir);
 
-            var inputFileName = Path.Combine(dataDir, source.FileName);
-            var outputFilename = Path.Combine(dataDir, source.FileName + "-signed");
+            // this might have two files, one containing the filter
+            var inputFile = source.Single(f => f.FileName != "filter");
+            var filterFile = source.SingleOrDefault(f => f.FileName == "filter");
+
+            var inputFileName = Path.Combine(dataDir, inputFile.FileName);
+            var outputFilename = Path.Combine(dataDir, inputFile.FileName + "-signed");
             try
             {
-                if (source.Length > 0)
+                if (inputFile.Length > 0)
                 {
                     using (var fs = new FileStream(inputFileName, FileMode.Create))
                     {
-                        await source.CopyToAsync(fs);
+                        await inputFile.CopyToAsync(fs);
                     }
                 }
+
+                var filter = string.Empty;
+                if (filterFile != null)
+                {
+                    using (var sr = new StreamReader(filterFile.OpenReadStream()))
+                    {
+                        filter = await sr.ReadToEndAsync();
+                        filter = filter.Replace("\r\n", "\n").Replace("/", "\\").Trim();
+                    }
+                }
+
+                // Build an exclude list based on the output path
+                var filterSet = new HashSet<string>(filter.Split('\n').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => Path.Combine(outputDir, s)), StringComparer.OrdinalIgnoreCase);
 
                 // Do work and then load the file into memory so we can delete it before the response is complete
 
                 logger.LogInformation($"Extracting zip file {inputFileName}");
                 ZipFile.ExtractToDirectory(inputFileName, outputDir);
 
-                var filesToSign = Directory.EnumerateFiles(outputDir, "*.*", SearchOption.AllDirectories)
-                                           .ToList();
 
+                var filesInDir = Directory.EnumerateFiles(outputDir, "*.*", SearchOption.AllDirectories);
+                if (filterSet.Count > 0)
+                    filesInDir = filesInDir.Intersect(filterSet, StringComparer.OrdinalIgnoreCase);
+
+                var filesToSign = filesInDir.ToList();
                 
                 // This will block until it's done
-                await codeSignService.Submit(name, description, descriptionUrl, filesToSign); 
+                await codeSignService.Submit(hashMode, name, description, descriptionUrl, filesToSign); 
                
 
                 // They were signed in-place, now zip them back up
@@ -158,7 +178,7 @@ namespace SignService.Controllers
                 }
 
                 // Send it back with the original file name
-                return File(buffer, "application/octet-stream", source.FileName);
+                return File(buffer, "application/octet-stream", inputFile.FileName);
             }
             finally
             {

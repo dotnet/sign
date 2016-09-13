@@ -14,11 +14,6 @@ namespace SignClient
 {
     public class Program
     {
-        enum Command
-        {
-            File,
-            Zip
-        }
         public static int Main(string[] args)
         {
             return DoMain(args)
@@ -34,27 +29,32 @@ namespace SignClient
                 var descUrl = string.Empty;
                 var iFile = string.Empty;
                 var oFile = string.Empty;
+                var fFile = string.Empty;
                 var name = string.Empty;
                 var configFile = string.Empty;
                 var clientSecret = string.Empty;
+                var hashMode = HashMode.Dual;
 
-                var command = Command.File; 
+                var command = Command.File;
                 ArgumentSyntax.Parse(args, syntax =>
                 {
-                    syntax.DefineCommand("file", ref command, Command.File, "Single file"); 
+                    syntax.DefineCommand("file", ref command, Command.File, "Single file");
                     syntax.DefineOption("c|config", ref configFile, "Full path to config json file");
                     syntax.DefineOption("i|input", ref iFile, "Full path to input file");
                     syntax.DefineOption("o|output", ref oFile, "Full path to output file. May be same as input to overwrite. Defaults to input file if ommited");
+                    syntax.DefineOption("h|hashmode", ref hashMode, s => (HashMode)Enum.Parse(typeof(HashMode), s, true), "Hash mode: either dual or Sha256. Default is dual, to sign with both Sha-1 and Sha-256 for files that support it. For files that don't support dual, Sha-256 is used");
                     syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
                     syntax.DefineOption("n|name", ref name, "Name of project for tracking");
                     syntax.DefineOption("d|description", ref desc, "Description");
                     syntax.DefineOption("u|descriptionUrl", ref descUrl, "Description Url");
-                    
+
 
                     syntax.DefineCommand("zip", ref command, Command.Zip, "Zip-type file (NuGet, etc)");
                     syntax.DefineOption("c|config", ref configFile, "Full path to config json file");
                     syntax.DefineOption("i|input", ref iFile, "Full path to input file");
                     syntax.DefineOption("o|output", ref oFile, "Full path to output file. May be same as input to overwrite");
+                    syntax.DefineOption("h|hashmode", ref hashMode, s => (HashMode)Enum.Parse(typeof(HashMode), s, true), "Hash mode: either dual or Sha256. Default is dual, to sign with both Sha-1 and Sha-256 for files that support it. For files that don't support dual, Sha-256 is used");
+                    syntax.DefineOption("f|filter", ref fFile, "Full path to file containing paths of files to sign within an archive");
                     syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
                     syntax.DefineOption("n|name", ref name, "Name of project for tracking");
                     syntax.DefineOption("d|description", ref desc, "Description");
@@ -81,7 +81,9 @@ namespace SignClient
                 }
 
                 if (string.IsNullOrWhiteSpace(oFile))
-                    oFile = iFile; oFile = iFile;
+                {
+                    oFile = iFile;
+                }
 
                 var builder = new ConfigurationBuilder()
                     .AddJsonFile(configFile)
@@ -90,46 +92,49 @@ namespace SignClient
                 var configuration = builder.Build();
 
 
-
-
                 // Setup Refit
                 var settings = new RefitSettings
                 {
                     AuthorizationHeaderValueGetter = async () =>
-                    {
-                        var context = new AuthenticationContext($"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}");
+                                                     {
+                                                         var context = new AuthenticationContext($"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}");
 
-                        var res = await context.AcquireTokenAsync(configuration["SignClient:Service:ResourceId"],
-                                                                  new ClientCredential(configuration["SignClient:AzureAd:ClientId"], 
-                                                                  clientSecret));
-                        return res.AccessToken;
-                    }
+                                                         var res = await context.AcquireTokenAsync(configuration["SignClient:Service:ResourceId"],
+                                                                                                   new ClientCredential(configuration["SignClient:AzureAd:ClientId"],
+                                                                                                                        clientSecret));
+                                                         return res.AccessToken;
+                                                     }
                 };
 
 
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
-                
+
                 // Prepare input/output file
                 var input = new FileInfo(iFile);
                 var output = new FileInfo(oFile);
                 Directory.CreateDirectory(output.DirectoryName);
 
-                
+
                 // Do action
 
                 var mpContent = new MultipartFormDataContent("-----Boundary----");
                 var content = new StreamContent(input.OpenRead());
-                mpContent.Add(content, "source", input.Name); 
+                mpContent.Add(content, "source", input.Name);
 
+                if (!string.IsNullOrWhiteSpace(fFile))
+                {
+                    var fContent = new StreamContent(File.OpenRead(fFile));
+                    mpContent.Add(fContent, "source", "filter");
+                }
 
                 HttpResponseMessage response;
                 if (command == Command.File)
                 {
-                    response = await client.SignSingleFile(mpContent, name, desc, descUrl);
+                    response = await client.SignSingleFile(mpContent, hashMode, name, desc, descUrl);
                 }
                 else if (command == Command.Zip)
                 {
-                    response = await client.SignZipFile(mpContent, name, desc, descUrl);
+                    response = await client.SignZipFile(mpContent, hashMode, name, desc, descUrl);
                 }
                 else
                 {
@@ -160,6 +165,12 @@ namespace SignClient
             }
 
             return 0;
+        }
+
+        enum Command
+        {
+            File,
+            Zip
         }
     }
 }

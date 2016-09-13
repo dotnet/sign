@@ -9,7 +9,7 @@ namespace SignService.SigningTools
 {
     public interface ISigningToolAggregate
     {
-        Task Submit(string name, string description, string descriptionUrl, IList<string> files);
+        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files);
     }
 
     public class SigningToolAggregate : ISigningToolAggregate
@@ -32,7 +32,7 @@ namespace SignService.SigningTools
 
 
 
-        public async Task Submit(string name, string description, string descriptionUrl, IList<string> files)
+        public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             // split by code sign service and fallback to default
 
@@ -54,7 +54,7 @@ namespace SignService.SigningTools
                 grouped.Add(defaultFiles);
 
 
-            await Task.WhenAll(grouped.Select(g => g.Key.Submit(name, description, descriptionUrl, g.ToList())));
+            await Task.WhenAll(grouped.Select(g => g.Key.Submit(hashMode, name, description, descriptionUrl, g.ToList())));
         }
 
         static bool IsPeFile(string file)

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SignService.SigningTools;
 
 namespace SignService
 {
@@ -30,7 +31,7 @@ namespace SignService
             this.logger = logger;
         }
 
-        public Task Submit(string name, string description, string descriptionUrl, IList<string> files)
+        public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
             return Task.Run(() => SubmitInternal(name, description, descriptionUrl, files));

@@ -12,9 +12,15 @@ namespace SignServiceClient
     public interface ISignService
     {
         [Post("/sign/singleFile")]
-        Task<HttpResponseMessage> SignSingleFile(HttpContent source, string name, string description, string descriptionUrl);
+        Task<HttpResponseMessage> SignSingleFile(HttpContent source, HashMode hashMode, string name, string description, string descriptionUrl);
 
         [Post("/sign/zipFile")]
-        Task<HttpResponseMessage> SignZipFile(HttpContent source, string name, string description, string descriptionUrl);
+        Task<HttpResponseMessage> SignZipFile(HttpContent source, HashMode hashMode, string name, string description, string descriptionUrl);
+    }
+
+    public enum HashMode
+    {
+        Sha256,
+        Dual
     }
 }

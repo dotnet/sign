@@ -7,12 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SignService.SigningTools;
 
 namespace SignService
 {
     public interface ICodeSignService
     {
-        Task Submit(string name, string description, string descriptionUrl, IList<string> files);
+        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files);
 
         IReadOnlyCollection<string> SupportedFileExtensions { get; }
 
@@ -39,13 +40,13 @@ namespace SignService
             signtoolPath = Path.Combine(contentPath, "tools\\signtool.exe");
         }
 
-        public Task Submit(string name, string description, string descriptionUrl, IList<string> files)
+        public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
-            return Task.Run(() => SubmitInternal(name, description, descriptionUrl, files));
+            return Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));
         }
 
-        void SubmitInternal(string name, string description, string descriptionUrl, IList<string> files)
+        void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing SignTool job {0} with {1} files", name, files.Count());
 
@@ -70,10 +71,14 @@ namespace SignService
 
             Parallel.ForEach(files, options, (file, state) =>
             {
-                // Sign it with sha1
-                var signtool = new Process
+                Process signtool;
+
+                if (hashMode == HashMode.Dual)
                 {
-                    StartInfo =
+                    // Sign it with sha1
+                    signtool = new Process
+                    {
+                        StartInfo =
                     {
                         FileName = signtoolPath,
                         UseShellExecute = false,
@@ -81,21 +86,24 @@ namespace SignService
                         RedirectStandardOutput = false,
                         Arguments = $@"sign /t {timeStampUrl} {descArgs} /sha1 {thumbprint} ""{file}"""
                     }
-                };
-                logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
-                signtool.Start();
-                if (!signtool.WaitForExit(30 * 1000))
-                {
-                    signtool.Kill();
-                    logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
-                    throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
+                    };
+                    logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
+                    signtool.Start();
+                    if (!signtool.WaitForExit(30 * 1000))
+                    {
+                        signtool.Kill();
+                        logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
+                        throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
+                    }
+                    if (signtool.ExitCode != 0)
+                    {
+                        logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
+                        throw new Exception($"Sign tool returned error with {signtool.StartInfo.Arguments}");
+                    }
+                    signtool.Dispose();
                 }
-                if (signtool.ExitCode != 0)
-                {
-                    logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
-                    throw new Exception($"Sign tool returned error with {signtool.StartInfo.Arguments}");
-                }
-                signtool.Dispose();
+
+                var appendParam = hashMode == HashMode.Dual ? "/as" : string.Empty;
 
                 // Append a sha256 signature
                 signtool = new Process
@@ -106,7 +114,7 @@ namespace SignService
                         UseShellExecute = false,
                         RedirectStandardError = false,
                         RedirectStandardOutput = false,
-                        Arguments = $@"sign /tr {timeStampUrl} /as /fd sha256 /td sha256 {descArgs} /sha1 {thumbprint} ""{file}"""
+                        Arguments = $@"sign /tr {timeStampUrl} {appendParam} /fd sha256 /td sha256 {descArgs} /sha1 {thumbprint} ""{file}"""
                     }
                 };
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
