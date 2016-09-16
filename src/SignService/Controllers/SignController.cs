@@ -22,13 +22,12 @@ namespace SignService.Controllers
         readonly ISigningToolAggregate codeSignService;
         readonly ILogger<SignController> logger;
 
-        readonly string ziptoolPath;
 
-        public SignController(IHostingEnvironment environment, ISigningToolAggregate codeSignService, ILogger<SignController> logger)
+
+        public SignController(ISigningToolAggregate codeSignService, ILogger<SignController> logger)
         {
             this.codeSignService = codeSignService;
             this.logger = logger;
-            ziptoolPath = Path.Combine(environment.ContentRootPath, "tools\\7za.exe");
         }
 
 
@@ -93,7 +92,7 @@ namespace SignService.Controllers
             var filterFile = source.SingleOrDefault(f => f.FileName == "filter");
 
             var inputFileName = Path.Combine(dataDir, inputFile.FileName);
-            var outputFilename = Path.Combine(dataDir, inputFile.FileName + "-signed");
+            var outputFilename = Path.Combine(dataDir, inputFile.FileName + "-s.zip");
             try
             {
                 if (inputFile.Length > 0)
@@ -134,36 +133,9 @@ namespace SignService.Controllers
                
 
                 // They were signed in-place, now zip them back up
-                // We need to use 7-Zip because the Fx zip doesn't create valid nuget archives
-
                 logger.LogInformation($"Building signed {inputFileName}");
 
-                //ZipFile giving a strange bug - shell out to 7z for now
-                //ZipFile.CreateFromDirectory(target, signedPackageFile);
-                // Hack in 7z call
-                var zip = new Process
-                {
-                    StartInfo =
-                    {
-                        WorkingDirectory = outputDir,
-                        FileName = ziptoolPath,
-                        UseShellExecute = false,
-                        RedirectStandardError = false,
-                        RedirectStandardOutput = false,
-                        Arguments = string.Format(@"a -tzip -r ""{0}"" ""{1}\*.*""", outputFilename, outputDir)
-                    }
-                };
-
-                logger.LogInformation(@"""{0}"" {1}", zip.StartInfo.FileName, zip.StartInfo.Arguments);
-
-                zip.Start();
-                zip.WaitForExit();
-                if (zip.ExitCode != 0)
-                {
-                    logger.LogError("Error: 7z returned {0}", zip.ExitCode);
-                }
-                zip.Dispose();
-
+                ZipFile.CreateFromDirectory(outputDir, outputFilename, CompressionLevel.Optimal, false);
 
                 var fi = new FileInfo(outputFilename);
                 byte[] buffer;
