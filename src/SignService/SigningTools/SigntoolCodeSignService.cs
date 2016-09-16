@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
@@ -29,7 +30,10 @@ namespace SignService
         readonly string signtoolPath;
 
         // Four things at once as we're hitting the sign server
-        readonly ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 };
+        readonly ParallelOptions options = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = 4
+        };
 
 
         public SigntoolCodeSignService(string timeStampUrl, string thumbprint, string contentPath, ILogger<SigntoolCodeSignService> logger)
@@ -71,67 +75,106 @@ namespace SignService
 
             Parallel.ForEach(files, options, (file, state) =>
             {
-                Process signtool;
 
+                string args;
                 if (hashMode == HashMode.Dual)
                 {
                     // Sign it with sha1
-                    signtool = new Process
+
+                    args = $@"sign /t {timeStampUrl} {descArgs} /sha1 {thumbprint} ""{file}""";
+
+                    if (!Sign(args))
                     {
-                        StartInfo =
-                    {
-                        FileName = signtoolPath,
-                        UseShellExecute = false,
-                        RedirectStandardError = false,
-                        RedirectStandardOutput = false,
-                        Arguments = $@"sign /t {timeStampUrl} {descArgs} /sha1 {thumbprint} ""{file}"""
+                        throw new Exception($"Could not sign {file}");
                     }
-                    };
-                    logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
-                    signtool.Start();
-                    if (!signtool.WaitForExit(30 * 1000))
-                    {
-                        signtool.Kill();
-                        logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
-                        throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
-                    }
-                    if (signtool.ExitCode != 0)
-                    {
-                        logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
-                        throw new Exception($"Sign tool returned error with {signtool.StartInfo.Arguments}");
-                    }
-                    signtool.Dispose();
+                   
                 }
 
                 var appendParam = hashMode == HashMode.Dual ? "/as" : string.Empty;
 
+                args = $@"sign /tr {timeStampUrl} {appendParam} /fd sha256 /td sha256 {descArgs} /sha1 {thumbprint} ""{file}""";
                 // Append a sha256 signature
-                signtool = new Process
+                if (!Sign(args))
                 {
-                    StartInfo =
-                    {
-                        FileName = signtoolPath,
-                        UseShellExecute = false,
-                        RedirectStandardError = false,
-                        RedirectStandardOutput = false,
-                        Arguments = $@"sign /tr {timeStampUrl} {appendParam} /fd sha256 /td sha256 {descArgs} /sha1 {thumbprint} ""{file}"""
-                    }
-                };
+                    throw new Exception($"Could not append sign {file}");
+                }
+            });
+        }
+
+        // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
+
+        bool Sign(string args)
+        {
+            var retry = TimeSpan.FromSeconds(5);
+            var attempt = 1;
+            do
+            {
+                if (attempt > 1)
+                {
+                    logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
+                    Thread.Sleep(retry);
+                }
+
+                if (RunSignTool(args))
+                {
+                    logger.LogInformation($"Signed {args}");
+                    return true;
+                }
+
+                attempt++;
+
+                retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
+
+            } while (attempt <= 3);
+
+            logger.LogError($"Failed to sign {args}. Attempts exceeded");
+
+            return false;
+        }
+
+        bool RunSignTool(string args)
+        {
+            // Append a sha256 signature
+            using (var signtool = new Process
+            {
+                StartInfo =
+                {
+                    FileName = signtoolPath,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardOutput = false,
+                    Arguments = args
+                }
+            })
+            {
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
                 signtool.Start();
-                if (!signtool.WaitForExit(30 * 1000))
+                if (!signtool.WaitForExit(30*1000))
                 {
-                    signtool.Kill();
+                    logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
+                    try
+                    {
+                        signtool.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception("SignTool timed out and could not be killed", ex);
+                    }
+
                     logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
                     throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
                 }
-                if (signtool.ExitCode != 0)
+
+                if (signtool.ExitCode == 0)
                 {
-                    logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
-                    throw new Exception($"Sign tool returned error with {signtool.StartInfo.Arguments}");
+                    return true;
                 }
-                signtool.Dispose();
-            });
+
+                logger.LogError("Error: Signtool returned {0}", signtool.ExitCode);
+
+                return false;
+            }
+
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>()
