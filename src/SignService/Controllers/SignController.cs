@@ -75,8 +75,13 @@ namespace SignService.Controllers
         }
 
         [HttpPost("zipFile")]
-        public async Task<IActionResult> SignZipFile(IList<IFormFile> source, HashMode hashMode, string name, string description, string descriptionUrl)
+        public async Task<IActionResult> SignZipFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
         {
+            if (source == null)
+            {
+                return BadRequest();
+            }
+
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
 
@@ -87,26 +92,28 @@ namespace SignService.Controllers
             Directory.CreateDirectory(inputDir);
             Directory.CreateDirectory(outputDir);
 
-            // this might have two files, one containing the filter
-            var inputFile = source.Single(f => f.FileName != "filter");
-            var filterFile = source.SingleOrDefault(f => f.FileName == "filter");
+            // this might have two files, one containing the file list
+            // The first will be the package and the second is the filter
 
-            var inputFileName = Path.Combine(dataDir, inputFile.FileName);
-            var outputFilename = Path.Combine(dataDir, inputFile.FileName + "-s.zip");
+
+            
+
+            var inputFileName = Path.Combine(dataDir, source.FileName);
+            var outputFilename = Path.Combine(dataDir, source.FileName + "-s.zip");
             try
             {
-                if (inputFile.Length > 0)
+                if (source.Length > 0)
                 {
                     using (var fs = new FileStream(inputFileName, FileMode.Create))
                     {
-                        await inputFile.CopyToAsync(fs);
+                        await source.CopyToAsync(fs);
                     }
                 }
 
                 var filter = string.Empty;
-                if (filterFile != null)
+                if (filelist != null)
                 {
-                    using (var sr = new StreamReader(filterFile.OpenReadStream()))
+                    using (var sr = new StreamReader(filelist.OpenReadStream()))
                     {
                         filter = await sr.ReadToEndAsync();
                         filter = filter.Replace("\r\n", "\n").Replace("/", "\\").Trim();
@@ -150,7 +157,7 @@ namespace SignService.Controllers
                 }
 
                 // Send it back with the original file name
-                return File(buffer, "application/octet-stream", inputFile.FileName);
+                return File(buffer, "application/octet-stream", source.FileName);
             }
             finally
             {
