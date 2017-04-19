@@ -16,7 +16,7 @@ $appSettings = "$currentDirectory\appsettings.json"
 
 $appPath = "$currentDirectory\..\src\SignClient\bin\Release\publish\SignClient.dll"
 
-$nupgks = ls $currentDirectory\..\src\*.nupkg | Select -ExpandProperty FullName
+$nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
 
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
