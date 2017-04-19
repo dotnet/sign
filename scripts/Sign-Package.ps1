@@ -1,7 +1,11 @@
+Param(
+	[string]$signClientSecret
+)
+
 $currentDirectory = split-path $MyInvocation.MyCommand.Definition
 
 # See if we have the ClientSecret available
-if([string]::IsNullOrEmpty($env:SignClientSecret)){
+if([string]::IsNullOrEmpty($signClientSecret)){
 	Write-Host "Client Secret not found, not signing packages"
 	return;
 }
@@ -17,7 +21,7 @@ $nupgks = ls $currentDirectory\..\src\*.nupkg | Select -ExpandProperty FullName
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	dotnet $appPath 'zip' -c $appSettings -i $nupkg -s $env:SignClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
+	dotnet $appPath 'zip' -c $appSettings -i $nupkg -s $signClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
 
 	Write-Host "Finished signing $nupkg"
 }
