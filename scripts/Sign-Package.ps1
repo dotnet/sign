@@ -13,7 +13,7 @@ if([string]::IsNullOrEmpty($signClientSecret)){
 # Setup Variables we need to pass into the sign client tool
 
 $appSettings = "$currentDirectory\appsettings.json"
-$fileList = "$currentDirectory\fileist.txt"
+$fileList = "$currentDirectory\filelist.txt"
 
 $appPath = "$currentDirectory\..\src\SignClient\bin\Release\netcoreapp1.1\publish\SignClient.dll"
 
