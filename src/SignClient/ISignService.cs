@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Refit;
 
-namespace SignServiceClient
+namespace SignClient
 {
     [Headers("Authorization: Bearer")]
     public interface ISignService

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Refit;
-using SignServiceClient;
 
 namespace SignClient
 {
