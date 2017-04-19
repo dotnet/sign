@@ -55,6 +55,18 @@ namespace SignService
                                                         Configuration["CertificateInfo:Thumbprint"],
                                                         sp.GetService<ILogger<PowerShellCodeSignService>>()));
 
+            
+            services.AddSingleton<OpcSignService>(sp => new OpcSignService(
+                                                        Configuration["CertificateInfo:TimeStampUrl"],
+                                                        Configuration["CertificateInfo:Thumbprint"],
+                                                        sp.GetService<ILogger<OpcSignService>>()));
+
+            // Explicitly adding again since we need to call it by type & interface
+            services.AddSingleton<ICodeSignService>(sp => sp.GetService<OpcSignService>());
+
+            services.AddSingleton<ICodeSignService, VsixSignService>();
+
+
 
             services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList()));
 
