@@ -13,6 +13,7 @@ if([string]::IsNullOrEmpty($signClientSecret)){
 # Setup Variables we need to pass into the sign client tool
 
 $appSettings = "$currentDirectory\appsettings.json"
+$fileList = "$currentDirectory\fileist.txt"
 
 $appPath = "$currentDirectory\..\src\SignClient\bin\Release\netcoreapp1.1\publish\SignClient.dll"
 
@@ -21,7 +22,7 @@ $nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	dotnet $appPath 'zip' -c $appSettings -i $nupkg -s $signClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
+	dotnet $appPath 'zip' -c $appSettings -i $nupkg -f $fileList -s $signClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
 
 	Write-Host "Finished signing $nupkg"
 }
