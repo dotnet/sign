@@ -14,7 +14,7 @@ if([string]::IsNullOrEmpty($signClientSecret)){
 
 $appSettings = "$currentDirectory\appsettings.json"
 
-$appPath = "$currentDirectory\..\src\SignClient\bin\Release\publish\SignClient.dll"
+$appPath = "$currentDirectory\..\src\SignClient\bin\Release\netcoreapp1.1\publish\SignClient.dll"
 
 $nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
 
