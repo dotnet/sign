@@ -41,7 +41,7 @@ namespace SignClient
                     syntax.DefineOption("c|config", ref configFile, "Full path to config json file");
                     syntax.DefineOption("i|input", ref iFile, "Full path to input file");
                     syntax.DefineOption("o|output", ref oFile, "Full path to output file. May be same as input to overwrite. Defaults to input file if ommited");
-                    syntax.DefineOption("h|hashmode", ref hashMode, s => (HashMode)Enum.Parse(typeof(HashMode), s, true), "Hash mode: either dual or Sha256. Default is Sha256. Dual signs with both Sha-1 and Sha-256 for files that support it. For files that don't support dual, Sha-256 is used");
+                    syntax.DefineOption("h|hashmode", ref hashMode, s => (HashMode)Enum.Parse(typeof(HashMode), s, true), "Hash mode: either dual or Sha256. Default is Sha256. Dual signs with both Sha-1 and Sha-256 for files that support it. For files that don't support dual, Sha-256 is used. Sha1 is only supported for VSIX files as VS before 2015 doesn't support Sha256.");
                     syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
                     syntax.DefineOption("n|name", ref name, "Name of project for tracking");
                     syntax.DefineOption("d|description", ref desc, "Description");

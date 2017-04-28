@@ -38,35 +38,13 @@ namespace SignService
         {
             // Add framework services.
 
-            services.AddSingleton<ICodeSignService>(sp =>
-                                                    {
+            services.AddOptions();
 
-                                                        var env = sp.GetService<IHostingEnvironment>();
+            services.Configure<CertificateInfo>(Configuration.GetSection("CertificateInfo"));
 
-                                                        return new SigntoolCodeSignService(
-                                                            Configuration["CertificateInfo:TimeStampUrl"],
-                                                            Configuration["CertificateInfo:Thumbprint"],
-                                                            env.ContentRootPath, 
-                                                            sp.GetService<ILogger<SigntoolCodeSignService>>());
-                                                    });
-
-            services.AddSingleton<ICodeSignService>(sp => new PowerShellCodeSignService(
-                                                        Configuration["CertificateInfo:TimeStampUrl"],
-                                                        Configuration["CertificateInfo:Thumbprint"],
-                                                        sp.GetService<ILogger<PowerShellCodeSignService>>()));
-
-            
-            services.AddSingleton<OpcSignService>(sp => new OpcSignService(
-                                                        Configuration["CertificateInfo:TimeStampUrl"],
-                                                        Configuration["CertificateInfo:Thumbprint"],
-                                                        sp.GetService<ILogger<OpcSignService>>()));
-
-            // Explicitly adding again since we need to call it by type & interface
-            services.AddSingleton<ICodeSignService>(sp => sp.GetService<OpcSignService>());
-
+            services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
+            services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
-
-
 
             services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList()));
 
@@ -78,7 +56,7 @@ namespace SignService
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-           
+            
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {

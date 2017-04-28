@@ -8,7 +8,8 @@ namespace SignService.SigningTools
     public enum HashMode
     {
         Sha256,
-        Dual
+        Dual,
+        Sha1
     }
 
 }
