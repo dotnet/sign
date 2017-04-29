@@ -109,15 +109,15 @@ environment:
     secure: <the encrypted client secret using the appveyor secret encryption tool>
 
 install: 
-  - cmd: appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/v3.5.0-rc1/NuGet.exe
-  - cmd: nuget install SignClient -Version 0.5.0-beta3 -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion -pre
+  - cmd: appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/v4.1.0/NuGet.exe
+  - cmd: nuget install SignClient -Version 0.7.0 -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion
 
 build: 
  ...
 
 after_build:
   - cmd: nuget pack nuget\Zeroconf.nuspec -version "%GitVersion_NuGetVersion%-bld%GitVersion_BuildMetaDataPadded%" -prop "target=%CONFIGURATION%" -NoPackageAnalysis
-  - ps: '.\SignClient\SignPackage.ps1'
+  - ps: '.\SignClient\Sign-Package.ps1'
   - cmd: appveyor PushArtifact "Zeroconf.%GitVersion_NuGetVersion%-bld%GitVersion_BuildMetaDataPadded%.nupkg"  
 
 ```
@@ -144,7 +144,7 @@ $nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	dotnet $appPath 'zip' -c $appSettings -i $nupkg -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf' 
+	dotnet $appPath 'sign' -c $appSettings -i $nupkg -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf' 
 
 	Write-Host "Finished signing $nupkg"
 }
@@ -152,43 +152,23 @@ foreach ($nupkg in $nupgks){
 Write-Host "Sign-package complete"
 ```
 
-The parameters to the signing client are as follows. There are two modes, `file` for a single file and `zip` for a zip-type archive:
+The parameters to the signing client are as follows:
 
 ```
 usage: SignClient <command> [<args>]
 
-    file    Single file
-    zip     Zip-type file (NuGet, VSIX, etc)
-```
-`file` will only process the single file provided. It does not open up and sign any internal content. 
-
-`zip` will open up the archive and sign any supported file types. It is strongly recommended to use the `filter` parameter with the `zip` mode to explicitly list the files inside the archive that should be signed. `zip` mode is not recursive; it will not sign contents of any detectected `NuPkg` or `VSIX` files inside the uploaded one. After signing contents of the archive, the archive itself is signed if supported (currently `VSIX`).
-
-
-File mode:
-```
-usage: SignClient file [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
-                  [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
-
-    -c, --config <arg>            Full path to config json file
-    -i, --input <arg>             Full path to input file
-    -o, --output <arg>            Full path to output file. May be same
-                                  as input to overwrite. Defaults to
-                                  input file if ommited
-    -h, --hashmode <arg>          Hash mode: either dual or Sha256.
-                                  Default is dual, to sign with both
-                                  Sha-1 and Sha-256 for files that
-                                  support it. For files that don't
-                                  support dual, Sha-256 is used
-    -s, --secret <arg>            Client Secret
-    -n, --name <arg>              Name of project for tracking
-    -d, --description <arg>       Description
-    -u, --descriptionUrl <arg>    Description Url
+    sign     Sign a file
 ```
 
-Zip-type archive mode, including NuGet:
+signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any 
+supported file types. It is strongly recommended to use the `filter` parameter to explicitly 
+list the files inside the archive that should be signed. Signing is recursive; it will sign 
+contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one. 
+After signing contents of the archive, the archive itself is signed if supported 
+(currently `VSIX`).
+
 ```
-usage: SignClient zip [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
+usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
                   [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
 
     -c, --config <arg>            Full path to config json file
