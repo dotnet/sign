@@ -117,6 +117,9 @@ namespace SignService.Controllers
                     zipFile.Save();
                 }
 
+                // submit the zip file to the signing service aggregate since something may handle it
+                await codeSignService.Submit(hashMode, name, description, descriptionUrl, new [] {inputFileName});
+
                 var fi = new FileInfo(inputFileName);
                 byte[] buffer;
                 using (var ms = new MemoryStream(new byte[fi.Length]))
