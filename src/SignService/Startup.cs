@@ -46,7 +46,7 @@ namespace SignService
             services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
 
-            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList()));
+            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList(), sp.GetService<ILogger<SigningToolAggregate>>()));
 
             services.AddMvc();
         }

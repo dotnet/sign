@@ -19,14 +19,14 @@ namespace SignService.Controllers
     [Route("[controller]")]
     public class SignController : Controller
     {
-        readonly ISigningToolAggregate codeSignService;
+        readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger<SignController> logger;
 
 
 
-        public SignController(ISigningToolAggregate codeSignService, ILogger<SignController> logger)
+        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
         {
-            this.codeSignService = codeSignService;
+            this.codeSignAggregate = codeSignAggregate;
             this.logger = logger;
         }
 
@@ -35,47 +35,11 @@ namespace SignService.Controllers
         [HttpPost("singleFile")]
         public async Task<IActionResult> SignSingleFile(IFormFile source, HashMode hashMode, string name, string description, string descriptionUrl)
         {
-            var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-            Directory.CreateDirectory(dataDir);
-            var fileName = Path.Combine(dataDir, source.FileName);
-            try
-            {
-                if (source.Length > 0)
-                {
-                    using (var fs = new FileStream(fileName, FileMode.Create))
-                    {
-                        await source.CopyToAsync(fs);
-                    }
-                }
-
-                // Do work and then load the file into memory so we can delete it before the response is complete
-                var fi = new FileInfo(fileName);
-
-                await codeSignService.Submit(hashMode, name, description, descriptionUrl, new[] {fileName});
-
-
-                byte[] buffer;
-                using (var ms = new MemoryStream(new byte[fi.Length]))
-                {
-                    using (var fs = fi.OpenRead())
-                    {
-                        await fs.CopyToAsync(ms);
-                    }
-
-                    buffer = ms.ToArray();
-                }
-
-                return File(buffer, "application/octet-stream", source.FileName);
-            }
-            finally
-            {
-                Directory.Delete(dataDir, true);
-            }
+            return await SignFile(source, null, hashMode, name, description, descriptionUrl);
         }
 
-        [HttpPost("zipFile")]
-        public async Task<IActionResult> SignZipFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
+        [HttpPost]
+        public async Task<IActionResult> SignFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
         {
             if (source == null)
             {
@@ -109,16 +73,8 @@ namespace SignService.Controllers
                     }
                 }
 
-                // Do work and then load the file into memory so we can delete it before the response is complete
-                using (var zipFile = new TemporaryZipFile(inputFileName, filter, logger))
-                {
-                    // This will block until it's done
-                    await codeSignService.Submit(hashMode, name, description, descriptionUrl, zipFile.FilteredFilesInDirectory); 
-                    zipFile.Save();
-                }
-
-                // submit the zip file to the signing service aggregate since something may handle it
-                await codeSignService.Submit(hashMode, name, description, descriptionUrl, new [] {inputFileName});
+                // This will block until it's done
+                await codeSignAggregate.Submit(hashMode, name, description, descriptionUrl, new[] { inputFileName }, filter);
 
                 var fi = new FileInfo(inputFileName);
                 byte[] buffer;
@@ -139,6 +95,12 @@ namespace SignService.Controllers
             {
                 Directory.Delete(dataDir, true);
             }
+        }
+
+        [HttpPost("zipFile")]
+        public async Task<IActionResult> SignZipFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
+        {
+            return await SignFile(source, filelist, hashMode, name, description, descriptionUrl);
         }
     }
 }

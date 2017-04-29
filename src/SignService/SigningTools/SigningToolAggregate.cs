@@ -4,22 +4,25 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace SignService.SigningTools
 {
     public interface ISigningToolAggregate
     {
-        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files);
+        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter);
     }
 
     public class SigningToolAggregate : ISigningToolAggregate
     {
+        readonly ILogger<SigningToolAggregate> logger;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
 
 
-        public SigningToolAggregate(IList<ICodeSignService> services)
+        public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger)
         {
+            this.logger = logger;
             // pe files
             defaultCodeSignService = services.Single(c => c.IsDefault);
 
@@ -32,8 +35,40 @@ namespace SignService.SigningTools
 
 
 
-        public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
+            // See if any of them are archives
+            var archives = (from file in files
+                            let ext = Path.GetExtension(file).ToLowerInvariant()
+                            where ext == ".zip" || ext == ".nupkg" || ext == ".vsix"
+                            select file).ToList();
+
+            // expand the archives and sign recursively first
+            var tempZips = new List<TemporaryZipFile>();
+            try
+            {
+                foreach (var archive in archives)
+                {
+                    tempZips.Add(new TemporaryZipFile(archive, filter, logger));
+                }
+
+                // See if there's any files in the expanded zip that we need to sign
+                var allFiles = tempZips.SelectMany(tz => tz.FilteredFilesInDirectory).ToList();
+                if (allFiles.Count > 0)
+                {
+                    // Send the files from the archives through the aggregator to sign
+                    await Submit(hashMode, name, description, descriptionUrl, allFiles, filter);
+                    
+                    // After signing the contents, save the zip
+                    tempZips.ForEach(tz => tz.Save());
+                }
+            }
+            finally
+            {
+                tempZips.ForEach(tz => tz.Dispose());
+                tempZips.Clear();
+            }
+
             // split by code sign service and fallback to default
 
             var grouped = (from kvp in codeSignServices
