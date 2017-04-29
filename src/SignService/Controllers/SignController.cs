@@ -83,23 +83,12 @@ namespace SignService.Controllers
             }
 
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-
-            var inputDir = Path.Combine(dataDir, "input");
-            var outputDir = Path.Combine(dataDir, "output");
-
-
-            Directory.CreateDirectory(inputDir);
-            Directory.CreateDirectory(outputDir);
+            Directory.CreateDirectory(dataDir);
 
             // this might have two files, one containing the file list
             // The first will be the package and the second is the filter
 
-
-            
-
             var inputFileName = Path.Combine(dataDir, source.FileName);
-            var outputFilename = Path.Combine(dataDir, source.FileName + "-s.zip");
             try
             {
                 if (source.Length > 0)
@@ -120,31 +109,18 @@ namespace SignService.Controllers
                     }
                 }
 
-                // Build an exclude list based on the output path
-                var filterSet = new HashSet<string>(filter.Split('\n').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => Path.Combine(outputDir, s)), StringComparer.OrdinalIgnoreCase);
-
                 // Do work and then load the file into memory so we can delete it before the response is complete
+                using (var zipFile = new TemporaryZipFile(inputFileName, filter, logger))
+                {
+                    // This will block until it's done
+                    await codeSignService.Submit(hashMode, name, description, descriptionUrl, zipFile.FilteredFilesInDirectory); 
+                    zipFile.Save();
+                }
 
-                logger.LogInformation($"Extracting zip file {inputFileName}");
-                ZipFile.ExtractToDirectory(inputFileName, outputDir);
+                // submit the zip file to the signing service aggregate since something may handle it
+                await codeSignService.Submit(hashMode, name, description, descriptionUrl, new [] {inputFileName});
 
-
-                var filesInDir = Directory.EnumerateFiles(outputDir, "*.*", SearchOption.AllDirectories);
-                if (filterSet.Count > 0)
-                    filesInDir = filesInDir.Intersect(filterSet, StringComparer.OrdinalIgnoreCase);
-
-                var filesToSign = filesInDir.ToList();
-                
-                // This will block until it's done
-                await codeSignService.Submit(hashMode, name, description, descriptionUrl, filesToSign); 
-               
-
-                // They were signed in-place, now zip them back up
-                logger.LogInformation($"Building signed {inputFileName}");
-
-                ZipFile.CreateFromDirectory(outputDir, outputFilename, CompressionLevel.Optimal, false);
-
-                var fi = new FileInfo(outputFilename);
+                var fi = new FileInfo(inputFileName);
                 byte[] buffer;
                 using (var ms = new MemoryStream(new byte[fi.Length]))
                 {

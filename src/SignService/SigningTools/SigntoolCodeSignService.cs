@@ -7,7 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SignService.SigningTools;
 
 namespace SignService
@@ -36,17 +38,20 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(string timeStampUrl, string thumbprint, string contentPath, ILogger<SigntoolCodeSignService> logger)
+        public SigntoolCodeSignService(IOptionsSnapshot<CertificateInfo> certificationInfo, IHostingEnvironment hostingEnvironment, ILogger<SigntoolCodeSignService> logger)
         {
-            this.timeStampUrl = timeStampUrl;
-            this.thumbprint = thumbprint;
+            timeStampUrl = certificationInfo.Value.TimestampUrl;
+            thumbprint = certificationInfo.Value.Thumbprint;
             this.logger = logger;
-            signtoolPath = Path.Combine(contentPath, "tools\\signtool.exe");
+            signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\signtool.exe");
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
+            if (hashMode == HashMode.Sha1)
+                throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha56 or Dual is supported");
+            
             return Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));
         }
 

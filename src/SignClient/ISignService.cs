@@ -23,6 +23,7 @@ namespace SignClient
     public enum HashMode
     {
         Sha256,
-        Dual
+        Dual,
+        Sha1
     }
 }

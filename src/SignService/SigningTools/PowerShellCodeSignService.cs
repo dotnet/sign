@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SignService.SigningTools;
 
 namespace SignService
@@ -24,15 +25,18 @@ namespace SignService
         readonly ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 };
 
 
-        public PowerShellCodeSignService(string timeStampUrl, string thumbprint,ILogger<PowerShellCodeSignService> logger)
+        public PowerShellCodeSignService(IOptionsSnapshot<CertificateInfo> certificationInfo, ILogger<PowerShellCodeSignService> logger)
         {
-            this.timeStampUrl = timeStampUrl;
-            this.thumbprint = thumbprint;
+            timeStampUrl = certificationInfo.Value.TimestampUrl;
+            thumbprint = certificationInfo.Value.Thumbprint;
             this.logger = logger;
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
+            if(hashMode == HashMode.Sha1)
+                throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha56 or Dual is supported");
+
             // Explicitly put this on a thread because Parallel.ForEach blocks
             return Task.Run(() => SubmitInternal(name, description, descriptionUrl, files));
         }
@@ -40,8 +44,6 @@ namespace SignService
         void SubmitInternal(string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing PowerShell job {0} with {1} files", name, files.Count());
-
-
 
             Parallel.ForEach(files, options, (file, state) =>
             {
