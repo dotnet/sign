@@ -158,8 +158,12 @@ The parameters to the signing client are as follows. There are two modes, `file`
 usage: SignClient <command> [<args>]
 
     file    Single file
-    zip     Zip-type file (NuGet, etc)
+    zip     Zip-type file (NuGet, VSIX, etc)
 ```
+`file` will only process the single file provided. It does not open up and sign any internal content. 
+
+`zip` will open up the archive and sign any supported file types. It is strongly recommended to use the `filter` parameter with the `zip` mode to explicitly list the files inside the archive that should be signed. `zip` mode is not recursive; it will not sign contents of any detectected `NuPkg` or `VSIX` files inside the uploaded one. After signing contents of the archive, the archive itself is signed if supported (currently `VSIX`).
+
 
 File mode:
 ```
