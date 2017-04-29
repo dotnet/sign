@@ -15,6 +15,7 @@ The service currently supports either individual files, or a zip archive that co
 ## Supported File Types
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd` and Any PE file (via `SignTool`)
 - `.ps1` and `.psm1` via `Set-AuthenticodeSignature`
+- `.vsix` via `OpenVsixSignTool`
 
 
 # Deployment
@@ -121,7 +122,7 @@ after_build:
 
 ```
 
-SignPackage.ps1 looks like this:
+Sign-Package.ps1 looks like this:
 
 ```powershell
 $currentDirectory = split-path $MyInvocation.MyCommand.Definition
