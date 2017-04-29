@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\*.exe">
+    <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*.*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
