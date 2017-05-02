@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace SignService.SigningTools
 {
@@ -16,13 +17,17 @@ namespace SignService.SigningTools
     public class SigningToolAggregate : ISigningToolAggregate
     {
         readonly ILogger<SigningToolAggregate> logger;
+        readonly IOptionsSnapshot<Settings> settings;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
+        readonly string makeappxPath;
 
 
-        public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger)
+        public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptionsSnapshot<Settings> settings)
         {
             this.logger = logger;
+            this.settings = settings;
+            makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
             // pe files
             defaultCodeSignService = services.Single(c => c.IsDefault);
 
@@ -40,7 +45,7 @@ namespace SignService.SigningTools
             // See if any of them are archives
             var archives = (from file in files
                             let ext = Path.GetExtension(file).ToLowerInvariant()
-                            where ext == ".zip" || ext == ".nupkg" || ext == ".vsix"
+                            where ext == ".zip" || ext == ".nupkg" || ext == ".vsix" || ext == ".appxupload"
                             select file).ToList();
 
             // expand the archives and sign recursively first
@@ -67,6 +72,39 @@ namespace SignService.SigningTools
             {
                 tempZips.ForEach(tz => tz.Dispose());
                 tempZips.Clear();
+            }
+
+            // See if there's any appxbundles here, process them recursively first
+            // expand the archives and sign recursively first
+
+            var bundles = (from file in files
+                            let ext = Path.GetExtension(file).ToLowerInvariant()
+                            where ext == ".appxbundle"
+                            select file).ToList();
+
+            var tempBundles = new List<AppxBundleFile>();
+            try
+            {
+                foreach (var bundle in bundles)
+                {
+                    tempBundles.Add(new AppxBundleFile(bundle, logger, makeappxPath));
+                }
+
+                // See if there's any files in the expanded zip that we need to sign
+                var allFiles = tempBundles.SelectMany(tz => tz.FilteredFilesInDirectory).ToList();
+                if (allFiles.Count > 0)
+                {
+                    // Send the files from the archives through the aggregator to sign
+                    await Submit(hashMode, name, description, descriptionUrl, allFiles, filter);
+
+                    // After signing the contents, save the zip
+                    tempBundles.ForEach(tz => tz.Save());
+                }
+            }
+            finally
+            {
+                tempBundles.ForEach(tz => tz.Dispose());
+                tempBundles.Clear();
             }
 
             // split by code sign service and fallback to default

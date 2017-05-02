@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SignService.SigningTools;
+using SignService.Utils;
 
 namespace SignService
 {
@@ -50,11 +52,12 @@ namespace SignService
                 Path.Combine(environment.ContentRootPath, @"tools\SDK") : 
                 s.WinSdkBinDirectory);
 
+            services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
             services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
 
-            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList(), sp.GetService<ILogger<SigningToolAggregate>>()));
+            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList(), sp.GetService<ILogger<SigningToolAggregate>>(), sp.GetService<IOptionsSnapshot<Settings>>()));
 
             services.AddMvc();
         }
