@@ -91,7 +91,6 @@ namespace SignService
                     StripAppx(file);
                 }
 
-
                 string args;
                 if (hashMode == HashMode.Dual)
                 {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -76,6 +77,7 @@ namespace SignService.Utils
             Directory.CreateDirectory(dataDirectory);
 
             Unpack();
+            UpdateManifestPublisher();
         }
 
         public void Save()
@@ -83,7 +85,24 @@ namespace SignService.Utils
             Pack();
         }
 
+        void UpdateManifestPublisher()
+        {
+            var fileName = Path.Combine(dataDirectory, "AppxManifest.xml");
+            XDocument manifest;
+            using (var fs = File.OpenRead(fileName))
+            {
+                manifest = XDocument.Load(fs, LoadOptions.PreserveWhitespace);
+                XNamespace ns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
 
+                var idElement = manifest.Root?.Element(ns + "Identity");
+                idElement?.SetAttributeValue("Publisher", publisher);
+            }
+
+            using (var fs = File.Create(fileName))
+            {
+                manifest.Save(fs);
+            }
+        }
         void Unpack()
         {
             var args = $@"unpack /p {inputFileName} /d ""{dataDirectory}"" /l /o";
