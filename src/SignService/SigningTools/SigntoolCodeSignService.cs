@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.SigningTools;
+using SignService.Utils;
 
 namespace SignService
 {
@@ -28,6 +29,7 @@ namespace SignService
         readonly string timeStampUrl;
         readonly string thumbprint;
         readonly ILogger<SigntoolCodeSignService> logger;
+        readonly IAppxFileFactory appxFileFactory;
 
         readonly string signtoolPath;
 
@@ -38,11 +40,12 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, ILogger<SigntoolCodeSignService> logger)
+        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
             this.logger = logger;
+            this.appxFileFactory = appxFileFactory;
             signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
         }
 
@@ -80,6 +83,14 @@ namespace SignService
 
             Parallel.ForEach(files, options, (file, state) =>
             {
+
+                // check to see if it's an appx and strip it first
+                var ext = Path.GetExtension(file).ToLowerInvariant();
+                if (".appx".Equals(ext, StringComparison.OrdinalIgnoreCase))
+                {
+                    StripAppx(file);
+                }
+
 
                 string args;
                 if (hashMode == HashMode.Dual)
@@ -137,6 +148,16 @@ namespace SignService
             return false;
         }
 
+        void StripAppx(string appxFile)
+        {
+            // This will extract and resave the appx, stripping the signature
+            // and fixing the publisher
+            using (var appx = appxFileFactory.Create(appxFile))
+            {
+                appx.Save();
+            }
+        }
+
         bool RunSignTool(string args)
         {
             // Append a sha256 signature
@@ -192,7 +213,8 @@ namespace SignService
             ".exe",
             ".sys",
             ".vxd",
-            ".winmd"
+            ".winmd",
+            ".appx"
         };
 
         public bool IsDefault => true;

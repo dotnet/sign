@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
+using SignService.Utils;
 
 namespace SignService
 {
@@ -50,6 +51,7 @@ namespace SignService
                 Path.Combine(environment.ContentRootPath, @"tools\SDK") : 
                 s.WinSdkBinDirectory);
 
+            services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
             services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
