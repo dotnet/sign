@@ -213,7 +213,8 @@ namespace SignService
             ".sys",
             ".vxd",
             ".winmd",
-            ".appx"
+            ".appx",
+            ".appxbundle"
         };
 
         public bool IsDefault => true;
