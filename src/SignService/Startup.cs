@@ -14,8 +14,11 @@ namespace SignService
 {
     public class Startup
     {
+        readonly IHostingEnvironment environment;
+
         public Startup(IHostingEnvironment env)
         {
+            environment = env;
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -39,8 +42,13 @@ namespace SignService
             // Add framework services.
 
             services.AddOptions();
+            services.AddSingleton<IConfiguration>(Configuration);
 
-            services.Configure<CertificateInfo>(Configuration.GetSection("CertificateInfo"));
+            services.Configure<Settings>(Configuration);
+            // If not specified, default to the tools\sdk directory
+            services.Configure<Settings>(s => s.WinSdkBinDirectory = string.IsNullOrWhiteSpace(s.WinSdkBinDirectory) ? 
+                Path.Combine(environment.ContentRootPath, @"tools\SDK") : 
+                s.WinSdkBinDirectory);
 
             services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
             services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();

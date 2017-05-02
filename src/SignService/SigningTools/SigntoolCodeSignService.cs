@@ -38,12 +38,12 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(IOptionsSnapshot<CertificateInfo> certificationInfo, IHostingEnvironment hostingEnvironment, ILogger<SigntoolCodeSignService> logger)
+        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, ILogger<SigntoolCodeSignService> logger)
         {
-            timeStampUrl = certificationInfo.Value.TimestampUrl;
-            thumbprint = certificationInfo.Value.Thumbprint;
+            timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
+            thumbprint = settings.Value.CertificateInfo.Thumbprint;
             this.logger = logger;
-            signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\signtool.exe");
+            signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)

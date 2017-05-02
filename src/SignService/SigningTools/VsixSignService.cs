@@ -24,10 +24,10 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IOptionsSnapshot<CertificateInfo> certificationInfo, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
+        public VsixSignService(IOptionsSnapshot<Settings> settings, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
-            timeStampUrl = certificationInfo.Value.TimestampUrl;
-            thumbprint = certificationInfo.Value.Thumbprint;
+            timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
+            thumbprint = settings.Value.CertificateInfo.Thumbprint;
             this.logger = logger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
         }
