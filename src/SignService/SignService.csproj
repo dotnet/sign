@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\x64\</WinSdkBinDir>
+    <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
     <SdkFile Include="$(WinSdkBinDir)mssign32.dll" />
     <SdkFile Include="$(WinSdkBinDir)opcservices.dll" />
     <SdkFile Include="$(WinSdkBinDir)signtool.exe" />
-    <!--<SdkFile Include="$(WinSdkBinDir)signtool.exe.manifest" />-->
+    <SdkFile Include="$(WinSdkBinDir)signtool.exe.manifest" />
     <SdkFile Include="$(WinSdkBinDir)wintrust.dll" />
     <SdkFile Include="$(WinSdkBinDir)wintrust.dll.ini" />
     

@@ -21,7 +21,7 @@ namespace SignService.Utils
         readonly ILogger<AppxFileFactory> logger;
         readonly IOptionsSnapshot<Settings> settings;
 
-        readonly string publisher;
+        string publisher;
         readonly string makeappxPath;
 
         public AppxFileFactory(ILogger<AppxFileFactory> logger, IOptionsSnapshot<Settings> settings)
@@ -29,15 +29,17 @@ namespace SignService.Utils
             this.logger = logger;
             this.settings = settings;
             makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
-            var thumbprint = settings.Value.CertificateInfo.Thumbprint;
-
-            var cert = FindCertificate(thumbprint, StoreLocation.CurrentUser) ?? FindCertificate(thumbprint, StoreLocation.LocalMachine);
-
-            publisher = cert.SubjectName.Name;
         }
 
         public AppxFile Create(string inputFileName)
         {
+            if (publisher == null) // don't care about this race
+            {
+                var thumbprint = settings.Value.CertificateInfo.Thumbprint;
+                var cert = FindCertificate(thumbprint, StoreLocation.CurrentUser) ?? FindCertificate(thumbprint, StoreLocation.LocalMachine);
+                publisher = cert.SubjectName.Name;
+            }
+
             return new AppxFile(inputFileName, publisher, logger, makeappxPath);
         }
 
