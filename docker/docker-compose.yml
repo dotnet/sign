@@ -4,5 +4,5 @@ services:
   signservice:
     image: signservice
     build:
-      context: ./src/SignService
+      context: ../src/SignService
       dockerfile: Dockerfile

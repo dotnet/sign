@@ -18,7 +18,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignService", "src\SignServ
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignClient", "src\SignClient\SignClient.csproj", "{84FC3FBF-E14C-4268-8693-45CC82451DF3}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{0A2976F1-5A72-4828-8312-A78DA9D0E550}"
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker\docker-compose.dcproj", "{0A2976F1-5A72-4828-8312-A78DA9D0E550}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

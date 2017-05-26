@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\x64\</WinSdkBinDir>
-    <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+    <DockerComposeProjectPath>..\..\docker\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
   <ItemGroup>
