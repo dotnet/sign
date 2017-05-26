@@ -47,11 +47,8 @@ namespace SignService
             services.AddSingleton<IConfiguration>(Configuration);
 
             services.Configure<Settings>(Configuration);
-            // If not specified, default to the tools\sdk directory
-            services.Configure<Settings>(s => s.WinSdkBinDirectory = string.IsNullOrWhiteSpace(s.WinSdkBinDirectory) ? 
-                Path.Combine(environment.ContentRootPath, @"tools\SDK") : 
-                s.WinSdkBinDirectory);
-
+            // Path to the tools\sdk directory
+            services.Configure<Settings>(s => s.WinSdkBinDirectory = Path.Combine(environment.ContentRootPath, @"tools\SDK"));
             services.Configure<AadOptions>(Configuration.GetSection("Authentication:AzureAd"));
             
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();

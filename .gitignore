@@ -246,3 +246,5 @@ ModelManifest.xml
 .fake/
 /src/SignClient/Properties/launchSettings.json
 /src/SignService/appsettings.development.json
+
+/src/SignService/tools/SDK/
