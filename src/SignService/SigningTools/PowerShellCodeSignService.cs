@@ -25,10 +25,10 @@ namespace SignService
         readonly ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 };
 
 
-        public PowerShellCodeSignService(IOptionsSnapshot<CertificateInfo> certificationInfo, ILogger<PowerShellCodeSignService> logger)
+        public PowerShellCodeSignService(IOptionsSnapshot<Settings> certificationInfo, ILogger<PowerShellCodeSignService> logger)
         {
-            timeStampUrl = certificationInfo.Value.TimestampUrl;
-            thumbprint = certificationInfo.Value.Thumbprint;
+            timeStampUrl = certificationInfo.Value.CertificateInfo.TimestampUrl;
+            thumbprint = certificationInfo.Value.CertificateInfo.Thumbprint;
             this.logger = logger;
         }
 
