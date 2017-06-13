@@ -16,6 +16,7 @@ The service currently supports either individual files, or a zip archive that co
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd` and Any PE file (via `SignTool`)
 - `.ps1` and `.psm1` via `Set-AuthenticodeSignature`
 - `.vsix` via `OpenVsixSignTool`
+- `.appx` and `.appxbundle` (via `SignTool`) when running on Server 2016
 
 
 # Deployment
