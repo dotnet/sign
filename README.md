@@ -13,8 +13,7 @@ also provide a secure location to store certificates, so the combination works w
 The service currently supports either individual files, or a zip archive that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if additional filters or functionality is required.
 
 ## Supported File Types
-- `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd` and Any PE file (via `SignTool`)
-- `.ps1` and `.psm1` via `Set-AuthenticodeSignature`
+- `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and Any PE file (via `SignTool`)
 - `.vsix` via `OpenVsixSignTool`
 - `.appx` and `.appxbundle` (via `SignTool`) when running on Server 2016
 

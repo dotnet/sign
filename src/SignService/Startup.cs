@@ -53,7 +53,7 @@ namespace SignService
             
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
-            services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
+            //services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
 
             services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList(), sp.GetService<ILogger<SigningToolAggregate>>(), sp.GetService<IOptionsSnapshot<Settings>>()));

@@ -214,7 +214,9 @@ namespace SignService
             ".vxd",
             ".winmd",
             ".appx",
-            ".appxbundle"
+            ".appxbundle",
+            ".ps1",
+            ".psm1"
         };
 
         public bool IsDefault => true;
