@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.Utils;
+using System.Xml.Linq;
 
 namespace SignService.SigningTools
 {
@@ -62,11 +63,11 @@ namespace SignService.SigningTools
 
             if (!certificateInfo.UseKeyVault)
             {
-                args = $@"-ch {thumbprint} --ti {timeStampUrl} -a {alg} -n ""{name}"" ";
+                args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg} -n ""{name}"" ";
             }
             else
             {
-                args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
+                args = $@"-ti {timeStampUrl} -a {alg} -n ""{name}"" -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
             }
             
             
@@ -79,7 +80,7 @@ namespace SignService.SigningTools
                 // Then the nested clickonce/vsto file
                 // finally the top-level clickonce/vsto file
 
-                using (var zip = new TemporaryZipFile(file, filter, logger))
+                using (var zip = new TemporaryZipFile(file, filter, logger, false))
                 {
                     // Look for the data files first - these are .deploy files
                     // we need to rename them, sign, then restore the name
@@ -126,6 +127,17 @@ namespace SignService.SigningTools
                         throw new Exception($"Could not sign {manifestFile}");
                     }
 
+                    // Read the publisher name from the manifest for use below
+                    var manifestDoc = XDocument.Load(manifestFile);
+                    var ns = manifestDoc.Root.GetDefaultNamespace();
+                    var publisherEle = manifestDoc.Root.Element(ns + "publisherIdentity");
+                    var pubName = publisherEle.Attribute("name").Value;
+
+                    // get the CN. it may be quoted
+                    var cn = pubName.Substring(3, pubName.IndexOf(", O=") - 3);
+                    if (cn[0] == '"')
+                        cn = cn.Substring(1, cn.Length - 2);
+
                     // Now sign the inner vsto/clickonce file
                     // Order by desending length to put the inner one first
                     var filesToSign = zip.FilteredFilesInDirectory.Where(f => ".vsto".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase) || ".application".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
@@ -136,7 +148,7 @@ namespace SignService.SigningTools
 
                     foreach(var f in filesToSign)
                     {
-                        fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}""";
+                        fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}"" -pub ""{cn}""";
                         if (!Sign(fileArgs))
                         {
                             throw new Exception($"Could not sign {f}");
