@@ -17,7 +17,7 @@ namespace SignService
 {
     public interface ICodeSignService
     {
-        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files);
+        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter);
 
         IReadOnlyCollection<string> SupportedFileExtensions { get; }
 
@@ -49,7 +49,7 @@ namespace SignService
             signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
         }
 
-        public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
             if (hashMode == HashMode.Sha1)

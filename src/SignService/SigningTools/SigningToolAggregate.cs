@@ -127,7 +127,7 @@ namespace SignService.SigningTools
                 grouped.Add(defaultFiles);
 
 
-            await Task.WhenAll(grouped.Select(g => g.Key.Submit(hashMode, name, description, descriptionUrl, g.ToList())));
+            await Task.WhenAll(grouped.Select(g => g.Key.Submit(hashMode, name, description, descriptionUrl, g.ToList(), filter)));
         }
 
         static bool IsPeFile(string file)

@@ -36,7 +36,7 @@ namespace SignService.SigningTools
             this.logger = logger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
         }
-        public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
             await Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));

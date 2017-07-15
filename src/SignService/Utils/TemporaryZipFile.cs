@@ -27,10 +27,14 @@ namespace SignService
             ZipFile.ExtractToDirectory(inputFileName, dataDirectory);
 
             var filesInDir = Directory.EnumerateFiles(dataDirectory, "*.*", SearchOption.AllDirectories);
+            FilesInDirectory = filesInDir.ToList();
+
             if (filterSet.Count > 0)
                 filesInDir = filesInDir.Intersect(filterSet, StringComparer.OrdinalIgnoreCase);
 
             FilteredFilesInDirectory = filesInDir.ToList();
+
+            FilesExceptFiltered = FilesInDirectory.Except(FilteredFilesInDirectory).ToList();
         }
 
         public void Save()
@@ -41,6 +45,8 @@ namespace SignService
         }
 
         public IList<string> FilteredFilesInDirectory { get; }
+        public IList<string> FilesInDirectory { get; }
+        public IList<string> FilesExceptFiltered { get; }
 
         public void Dispose()
         {

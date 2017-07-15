@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\x64\</WinSdkBinDir>
+    <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools\</NetSdkBinDir>
     <DockerComposeProjectPath>..\..\docker\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
@@ -22,6 +23,7 @@
     <!--<SdkFile Include="$(WinSdkBinDir)signtool.exe.manifest" />-->
     <SdkFile Include="$(WinSdkBinDir)wintrust.dll" />
     <SdkFile Include="$(WinSdkBinDir)wintrust.dll.ini" />
+    <SdkFile Include="$(NetSdkBinDir)mage.exe"/>
     
     <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
