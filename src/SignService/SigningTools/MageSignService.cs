@@ -138,10 +138,14 @@ namespace SignService.SigningTools
                     var publisherEle = manifestDoc.Root.Element(ns + "publisherIdentity");
                     var pubName = publisherEle.Attribute("name").Value;
 
-                    // get the CN. it may be quoted
-                    var cn = pubName.Substring(3, pubName.IndexOf(", O=") - 3);
-                    if (cn[0] == '"')
-                        cn = cn.Substring(1, cn.Length - 2);
+                    var publisherParam = "";
+                    
+                    var dict = DistinguishedNameParser.Parse(pubName);
+                    if(dict.TryGetValue("CN", out var cns))
+                    {
+                        // get the CN. it may be quoted
+                        publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
+                    }
 
                     // Now sign the inner vsto/clickonce file
                     // Order by desending length to put the inner one first
@@ -155,7 +159,7 @@ namespace SignService.SigningTools
 
                     foreach(var f in clickOnceFilesToSign)
                     {
-                        fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}"" -pub ""{cn}""";
+                        fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}"" {publisherParam}";
                         if (!Sign(fileArgs))
                         {
                             throw new Exception($"Could not sign {f}");
@@ -169,9 +173,7 @@ namespace SignService.SigningTools
                     }
 
                     zip.Save();
-                }                    
-
-                
+                } 
             });
         }
 
