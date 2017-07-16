@@ -63,7 +63,9 @@ namespace SignService.SigningTools
 
             //if (!certificateInfo.UseKeyVault)
             //{
-                args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg} -n ""{name}"" ";
+            args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg}";
+            if(!string.IsNullOrWhiteSpace(name))
+                args += $@" -n ""{name}"" ";
             //}
             //else
             //{

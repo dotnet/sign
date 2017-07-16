@@ -16,6 +16,7 @@ The service currently supports either individual files, or a zip archive that co
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and Any PE file (via `SignTool`)
 - `.vsix` via `OpenVsixSignTool`
 - `.appx` and `.appxbundle` (via `SignTool`) when running on Server 2016
+- ClickOnce `.application` and `.vsto` (via `Mage`). Special instructions below.
 
 
 # Deployment
@@ -186,6 +187,28 @@ usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
     -n, --name <arg>              Name of project for tracking
     -d, --description <arg>       Description
     -u, --descriptionUrl <arg>    Description Url
+```
+
+## ClickOnce
+ClickOnce files can be signed with this tool, but it requires an extra step -- you must zip up the `publish`
+directory containing the `setup.exe`, `foo.application` or `foo.vsto` files alongwith the `Application Files` directory.
+The `Application Files` must only have a single subdirectory (version you want to sign). Zip these and then rename the
+extension to `.clickonce` before submitting to the tool. Once done, you can extract the signed files wherever you'd like
+for publication. If the `name` parameter is supplied, it's used in the `Mage` name to update the `Product` in the manifests.
+
+You should also use the `filter` parameter with the file list to sign, something like this:
+```
+ProjectAddIn1.dll.deploy
+ProjectAddIn1.dll.manifest
+ProjectAddIn1.vsto
+setup.exe
+```
+or
+```
+MyApp1.exe.deploy
+MyApp1.exe.manifest
+MyApp1.application
+setup.exe
 ```
 
 # Contributing
