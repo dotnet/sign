@@ -195,6 +195,7 @@ directory containing the `setup.exe`, `foo.application` or `foo.vsto` files alon
 The `Application Files` must only have a single subdirectory (version you want to sign). Zip these and then rename the
 extension to `.clickonce` before submitting to the tool. Once done, you can extract the signed files wherever you'd like
 for publication. If the `name` parameter is supplied, it's used in the `Mage` name to update the `Product` in the manifests.
+If the `descriptionUrl` parameter is supplied, it's used as the `supportUrl` in the manifests.
 
 You should also use the `filter` parameter with the file list to sign, something like this:
 ```

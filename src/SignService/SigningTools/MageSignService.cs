@@ -65,14 +65,14 @@ namespace SignService.SigningTools
             //{
             args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg}";
             if(!string.IsNullOrWhiteSpace(name))
-                args += $@" -n ""{name}"" ";
+                args += $@" -n ""{name}""";
             //}
             //else
             //{
-               // args = $@"-ti {timeStampUrl} -a {alg} -n ""{name}"" -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
+            // args = $@"-ti {timeStampUrl} -a {alg} -n ""{name}"" -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
             //}
-            
-            
+
+
             // This outer loop is for a .clickonce file            
             Parallel.ForEach(files, options, (file, state) =>
             {
@@ -162,6 +162,9 @@ namespace SignService.SigningTools
                     foreach(var f in clickOnceFilesToSign)
                     {
                         fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}"" {publisherParam}";
+                        if (!string.IsNullOrWhiteSpace(descriptionUrl))
+                            fileArgs += $@" -SupportURL {descriptionUrl}";
+
                         if (!Sign(fileArgs))
                         {
                             throw new Exception($"Could not sign {f}");
