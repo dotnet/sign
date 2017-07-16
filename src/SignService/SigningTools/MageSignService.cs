@@ -19,7 +19,7 @@ namespace SignService.SigningTools
         readonly AadOptions aadOptions;
         readonly CertificateInfo certificateInfo;
         readonly ILogger<MageSignService> logger;
-        readonly string signtoolPath;
+        readonly string magetoolPath;
         readonly string timeStampUrl;
         readonly string thumbprint;
         readonly Lazy<ISigningToolAggregate> signToolAggregate;
@@ -35,7 +35,7 @@ namespace SignService.SigningTools
             this.aadOptions = aadOptions.Value;
             certificateInfo = settings.Value.CertificateInfo;
             this.logger = logger;
-            signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
+            magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             signToolAggregate = new Lazy<ISigningToolAggregate>(() => serviceProvider.GetService<ISigningToolAggregate>());
         }
@@ -97,9 +97,14 @@ namespace SignService.SigningTools
                         contentFiles.Add(dest);
                     }
 
+                    var filesToSign = contentFiles.ToList(); // copy it since we may add setup.exe
+
+                    var setupExe = zip.FilteredFilesInDirectory.Where(f => ".exe".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
+                    filesToSign.AddRange(setupExe);
+
                     // Safe to call Wait here because we're in a Parallel.ForEach()
                     // sign the inner files
-                    signToolAggregate.Value.Submit(hashMode, name, description, descriptionUrl, contentFiles, filter).Wait();
+                    signToolAggregate.Value.Submit(hashMode, name, description, descriptionUrl, filesToSign, filter).Wait();
 
                     // rename the rest of the deploy files since signing the manifest will need them
                     var deployFiles = zip.FilesExceptFiltered.Where(f => ".deploy".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
@@ -140,13 +145,15 @@ namespace SignService.SigningTools
 
                     // Now sign the inner vsto/clickonce file
                     // Order by desending length to put the inner one first
-                    var filesToSign = zip.FilteredFilesInDirectory.Where(f => ".vsto".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase) || ".application".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                    var clickOnceFilesToSign = zip.FilteredFilesInDirectory
+                                                                  .Where(f => ".vsto".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase) || 
+                                                                              ".application".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
                                                                   .Select(f => new { file = f, f.Length })
                                                                   .OrderByDescending(f => f.Length)
                                                                   .Select(f => f.file)
                                                                   .ToList();
 
-                    foreach(var f in filesToSign)
+                    foreach(var f in clickOnceFilesToSign)
                     {
                         fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}"" -pub ""{cn}""";
                         if (!Sign(fileArgs))
@@ -206,7 +213,7 @@ namespace SignService.SigningTools
             {
                 StartInfo =
                 {
-                    FileName = signtoolPath,
+                    FileName = magetoolPath,
                     UseShellExecute = false,
                     RedirectStandardError = false,
                     RedirectStandardOutput = false,
