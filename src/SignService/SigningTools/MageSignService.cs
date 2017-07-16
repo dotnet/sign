@@ -61,14 +61,14 @@ namespace SignService.SigningTools
             var alg = hashMode == HashMode.Sha1 ? "sha1RSA" : "sha256RSA";
             string args = null;
 
-            if (!certificateInfo.UseKeyVault)
-            {
+            //if (!certificateInfo.UseKeyVault)
+            //{
                 args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg} -n ""{name}"" ";
-            }
-            else
-            {
-                args = $@"-ti {timeStampUrl} -a {alg} -n ""{name}"" -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
-            }
+            //}
+            //else
+            //{
+               // args = $@"-ti {timeStampUrl} -a {alg} -n ""{name}"" -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
+            //}
             
             
             // This outer loop is for a .clickonce file            
