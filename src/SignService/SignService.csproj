@@ -11,6 +11,7 @@
     <SdkFile Include="$(WinSdkBinDir)appxpackaging.dll" />
     <SdkFile Include="$(WinSdkBinDir)appxsip.dll" />
     <SdkFile Include="$(WinSdkBinDir)makeappx.exe" />
+    <SdkFile Include="$(WinSdkBinDir)makepri.exe" />
     <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
     <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
     <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
