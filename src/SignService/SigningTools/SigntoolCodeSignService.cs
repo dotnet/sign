@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.SigningTools;
@@ -28,8 +29,9 @@ namespace SignService
     {
         readonly string timeStampUrl;
         readonly string thumbprint;
-        private readonly Settings settings;
-        private readonly AadOptions aadOptions;
+        readonly Settings settings;
+        readonly AadOptions aadOptions;
+        readonly IServiceProvider serviceProvider;
         readonly ILogger<SigntoolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
 
@@ -44,12 +46,12 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AadOptions> aadOptions, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
+        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, IServiceProvider serviceProvider, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
             this.settings = settings.Value;
-            this.aadOptions = aadOptions.Value;
+            this.serviceProvider = serviceProvider;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
             signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
@@ -88,8 +90,15 @@ namespace SignService
 
             var descArgs = string.Join(" ", descArgsList);
             var certParam = isKeyVault ? string.Empty : $@" /sha1 {thumbprint}";
+            string keyVaultAccessToken = null;
 
+            if (isKeyVault)
+            {
+                var keyVaultService = serviceProvider.GetService<IKeyVaultService>();
+                keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
+            }
 
+            
 
             Parallel.ForEach(files, options, (file, state) =>
             {
@@ -128,7 +137,8 @@ namespace SignService
                 }
                 else
                 {
-                    args = $@"sign ""{file}"" ""{signtoolPath}"" ""{args}"" -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
+
+                    args = $@"sign ""{file}"" ""{signtoolPath}"" ""{args}"" -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
                 }
 
                 // Append a sha256 signature

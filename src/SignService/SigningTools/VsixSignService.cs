@@ -15,8 +15,8 @@ namespace SignService.SigningTools
 {
     public class VsixSignService : ICodeSignService
     {
-        readonly AadOptions aadOptions;
         readonly CertificateInfo certificateInfo;
+        readonly IServiceProvider serviceProvider;
         readonly ILogger<VsixSignService> logger;
         readonly string signtoolPath;
         readonly string timeStampUrl;
@@ -27,12 +27,12 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AadOptions> aadOptions, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
+        public VsixSignService(IOptionsSnapshot<Settings> settings, IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
-            this.aadOptions = aadOptions.Value;
             certificateInfo = settings.Value.CertificateInfo;
+            this.serviceProvider = serviceProvider;
             this.logger = logger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
         }
@@ -63,7 +63,9 @@ namespace SignService.SigningTools
             }
             else
             {
-                args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
+                var keyVaultService = serviceProvider.GetService<IKeyVaultService>();
+                var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
+                args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
             }
             
 

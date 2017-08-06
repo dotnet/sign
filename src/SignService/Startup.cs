@@ -51,6 +51,7 @@ namespace SignService
             services.Configure<Settings>(s => s.WinSdkBinDirectory = Path.Combine(environment.ContentRootPath, @"tools\SDK"));
             services.Configure<AadOptions>(Configuration.GetSection("Authentication:AzureAd"));
             
+            services.AddScoped<IKeyVaultService, KeyVaultService>();
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
             //services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();

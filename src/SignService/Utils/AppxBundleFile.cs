@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
-
 namespace SignService
 {
     public class AppxBundleFile : IDisposable

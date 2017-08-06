@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,14 +21,15 @@ namespace SignService.Utils
     {
         readonly ILogger<AppxFileFactory> logger;
         readonly IOptionsSnapshot<Settings> settings;
-
+        readonly IServiceProvider serviceProvider;
         string publisher;
         readonly string makeappxPath;
 
-        public AppxFileFactory(ILogger<AppxFileFactory> logger, IOptionsSnapshot<Settings> settings)
+        public AppxFileFactory(ILogger<AppxFileFactory> logger, IOptionsSnapshot<Settings> settings, IServiceProvider serviceProvider)
         {
             this.logger = logger;
             this.settings = settings;
+            this.serviceProvider = serviceProvider;
             makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
         }
 
@@ -35,9 +37,19 @@ namespace SignService.Utils
         {
             if (publisher == null) // don't care about this race
             {
-                var thumbprint = settings.Value.CertificateInfo.Thumbprint;
-                var cert = FindCertificate(thumbprint, StoreLocation.CurrentUser) ?? FindCertificate(thumbprint, StoreLocation.LocalMachine);
-                publisher = cert.SubjectName.Name;
+                if (settings.Value.CertificateInfo.UseKeyVault)
+                {
+                    var kv = serviceProvider.GetService<IKeyVaultService>();
+                    var cert = kv.GetCertificateAsync().Result;
+                    publisher = cert.SubjectName.Name;
+                }
+                else
+                {
+                    var thumbprint = settings.Value.CertificateInfo.Thumbprint;
+                    var cert = FindCertificate(thumbprint, StoreLocation.CurrentUser) ?? FindCertificate(thumbprint, StoreLocation.LocalMachine);
+                    publisher = cert.SubjectName.Name;
+                }
+                
             }
 
             return new AppxFile(inputFileName, publisher, logger, makeappxPath);
