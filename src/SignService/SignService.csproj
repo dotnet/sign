@@ -20,10 +20,10 @@
     <SdkFile Include="$(WinSdkBinDir)mssign32.dll" />
     <SdkFile Include="$(WinSdkBinDir)opcservices.dll" />
     <SdkFile Include="$(WinSdkBinDir)signtool.exe" />
-    <!--<SdkFile Include="$(WinSdkBinDir)signtool.exe.manifest" />-->
+    <SdkFile Include="$(WinSdkBinDir)signtool.exe.manifest" />
     <SdkFile Include="$(WinSdkBinDir)wintrust.dll" />
     <SdkFile Include="$(WinSdkBinDir)wintrust.dll.ini" />
-    <SdkFile Include="$(NetSdkBinDir)mage.exe"/>
+    <SdkFile Include="$(NetSdkBinDir)mage.exe" />
     
     <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

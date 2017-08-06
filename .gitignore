@@ -248,3 +248,5 @@ ModelManifest.xml
 /src/SignService/appsettings.development.json
 
 /src/SignService/tools/SDK/
+!**/KeyVaultSignToolWrapper/x86/
+!**/KeyVaultSignToolWrapper/x64/

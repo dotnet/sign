@@ -28,10 +28,14 @@ namespace SignService
     {
         readonly string timeStampUrl;
         readonly string thumbprint;
+        private readonly Settings settings;
+        private readonly AadOptions aadOptions;
         readonly ILogger<SigntoolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
 
         readonly string signtoolPath;
+        readonly string keyVaultSignToolPath;
+        readonly bool isKeyVault;
 
         // Four things at once as we're hitting the sign server
         readonly ParallelOptions options = new ParallelOptions
@@ -40,13 +44,17 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory)
+        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AadOptions> aadOptions, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
+            this.settings = settings.Value;
+            this.aadOptions = aadOptions.Value;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
             signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
+            keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\KeyVaultSignToolWrapper\\KeyVaultSignToolWrapper.exe");
+            isKeyVault = settings.Value.CertificateInfo.UseKeyVault;
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
@@ -79,6 +87,8 @@ namespace SignService
             }
 
             var descArgs = string.Join(" ", descArgsList);
+            var certParam = isKeyVault ? string.Empty : $@" /sha1 {thumbprint}";
+
 
 
             Parallel.ForEach(files, options, (file, state) =>
@@ -94,9 +104,10 @@ namespace SignService
                 string args;
                 if (hashMode == HashMode.Dual)
                 {
-                    // Sign it with sha1
+                    if (isKeyVault)
+                        throw new NotSupportedException("Key Vault does not support SHA-1");
 
-                    args = $@"sign /t {timeStampUrl} {descArgs} /sha1 {thumbprint} ""{file}""";
+                    args = $@"sign /t {timeStampUrl} {descArgs} {certParam} ""{file}""";
 
                     if (!Sign(args))
                     {
@@ -107,7 +118,19 @@ namespace SignService
 
                 var appendParam = hashMode == HashMode.Dual ? "/as" : string.Empty;
 
-                args = $@"sign /tr {timeStampUrl} {appendParam} /fd sha256 /td sha256 {descArgs} /sha1 {thumbprint} ""{file}""";
+
+                args = $@"sign /tr {timeStampUrl} {appendParam} /fd sha256 /td sha256 {descArgs} {certParam} ";
+
+                if (!isKeyVault)
+                {
+                    // Not key vault, append the file parameter
+                    args += $@" ""{file}"" ";
+                }
+                else
+                {
+                    args = $@"sign ""{file}"" ""{signtoolPath}"" ""{args}"" -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
+                }
+
                 // Append a sha256 signature
                 if (!Sign(args))
                 {
@@ -164,7 +187,7 @@ namespace SignService
             {
                 StartInfo =
                 {
-                    FileName = signtoolPath,
+                    FileName = isKeyVault ? keyVaultSignToolPath : signtoolPath,
                     UseShellExecute = false,
                     RedirectStandardError = false,
                     RedirectStandardOutput = false,

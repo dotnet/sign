@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
+using Microsoft.Extensions.Options;
 
 namespace SignService.Controllers
 {
@@ -20,13 +21,15 @@ namespace SignService.Controllers
     public class SignController : Controller
     {
         readonly ISigningToolAggregate codeSignAggregate;
+        readonly IOptionsSnapshot<Settings> settings;
         readonly ILogger<SignController> logger;
 
 
 
-        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
+        public SignController(ISigningToolAggregate codeSignAggregate, IOptionsSnapshot<Settings> settings, ILogger<SignController> logger)
         {
             this.codeSignAggregate = codeSignAggregate;
+            this.settings = settings;
             this.logger = logger;
         }
 
@@ -44,6 +47,16 @@ namespace SignService.Controllers
             if (source == null)
             {
                 return BadRequest();
+            }
+
+            // If we're in Key Vault enabled mode, don't allow dual since SHA-1 isn't supported
+            if (settings.Value.CertificateInfo.UseKeyVault)
+            {
+                if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
+                {
+                    ModelState.AddModelError(nameof(hashMode), "Azure Key Vault does not support SHA-1. Use sha256");
+                    return BadRequest(ModelState);
+                }
             }
 
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
