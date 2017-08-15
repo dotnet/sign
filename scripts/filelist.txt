@@ -1,1 +1,2 @@
-tools\SignClient.dll
+tools\netcoreapp1.1\SignClient.dll
+tools\netcoreapp2.0\SignClient.dll
