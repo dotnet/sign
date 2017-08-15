@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,7 @@ namespace SignService.SigningTools
     public class VsixSignService : ICodeSignService
     {
         readonly CertificateInfo certificateInfo;
-        readonly IServiceProvider serviceProvider;
+        readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<VsixSignService> logger;
         readonly string signtoolPath;
         readonly string timeStampUrl;
@@ -27,12 +28,12 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IOptionsSnapshot<Settings> settings, IServiceProvider serviceProvider, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
+        public VsixSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
             certificateInfo = settings.Value.CertificateInfo;
-            this.serviceProvider = serviceProvider;
+            this.contextAccessor = contextAccessor;
             this.logger = logger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
         }
@@ -63,7 +64,7 @@ namespace SignService.SigningTools
             }
             else
             {
-                var keyVaultService = serviceProvider.GetService<IKeyVaultService>();
+                var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
                 var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
                 args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
             }

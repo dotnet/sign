@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.SigningTools;
 using SignService.Utils;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace SignService
 {
@@ -30,8 +32,7 @@ namespace SignService
         readonly string timeStampUrl;
         readonly string thumbprint;
         readonly Settings settings;
-        readonly AadOptions aadOptions;
-        readonly IServiceProvider serviceProvider;
+        readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<SigntoolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
 
@@ -46,12 +47,12 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(IOptionsSnapshot<Settings> settings, IServiceProvider serviceProvider, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
+        public SigntoolCodeSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
             this.settings = settings.Value;
-            this.serviceProvider = serviceProvider;
+            this.contextAccessor = contextAccessor;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
             signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
@@ -94,7 +95,7 @@ namespace SignService
 
             if (isKeyVault)
             {
-                var keyVaultService = serviceProvider.GetService<IKeyVaultService>();
+                var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
                 keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
             }
 

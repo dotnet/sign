@@ -17,13 +17,13 @@ namespace SignService.SigningTools
     public class SigningToolAggregate : ISigningToolAggregate
     {
         readonly ILogger<SigningToolAggregate> logger;
-        readonly IOptionsSnapshot<Settings> settings;
+        readonly IOptions<Settings> settings;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
         readonly string makeappxPath;
 
 
-        public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptionsSnapshot<Settings> settings)
+        public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptions<Settings> settings)
         {
             this.logger = logger;
             this.settings = settings;

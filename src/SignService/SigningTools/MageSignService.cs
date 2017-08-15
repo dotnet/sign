@@ -11,12 +11,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.Utils;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication;
 
 namespace SignService.SigningTools
 {
     public class MageSignService : ICodeSignService
     {
-        readonly AadOptions aadOptions;
+        readonly AzureAdOptions aadOptions;
         readonly CertificateInfo certificateInfo;
         readonly ILogger<MageSignService> logger;
         readonly string magetoolPath;
@@ -28,7 +29,7 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public MageSignService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AadOptions> aadOptions, IHostingEnvironment hostingEnvironment, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
+        public MageSignService(IOptions<Settings> settings, IOptions<AzureAdOptions> aadOptions, IHostingEnvironment hostingEnvironment, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;

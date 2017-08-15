@@ -8,6 +8,7 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.AspNetCore.Authentication;
 
 namespace SignService.Utils
 {
@@ -22,8 +23,8 @@ namespace SignService.Utils
         X509Certificate2 certificate;
         string validatedToken;
         private readonly Settings settings;
-
-        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AadOptions> aadOptions, ILogger<KeyVaultService> logger)
+    
+        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, ILogger<KeyVaultService> logger)
         {
             async Task<string> Authenticate(string authority, string resource, string scope)
             {
