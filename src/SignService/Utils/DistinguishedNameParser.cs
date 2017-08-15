@@ -20,8 +20,7 @@ namespace SignService.Utils
                 //The original so we can free it later, otherwise we'll leak memory.
                 var distinguishedNamePtrCopy = distinguishedNamePtr;
                 uint pcDN = (uint)distingishedName.Length;
-                IntPtr ppKey, ppVal;
-                while (pcDN != 0 && Ntdsapi.DsGetRdnW(ref distinguishedNamePtrCopy, ref pcDN, out ppKey, out uint pcKey, out ppVal, out uint pcVal) == 0)
+                while (pcDN != 0 && Ntdsapi.DsGetRdnW(ref distinguishedNamePtrCopy, ref pcDN, out IntPtr ppKey, out uint pcKey, out IntPtr ppVal, out uint pcVal) == 0)
                 {
                     if (pcKey == 0 || pcVal == 0)
                     {
