@@ -250,3 +250,4 @@ ModelManifest.xml
 /src/SignService/tools/SDK/
 !**/KeyVaultSignToolWrapper/x86/
 !**/KeyVaultSignToolWrapper/x64/
+/src/SignService/Properties/PublishProfiles
