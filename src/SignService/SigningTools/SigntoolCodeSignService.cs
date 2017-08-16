@@ -203,9 +203,14 @@ namespace SignService
                 }
             })
             {
-                logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, signtool.StartInfo.Arguments);
+                // redact args for log
+                var redacted = args;
+                if (args.Contains("-kva"))
+                    redacted = args.Substring(args.IndexOf("-kva"));
+
+                logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, redacted);
                 signtool.Start();
-                if (!signtool.WaitForExit(30*1000))
+                if (!signtool.WaitForExit(30 * 1000))
                 {
                     logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
                     try
@@ -218,7 +223,7 @@ namespace SignService
                     }
 
                     logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
-                    throw new Exception($"Sign tool took too long to respond with {signtool.StartInfo.Arguments}");
+                    throw new Exception($"Sign tool took too long to respond with {redacted}");
                 }
 
                 if (signtool.ExitCode == 0)
@@ -230,7 +235,6 @@ namespace SignService
 
                 return false;
             }
-
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>()
