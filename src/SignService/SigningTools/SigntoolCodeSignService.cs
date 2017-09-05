@@ -53,7 +53,7 @@ namespace SignService
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
             signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
-            keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\KeyVaultSignToolWrapper\\KeyVaultSignToolWrapper.exe");
+            keyVaultSignToolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "AzureSignTool.exe");
             isKeyVault = settings.Value.CertificateInfo.UseKeyVault;
         }
 
@@ -70,20 +70,21 @@ namespace SignService
         {
             logger.LogInformation("Signing SignTool job {0} with {1} files", name, files.Count());
 
+            var paramChar = isKeyVault ? '-' : '/';
             var descArgsList = new List<string>();
             if (!string.IsNullOrWhiteSpace(description))
             {
                 if (description.Contains("\""))
                     throw new ArgumentException(nameof(description));
 
-                descArgsList.Add($@"/d ""{description}""");
+                descArgsList.Add($@"{paramChar}d ""{description}""");
             }
             if (!string.IsNullOrWhiteSpace(descriptionUrl))
             {
                 if (descriptionUrl.Contains("\""))
                     throw new ArgumentException(nameof(descriptionUrl));
 
-                descArgsList.Add($@"/du ""{descriptionUrl}""");
+                descArgsList.Add($@"{paramChar}du ""{descriptionUrl}""");
             }
 
             var descArgs = string.Join(" ", descArgsList);
@@ -126,17 +127,17 @@ namespace SignService
                 var appendParam = hashMode == HashMode.Dual ? "/as" : string.Empty;
 
 
-                args = $@"sign /tr {timeStampUrl} {appendParam} /fd sha256 /td sha256 {descArgs} {certParam} ";
+                args = $@"{paramChar}tr {timeStampUrl} {appendParam} {paramChar}fd sha256 {paramChar}td sha256 {descArgs} {certParam} ";
 
                 if (!isKeyVault)
                 {
                     // Not key vault, append the file parameter
-                    args += $@" ""{file}"" ";
+                    args = $@"sign {args} ""{file}"" ";
                 }
                 else
                 {
 
-                    args = $@"sign ""{file}"" ""{signtoolPath}"" ""{args}"" -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
+                    args = $@"sign ""{file}"" {args} -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
                 }
 
                 // Append a sha256 signature
