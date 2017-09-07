@@ -57,17 +57,10 @@ namespace SignService.SigningTools
 
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? "sha1" : "sha256";
-            string args = null;
-            if (!certificateInfo.UseKeyVault)
-            {
-                args = $@"sign --sha1 {thumbprint} --timestamp {timeStampUrl} -ta {alg} -fd {alg}";
-            }
-            else
-            {
-                var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
-                var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
-                args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
-            }
+            
+            var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
+            var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
+            var args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
             
 
             Parallel.ForEach(files, options, (file, state) =>

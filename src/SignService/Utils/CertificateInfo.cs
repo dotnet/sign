@@ -9,7 +9,6 @@ namespace SignService
     {
         public string Thumbprint { get; set; }
         public string TimestampUrl { get; set; }
-        public bool UseKeyVault { get; set; }
         public string KeyVaultUrl { get; set; }
         public string KeyVaultCertificateName { get; set; }
     }

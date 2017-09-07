@@ -50,14 +50,12 @@ namespace SignService.Controllers
             }
 
             // If we're in Key Vault enabled mode, don't allow dual since SHA-1 isn't supported
-            if (settings.Value.CertificateInfo.UseKeyVault)
+            if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
             {
-                if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
-                {
-                    ModelState.AddModelError(nameof(hashMode), "Azure Key Vault does not support SHA-1. Use sha256");
-                    return BadRequest(ModelState);
-                }
+                ModelState.AddModelError(nameof(hashMode), "Azure Key Vault does not support SHA-1. Use sha256");
+                return BadRequest(ModelState);
             }
+            
 
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(dataDir);

@@ -33,35 +33,12 @@ namespace SignService.Utils
         {
             if (publisher == null) // don't care about this race
             {
-                if (settings.Value.CertificateInfo.UseKeyVault)
-                {
-                    var kv = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
-                    var cert = kv.GetCertificateAsync().Result;
-                    publisher = cert.SubjectName.Name;
-                }
-                else
-                {
-                    var thumbprint = settings.Value.CertificateInfo.Thumbprint;
-                    var cert = FindCertificate(thumbprint, StoreLocation.CurrentUser) ?? FindCertificate(thumbprint, StoreLocation.LocalMachine);
-                    publisher = cert.SubjectName.Name;
-                }
-                
+                var kv = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
+                var cert = kv.GetCertificateAsync().Result;
+                publisher = cert.SubjectName.Name;
             }
 
             return new AppxFile(inputFileName, publisher, logger, makeappxPath);
-        }
-
-        static X509Certificate2 FindCertificate(string thumbprint, StoreLocation location)
-        {
-            using (var store = new X509Store(StoreName.My, location))
-            {
-                store.Open(OpenFlags.ReadOnly);
-                var certs = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, true);
-                if (certs.Count == 0)
-                    return null;
-
-                return certs[0];
-            }
         }
     }
 }
