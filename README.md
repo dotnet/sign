@@ -89,7 +89,17 @@ Enable "always on" if you'd like and disable PHP then save changes. Your service
 Use IIS on Server 2016. Under the App Pool advanced settings, Set the App Pool CLR version to `No Managed Code` and "Load User Profile" to `true`. Edit your `appsettings.json` accordingly as per the above table. You'll need to install the .NET Core as described here: https://docs.microsoft.com/en-us/aspnet/core/publishing/iis.
 
 ### Key Vault Configuation. 
-You need an Azure Key Vault instance. Standard enables software encryption and Premium is backed in a hardware HSM. Premium is recommended (and required if you need to store EV certificates). 
+You need an Azure Key Vault instance. Standard enables software encryption and Premium is backed in a hardware HSM. Premium is recommended (and required if you need to store EV certificates). Make sure to grant your Sign Service app principal access with the following permission:
+
+| Category | Permission |
+| ----- | ---- |
+| Key | Get, Sign, Decrypt |
+| Certificate | Get |
+
+To get certificates into Key Vault, there are several options:
+1. Use the CLI/PowerShell to create a CSR and then merge the certificate. When creating the CSR, you can use anything as the subject name since the CA will ignore it. If you're creating an EV certificate request, specify `keyType` as `RSA-HSM` to ensure the key stays in the hardware.
+2. Upload a pfx file using the CLI/PowerShell
+3. Use this GUI tool: https://github.com/elize1979/AzureKeyVaultExplorer. Before you can login, you'll need to go to the settings, put your tenant name in and change the login endpoint to `https://login.microsoftonline.com/common`. The tool makes it easy to upload and manage certificates in Key Vault.
 
 ## Client Configuration
 The client is distributed via [NuGet](https://www.nuget.org/packages/SignClient) and uses both a json config file and command line parameters. Common settings, like the client id and service url are stored in a config file, while per-file parameters and the client secret are passed in on the command line.
