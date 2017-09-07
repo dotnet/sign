@@ -24,18 +24,16 @@ namespace SignService
         bool IsDefault { get; }
     }
 
-    class SigntoolCodeSignService : ICodeSignService
+    class AzureSignToolCodeSignService : ICodeSignService
     {
         readonly string timeStampUrl;
         readonly string thumbprint;
         readonly Settings settings;
         readonly IHttpContextAccessor contextAccessor;
-        readonly ILogger<SigntoolCodeSignService> logger;
+        readonly ILogger<AzureSignToolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
-
-        readonly string signtoolPath;
+        
         readonly string keyVaultSignToolPath;
-        readonly bool isKeyVault;
 
         // Four things at once as we're hitting the sign server
         readonly ParallelOptions options = new ParallelOptions
@@ -44,7 +42,7 @@ namespace SignService
         };
 
 
-        public SigntoolCodeSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, ILogger<SigntoolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
+        public AzureSignToolCodeSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, ILogger<AzureSignToolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
             thumbprint = settings.Value.CertificateInfo.Thumbprint;
@@ -52,16 +50,14 @@ namespace SignService
             this.contextAccessor = contextAccessor;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
-            signtoolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "signtool.exe");
-            keyVaultSignToolPath = Path.Combine(settings.Value.WinSdkBinDirectory, "AzureSignTool.exe");
-            isKeyVault = settings.Value.CertificateInfo.UseKeyVault;
+            keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\AzureSignTool\\AzureSignTool.exe"); 
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
-            if (hashMode == HashMode.Sha1)
-                throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha56 or Dual is supported");
+            if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
+                throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha256 is supported");
             
             return Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));
         }
@@ -69,78 +65,42 @@ namespace SignService
         void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing SignTool job {0} with {1} files", name, files.Count());
-
-            var paramChar = isKeyVault ? '-' : '/';
+            
             var descArgsList = new List<string>();
             if (!string.IsNullOrWhiteSpace(description))
             {
                 if (description.Contains("\""))
                     throw new ArgumentException(nameof(description));
 
-                descArgsList.Add($@"{paramChar}d ""{description}""");
+                descArgsList.Add($@"-d ""{description}""");
             }
             if (!string.IsNullOrWhiteSpace(descriptionUrl))
             {
                 if (descriptionUrl.Contains("\""))
                     throw new ArgumentException(nameof(descriptionUrl));
 
-                descArgsList.Add($@"{paramChar}du ""{descriptionUrl}""");
+                descArgsList.Add($@"-du ""{descriptionUrl}""");
             }
 
             var descArgs = string.Join(" ", descArgsList);
-            var certParam = isKeyVault ? string.Empty : $@" /sha1 {thumbprint}";
             string keyVaultAccessToken = null;
-
-            if (isKeyVault)
-            {
-                var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
-                keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
-            }
-
             
+            var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
+            keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
             Parallel.ForEach(files, options, (file, state) =>
             {
-
                 // check to see if it's an appx and strip it first
                 var ext = Path.GetExtension(file).ToLowerInvariant();
-                if (".appx".Equals(ext, StringComparison.OrdinalIgnoreCase))
+                if (".appx".Equals(ext, StringComparison.OrdinalIgnoreCase) || ".eappx".Equals(ext, StringComparison.OrdinalIgnoreCase))
                 {
                     StripAppx(file);
                 }
 
                 string args;
-                if (hashMode == HashMode.Dual)
-                {
-                    if (isKeyVault)
-                        throw new NotSupportedException("Key Vault does not support SHA-1");
+            
+                args = $@"sign ""{file}"" -tr {timeStampUrl} -fd sha256 -td sha256 {descArgs} -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
 
-                    args = $@"sign /t {timeStampUrl} {descArgs} {certParam} ""{file}""";
-
-                    if (!Sign(args))
-                    {
-                        throw new Exception($"Could not sign {file}");
-                    }
-                   
-                }
-
-                var appendParam = hashMode == HashMode.Dual ? "/as" : string.Empty;
-
-
-                args = $@"{paramChar}tr {timeStampUrl} {appendParam} {paramChar}fd sha256 {paramChar}td sha256 {descArgs} {certParam} ";
-
-                if (!isKeyVault)
-                {
-                    // Not key vault, append the file parameter
-                    args = $@"sign {args} ""{file}"" ";
-                }
-                else
-                {
-
-                    args = $@"sign ""{file}"" {args} -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
-                }
-
-                // Append a sha256 signature
                 if (!Sign(args))
                 {
                     throw new Exception($"Could not append sign {file}");
@@ -196,7 +156,7 @@ namespace SignService
             {
                 StartInfo =
                 {
-                    FileName = isKeyVault ? keyVaultSignToolPath : signtoolPath,
+                    FileName = keyVaultSignToolPath,
                     UseShellExecute = false,
                     RedirectStandardError = false,
                     RedirectStandardOutput = false,
@@ -251,6 +211,8 @@ namespace SignService
             ".winmd",
             ".appx",
             ".appxbundle",
+            ".eappx",
+            ".eappxbundle",
             ".ps1",
             ".psm1"
         };

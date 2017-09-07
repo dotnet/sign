@@ -9,21 +9,10 @@
 
   <ItemGroup>
     <SdkFile Include="$(WinSdkBinDir)appxpackaging.dll" />
-    <SdkFile Include="$(WinSdkBinDir)appxsip.dll" />
+    <SdkFile Include="$(WinSdkBinDir)opcservices.dll" />
     <SdkFile Include="$(WinSdkBinDir)makeappx.exe" />
     <SdkFile Include="$(WinSdkBinDir)makepri.exe" />
-    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)msisip.dll" />
-    <SdkFile Include="$(WinSdkBinDir)mssign32.dll" />
-    <SdkFile Include="$(WinSdkBinDir)opcservices.dll" />
-    <SdkFile Include="$(WinSdkBinDir)signtool.exe" />
-    <SdkFile Include="$(WinSdkBinDir)signtool.exe.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)wintrust.dll" />
-    <SdkFile Include="$(WinSdkBinDir)wintrust.dll.ini" />
+    
     <SdkFile Include="$(NetSdkBinDir)mage.exe" />
     
     <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*">
