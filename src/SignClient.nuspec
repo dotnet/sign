@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
     <metadata>
         <id>SignClient</id>
-        <version>0.8.0</version>
+        <version>0.8.1</version>
         <authors>onovotny</authors>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Client-side tools for Sign Service</description>
