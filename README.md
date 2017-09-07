@@ -74,11 +74,11 @@ go to the settings section and add the following setting entries:
 
 | Name | Value | Notes |
 |-------|------| ------ |
-| CertificateInfo:Thumbprint | *thumbprint of your cert* | Thumbprint of the cert to sign with |
-| CertificateInfo:TimeStampUrl | *url of timestamp server* | 
-| CertificateInfo:KeyVaultUrl | *url of the key vault* | The URL to the Key vault, e.g., *https://my-vault.vault.azure.net* |
+| CertificateInfo:KeyVaultUrl | *url of the key Vault* | The URL to the Key Vault, e.g., *https://my-vault.vault.azure.net* |
 | CertificateInfo:KeyVaultCertificateName | *Certificate Name in Key Vault* | The name of the certificate as stored in Key Vault |
-| WEBSITE_LOAD_CERTIFICATES | *thumbprint of your cert* | This exposes the cert's private key to your app in the user store |
+| CertificateInfo:Thumbprint | *thumbprint of your cert* | Thumbprint of the cert to sign with. Only used for ClickOnce  |
+| CertificateInfo:TimeStampUrl | *url of timestamp server* | 
+| WEBSITE_LOAD_CERTIFICATES | *thumbprint of your cert* | This exposes the cert's private key to your app in the user store. Only used for ClickOnce |
 | Authentication:AzureAd:Audience | *App ID URI of your service from the application entry* |
 | Authentication:AzureAd:ClientId | *client id of your service app from the application entry* |
 | Authentication:AzureAd:TenantId | *Azure AD tenant ID* | either the guid or the name like *mydirectory.onmicrosoft.com* |
