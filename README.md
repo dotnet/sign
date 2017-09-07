@@ -13,15 +13,15 @@ also provide a secure location to store certificates, so the combination works w
 The service currently supports either individual files, or a zip archive that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if additional filters or functionality is required.
 
 ## Supported File Types
-- `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and Any PE file (via `SignTool`)
-- `.vsix` via `OpenVsixSignTool`
-- `.appx` and `.appxbundle` (via `SignTool`) when running on Server 2016
+- `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.appx`, `.appxbundle`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and Any PE file (via [AzureSignTool](https://github.com/vcsjones/AzureSignTool))
+- `.vsix` via [OpenOpcSignTool](https://github.com/vcsjones/OpenOpcSignTool)
 - ClickOnce `.application` and `.vsto` (via `Mage`). Special instructions below.
 
 
 # Deployment
+This service must run on Windows Server 2016 due to dependencies on new APIs for signing. 
 
-You will need an Azure AD tenant. These are free if you don't already have one. In the "old" Azure Portal, you'll need to
+You will need an Azure AD tenant and an Azure Key Vault. These are free if you don't already have one. In the "old" Azure Portal, you'll need to
 create two application entries: one for the server and one for your client.
 ![](docs/images/app-entries.png?raw=true)
 
@@ -64,6 +64,8 @@ Under application access, click "Add application" and browse for your service (y
 Finally, create a new client secret and save the value for later (along with the client id of your app).
 
 ## Server Configuration
+
+### Note: As of right now, Azure App Service does not support this service since its OS is too old. This service must run on a Serve 2016 VM.
 Create a new App Service on Azure (I used a B1 for this as it's not high-load). Build/deploy the service however you see fit. I used VSTS connected to this GitHub repo along with a Release Management build to auto-deploy to my site.
 
 In the Azure App Service, upload your code signing certificate and take note of the thumbprint id. In the Azure App Service,
@@ -75,11 +77,19 @@ go to the settings section and add the following setting entries:
 | CertificateInfo:Thumbprint | *thumbprint of your cert* | Thumbprint of the cert to sign with |
 | CertificateInfo:TimeStampUrl | *url of timestamp server* | 
 | WEBSITE_LOAD_CERTIFICATES | *thumbprint of your cert* | This exposes the cert's private key to your app in the user store |
+| KeyVaultUrl | *url of the key vault* | The URL to the Key vault, e.g., *https://my-vault.vault.azure.net* |
+| KeyVaultCertificateName | *Certificate Name in Key Vault* | The name of the certificate as stored in Key Vault |
 | Authentication:AzureAd:Audience | *App ID URI of your service from the application entry* |
 | Authentication:AzureAd:ClientId | *client id of your service app from the application entry* |
 | Authentication:AzureAd:TenantId | *Azure AD tenant ID* | either the guid or the name like *mydirectory.onmicrosoft.com* |
 
 Enable "always on" if you'd like and disable PHP then save changes. Your service should now be configured.
+
+### VM configuration
+Use IIS on Server 2016. Under the App Pool advanced settings, Set the App Pool CLR version to `No Managed Code` and "Load User Profile" to `true`. Edit your `appsettings.json` accordingly as per the above table. You'll need to install the .NET Core as described here: https://docs.microsoft.com/en-us/aspnet/core/publishing/iis.
+
+### Key Vault Configuation. 
+You need an Azure Key Vault instance. Standard enables software encryption and Premium is backed in a hardware HSM. Premium is recommended (and required if you need to store EV certificates). 
 
 ## Client Configuration
 The client is distributed via [NuGet](https://www.nuget.org/packages/SignClient) and uses both a json config file and command line parameters. Common settings, like the client id and service url are stored in a config file, while per-file parameters and the client secret are passed in on the command line.
