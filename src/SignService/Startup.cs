@@ -47,8 +47,7 @@ namespace SignService
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IKeyVaultService, KeyVaultService>();
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
-            services.AddSingleton<ICodeSignService, SigntoolCodeSignService>();
-            //services.AddSingleton<ICodeSignService, PowerShellCodeSignService>();
+            services.AddSingleton<ICodeSignService, AzureSignToolCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
             services.AddSingleton<ICodeSignService, MageSignService>();
 
