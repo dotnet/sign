@@ -65,7 +65,7 @@ Finally, create a new client secret and save the value for later (along with the
 
 ## Server Configuration
 
-### Note: As of right now, Azure App Service does not support this service since its OS is too old. This service must run on a Serve 2016 VM.
+### Note: As of right now, Azure App Service does not support this service since its OS is too old. This service must run on a Server 2016 VM.
 Create a new App Service on Azure (I used a B1 for this as it's not high-load). Build/deploy the service however you see fit. I used VSTS connected to this GitHub repo along with a Release Management build to auto-deploy to my site.
 
 In the Azure App Service, upload your code signing certificate and take note of the thumbprint id. In the Azure App Service,
