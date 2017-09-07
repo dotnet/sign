@@ -10,6 +10,8 @@
   <ItemGroup>
     <SdkFile Include="$(WinSdkBinDir)appxpackaging.dll" />
     <SdkFile Include="$(WinSdkBinDir)opcservices.dll" />
+    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
+    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
     <SdkFile Include="$(WinSdkBinDir)makeappx.exe" />
     <SdkFile Include="$(WinSdkBinDir)makepri.exe" />
     
