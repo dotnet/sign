@@ -16,14 +16,27 @@
       <Setting name="Authentication__AzureAd__TenantId" />
       <Setting name="Authentication__AzureAd__ClientSecret" />
       <Setting name="CertificateInfo__KeyVaultUrl" />
-      <Setting name="CertificateInfo__KeyVaulCertificatename" />
+      <Setting name="CertificateInfo__KeyVaultCertificatename" />
       <Setting name="CertificateInfo__TimeStampUrl" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="https" port="443" certificate="Certificate1" />
     </Endpoints>
+    <Startup>
+      <Task commandLine="Startup\startup.cmd" executionContext="elevated" taskType="simple">
+        <Environment>
+          <Variable name="IsEmulated">
+            <RoleInstanceValue xpath="/RoleEnvironment/Deployment/@emulated" />
+          </Variable>
+        </Environment>
+      </Task>
+    </Startup>
     <Certificates>
       <Certificate name="Certificate1" storeLocation="LocalMachine" storeName="My" />
     </Certificates>
+    <Imports>
+      <Import moduleName="RemoteAccess" />
+      <Import moduleName="RemoteForwarder" />
+    </Imports>
   </WebRole>
 </ServiceDefinition>

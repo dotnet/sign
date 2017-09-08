@@ -10,11 +10,17 @@
       <Setting name="Authentication__AzureAd__TenantId" value="" />
       <Setting name="Authentication__AzureAd__ClientSecret" value="" />
       <Setting name="CertificateInfo__KeyVaultUrl" value="" />
-      <Setting name="CertificateInfo__KeyVaulCertificatename" value="" />
+      <Setting name="CertificateInfo__KeyVaultCertificatename" value="" />
       <Setting name="CertificateInfo__TimeStampUrl" value="" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="" />
+      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Certificate1" thumbprint="" thumbprintAlgorithm="sha1" />
+      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="" thumbprintAlgorithm="sha1" />
     </Certificates>
   </Role>
 </ServiceConfiguration>
