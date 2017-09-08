@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26510.0
+VisualStudioVersion = 15.0.26823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92C73EE1-4EF3-4721-B6A9-9F458A673CA3}"
 EndProject
@@ -19,6 +19,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignClient", "src\SignClient\SignClient.csproj", "{84FC3FBF-E14C-4268-8693-45CC82451DF3}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker\docker-compose.dcproj", "{0A2976F1-5A72-4828-8312-A78DA9D0E550}"
+EndProject
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SignServiceCloudService", "src\SignServiceCloudService\SignServiceCloudService.ccproj", "{EABA4762-B925-4E94-8644-0EEF2EC86111}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignServiceWebRole", "src\SignServiceWebRole\SignServiceWebRole.csproj", "{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +42,14 @@ Global
 		{0A2976F1-5A72-4828-8312-A78DA9D0E550}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A2976F1-5A72-4828-8312-A78DA9D0E550}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A2976F1-5A72-4828-8312-A78DA9D0E550}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,5 +57,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9F556193-4978-4F31-A905-AC5699E05122} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{84FC3FBF-E14C-4268-8693-45CC82451DF3} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
+		{EABA4762-B925-4E94-8644-0EEF2EC86111} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
+		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7AA1043F-37A2-404F-8EC3-34C747C1CEB7}
 	EndGlobalSection
 EndGlobal
