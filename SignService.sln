@@ -23,6 +23,9 @@ EndProject
 Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SignServiceCloudService", "src\SignServiceCloudService\SignServiceCloudService.ccproj", "{EABA4762-B925-4E94-8644-0EEF2EC86111}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignServiceWebRole", "src\SignServiceWebRole\SignServiceWebRole.csproj", "{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9F556193-4978-4F31-A905-AC5699E05122} = {9F556193-4978-4F31-A905-AC5699E05122}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
