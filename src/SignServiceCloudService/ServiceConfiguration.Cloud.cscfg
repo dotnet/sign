@@ -9,9 +9,9 @@
       <Setting name="Authentication__AzureAd__ClientId" value="__Authentication-AzureAd-ClientId__" />
       <Setting name="Authentication__AzureAd__TenantId" value="__Authentication-AzureAd-TenantId__" />
       <Setting name="Authentication__AzureAd__ClientSecret" value="__Authentication-AzureAd-ClientSecret__" />
-      <Setting name="CertificateInfo__KeyVaultUrl" value="__CertificateInfo__KeyVaultUrl__" />
-      <Setting name="CertificateInfo__KeyVaultCertificatename" value="__CertificateInfo__KeyVaultCertificatename__" />
-      <Setting name="CertificateInfo__TimeStampUrl" value="__CertificateInfo__TimeStampUrl__" />
+      <Setting name="CertificateInfo__KeyVaultUrl" value="__CertificateInfo-KeyVaultUrl__" />
+      <Setting name="CertificateInfo__KeyVaultCertificatename" value="__CertificateInfo-KeyVaultCertificatename__" />
+      <Setting name="CertificateInfo__TimeStampUrl" value="__CertificateInfo-TimeStampUrl__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="__RemoteAccessEnabled__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="__AccountUsername__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="__AccountEncryptedPassword__" />
