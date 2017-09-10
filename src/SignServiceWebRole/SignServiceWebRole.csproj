@@ -108,7 +108,6 @@
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets. -->
   <Target Name="BeforeBuild">
-    <MSBuild Projects="..\SignService\SignService.csproj" Targets="PrebuildScript" Properties="Configuration=$(Configuration)" />
     <MSBuild Projects="..\SignService\SignService.csproj" Targets="Publish" Properties="Configuration=$(Configuration)" />
   </Target>
   <Target Name="AfterBuild">
