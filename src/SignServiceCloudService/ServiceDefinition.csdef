@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="SignServiceCloudService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2015-04.2.6">
-  <WebRole name="SignServiceWebRole" vmsize="__WebRoleVmSize__">
+  <WebRole name="SignServiceWebRole" vmsize="Standard_D2_v2">
     <Sites>
       <Site name="Web">
         <Bindings>
