@@ -43,12 +43,22 @@ elseif (!$isEmulated) # skip install on emulator
 
     Write-Verbose "Downloading .NET Core$nl" 
 
-	$location = "https://aka.ms/dotnetcore.2.0.0-windowshosting"
+	
+	# Install the VC Redist first
+	$tempFile = [System.IO.Path]::GetTempFileName() |
+    Rename-Item -NewName { $_ -replace 'tmp$', 'exe' } -PassThru
+	Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?LinkId=746572 -OutFile $tempFile
 
-	$output = "$Env:Temp\dotnet-serverhosting.exe"
 
-	Invoke-WebRequest -Uri $location -OutFile $output 
+	$proc = (Start-Process $tempFile -PassThru "/quiet /install /log C:\Logs\vcredist.x64.log")
+	$proc | Wait-Process
 
-    
-    Start-Process -FilePath $output -ArgumentList "/q /norestart /log C:\Logs\dotnet_install.log" -Wait
+	$tempFile = [System.IO.Path]::GetTempFileName() |
+    Rename-Item -NewName { $_ -replace 'tmp$', 'exe' } -PassThru
+	Invoke-WebRequest -Uri https://aka.ms/dotnetcore.2.0.0-windowshosting -OutFile $tempFile
+
+
+	$proc = (Start-Process $tempFile -PassThru "/quiet /install /log C:\Logs\dotnet_install.log")
+	$proc | Wait-Process
+
 }
