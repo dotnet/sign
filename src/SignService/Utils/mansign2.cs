@@ -24,6 +24,7 @@ using Microsoft.Win32;
 
 using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using System.Collections;
+using Microsoft.Azure.KeyVault;
 
 namespace System.Deployment.Internal.CodeSigning
 {
@@ -70,7 +71,7 @@ namespace System.Deployment.Internal.CodeSigning
             CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription),
                                Sha256SignatureMethodUri);
 
-            CryptoConfig.AddAlgorithm(typeof(System.Security.Cryptography.SHA256Cng),
+            CryptoConfig.AddAlgorithm(typeof(System.Security.Cryptography.SHA256Managed),
                                Sha256DigestMethod);
         }
 
@@ -567,7 +568,8 @@ namespace System.Deployment.Internal.CodeSigning
                     continue;
                 }
 
-                RSA publicKey = CngLightup.GetRSAPublicKey(certificate);
+                //RSA publicKey = CngLightup.GetRSAPublicKey(certificate);
+                RSA publicKey = certificate.GetRSAPublicKey();
                 RSAParameters certificatePublicKey = publicKey.ExportParameters(false);
                 if ((StructuralComparisons.StructuralEqualityComparer.Equals(signingPublicKey.Exponent, certificatePublicKey.Exponent))
                    && (StructuralComparisons.StructuralEqualityComparer.Equals(signingPublicKey.Modulus, certificatePublicKey.Modulus)))
@@ -762,58 +764,59 @@ namespace System.Deployment.Internal.CodeSigning
 
         private bool VerifySignatureTimestamp(XmlElement signatureNode, XmlNamespaceManager nsm, out DateTime verificationTime)
         {
-            verificationTime = DateTime.Now;
+            throw new NotImplementedException("These types are not supported with .NET Core 2 yet");
+            //verificationTime = DateTime.Now;
 
-            XmlElement node = signatureNode.SelectSingleNode("ds:Object/as:Timestamp", nsm) as XmlElement;
-            if (node != null)
-            {
-                string encodedMessage = node.InnerText;
+            //XmlElement node = signatureNode.SelectSingleNode("ds:Object/as:Timestamp", nsm) as XmlElement;
+            //if (node != null)
+            //{
+            //    string encodedMessage = node.InnerText;
 
-                if (!string.IsNullOrEmpty(encodedMessage))
-                {
-                    byte[] base64DecodedMessage = null;
-                    try
-                    {
-                        base64DecodedMessage = Convert.FromBase64String(encodedMessage);
-                    }
-                    catch (FormatException)
-                    {
-                        m_authenticodeSignerInfo.ErrorCode = Win32.TRUST_E_TIME_STAMP;
-                        throw new CryptographicException(Win32.TRUST_E_TIME_STAMP);
-                    }
-                    if (base64DecodedMessage != null)
-                    {
-                        // Create a new, nondetached SignedCms message.
-                        SignedCms signedCms = new SignedCms();
-                        signedCms.Decode(base64DecodedMessage);
+            //    if (!string.IsNullOrEmpty(encodedMessage))
+            //    {
+            //        byte[] base64DecodedMessage = null;
+            //        try
+            //        {
+            //            base64DecodedMessage = Convert.FromBase64String(encodedMessage);
+            //        }
+            //        catch (FormatException)
+            //        {
+            //            m_authenticodeSignerInfo.ErrorCode = Win32.TRUST_E_TIME_STAMP;
+            //            throw new CryptographicException(Win32.TRUST_E_TIME_STAMP);
+            //        }
+            //        if (base64DecodedMessage != null)
+            //        {
+            //            // Create a new, nondetached SignedCms message.
+            //            SignedCms signedCms = new SignedCms();
+            //            signedCms.Decode(base64DecodedMessage);
 
-                        // Verify the signature without validating the 
-                        // certificate.
-                        signedCms.CheckSignature(true);
+            //            // Verify the signature without validating the 
+            //            // certificate.
+            //            signedCms.CheckSignature(true);
 
-                        byte[] signingTime = null;
-                        CryptographicAttributeObjectCollection caos = signedCms.SignerInfos[0].SignedAttributes;
-                        foreach (CryptographicAttributeObject cao in caos)
-                        {
-                            if (0 == string.Compare(cao.Oid.Value, Win32.szOID_RSA_signingTime, StringComparison.Ordinal))
-                            {
-                                foreach (AsnEncodedData d in cao.Values)
-                                {
-                                    if (0 == string.Compare(d.Oid.Value, Win32.szOID_RSA_signingTime, StringComparison.Ordinal))
-                                    {
-                                        signingTime = d.RawData;
-                                        Pkcs9SigningTime time = new Pkcs9SigningTime(signingTime);
-                                        verificationTime = time.SigningTime;
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            //            byte[] signingTime = null;
+            //            CryptographicAttributeObjectCollection caos = signedCms.SignerInfos[0].SignedAttributes;
+            //            foreach (CryptographicAttributeObject cao in caos)
+            //            {
+            //                if (0 == string.Compare(cao.Oid.Value, Win32.szOID_RSA_signingTime, StringComparison.Ordinal))
+            //                {
+            //                    foreach (AsnEncodedData d in cao.Values)
+            //                    {
+            //                        if (0 == string.Compare(d.Oid.Value, Win32.szOID_RSA_signingTime, StringComparison.Ordinal))
+            //                        {
+            //                            signingTime = d.RawData;
+            //                            Pkcs9SigningTime time = new Pkcs9SigningTime(signingTime);
+            //                            verificationTime = time.SigningTime;
+            //                            return true;
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
 
-            return false;
+            //return false;
         }
 
         private bool GetLifetimeSigning(X509Certificate2 signingCertificate)
@@ -1177,8 +1180,8 @@ namespace System.Deployment.Internal.CodeSigning
         }
 
         /// <summary>
-        /// The reason you need provider type 24, is because that�s the only RSA provider type that supports SHA-2 operations.   (For instance, PROV_RSA_FULL does not support SHA-2).
-        /// As for official guidance � I�m not sure of any.    For workarounds though, if you�re using the Microsoft software CSPs, they share the underlying key store.  You can get the key container name from your RSA object, then open up a new RSA object with the same key container name but with PROV_RSA_AES.   At that point, you should be able to use SHA-2 algorithms.
+        /// The reason you need provider type 24, is because that’s the only RSA provider type that supports SHA-2 operations.   (For instance, PROV_RSA_FULL does not support SHA-2).
+        /// As for official guidance – I’m not sure of any.    For workarounds though, if you’re using the Microsoft software CSPs, they share the underlying key store.  You can get the key container name from your RSA object, then open up a new RSA object with the same key container name but with PROV_RSA_AES.   At that point, you should be able to use SHA-2 algorithms.
         /// </summary>
         /// <param name="oldCsp"></param>
         /// <returns></returns>
@@ -1425,7 +1428,17 @@ namespace System.Deployment.Internal.CodeSigning
         private static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner2 signer, string timeStampUrl, bool useSha256)
         {
             // Make sure it is RSA, as this is the only one Fusion will support.
-            using (RSA rsaPrivateKey = CngLightup.GetRSAPrivateKey(signer.Certificate))
+            // HACK: do this in a better way
+            RSA rsaPrivateKey = null;
+            if (signer.Certificate.HasPrivateKey)
+            {
+                rsaPrivateKey = signer.Certificate.GetRSAPrivateKey();
+            }
+            else if (signer.StrongNameKey is RSAKeyVault provider)
+            {
+                rsaPrivateKey = provider;
+            }
+            try
             {
                 if (rsaPrivateKey == null)
                 {
@@ -1482,6 +1495,11 @@ namespace System.Deployment.Internal.CodeSigning
                 licenseDom.DocumentElement.ParentNode.InnerXml = "<msrel:RelData xmlns:msrel=\"" +
                                                                  MSRelNamespaceUri + "\">" +
                                                                  licenseDom.OuterXml + "</msrel:RelData>";
+            }
+            finally
+            {
+                if (rsaPrivateKey != signer.StrongNameKey)
+                    rsaPrivateKey.Dispose();
             }
         }
 

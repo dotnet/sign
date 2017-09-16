@@ -27,7 +27,6 @@ namespace SignService
     class AzureSignToolCodeSignService : ICodeSignService
     {
         readonly string timeStampUrl;
-        readonly string thumbprint;
         readonly Settings settings;
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<AzureSignToolCodeSignService> logger;
@@ -45,7 +44,6 @@ namespace SignService
         public AzureSignToolCodeSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, ILogger<AzureSignToolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
-            thumbprint = settings.Value.CertificateInfo.Thumbprint;
             this.settings = settings.Value;
             this.contextAccessor = contextAccessor;
             this.logger = logger;

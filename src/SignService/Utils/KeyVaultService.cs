@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.AspNetCore.Authentication;
+using System.Security.Cryptography;
 
 namespace SignService.Utils
 {
@@ -14,11 +15,13 @@ namespace SignService.Utils
     {
         Task<string> GetAccessTokenAsync();
         Task<X509Certificate2> GetCertificateAsync();
+        Task<RSA> ToRSA();
     }
     public class KeyVaultService : IKeyVaultService
     {
         readonly KeyVaultClient client;
         X509Certificate2 certificate;
+        KeyIdentifier keyIdentifier;
         string validatedToken;
         private readonly Settings settings;
     
@@ -55,8 +58,15 @@ namespace SignService.Utils
             {
                 var cert = await client.GetCertificateAsync(settings.CertificateInfo.KeyVaultUrl, settings.CertificateInfo.KeyVaultCertificateName).ConfigureAwait(false);
                 certificate = new X509Certificate2(cert.Cer);
+                keyIdentifier = cert.KeyIdentifier;
             }
             return certificate;
+        }
+
+        public async Task<RSA> ToRSA()
+        {
+            await GetCertificateAsync().ConfigureAwait(false);
+            return client.ToRSA(keyIdentifier, certificate);
         }
     }
 }

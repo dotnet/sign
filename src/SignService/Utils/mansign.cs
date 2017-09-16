@@ -19,6 +19,7 @@ using System.Xml;
 using System.Runtime.InteropServices;
 
 using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
+using Microsoft.Azure.KeyVault;
 
 // From: https://github.com/Microsoft/referencesource/blob/7de0d30c7c5ef56ab60fee41fcdb50005d24979a/inc/mansign.cs
 
@@ -999,7 +1000,8 @@ namespace System.Deployment.Internal.CodeSigning
         private static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner signer, string timeStampUrl)
         {
             // Make sure it is RSA, as this is the only one Fusion will support.
-            RSA rsaPublicKey = CngLightup.GetRSAPublicKey(signer.Certificate);
+            //RSA rsaPublicKey = CngLightup.GetRSAPublicKey(signer.Certificate);
+            RSA rsaPublicKey = signer.Certificate.GetRSAPublicKey();
             if (rsaPublicKey == null)
             {
                 throw new NotSupportedException();
@@ -1007,7 +1009,21 @@ namespace System.Deployment.Internal.CodeSigning
 
             // Setup up XMLDSIG engine.
             ManifestSignedXml signedXml = new ManifestSignedXml(licenseDom);
-            signedXml.SigningKey = CngLightup.GetRSAPrivateKey(signer.Certificate);
+
+            // HACK: Fix in a better way
+            if (signer.Certificate.HasPrivateKey)
+            {
+                signedXml.SigningKey = signer.Certificate.GetRSAPrivateKey();
+            }
+            else if (signer.StrongNameKey is RSAKeyVault provider)
+            {
+                signedXml.SigningKey = provider;
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
             signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
 
             // Add the key information.
