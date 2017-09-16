@@ -42,6 +42,9 @@ namespace SignService.SigningTools
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
+            if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
+                throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha256 is supported");
+
             // Explicitly put this on a thread because Parallel.ForEach blocks
             await Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files, filter));
         }
@@ -55,25 +58,15 @@ namespace SignService.SigningTools
         void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
             logger.LogInformation("Signing Mage job {0} with {1} files", name, files.Count());
-
-            // If KeyVault is enabled, use that
-
+            
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? "sha1RSA" : "sha256RSA";
-            string args = null;
+            string args = string.Empty;
 
-            //if (!certificateInfo.UseKeyVault)
-            //{
-            args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg}";
+          //  args = $@"-ch {thumbprint} -ti {timeStampUrl} -a {alg}";
             if(!string.IsNullOrWhiteSpace(name))
                 args += $@" -n ""{name}""";
-            //}
-            //else
-            //{
-            // args = $@"-ti {timeStampUrl} -a {alg} -n ""{name}"" -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kvi {aadOptions.ClientId} -kvs {aadOptions.ClientSecret}";
-            //}
-
-
+            
             // This outer loop is for a .clickonce file            
             Parallel.ForEach(files, options, (file, state) =>
             {
