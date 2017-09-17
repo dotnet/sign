@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -63,9 +64,23 @@ namespace SignService
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
+            // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken 
+            bool is64bit = IntPtr.Size == 8;
+            var windir = Environment.GetEnvironmentVariable("windir");
+            var fxDir = is64bit ? "Framework64" : "Framework";
+            var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
+            AddEnvironmentPaths(new[] { netfxDir });
+            
             app.UseAuthentication();
             app.UseMvc();
+        }
+
+        static void AddEnvironmentPaths(IEnumerable<string> paths)
+        {
+            var path = new[] { Environment.GetEnvironmentVariable("PATH") ?? string.Empty };
+            string newPath = string.Join(Path.PathSeparator.ToString(), path.Concat(paths));
+            Environment.SetEnvironmentVariable("PATH", newPath);
         }
     }
 }

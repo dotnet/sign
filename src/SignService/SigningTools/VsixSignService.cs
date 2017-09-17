@@ -21,7 +21,6 @@ namespace SignService.SigningTools
         readonly ILogger<VsixSignService> logger;
         readonly string signtoolPath;
         readonly string timeStampUrl;
-        readonly string thumbprint;
 
         readonly ParallelOptions options = new ParallelOptions
         {
@@ -31,7 +30,6 @@ namespace SignService.SigningTools
         public VsixSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
             timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
-            thumbprint = settings.Value.CertificateInfo.Thumbprint;
             certificateInfo = settings.Value.CertificateInfo;
             this.contextAccessor = contextAccessor;
             this.logger = logger;
