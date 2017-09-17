@@ -63,7 +63,7 @@ namespace SignService.SigningTools
         {
             logger.LogInformation("Signing Mage job {0} with {1} files", name, files.Count());
             
-            string args = string.Empty;
+            string args = "-a sha256RSA";
             if(!string.IsNullOrWhiteSpace(name))
                 args += $@" -n ""{name}""";
 
