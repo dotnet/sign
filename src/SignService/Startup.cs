@@ -46,7 +46,10 @@ namespace SignService
             services.Configure<Settings>(s => s.WinSdkBinDirectory = Path.Combine(environment.ContentRootPath, @"tools\SDK"));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // The Key Vault Service must be scoped as the context is per user in the request
             services.AddScoped<IKeyVaultService, KeyVaultService>();
+
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, AzureSignToolCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();

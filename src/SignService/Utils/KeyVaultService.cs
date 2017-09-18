@@ -8,6 +8,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace SignService.Utils
 {
@@ -16,6 +18,7 @@ namespace SignService.Utils
         Task<string> GetAccessTokenAsync();
         Task<X509Certificate2> GetCertificateAsync();
         Task<RSA> ToRSA();
+        CertificateInfo CertificateInfo { get; }
     }
     public class KeyVaultService : IKeyVaultService
     {
@@ -23,9 +26,9 @@ namespace SignService.Utils
         X509Certificate2 certificate;
         KeyIdentifier keyIdentifier;
         string validatedToken;
-        private readonly Settings settings;
+        readonly CertificateInfo certificateInfo;
     
-        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, ILogger<KeyVaultService> logger)
+        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, IHttpContextAccessor contextAccessor, ILogger<KeyVaultService> logger)
         {
             async Task<string> Authenticate(string authority, string resource, string scope)
             {
@@ -42,8 +45,14 @@ namespace SignService.Utils
             }
 
             client = new KeyVaultClient(Authenticate, new HttpClient());
-            this.settings = settings.Value;
+
+            // This must be true here because we validate it on the incoming request
+            var appid = contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
+            certificateInfo = settings.Value.UserCertificateInfoMap[appid];
         }
+
+        public CertificateInfo CertificateInfo => certificateInfo;
+
         public async Task<string> GetAccessTokenAsync()
         {
             if(validatedToken == null)
@@ -56,7 +65,7 @@ namespace SignService.Utils
         {
             if (certificate == null)
             {
-                var cert = await client.GetCertificateAsync(settings.CertificateInfo.KeyVaultUrl, settings.CertificateInfo.KeyVaultCertificateName).ConfigureAwait(false);
+                var cert = await client.GetCertificateAsync(certificateInfo.KeyVaultUrl, certificateInfo.KeyVaultCertificateName).ConfigureAwait(false);
                 certificate = new X509Certificate2(cert.Cer);
                 keyIdentifier = cert.KeyIdentifier;
             }
@@ -65,7 +74,8 @@ namespace SignService.Utils
 
         public async Task<RSA> ToRSA()
         {
-            await GetCertificateAsync().ConfigureAwait(false);
+            await GetCertificateAsync()
+                .ConfigureAwait(false);
             return client.ToRSA(keyIdentifier, certificate);
         }
     }

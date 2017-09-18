@@ -21,7 +21,11 @@ namespace SignService
             WebHost.CreateDefaultBuilder(args)
                     .ConfigureAppConfiguration((builder =>
                                                 {
+                                                    // Look here as well since this location may be easier for VM deployments
                                                     builder.AddJsonFile(@"App_Data\appsettings.json", true, true);
+
+                                                    // May just have the certificate mapping config
+                                                    builder.AddJsonFile(@"App_Data\CertificateMapping.json", true, true);
                                                 }))
                    .UseStartup<Startup>()
                    .Build();

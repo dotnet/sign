@@ -16,11 +16,9 @@ namespace SignService.SigningTools
 {
     public class VsixSignService : ICodeSignService
     {
-        readonly CertificateInfo certificateInfo;
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<VsixSignService> logger;
         readonly string signtoolPath;
-        readonly string timeStampUrl;
 
         readonly ParallelOptions options = new ParallelOptions
         {
@@ -29,8 +27,6 @@ namespace SignService.SigningTools
 
         public VsixSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
-            timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
-            certificateInfo = settings.Value.CertificateInfo;
             this.contextAccessor = contextAccessor;
             this.logger = logger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
@@ -58,7 +54,8 @@ namespace SignService.SigningTools
             
             var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
-            var args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
+
+            var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
             
 
             Parallel.ForEach(files, options, (file, state) =>
