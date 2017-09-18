@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
-using Microsoft.Extensions.Options;
 
 namespace SignService.Controllers
 {
@@ -21,19 +20,15 @@ namespace SignService.Controllers
     public class SignController : Controller
     {
         readonly ISigningToolAggregate codeSignAggregate;
-        readonly IOptionsSnapshot<Settings> settings;
         readonly ILogger<SignController> logger;
 
 
 
-        public SignController(ISigningToolAggregate codeSignAggregate, IOptionsSnapshot<Settings> settings, ILogger<SignController> logger)
+        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
         {
             this.codeSignAggregate = codeSignAggregate;
-            this.settings = settings;
             this.logger = logger;
         }
-
-
 
         [HttpPost("singleFile")]
         public async Task<IActionResult> SignSingleFile(IFormFile source, HashMode hashMode, string name, string description, string descriptionUrl)

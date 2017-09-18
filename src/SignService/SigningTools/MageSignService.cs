@@ -30,7 +30,7 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public MageSignService(IOptions<Settings> settings, IOptions<AzureAdOptions> aadOptions, IHostingEnvironment hostingEnvironment, IHttpContextAccessor contextAccessor, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
+        public MageSignService(IOptions<AzureAdOptions> aadOptions, IHostingEnvironment hostingEnvironment, IHttpContextAccessor contextAccessor, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
         {
             this.aadOptions = aadOptions.Value;
             this.contextAccessor = contextAccessor;

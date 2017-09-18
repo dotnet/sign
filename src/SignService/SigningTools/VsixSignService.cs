@@ -25,7 +25,7 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
+        public VsixSignService(IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
             this.contextAccessor = contextAccessor;
             this.logger = logger;
@@ -46,8 +46,6 @@ namespace SignService.SigningTools
         void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing OpenVsixSignTool job {0} with {1} files", name, files.Count());
-
-            // If KeyVault is enabled, use that
 
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? "sha1" : "sha256";
