@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SignService;
@@ -47,14 +47,34 @@ namespace Microsoft.AspNetCore.Authentication
             Task OnTokenValidated(TokenValidatedContext tokenValidatedContext)
             {
                 var passed = false;
-                // see if it's an application id and if so, if present
-                var appid = tokenValidatedContext.Principal.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
-                if (appid != null)
+
+                var identity = (ClaimsIdentity)tokenValidatedContext.Principal.Identity;
+                
+                // See if there's a UPN, and if so, use that object id
+                var upn = identity.Claims.FirstOrDefault(c => c.Type == "upn")?.Value;
+                if (upn != null)
                 {
-                    // see if it's configured
-                    if (_configuredUsers.ContainsKey(appid))
+                    var oid = identity.Claims.FirstOrDefault(c => c.Type == "oid")?.Value;
+                    if (_configuredUsers.ContainsKey(oid))
                     {
                         passed = true;
+                        identity.AddClaim(new Claim("authType", "user"));
+                        identity.AddClaim(new Claim("authId", oid));
+                    }
+                }
+                else // see if it's a supported application
+                {
+                    // see if it's an application id and if so, if present
+                    var appid = identity.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
+                    if (appid != null)
+                    {
+                        // see if it's configured
+                        if (_configuredUsers.ContainsKey(appid))
+                        {
+                            passed = true;
+                            identity.AddClaim(new Claim("authType", "application"));
+                            identity.AddClaim(new Claim("authId", appid));
+                        }
                     }
                 }
 
