@@ -41,7 +41,7 @@ namespace SignService
                                        {
                                            sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
                                        })
-                    .AddAzureAdBearer(options => Configuration.Bind("Authentication:AzureAd", options));
+                    .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options));
 
 
             services.Configure<Settings>(Configuration);

@@ -86,7 +86,7 @@ namespace SignService.Utils
         {
             if (certificate == null)
             {
-                var cert = await client.GetCertificateAsync(certificateInfo.KeyVaultUrl, certificateInfo.KeyVaultCertificateName).ConfigureAwait(false);
+                var cert = await client.GetCertificateAsync(certificateInfo.KeyVaultUrl, certificateInfo.CertificateName).ConfigureAwait(false);
                 certificate = new X509Certificate2(cert.Cer);
                 keyIdentifier = cert.KeyIdentifier;
             }

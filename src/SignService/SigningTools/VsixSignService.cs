@@ -53,7 +53,7 @@ namespace SignService.SigningTools
             var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
-            var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
+            var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
             
 
             Parallel.ForEach(files, options, (file, state) =>
