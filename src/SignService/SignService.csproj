@@ -44,4 +44,8 @@
       <AbsolutePath>\\App_Data</AbsolutePath>
     </MsDeploySkipRules>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
 </Project>
