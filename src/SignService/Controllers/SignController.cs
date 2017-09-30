@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +15,7 @@ using SignService.SigningTools;
 
 namespace SignService.Controllers
 {
-    [Authorize(Roles = "access_signservice")]
+    [Authorize(Roles = "access_signservice", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [RequireHttps]
     [Route("[controller]")]
     public class SignController : Controller

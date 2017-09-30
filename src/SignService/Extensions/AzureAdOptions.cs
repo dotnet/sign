@@ -8,5 +8,7 @@
         public string AADInstance { get; set; }
         public string Domain { get; set; }
         public string TenantId { get; set; }
+
+        public string CallbackPath { get; set; }
     }
 }

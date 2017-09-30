@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,8 @@ using SignService.SigningTools;
 using SignService.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 
 namespace SignService
@@ -39,9 +42,13 @@ namespace SignService
             // Add framework services.
             services.AddAuthentication(sharedOptions =>
                                        {
-                                           sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                                           //  sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                                            //sharedOptions.DefaultAuthenticateScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                                           sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                                        })
-                    .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options));
+                    .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options))
+                    .AddAzureAd(options => Configuration.Bind("AzureAd", options))
+                    .AddCookie();
 
 
             services.Configure<Settings>(Configuration);
@@ -77,9 +84,17 @@ namespace SignService
             var fxDir = is64bit ? "Framework64" : "Framework";
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
-            
+
+            app.UseStaticFiles();
+
             app.UseAuthentication();
-            app.UseMvc();
+
+            app.UseMvc(routes =>
+                       {
+                           routes.MapRoute(
+                               name: "default",
+                               template: "{controller=Home}/{action=Index}/{id?}");
+                       });
         }
 
         static void AddEnvironmentPaths(IEnumerable<string> paths)

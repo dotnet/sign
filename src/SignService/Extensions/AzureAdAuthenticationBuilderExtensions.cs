@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SignService;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication
 {
     public static class AzureAdServiceCollectionExtensions
     {
-        public static AuthenticationBuilder AddAzureAdBearer(this AuthenticationBuilder builder)
-            => builder.AddAzureAdBearer(_ => { });
+        //    public static AuthenticationBuilder AddAzureAdBearer(this AuthenticationBuilder builder)
+        //        => builder.AddAzureAdBearer(_ => { });
 
         public static AuthenticationBuilder AddAzureAdBearer(this AuthenticationBuilder builder, Action<AzureAdOptions> configureOptions)
         {
@@ -23,7 +24,15 @@ namespace Microsoft.AspNetCore.Authentication
             return builder;
         }
 
-        private class ConfigureAzureOptions: IConfigureNamedOptions<JwtBearerOptions>
+        public static AuthenticationBuilder AddAzureAd(this AuthenticationBuilder builder, Action<AzureAdOptions> configureOptions)
+        {
+         //   builder.Services.Configure(configureOptions);
+            builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, ConfigureAzureOidcOptions>();
+            builder.AddOpenIdConnect();
+            return builder;
+        }
+
+        private class ConfigureAzureOptions : IConfigureNamedOptions<JwtBearerOptions>
         {
             private readonly AzureAdOptions _azureOptions;
             private readonly Dictionary<string, CertificateInfo> _configuredUsers;
@@ -45,12 +54,12 @@ namespace Microsoft.AspNetCore.Authentication
                 options.TokenValidationParameters.RoleClaimType = "roles";
             }
 
-            Task OnTokenValidated(TokenValidatedContext tokenValidatedContext)
+            Task OnTokenValidated(JwtBearer.TokenValidatedContext tokenValidatedContext)
             {
                 var passed = false;
 
                 var identity = (ClaimsIdentity)tokenValidatedContext.Principal.Identity;
-                
+
                 // See if there's a UPN, and if so, use that object id
                 var upn = identity.Claims.FirstOrDefault(c => c.Type == "upn")?.Value;
                 if (upn != null)
@@ -89,6 +98,32 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             public void Configure(JwtBearerOptions options)
+            {
+                Configure(Options.DefaultName, options);
+            }
+        }
+
+        private class ConfigureAzureOidcOptions : IConfigureNamedOptions<OpenIdConnectOptions>
+        {
+            private readonly AzureAdOptions _azureOptions;
+
+            public ConfigureAzureOidcOptions(IOptions<AzureAdOptions> azureOptions)
+            {
+                _azureOptions = azureOptions.Value;
+            }
+
+            public void Configure(string name, OpenIdConnectOptions options)
+            {
+                options.ClientId = _azureOptions.ClientId;
+                options.Authority = $"{_azureOptions.AADInstance}{_azureOptions.TenantId}";
+                options.UseTokenLifetime = true;
+                options.CallbackPath = _azureOptions.CallbackPath;
+                options.RequireHttpsMetadata = true;
+                options.TokenValidationParameters.RoleClaimType = "roles";
+                options.TokenValidationParameters.NameClaimType = "name";
+            }
+
+            public void Configure(OpenIdConnectOptions options)
             {
                 Configure(Options.DefaultName, options);
             }
