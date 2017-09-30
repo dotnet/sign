@@ -14,7 +14,7 @@ using SignService.SigningTools;
 
 namespace SignService.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "access_signservice")]
     [RequireHttps]
     [Route("[controller]")]
     public class SignController : Controller

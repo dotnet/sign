@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     OnTokenValidated = OnTokenValidated
                 };
+                options.TokenValidationParameters.RoleClaimType = "roles";
             }
 
             Task OnTokenValidated(TokenValidatedContext tokenValidatedContext)
