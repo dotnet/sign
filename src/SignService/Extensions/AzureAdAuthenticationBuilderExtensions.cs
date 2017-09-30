@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SignService;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using SignService.Models;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -28,6 +33,8 @@ namespace Microsoft.AspNetCore.Authentication
         {
          //   builder.Services.Configure(configureOptions);
             builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, ConfigureAzureOidcOptions>();
+            builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureCookieOptions>();
+
             builder.AddOpenIdConnect();
             return builder;
         }
@@ -103,13 +110,50 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        private class ConfigureCookieOptions : IConfigureNamedOptions<CookieAuthenticationOptions>
+        {
+            private readonly IOptions<AzureAdOptions> azureOptions;
+            private readonly IHttpContextAccessor contextAccessor;
+
+            public ConfigureCookieOptions(IOptions<AzureAdOptions> azureOptions, IHttpContextAccessor contextAccessor)
+            {
+                this.azureOptions = azureOptions;
+                this.contextAccessor = contextAccessor;
+            }
+            public void Configure(string name, CookieAuthenticationOptions options)
+            {
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = context =>
+                                          {
+                                              var userId = context.Principal.FindFirst("oid").Value;
+
+                                              // Check if exists in ADAL cache and reject if not. This happens if the cookie is alive and the server bounced
+                                              var adal = new AuthenticationContext($"{azureOptions.Value.AADInstance}{azureOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
+                                              if (adal.TokenCache.Count == 0)
+                                              {
+                                                  context.RejectPrincipal();
+                                              }
+                                              return Task.CompletedTask; ;
+                                          }
+                };
+            }
+
+            public void Configure(CookieAuthenticationOptions options)
+            {
+                Configure(Options.DefaultName, options);
+            }
+        }
+
         private class ConfigureAzureOidcOptions : IConfigureNamedOptions<OpenIdConnectOptions>
         {
             private readonly AzureAdOptions _azureOptions;
+            private readonly IHttpContextAccessor contextAccessor;
 
-            public ConfigureAzureOidcOptions(IOptions<AzureAdOptions> azureOptions)
+            public ConfigureAzureOidcOptions(IOptions<AzureAdOptions> azureOptions, IHttpContextAccessor contextAccessor)
             {
                 _azureOptions = azureOptions.Value;
+                this.contextAccessor = contextAccessor;
             }
 
             public void Configure(string name, OpenIdConnectOptions options)
@@ -121,6 +165,27 @@ namespace Microsoft.AspNetCore.Authentication
                 options.RequireHttpsMetadata = true;
                 options.TokenValidationParameters.RoleClaimType = "roles";
                 options.TokenValidationParameters.NameClaimType = "name";
+                options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                options.Scope.Add("offline_access");
+                options.Events = new OpenIdConnectEvents
+                {
+                    OnAuthorizationCodeReceived = OnAuthorizationCodeReceived
+                };
+            }
+
+            async Task OnAuthorizationCodeReceived(AuthorizationCodeReceivedContext context)
+            {
+                var userId = context.Principal.FindFirst("oid").Value;
+                
+                
+                var adal = new AuthenticationContext($"{_azureOptions.AADInstance}{_azureOptions.TenantId}", new ADALSessionCache(userId, contextAccessor));
+
+                var redirect = $"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}";
+                // Store in cache for later redemption
+                
+                var res = await adal.AcquireTokenByAuthorizationCodeAsync(context.ProtocolMessage.Code, new Uri(redirect), new ClientCredential(_azureOptions.ClientId, _azureOptions.ClientSecret), "https://graph.windows.net");
+
+                context.HandleCodeRedemption(res.AccessToken, res.IdToken);
             }
 
             public void Configure(OpenIdConnectOptions options)

@@ -50,10 +50,13 @@ namespace SignService
                     .AddAzureAd(options => Configuration.Bind("AzureAd", options))
                     .AddCookie();
 
+            services.AddSession();
 
             services.Configure<Settings>(Configuration);
             // Path to the tools\sdk directory
             services.Configure<Settings>(s => s.WinSdkBinDirectory = Path.Combine(environment.ContentRootPath, @"tools\SDK"));
+
+            services.Configure<AdminConfig>(Configuration.GetSection("Admin"));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -86,6 +89,7 @@ namespace SignService
             AddEnvironmentPaths(new[] { netfxDir });
 
             app.UseStaticFiles();
+            app.UseSession();
 
             app.UseAuthentication();
 
