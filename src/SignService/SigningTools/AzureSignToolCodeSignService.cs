@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SignService.SigningTools;
 using SignService.Utils;
 using Microsoft.AspNetCore.Http;
+using SignService.Services;
 
 namespace SignService
 {

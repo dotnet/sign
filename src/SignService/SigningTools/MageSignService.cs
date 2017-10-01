@@ -15,6 +15,7 @@ using SignService.Utils;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using SignService.Services;
 
 namespace SignService.SigningTools
 {

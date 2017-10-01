@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 
-namespace SignService.Utils
+namespace SignService.Services
 {
     public interface IKeyVaultService
     {

@@ -9,5 +9,6 @@ namespace SignService.Utils
     {
         public string SubscriptionId { get; set; }
         public string ResourceGroup { get; set; }
+        public string GraphInstance { get; set; }
     }
 }

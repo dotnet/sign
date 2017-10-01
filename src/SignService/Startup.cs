@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using SignService.Services;
+using Newtonsoft.Json;
 
 namespace SignService
 {
@@ -63,6 +65,10 @@ namespace SignService
             // The Key Vault Service must be scoped as the context is per user in the request
             services.AddScoped<IKeyVaultService, KeyVaultService>();
 
+            // Admin service contains per-user context
+            services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IGraphHttpService, GraphHttpService>();
+
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, AzureSignToolCodeSignService>();
             services.AddSingleton<ICodeSignService, VsixSignService>();
@@ -80,7 +86,18 @@ namespace SignService
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
+            Func<JsonSerializerSettings> jsonSettingsProvider = () =>
+            {
+                var settings = new JsonSerializerSettings
+                {
+                    ContractResolver = new CoreContractResolver(serviceProvider),
+                };
+                return settings;
+            };
+
+            JsonConvert.DefaultSettings = jsonSettingsProvider;
+
             // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken 
             bool is64bit = IntPtr.Size == 8;
             var windir = Environment.GetEnvironmentVariable("windir");
