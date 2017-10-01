@@ -55,6 +55,28 @@ namespace SignService.Services
             }
         }
 
+        public async Task<T> GetScalar<T>(string url)
+        {
+            using (var client = await CreateClient()
+                                    .ConfigureAwait(false))
+            {
+
+                var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
+
+                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                    throw new WebException("Error Calling the Graph API get: \n" +
+                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
+                }
+
+                var result = JsonConvert.DeserializeObject<T>(responseContent);
+                return result;
+            }
+        }
+
         public async Task Delete(string url)
         {
             using (var client = await CreateClient()

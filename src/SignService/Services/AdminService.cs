@@ -13,7 +13,10 @@ namespace SignService.Services
 {
     public interface IAdminService
     {
+        Task<GraphUser> CreateUserAsync(GraphUser user);
+        Task UpdateUserAsync(GraphUser user);
         Task<IEnumerable<GraphUser>> GetUsersAsync(string displayName);
+        Task<GraphUser> GetUserByObjectIdAsync(Guid objectId);
         Task<IEnumerable<GraphUser>> GetConfiguredUsersAsync();
         Task RegisterExtensionPropertiesAsync();
         Task UnRegisterExtensionPropertiesAsync();
@@ -106,6 +109,32 @@ namespace SignService.Services
             var result = await graphHttpService.Get<GraphUser>(uri).ConfigureAwait(false);
             
             return result;
+        }
+
+        public async Task<GraphUser> GetUserByObjectIdAsync(Guid objectId)
+        {
+            var uri = $"/users/{objectId}?api-version=1.6";
+
+            var result = await graphHttpService.GetScalar<GraphUser>(uri).ConfigureAwait(false);
+
+            return result;
+        }
+
+
+        public async Task<GraphUser> CreateUserAsync(GraphUser user)
+        {
+            var uri = $"/users?api-version=1.6";
+
+            var result = await graphHttpService.Post<GraphUser, GraphUser>(uri, user).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task UpdateUserAsync(GraphUser user)
+        {
+            var uri = $"/users/{user.ObjectId}?api-version=1.6";
+
+            await graphHttpService.Patch(uri, user).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<GraphUser>> GetConfiguredUsersAsync()

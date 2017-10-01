@@ -39,9 +39,15 @@ namespace SignService.Services
 
             client = new KeyVaultClient(Authenticate, new HttpClient());
             
+            var principal = contextAccessor.HttpContext.User;
+
             // This must be here because we add it in the request validation
-            var authId = contextAccessor.HttpContext.User.Claims.First(c => c.Type == "authId").Value;
-            certificateInfo = settings.Value.UserCertificateInfoMap[authId];
+            certificateInfo = new CertificateInfo
+            {
+                TimestampUrl = principal.FindFirst("timestampUrl").Value,
+                KeyVaultUrl = principal.FindFirst("keyVaultUrl").Value,
+                CertificateName = principal.FindFirst("keyVaultCertificateName").Value
+            };
             this.aadOptions = aadOptions;
             this.contextAccessor = contextAccessor;
         }
@@ -56,21 +62,10 @@ namespace SignService.Services
                 var credential = new ClientCredential(aadOptions.Value.ClientId, aadOptions.Value.ClientSecret);
                 var resource = "https://vault.azure.net";
 
-                // This must be here because we add it in the request validation
-                var authType = contextAccessor.HttpContext.User.Claims.First(c => c.Type == "authType").Value;
-                var authId = contextAccessor.HttpContext.User.Claims.First(c => c.Type == "authId").Value;
-
                 AuthenticationResult result = null;
-                if (authType == "user")
-                {
-                    var incomingToken = await contextAccessor.HttpContext.GetTokenAsync("access_token");
-                    result = await context.AcquireTokenAsync(resource, credential, new UserAssertion(incomingToken));
 
-                }
-                else if (authType == "application")
-                {
-                    result = await context.AcquireTokenAsync(resource, credential).ConfigureAwait(false);
-                }
+                var incomingToken = contextAccessor.HttpContext.User.FindFirst("access_token").Value;
+                result = await context.AcquireTokenAsync(resource, credential, new UserAssertion(incomingToken));
 
                 if (result == null)
                 {

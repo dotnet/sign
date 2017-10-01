@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -12,15 +15,15 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Newtonsoft.Json;
 using SignService.Models;
+using SignService.Services;
+using SignService.Utils;
 
 namespace Microsoft.AspNetCore.Authentication
 {
     public static class AzureAdServiceCollectionExtensions
     {
-        //    public static AuthenticationBuilder AddAzureAdBearer(this AuthenticationBuilder builder)
-        //        => builder.AddAzureAdBearer(_ => { });
-
         public static AuthenticationBuilder AddAzureAdBearer(this AuthenticationBuilder builder, Action<AzureAdOptions> configureOptions)
         {
             builder.Services.Configure(configureOptions);
@@ -41,13 +44,15 @@ namespace Microsoft.AspNetCore.Authentication
 
         private class ConfigureAzureOptions : IConfigureNamedOptions<JwtBearerOptions>
         {
-            private readonly AzureAdOptions _azureOptions;
-            private readonly Dictionary<string, CertificateInfo> _configuredUsers;
+            readonly AzureAdOptions _azureOptions;
+            readonly IOptions<AdminConfig> adminOptions;
+            readonly IHttpContextAccessor contextAccessor;
 
-            public ConfigureAzureOptions(IOptions<AzureAdOptions> azureOptions, IOptions<Settings> settings)
+            public ConfigureAzureOptions(IOptions<AzureAdOptions> azureOptions, IOptions<Settings> settings, IOptions<AdminConfig> adminOptions, IHttpContextAccessor contextAccessor)
             {
                 _azureOptions = azureOptions.Value;
-                _configuredUsers = settings.Value.UserCertificateInfoMap;
+                this.adminOptions = adminOptions;
+                this.contextAccessor = contextAccessor;
             }
 
             public void Configure(string name, JwtBearerOptions options)
@@ -61,7 +66,7 @@ namespace Microsoft.AspNetCore.Authentication
                 options.TokenValidationParameters.RoleClaimType = "roles";
             }
 
-            Task OnTokenValidated(JwtBearer.TokenValidatedContext tokenValidatedContext)
+            async Task OnTokenValidated(JwtBearer.TokenValidatedContext tokenValidatedContext)
             {
                 var passed = false;
 
@@ -72,36 +77,43 @@ namespace Microsoft.AspNetCore.Authentication
                 if (upn != null)
                 {
                     var oid = identity.Claims.FirstOrDefault(c => c.Type == "oid")?.Value;
-                    if (_configuredUsers.ContainsKey(oid))
+
+                    // get the user
+                    var context = new AuthenticationContext($"{_azureOptions.AADInstance}{_azureOptions.TenantId}", null); // No token caching
+                    var credential = new ClientCredential(_azureOptions.ClientId, _azureOptions.ClientSecret);
+                    var resource = "https://graph.windows.net";
+                    var incomingToken = ((JwtSecurityToken)tokenValidatedContext.SecurityToken).RawData;
+                    var result = await context.AcquireTokenAsync(resource, credential, new UserAssertion(incomingToken));
+
+                    var url = $"{adminOptions.Value.GraphInstance}{_azureOptions.TenantId}/users/{oid}?api-version=1.6";
+                    GraphUser user = null;
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        var resp = await client.GetAsync(url).ConfigureAwait(false);
+                        if (resp.IsSuccessStatusCode)
+                        {
+                            user = JsonConvert.DeserializeObject<GraphUser>(await resp.Content.ReadAsStringAsync().ConfigureAwait(false));
+                        }
+                    }
+
+                    if (user?.SignServiceConfigured == true)
                     {
                         passed = true;
-                        identity.AddClaim(new Claim("authType", "user"));
-                        identity.AddClaim(new Claim("authId", oid));
-                    }
-                }
-                else // see if it's a supported application
-                {
-                    // see if it's an application id and if so, if present
-                    var appid = identity.Claims.FirstOrDefault(c => c.Type == "appid")?.Value;
-                    if (appid != null)
-                    {
-                        // see if it's configured
-                        if (_configuredUsers.ContainsKey(appid))
-                        {
-                            passed = true;
-                            identity.AddClaim(new Claim("authType", "application"));
-                            identity.AddClaim(new Claim("authId", appid));
-                        }
+                        
+                        identity.AddClaim(new Claim("keyVaultUrl", user.KeyVaultUrl));
+                        identity.AddClaim(new Claim("keyVaultCertificateName", user.KeyVaultCertificateName));
+                        identity.AddClaim(new Claim("timestampUrl", user.TimestampUrl));
+                        identity.AddClaim(new Claim("access_token", incomingToken));
                     }
                 }
 
                 if (!passed)
                 {
                     // If we get here, it's an unknown value
-                    tokenValidatedContext.Fail("Unauthorized");
+                    tokenValidatedContext.Fail("User is not configured");
                 }
-
-                return Task.CompletedTask;
             }
 
             public void Configure(JwtBearerOptions options)
@@ -125,17 +137,17 @@ namespace Microsoft.AspNetCore.Authentication
                 options.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = context =>
-                                          {
-                                              var userId = context.Principal.FindFirst("oid").Value;
+                    {
+                        var userId = context.Principal.FindFirst("oid").Value;
 
-                                              // Check if exists in ADAL cache and reject if not. This happens if the cookie is alive and the server bounced
-                                              var adal = new AuthenticationContext($"{azureOptions.Value.AADInstance}{azureOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
-                                              if (adal.TokenCache.Count == 0)
-                                              {
-                                                  context.RejectPrincipal();
-                                              }
-                                              return Task.CompletedTask; ;
-                                          }
+                        // Check if exists in ADAL cache and reject if not. This happens if the cookie is alive and the server bounced
+                        var adal = new AuthenticationContext($"{azureOptions.Value.AADInstance}{azureOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
+                        if (adal.TokenCache.Count == 0)
+                        {
+                            context.RejectPrincipal();
+                        }
+                        return Task.CompletedTask; ;
+                    }
                 };
             }
 
