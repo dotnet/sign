@@ -8,12 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using SignService.Models;
 using SignService.Utils;
+using System.Collections.Generic;
 
 namespace SignService.Services
 {
@@ -34,7 +33,7 @@ namespace SignService.Services
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));  
         }
 
-        public async Task<T> Get<T>(string url)
+        public async Task<List<T>> Get<T>(string url)
         {
             using (var client = await CreateClient()
                                     .ConfigureAwait(false))
@@ -46,43 +45,52 @@ namespace SignService.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    object formatted = JsonConvert.DeserializeObject(responseContent);
-                    throw new WebException("Error Calling the Graph API to update user: \n" +
+                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                    throw new WebException("Error Calling the Graph API get: \n" +
                                            JsonConvert.SerializeObject(formatted, Formatting.Indented));
                 }
 
-                var jObject = JObject.Parse(responseContent);
+                var result = JsonConvert.DeserializeObject<ODataCollection<T>>(responseContent);
+                return result.Value;
+            }
+        }
 
-                var x = jObject["value"];
+        public async Task Delete(string url)
+        {
+            using (var client = await CreateClient()
+                                    .ConfigureAwait(false))
+            {
+                var response = await client.DeleteAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
 
-                var values = x != null ? JArray.Parse(jObject["value"].ToString()) : new JArray(jObject);
-                
-                if (values != null && values.Count > 0)
+                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    return values.ToObject<T>();
-                }
-                else
-                {
-                    return default(T);  // This returns null for reference types.
+                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                    throw new WebException("Error Calling the Graph API to delete: \n" +
+                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
                 }
             }
         }
-        
 
         public async Task<TOutput> Post<TInput, TOutput>(string url, TInput item)
         {
             using (var client = await CreateClient()
                                     .ConfigureAwait(false))
             {
-                var request = new StringContent(JsonConvert.SerializeObject(item), Encoding.UTF8, "application/json");
+                var skipNulls = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+                var request = new StringContent(JsonConvert.SerializeObject(item, skipNulls), Encoding.UTF8, "application/json");
 
                 var response = await client.PostAsync($"{azureAdOptions.TenantId}/{url}", request).ConfigureAwait(false);
                 var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    object formatted = JsonConvert.DeserializeObject(responseContent);
-                    throw new WebException("Error Calling the Graph API to update user: \n" +
+                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                    throw new WebException("Error Calling the Graph API to update: \n" +
                                            JsonConvert.SerializeObject(formatted, Formatting.Indented));
                 }
 
@@ -108,7 +116,7 @@ namespace SignService.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    object formatted = JsonConvert.DeserializeObject(responseContent);
+                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
                     throw new WebException("Error Calling the Graph API to update user: \n" +
                                            JsonConvert.SerializeObject(formatted, Formatting.Indented));
                 }

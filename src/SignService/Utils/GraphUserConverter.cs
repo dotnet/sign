@@ -60,7 +60,7 @@ namespace SignService.Utils
                 var propNameCamelCase = $"{name.Substring(0, 1).ToLowerInvariant()}{name.Substring(1)}";
                 var val = coreProp.GetValue(graphUser);
                 if (val == null) continue;
-
+                
                 var newCoreProp = new JProperty(propNameCamelCase, JToken.FromObject(val));
 
                 jObject.Add(newCoreProp);

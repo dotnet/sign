@@ -24,23 +24,29 @@ namespace SignService.Controllers
             return View();
         }
 
-        public IActionResult RegisterExtensionAttributes()
+        public async Task<IActionResult> RegisterExtensionAttributes()
         {
-            // Do something
-
+            await adminService.RegisterExtensionPropertiesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult UnRegisterExtensionAttributes()
+        public async Task<IActionResult> UnRegisterExtensionAttributes()
         {
-            // Do something
-
+            await adminService.UnRegisterExtensionPropertiesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Users()
         {
-            var users = await adminService.GetUsersAsync();
+            var users = await adminService.GetConfiguredUsersAsync();
+           // var users = await adminService.GetUsersAsync();
+
+            return View(users);
+        }
+
+        public async Task<IActionResult> Search(string displayName)
+        {
+            var users = await adminService.GetUsersAsync(displayName);
 
             return View(users);
         }
