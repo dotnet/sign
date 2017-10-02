@@ -44,7 +44,7 @@ namespace SignService.Utils
         /// <param name="serializer"></param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            var graphUser = value as GraphUser;
+            var graphUser = value;
 
             if (graphUser == null) return;
 

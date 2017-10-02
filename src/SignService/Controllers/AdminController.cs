@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using SignService.Models;
 using SignService.Services;
 
 namespace SignService.Controllers
@@ -35,18 +36,6 @@ namespace SignService.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Users()
-        {
-            var users = await adminService.GetSignServiceUsersAsync();
-
-            return View(users);
-        }
-
-        public async Task<IActionResult> Search(string displayName)
-        {
-            var users = await adminService.GetUsersAsync(displayName);
-
-            return View(users);
-        }
+      
     }
 }
