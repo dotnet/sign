@@ -21,9 +21,7 @@ namespace InstallUtility
             configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
-
-          
-
+            
             graphResourceId = configuration["AzureAd:GraphResourceId"];
             authContext = new AuthenticationContext($"{configuration["AzureAd:Instance"]}common");
 
