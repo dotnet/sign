@@ -128,16 +128,24 @@ namespace SignService.Services
         {
             var uri = $"/users?api-version=1.6";
 
+            // validate the args are present
+            if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentException("Argument cannot be blank", nameof(displayName));
+            if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Argument cannot be blank", nameof(username));
+            if (string.IsNullOrWhiteSpace(keyVaultUrl)) throw new ArgumentException("Argument cannot be blank", nameof(keyVaultUrl));
+            if (string.IsNullOrWhiteSpace(keyVaultCertName)) throw new ArgumentException("Argument cannot be blank", nameof(keyVaultCertName));
+            if (string.IsNullOrWhiteSpace(timestampUrl)) throw new ArgumentException("Argument cannot be blank", nameof(timestampUrl));
+           
             var password = GetRandomPassword();
 
             var user = new GraphUser
             {
                 DisplayName = displayName,
                 UserPrincipalName = username,
-                UserType = "Guest",
+                UserType = "Guest", // we create this account as a guest to limit overall privs in the directory (enumeration of users, etc)
                 KeyVaultUrl = keyVaultUrl,
                 KeyVaultCertificateName = keyVaultCertName,
                 TimestampUrl = timestampUrl,
+                SignServiceConfigured = true,
                 AccountEnabled = true,
                 MailNickname = username.Substring(0, username.IndexOf('@')), // use the username up to the @
                 PasswordProfile = new PasswordProfile
