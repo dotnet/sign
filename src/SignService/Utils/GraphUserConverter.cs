@@ -9,8 +9,19 @@ using SignService.Models;
 
 namespace SignService.Utils
 {
+    public class GraphUserConverterWithNulls : GraphUserConverter
+    {
+        protected override bool SkipNulls => false;
+
+        protected override object CreateBlankObject() => new GraphUserUpdate();
+
+        public override bool CanConvert(Type objectType) => objectType == typeof(GraphUserUpdate);
+    }
+
     public class GraphUserConverter : JsonConverter
     {
+        protected virtual bool SkipNulls => true;
+
         static string appId;
         
         public GraphUserConverter()
@@ -45,7 +56,7 @@ namespace SignService.Utils
                 var propNameCamelCase = $"{name.Substring(0, 1).ToLowerInvariant()}{name.Substring(1)}";
                 var extPropName = $"extension_{appId}_{propNameCamelCase}";
                 var val = prop.GetValue(graphUser);
-                if (val == null) continue;
+                if (val == null && SkipNulls) continue;
                 var newExtProp = new JProperty(extPropName, val);
 
                 //Create new prop
@@ -59,7 +70,7 @@ namespace SignService.Utils
                 var name = JsonPropertyName(coreProp);
                 var propNameCamelCase = $"{name.Substring(0, 1).ToLowerInvariant()}{name.Substring(1)}";
                 var val = coreProp.GetValue(graphUser);
-                if (val == null) continue;
+                if (val == null && SkipNulls) continue;
                 
                 var newCoreProp = new JProperty(propNameCamelCase, JToken.FromObject(val));
 
@@ -79,7 +90,7 @@ namespace SignService.Utils
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
-            var graphUser = new GraphUser();
+            var graphUser = CreateBlankObject();
             var graphProps = graphUser.GetType().GetProperties();
             var o = JObject.Load(reader);
 
@@ -114,6 +125,8 @@ namespace SignService.Utils
 
             return graphUser;
         }
+
+        protected virtual object CreateBlankObject() => new GraphUser();
 
         static string JsonPropertyName(PropertyInfo propertyInfo)
         {

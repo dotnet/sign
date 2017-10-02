@@ -186,15 +186,23 @@ namespace SignService.Services
 
         public async Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
         {
-            
             var uri = $"/users/{objectId}?api-version=1.6";
 
-            // Todo: this won't fully work to clear properties since null's are currently stripped on serialize
-            // Need to differentiate between default and set nulls
-            var user = new GraphUser
+            // We never want to set DisplayName to blank
+            if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(displayName));
+
+            if (configured == true)
+            {
+                // validate the args are present
+                if (string.IsNullOrWhiteSpace(keyVaultUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
+                if (string.IsNullOrWhiteSpace(keyVaultCertName)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultCertName));
+                if (string.IsNullOrWhiteSpace(timestampUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(timestampUrl));
+            }
+
+            var user = new GraphUserUpdate
             {
                 ObjectId = objectId,
-                DisplayName = string.IsNullOrWhiteSpace(displayName) ? null : displayName,
+                DisplayName = displayName,
                 SignServiceConfigured = configured,
                 KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
                 KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
