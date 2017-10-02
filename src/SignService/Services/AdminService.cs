@@ -15,12 +15,12 @@ namespace SignService.Services
 {
     public interface IAdminService
     {
-        Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
+        Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
         Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
         Task<IEnumerable<GraphUser>> GetUsersAsync(string displayName);
         Task<GraphUser> GetUserByObjectIdAsync(Guid objectId);
         Task<string> UpdatePasswordAsync(Guid objectId);
-        Task<IEnumerable<GraphUser>> GetConfiguredUsersAsync();
+        Task<IEnumerable<GraphUser>> GetSignServiceUsersAsync();
         Task RegisterExtensionPropertiesAsync();
         Task UnRegisterExtensionPropertiesAsync();
     }
@@ -124,16 +124,20 @@ namespace SignService.Services
         }
 
 
-        public async Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
+        public async Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
         {
             var uri = $"/users?api-version=1.6";
 
             // validate the args are present
             if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentException("Argument cannot be blank", nameof(displayName));
             if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Argument cannot be blank", nameof(username));
-            if (string.IsNullOrWhiteSpace(keyVaultUrl)) throw new ArgumentException("Argument cannot be blank", nameof(keyVaultUrl));
-            if (string.IsNullOrWhiteSpace(keyVaultCertName)) throw new ArgumentException("Argument cannot be blank", nameof(keyVaultCertName));
-            if (string.IsNullOrWhiteSpace(timestampUrl)) throw new ArgumentException("Argument cannot be blank", nameof(timestampUrl));
+
+            if (configured)
+            {
+                if (string.IsNullOrWhiteSpace(keyVaultUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
+                if (string.IsNullOrWhiteSpace(keyVaultCertName)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultCertName));
+                if (string.IsNullOrWhiteSpace(timestampUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(timestampUrl));
+            }
            
             var password = GetRandomPassword();
 
@@ -142,10 +146,10 @@ namespace SignService.Services
                 DisplayName = displayName,
                 UserPrincipalName = username,
                 UserType = "Guest", // we create this account as a guest to limit overall privs in the directory (enumeration of users, etc)
-                KeyVaultUrl = keyVaultUrl,
-                KeyVaultCertificateName = keyVaultCertName,
-                TimestampUrl = timestampUrl,
-                SignServiceConfigured = true,
+                KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
+                KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
+                TimestampUrl = string.IsNullOrWhiteSpace(timestampUrl) ? null : timestampUrl,
+                SignServiceConfigured = configured,
                 AccountEnabled = true,
                 MailNickname = username.Substring(0, username.IndexOf('@')), // use the username up to the @
                 PasswordProfile = new PasswordProfile
@@ -220,7 +224,7 @@ namespace SignService.Services
             await graphHttpService.Patch(uri, user).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<GraphUser>> GetConfiguredUsersAsync()
+        public async Task<IEnumerable<GraphUser>> GetSignServiceUsersAsync()
         {
             // This may throw if we run this query before the extension is registered. Just return empty
             try

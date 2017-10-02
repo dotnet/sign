@@ -37,8 +37,7 @@ namespace SignService.Controllers
 
         public async Task<IActionResult> Users()
         {
-            var users = await adminService.GetConfiguredUsersAsync();
-           // var users = await adminService.GetUsersAsync();
+            var users = await adminService.GetSignServiceUsersAsync();
 
             return View(users);
         }
