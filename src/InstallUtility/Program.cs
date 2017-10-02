@@ -14,6 +14,7 @@ namespace InstallUtility
         static string graphResourceId;
         const string clientId = "1b730954-1685-4b74-9bfd-dac224a7b894";
         static readonly Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
+        static ActiveDirectoryClient graphClient;
 
         static async Task Main(string[] args)
         {
@@ -21,13 +22,7 @@ namespace InstallUtility
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            if (args.Length == 0)
-            {
-                Console.WriteLine("Create an application entry in AAD to populate and supply the 'Object ID' in the cmd line");
-                return;
-            }
-
-            var applicationId = Guid.Parse(args[0]);
+          
 
             graphResourceId = configuration["AzureAd:GraphResourceId"];
             authContext = new AuthenticationContext($"{configuration["AzureAd:Instance"]}common");
@@ -35,16 +30,61 @@ namespace InstallUtility
             // Prompt here so we make sure we're in the right directory
             var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.Auto));
 
+            graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
+
+
+            var createApplication = true;
+            Guid applicationId; 
+            if (args.Length > 0)
+            {
+                applicationId = Guid.Parse(args[0]);
+                createApplication = false;
+                
+                var app = await graphClient.Applications.GetByObjectId(applicationId.ToString()).ExecuteAsync();
+                Console.WriteLine($"Found application '{app.DisplayName}'");
+                Console.WriteLine("Enter [Y/n] to continue: ");
+                var key = Console.ReadLine().ToUpperInvariant().Trim();
+                if (!(key == string.Empty || key == "Y"))
+                {
+                    Console.WriteLine("Exiting....");
+                    return;
+                }
+            }
+            else
+            {
+                var appName = $"SignService App - {Guid.NewGuid()}";
+                Console.WriteLine($"Creating application '{appName}'");
+                // Create
+                applicationId = await CreateApplication(appName);
+
+                Console.WriteLine("Created application");
+            }
+            
             Console.WriteLine("Updating application....");
-            await ConfigureApplication(token.TenantId, applicationId, token.AccessToken);
+            await ConfigureApplication(applicationId);
             Console.WriteLine("Update complete.");
         }
 
-        static async Task ConfigureApplication(string tenantId, Guid appObjId, string accessToken)
+        static async Task<Guid> CreateApplication(string appName)
         {
-            var gc = new ActiveDirectoryClient(new Uri($"{graphResourceId}{tenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
+            var application = new Application
+            {
+                DisplayName = appName,
+                Homepage = "https://localhost:44351/",
+                ReplyUrls = { "https://localhost:44351/signin-oidc" },
+                PublicClient = false,
+                AvailableToOtherTenants = false,
+                IdentifierUris = { $"https://SignService/{Guid.NewGuid()}" }
+            };
 
-            var appFetcher = gc.Applications.GetByObjectId(appObjId.ToString());
+            await graphClient.Applications.AddApplicationAsync(application);
+            return Guid.Parse(application.ObjectId);
+        }
+
+        static async Task ConfigureApplication(Guid appObjId)
+        {
+            
+            var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
             
             var app = await appFetcher.ExecuteAsync();
             var appExts = appFetcher.ExtensionProperties;
@@ -163,9 +203,6 @@ namespace InstallUtility
                     await appExts.AddExtensionPropertyAsync(prop);
                 }
             }
-
-            Console.WriteLine("foo");
-            
         }
     }
 }
