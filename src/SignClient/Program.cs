@@ -110,9 +110,11 @@ namespace SignClient
                             using (var adalClient = new HttpClient())
                             {
                                 var result = await adalClient.PostAsync($"{authority}/oauth2/token", new FormUrlEncodedContent(parameters));
+
+                                var res = await result.Content.ReadAsStringAsync();
                                 result.EnsureSuccessStatusCode();
 
-                                var jObj = JObject.Parse(await result.Content.ReadAsStringAsync());
+                                var jObj = JObject.Parse(res);
                                 var token = jObj["access_token"].Value<string>();
                                 return token;
                             }
