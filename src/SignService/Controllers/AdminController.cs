@@ -9,7 +9,6 @@ using SignService.Services;
 namespace SignService.Controllers
 {
     [Authorize(Roles = "admin_signservice")]
-    [Authorize]
     [RequireHttps]
     public class AdminController : Controller
     {
