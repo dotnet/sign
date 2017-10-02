@@ -171,6 +171,32 @@ namespace SignService.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> ResetPassword(Guid id)
+        {
+            var user = await adminService.GetUserByObjectIdAsync(id);
 
+            
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(Guid id, UpdateCreateSignServiceUserModel model)
+        {
+            try
+            {
+                var user = await adminService.GetUserByObjectIdAsync(id);
+                var pw = await adminService.UpdatePasswordAsync(id);
+
+                ViewBag.Password = pw;
+
+                return View(nameof(Details), user);
+            }
+            catch (Exception e)
+            {
+                ModelState.TryAddModelError("", e.Message);
+                return View(model);
+            }
+        }
     }
 }
