@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,16 +13,14 @@ using SignService.SigningTools;
 
 namespace SignService.Controllers
 {
-    [Authorize(Roles = "access_signservice", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [RequireHttps]
     [Route("[controller]")]
     public class SignController : Controller
     {
         readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger<SignController> logger;
-
-
-
+        
         public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
         {
             this.codeSignAggregate = codeSignAggregate;
