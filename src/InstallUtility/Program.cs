@@ -32,13 +32,10 @@ namespace InstallUtility
 
             graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
 
-
-            var createApplication = true;
             Guid applicationId; 
             if (args.Length > 0)
             {
                 applicationId = Guid.Parse(args[0]);
-                createApplication = false;
                 
                 var app = await graphClient.Applications.GetByObjectId(applicationId.ToString()).ExecuteAsync();
                 Console.WriteLine($"Found application '{app.DisplayName}'");
@@ -81,7 +78,56 @@ namespace InstallUtility
             return Guid.Parse(application.ObjectId);
         }
 
-        static async Task ConfigureApplication(Guid appObjId)
+        static async Task EnsureClientAppExists(IApplication serviceApplication)
+        {
+            // Display Name of the app. The app id is of the sign service it goes to
+            var displayName = $"SignClient App - {serviceApplication.ObjectId}";
+
+            var clientAppSet = await graphClient.Applications.Where(a => a.DisplayName.StartsWith(displayName)).ExecuteAsync();
+
+            var app = clientAppSet.CurrentPage.FirstOrDefault();
+            if (app == null)
+            {
+                app = new Application
+                {
+                    DisplayName = displayName,
+                    ReplyUrls = { "urn:ietf:wg:oauth:2.0:oob" },
+                    PublicClient = true,
+                    AvailableToOtherTenants = false
+                };
+                await graphClient.Applications.AddApplicationAsync(app);
+            }
+
+            // Get the user_impersonation scope from the service
+            var uis = serviceApplication.Oauth2Permissions.First(oa => oa.Value == "user_impersonation");
+            
+            // Check to see if it has teh required resource access to the sign service
+            var resource = app.RequiredResourceAccess.FirstOrDefault(rr => rr.ResourceAppId == serviceApplication.AppId);
+            if (resource == null)
+            {
+                resource = new RequiredResourceAccess
+                {
+                    ResourceAppId = serviceApplication.AppId
+                };
+                app.RequiredResourceAccess.Add(resource);
+            }
+
+            // Check the scope
+            var resAccess = resource.ResourceAccess.FirstOrDefault(ra => ra.Id == uis.Id);
+            if (resAccess == null)
+            {
+                resAccess = new ResourceAccess
+                {
+                    Id = uis.Id,
+                    Type = "Scope"
+                };
+                resource.ResourceAccess.Add(resAccess);
+            }
+
+            await app.UpdateAsync();
+        }
+
+        static async Task<IApplication> ConfigureApplication(Guid appObjId)
         {
             
             var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
@@ -203,6 +249,9 @@ namespace InstallUtility
                     await appExts.AddExtensionPropertyAsync(prop);
                 }
             }
+
+            await EnsureClientAppExists(app);
+            return app;
         }
     }
 }
