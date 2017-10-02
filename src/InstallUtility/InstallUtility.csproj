@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.Azure.ActiveDirectory.GraphClient" Version="2.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

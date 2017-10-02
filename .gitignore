@@ -252,3 +252,4 @@ ModelManifest.xml
 !**/KeyVaultSignToolWrapper/x64/
 /src/SignService/Properties/PublishProfiles
 /src/SignServiceCloudService/ServiceConfiguration.Deploy.cscfg
+/src/InstallUtility/Properties/launchSettings.json
