@@ -13,9 +13,9 @@ namespace SignService.Controllers
     [RequireHttps]
     public class AdminController : Controller
     {
-        readonly IAdminService adminService;
+        readonly IUserAdminService adminService;
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IUserAdminService adminService)
         {
             this.adminService = adminService;
         }

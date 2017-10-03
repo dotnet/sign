@@ -66,7 +66,7 @@ namespace SignService
             services.AddScoped<IKeyVaultService, KeyVaultService>();
 
             // Admin service contains per-user context
-            services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IUserAdminService, UserAdminService>();
             services.AddScoped<IGraphHttpService, GraphHttpService>();
 
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();

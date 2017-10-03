@@ -13,7 +13,7 @@ using System.Text;
 
 namespace SignService.Services
 {
-    public interface IAdminService
+    public interface IUserAdminService
     {
         Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
         Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
@@ -25,14 +25,14 @@ namespace SignService.Services
         Task UnRegisterExtensionPropertiesAsync();
     }
 
-    public class AdminService : IAdminService
+    public class UserAdminService : IUserAdminService
     {
         readonly AdminConfig configuration;
         readonly AzureAdOptions azureAdOptions;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
         
-        public AdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IGraphHttpService graphHttpService)
+        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IGraphHttpService graphHttpService)
         {
             this.configuration = configuration.Value;
             this.azureAdOptions = azureAdOptions.Value;
