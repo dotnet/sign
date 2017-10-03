@@ -16,7 +16,9 @@ namespace SignService.Services
 {
     public interface IKeyVaultAdminService
     {
-        
+        Task<Vault> CreateVaultForUserAsync(string objectId, string upn, string displayName);
+        Task<Vault> GetVaultAsync(string vaultName);
+        Task<List<Vault>> ListKeyVaultsAsync();
     }
 
     public class KeyVaultAdminService : IKeyVaultAdminService
@@ -48,20 +50,33 @@ namespace SignService.Services
             this.adminConfig = adminConfig.Value;
         }
 
-        public async Task<IEnumerable<Vault>> ListKeyVaultsAsync()
+        public async Task<List<Vault>> ListKeyVaultsAsync()
         {
+            var totalVaults = new List<Vault>();
             var vaults = await kvClient.Vaults.ListByResourceGroupAsync(resourceGroup).ConfigureAwait(false);
-            return vaults;
+
+            totalVaults.AddRange(vaults);
+            var nextLink = vaults.NextPageLink;
+
+            // Get the rest if there's more
+            while (!string.IsNullOrWhiteSpace(nextLink))
+            {
+                vaults = await kvClient.Vaults.ListByResourceGroupNextAsync(nextLink).ConfigureAwait(false);
+                totalVaults.AddRange(vaults);
+                nextLink = vaults.NextPageLink;
+            }
+
+            return totalVaults;
         }
 
-        public async Task<Vault> GetVault(string vaultName)
+        public async Task<Vault> GetVaultAsync(string vaultName)
         {
             var vault = await kvClient.Vaults.GetAsync(resourceGroup, vaultName).ConfigureAwait(false);
             
             return vault;
         }
         
-        public async Task<Vault> CreateVault(string vaultName)
+        public async Task<Vault> CreateVaultForUserAsync(string objectId, string upn, string displayName)
         {
             var parameters = new VaultCreateOrUpdateParameters()
             {
@@ -107,53 +122,44 @@ namespace SignService.Services
                                   "DeleteIssuers"
                               }
                           }
+                        },
+                        // Needs Keys: Get + Sign, Certificates: Get
+                        new AccessPolicyEntry
+                        {
+                            TenantId = tenantId,
+                            ObjectId = userId,
+                            ApplicationId = clientId,
+                            Permissions  = new Permissions
+                            {
+                                Keys = new List<string>
+                                {
+                                    "Get",
+                                    "Sign",
+                                },
+                                Certificates = new List<string>
+                                {
+                                    "Get"
+                                }
+                            }
                         }
                     }
-                }
-            };
-            var vault = await kvClient.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
-
-            return vault;
-        }
-
-        public async Task<Vault> AssignUserToVault(string vaultName, string objectId, string upn, string displayName)
-        {
-            var vault = await kvClient.Vaults.GetAsync(resourceGroup, vaultName).ConfigureAwait(false);
-            
-            var parameters = new VaultCreateOrUpdateParameters(vault.Location, vault.Properties, vault.Tags);
-
-            // See if the user + appid has an ACL
-            var acl = parameters.Properties.AccessPolicies.FirstOrDefault(ace => ace.ObjectId == userId && ace.ApplicationId == clientId);
-            if (acl == null)
-            {
-                // Add it
-                acl = new AccessPolicyEntry
+                },
+                Tags = new Dictionary<string, string>
                 {
-                    TenantId = tenantId,
-                    ObjectId = userId,
-                    ApplicationId = clientId,
-                    Permissions = new Permissions()
-                };
-                parameters.Properties.AccessPolicies.Add(acl);
-            }
+                    {"userName", upn },
+                    {"displayName", displayName }
+                },
+            };
 
-            // Ensure it has the three permissions we need
-            // Needs Keys: Get + Sign, Certificates: Get
-            if (!acl.Permissions.Keys.Contains("Get", StringComparer.Ordinal))
-                acl.Permissions.Keys.Add("Get");
-            if (!acl.Permissions.Keys.Contains("Sign", StringComparer.Ordinal))
-                acl.Permissions.Keys.Add("Sign");
-            if (!acl.Permissions.Certificates.Contains("Get", StringComparer.Ordinal))
-                acl.Permissions.Certificates.Add("Get");
+            // for the vault name, we get up to 24 characters, so use the following:
+            // upn up to the @ then a dash then fill with a guid truncated
+            var vaultName = $"{upn.Substring(0, upn.IndexOf('@'))}-{Guid.NewGuid().ToString("N")}";
 
-            if(parameters.Tags == null)
-                parameters.Tags = new Dictionary<string, string>();
+            // Truncate to 24 chars
+            vaultName = vaultName.Substring(0, 24);
 
-            parameters.Tags["userName"] = upn;
-            parameters.Tags["displayName"] = displayName;
-
-            var updated = await kvClient.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
-            return updated;
+            var vault = await kvClient.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
+            return vault;
         }
         
     }

@@ -68,6 +68,7 @@ namespace SignService
             // Admin service contains per-user context
             services.AddScoped<IUserAdminService, UserAdminService>();
             services.AddScoped<IGraphHttpService, GraphHttpService>();
+            services.AddScoped<IKeyVaultAdminService, KeyVaultAdminService>();
 
             services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
             services.AddSingleton<ICodeSignService, AzureSignToolCodeSignService>();

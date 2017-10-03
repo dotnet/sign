@@ -164,7 +164,7 @@ namespace SignService.Controllers
                                                    null,
                                                    null);
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
