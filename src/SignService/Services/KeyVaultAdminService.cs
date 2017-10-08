@@ -29,13 +29,14 @@ namespace SignService.Services
         readonly AdminConfig adminConfig;
         readonly Guid tenantId;
         readonly Guid clientId;
+        readonly string userId;
         readonly KeyVaultManagementClient kvClient;
         readonly IGraphHttpService graphHttpService;
 
         public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IGraphHttpService graphHttpService, IHttpContextAccessor contextAccessor)
         {
             var principal = contextAccessor.HttpContext.User;
-            var userId = principal.FindFirst("oid").Value;
+            userId = principal.FindFirst("oid").Value;
             tenantId = Guid.Parse(principal.FindFirst("tid").Value);
             clientId = Guid.Parse(azureAdOptions.Value.ClientId);
 
@@ -52,6 +53,13 @@ namespace SignService.Services
         async Task<string> GetAppToken(string authority, string resource, string scope)
         {
             var result = await adalContext.AcquireTokenAsync("https://management.core.windows.net/", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+
+            return result.AccessToken;
+        }
+
+        async Task<string> GetOboToken(string authority, string resource, string scope)
+        {
+            var result = await adalContext.AcquireTokenSilentAsync("https://management.core.windows.net/", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret), UserIdentifier.AnyUser).ConfigureAwait(false);
 
             return result.AccessToken;
         }
@@ -134,6 +142,45 @@ namespace SignService.Services
                               }
                           }
                         },
+
+                        // Grant the current user the management plane access for use in the portal/powershell for 
+                        // manual tasks
+                        new AccessPolicyEntry
+                        {
+                            ObjectId = userId,
+                            TenantId = tenantId,
+                            Permissions  = new Permissions
+                            {
+                                Keys = new List<string>
+                                {
+                                    "Backup",
+                                    "Create",
+                                    "Delete",
+                                    "Get",
+                                    "Import",
+                                    "List",
+                                    "Restore",
+                                    "Update",
+                                    "Recover"
+                                },
+                                Certificates = new List<string>
+                                {
+                                    "Get",
+                                    "List",
+                                    "Update",
+                                    "Create",
+                                    "Import",
+                                    "Delete",
+                                    "ManageContacts",
+                                    "ManageIssuers",
+                                    "GetIssuers",
+                                    "ListIssuers",
+                                    "SetIssuers",
+                                    "DeleteIssuers"
+                                }
+                            }
+                        },
+
                         // Needs Keys: Get + Sign, Certificates: Get
                         new AccessPolicyEntry
                         {
@@ -169,8 +216,14 @@ namespace SignService.Services
             // Truncate to 24 chars
             vaultName = vaultName.Substring(0, 24);
 
-            var vault = await kvClient.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
-            return ToVaultModel(vault);
+            // Create uses an OBO so that this only works if the user has contributer+ access to the resource group
+            using (var client = new KeyVaultManagementClient(new KeyVaultCredential(GetOboToken)))
+            {
+                client.SubscriptionId = adminConfig.SubscriptionId;
+                var vault = await client.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
+                
+                return ToVaultModel(vault);
+            }
         }
         static VaultModel ToVaultModel(Vault vault)
         {
