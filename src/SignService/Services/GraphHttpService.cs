@@ -147,7 +147,7 @@ namespace SignService.Services
 
         private async Task<HttpClient> CreateClient()
         {
-            var accessToken = await adalContext.AcquireTokenSilentAsync("https://graph.windows.net", azureAdOptions.ClientId).ConfigureAwait(false);
+            var accessToken = await adalContext.AcquireTokenAsync("https://graph.windows.net", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
 
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.AccessToken);
