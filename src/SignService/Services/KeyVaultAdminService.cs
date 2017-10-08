@@ -16,44 +16,49 @@ namespace SignService.Services
 {
     public interface IKeyVaultAdminService
     {
-        Task<Vault> CreateVaultForUserAsync(string objectId, string upn, string displayName);
-        Task<Vault> GetVaultAsync(string vaultName);
-        Task<List<Vault>> ListKeyVaultsAsync();
+        Task<VaultModel> CreateVaultForUserAsync(string objectId, string upn, string displayName);
+        Task<VaultModel> GetVaultAsync(string vaultName);
+        Task<List<VaultModel>> ListKeyVaultsAsync();
     }
 
     public class KeyVaultAdminService : IKeyVaultAdminService
     {
         readonly AuthenticationContext adalContext;
-        readonly KeyVaultManagementClient kvClient;
         readonly string resourceGroup;
         readonly AzureAdOptions azureAdOptions;
         readonly AdminConfig adminConfig;
         readonly Guid tenantId;
-        readonly string userId;
         readonly Guid clientId;
+        readonly KeyVaultManagementClient kvClient;
 
         public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IHttpContextAccessor contextAccessor)
         {
             var principal = contextAccessor.HttpContext.User;
-
-            userId = principal.FindFirst("oid").Value;
+            var userId = principal.FindFirst("oid").Value;
             tenantId = Guid.Parse(principal.FindFirst("tid").Value);
             clientId = Guid.Parse(azureAdOptions.Value.ClientId);
 
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
             resourceGroup = adminConfig.Value.ResourceGroup;
-
-            kvClient = new KeyVaultManagementClient(new KeyVaultCredential(async (authority, resource, scope) => (await adalContext.AcquireTokenSilentAsync(resource, azureAdOptions.Value.ClientId)).AccessToken));
-
+            kvClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken));
             kvClient.SubscriptionId = adminConfig.Value.SubscriptionId;
+
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
         }
 
-        public async Task<List<Vault>> ListKeyVaultsAsync()
+        async Task<string> GetAppToken(string authority, string resource, string scope)
+        {
+            var result = await adalContext.AcquireTokenAsync("https://management.core.windows.net/", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+
+            return result.AccessToken;
+        }
+
+        public async Task<List<VaultModel>> ListKeyVaultsAsync()
         {
             var totalVaults = new List<Vault>();
-            var vaults = await kvClient.Vaults.ListByResourceGroupAsync(resourceGroup).ConfigureAwait(false);
+            var vaults = await kvClient.Vaults.ListByResourceGroupAsync(resourceGroup)
+                                       .ConfigureAwait(false);
 
             totalVaults.AddRange(vaults);
             var nextLink = vaults.NextPageLink;
@@ -61,22 +66,23 @@ namespace SignService.Services
             // Get the rest if there's more
             while (!string.IsNullOrWhiteSpace(nextLink))
             {
-                vaults = await kvClient.Vaults.ListByResourceGroupNextAsync(nextLink).ConfigureAwait(false);
+                vaults = await kvClient.Vaults.ListByResourceGroupNextAsync(nextLink)
+                                       .ConfigureAwait(false);
                 totalVaults.AddRange(vaults);
                 nextLink = vaults.NextPageLink;
             }
 
-            return totalVaults;
+            return totalVaults.Select(ToVaultModel).ToList();
         }
 
-        public async Task<Vault> GetVaultAsync(string vaultName)
+        public async Task<VaultModel> GetVaultAsync(string vaultName)
         {
             var vault = await kvClient.Vaults.GetAsync(resourceGroup, vaultName).ConfigureAwait(false);
             
-            return vault;
+            return ToVaultModel(vault);
         }
         
-        public async Task<Vault> CreateVaultForUserAsync(string objectId, string upn, string displayName)
+        public async Task<VaultModel> CreateVaultForUserAsync(string objectId, string upn, string displayName)
         {
             var parameters = new VaultCreateOrUpdateParameters()
             {
@@ -87,10 +93,10 @@ namespace SignService.Services
                     Sku = new Sku(SkuName.Premium),
                     AccessPolicies = new List<AccessPolicyEntry>
                     {
-                        // Grant the user who created it admin permissions on the management plane to deal with keys and certificates
+                        // Grant this application admin permissions on the management plane to deal with keys and certificates
                         new AccessPolicyEntry
                         {
-                          ObjectId = userId,
+                          ObjectId = azureAdOptions.ApplicationObjectId,
                           TenantId = tenantId,
                           Permissions  = new Permissions
                           {
@@ -127,7 +133,7 @@ namespace SignService.Services
                         new AccessPolicyEntry
                         {
                             TenantId = tenantId,
-                            ObjectId = userId,
+                            ObjectId = objectId,
                             ApplicationId = clientId,
                             Permissions  = new Permissions
                             {
@@ -159,8 +165,23 @@ namespace SignService.Services
             vaultName = vaultName.Substring(0, 24);
 
             var vault = await kvClient.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
-            return vault;
+            return ToVaultModel(vault);
         }
-        
+        static VaultModel ToVaultModel(Vault vault)
+        {
+            string dname = null;
+            string username = null;
+            var model = new VaultModel
+            {
+                Id = vault.Id,
+                DisplayName = vault.Tags?.TryGetValue("displayName", out dname) == true ? dname : null,
+                Username = vault.Tags?.TryGetValue("userName", out username) == true ? username : null,
+                Type = vault.Type,
+                Name = vault.Name,
+                Location = vault.Location
+            };
+
+            return model;
+        }
     }
 }

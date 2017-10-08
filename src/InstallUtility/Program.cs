@@ -58,6 +58,9 @@ namespace InstallUtility
             Console.WriteLine("Updating application....");
             await ConfigureApplication(applicationId);
             Console.WriteLine("Update complete.");
+
+            // Need to create a resource group and grant the sign service application the correct permissions
+
         }
 
         static async Task<Guid> CreateApplication(string appName)

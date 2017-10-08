@@ -34,7 +34,8 @@
                     @if (@User.Identity.IsAuthenticated)
                     {
                         <li><a asp-area="" asp-controller="Admin" asp-action="Index">Admin</a></li>    
-                        <li><a asp-area="" asp-controller="Users" asp-action="Index">Users</a></li>  
+                        <li><a asp-area="" asp-controller="Users" asp-action="Index">Users</a></li>
+                        <li><a asp-area="" asp-controller="KeyVault" asp-action="Index">Key Vaults</a></li>
                     }
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
