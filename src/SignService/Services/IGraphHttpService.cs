@@ -7,6 +7,7 @@ namespace SignService.Services
     {
         Task<List<T>> Get<T>(string url);
         Task<T> GetScalar<T>(string url);
+        Task<T> GetValue<T>(string url);
         Task<TOutput> Post<TInput, TOutput>(string url, TInput item);
         Task Patch<TInput>(string url, TInput item);
         Task Delete(string url);

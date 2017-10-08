@@ -141,6 +141,12 @@ namespace SignService.Services
            
             var password = GetRandomPassword();
 
+            // if username doesn't contain an @, use the default domain
+            if (!username.Contains("@"))
+            {
+                username += $"@{azureAdOptions.Domain}";
+            }
+
             var user = new GraphUser
             {
                 DisplayName = displayName,

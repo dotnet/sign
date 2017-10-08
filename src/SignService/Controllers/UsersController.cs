@@ -14,10 +14,12 @@ namespace SignService.Controllers
     public class UsersController : Controller
     {
         readonly IUserAdminService adminService;
+        readonly IKeyVaultAdminService keyVaultAdminService;
 
-        public UsersController(IUserAdminService adminService)
+        public UsersController(IUserAdminService adminService, IKeyVaultAdminService keyVaultAdminService)
         {
             this.adminService = adminService;
+            this.keyVaultAdminService = keyVaultAdminService;
         }
         public async Task<IActionResult> Index()
         {
@@ -62,6 +64,17 @@ namespace SignService.Controllers
                                                              createModel.CertificateName,
                                                              createModel.TimestampUrl);
 
+                var user = res.Item1;
+
+                // create the associated key vault if the vault isn't set
+                if (string.IsNullOrWhiteSpace(user.KeyVaultUrl))
+                {
+                    var vault = await keyVaultAdminService.CreateVaultForUserAsync(user.ObjectId.Value.ToString(), user.UserPrincipalName, user.DisplayName);
+
+                    // Update the vault attribute
+                    await adminService.UpdateUserAsync(user.ObjectId.Value, user.DisplayName, user.SignServiceConfigured, vault.VaultUri, user.KeyVaultCertificateName, user.TimestampUrl);
+                    user.KeyVaultUrl = vault.VaultUri;
+                }
 
                 ViewBag.Password = res.Item2;
 

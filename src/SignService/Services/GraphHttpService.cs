@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using SignService.Models;
 using SignService.Utils;
 using System.Collections.Generic;
@@ -23,14 +22,12 @@ namespace SignService.Services
         readonly AuthenticationContext adalContext;
         static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IHttpContextAccessor contextAccessor)
+        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig)
         {
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
-
-            var userId = contextAccessor.HttpContext.User.FindFirst("oid").Value;
-
-            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));  
+            
+            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", null);  
         }
 
         public async Task<List<T>> Get<T>(string url)
@@ -74,6 +71,28 @@ namespace SignService.Services
 
                 var result = JsonConvert.DeserializeObject<T>(responseContent);
                 return result;
+            }
+        }
+
+        public async Task<T> GetValue<T>(string url)
+        {
+            using (var client = await CreateClient()
+                                    .ConfigureAwait(false))
+            {
+
+                var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
+
+                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                    throw new WebException("Error Calling the Graph API get: \n" +
+                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
+                }
+
+                var result = JsonConvert.DeserializeObject<ODataScalar<T>>(responseContent);
+                return result.Value;
             }
         }
 

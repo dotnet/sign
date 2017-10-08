@@ -30,8 +30,9 @@ namespace SignService.Services
         readonly Guid tenantId;
         readonly Guid clientId;
         readonly KeyVaultManagementClient kvClient;
+        readonly IGraphHttpService graphHttpService;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IHttpContextAccessor contextAccessor)
+        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IGraphHttpService graphHttpService, IHttpContextAccessor contextAccessor)
         {
             var principal = contextAccessor.HttpContext.User;
             var userId = principal.FindFirst("oid").Value;
@@ -45,6 +46,7 @@ namespace SignService.Services
 
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
+            this.graphHttpService = graphHttpService;
         }
 
         async Task<string> GetAppToken(string authority, string resource, string scope)
@@ -84,6 +86,9 @@ namespace SignService.Services
         
         public async Task<VaultModel> CreateVaultForUserAsync(string objectId, string upn, string displayName)
         {
+            // Get the service principal id for this application since we'll need it
+            var spId = await graphHttpService.GetValue<string>($"/servicePrincipalsByAppId/{azureAdOptions.ClientId}/objectId?api-version=1.6");
+
             var parameters = new VaultCreateOrUpdateParameters()
             {
                 Location = adminConfig.Location,
@@ -96,7 +101,7 @@ namespace SignService.Services
                         // Grant this application admin permissions on the management plane to deal with keys and certificates
                         new AccessPolicyEntry
                         {
-                          ObjectId = azureAdOptions.ApplicationObjectId,
+                          ObjectId = spId,
                           TenantId = tenantId,
                           Permissions  = new Permissions
                           {
@@ -173,10 +178,9 @@ namespace SignService.Services
             string username = null;
             var model = new VaultModel
             {
-                Id = vault.Id,
+                VaultUri = vault.Properties.VaultUri,
                 DisplayName = vault.Tags?.TryGetValue("displayName", out dname) == true ? dname : null,
                 Username = vault.Tags?.TryGetValue("userName", out username) == true ? username : null,
-                Type = vault.Type,
                 Name = vault.Name,
                 Location = vault.Location
             };
