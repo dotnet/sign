@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace SignService.Models
 {
@@ -18,5 +19,7 @@ namespace SignService.Models
         public string KeyVaultUrl { get; set; }
         public string CertificateName { get; set; }
         public string TimestampUrl { get; set; }
+
+        public IEnumerable<CertificateModel> CertificatesModels { get; set; }
     }
 }

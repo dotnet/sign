@@ -27,6 +27,7 @@ namespace SignService.Services
         KeyIdentifier keyIdentifier;
         string validatedToken;
         readonly CertificateInfo certificateInfo;
+        readonly IOptionsSnapshot<Settings> settings;
         readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
         readonly IHttpContextAccessor contextAccessor;
 
@@ -48,6 +49,7 @@ namespace SignService.Services
                 KeyVaultUrl = principal.FindFirst("keyVaultUrl").Value,
                 CertificateName = principal.FindFirst("keyVaultCertificateName").Value
             };
+            this.settings = settings;
             this.aadOptions = aadOptions;
             this.contextAccessor = contextAccessor;
         }
@@ -60,12 +62,12 @@ namespace SignService.Services
             {
                 var context = new AuthenticationContext($"{aadOptions.Value.AADInstance}{aadOptions.Value.TenantId}", null); // No token caching
                 var credential = new ClientCredential(aadOptions.Value.ClientId, aadOptions.Value.ClientSecret);
-                var resource = "https://vault.azure.net";
+
 
                 AuthenticationResult result = null;
 
                 var incomingToken = contextAccessor.HttpContext.User.FindFirst("access_token").Value;
-                result = await context.AcquireTokenAsync(resource, credential, new UserAssertion(incomingToken));
+                result = await context.AcquireTokenAsync(settings.Value.Resources.VaultId, credential, new UserAssertion(incomingToken));
 
                 if (result == null)
                 {

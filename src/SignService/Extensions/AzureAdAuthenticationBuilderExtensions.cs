@@ -47,12 +47,14 @@ namespace Microsoft.AspNetCore.Authentication
             readonly AzureAdOptions _azureOptions;
             readonly IOptions<AdminConfig> adminOptions;
             readonly IHttpContextAccessor contextAccessor;
+            readonly string graphResourceId;
 
             public ConfigureAzureOptions(IOptions<AzureAdOptions> azureOptions, IOptions<Settings> settings, IOptions<AdminConfig> adminOptions, IHttpContextAccessor contextAccessor)
             {
                 _azureOptions = azureOptions.Value;
                 this.adminOptions = adminOptions;
                 this.contextAccessor = contextAccessor;
+                graphResourceId = settings.Value.Resources.GraphId;
             }
 
             public void Configure(string name, JwtBearerOptions options)
@@ -81,9 +83,9 @@ namespace Microsoft.AspNetCore.Authentication
                     // get the user
                     var context = new AuthenticationContext($"{_azureOptions.AADInstance}{_azureOptions.TenantId}", null); // No token caching
                     var credential = new ClientCredential(_azureOptions.ClientId, _azureOptions.ClientSecret);
-                    var resource = "https://graph.windows.net";
+
                     var incomingToken = ((JwtSecurityToken)tokenValidatedContext.SecurityToken).RawData;
-                    var result = await context.AcquireTokenAsync(resource, credential, new UserAssertion(incomingToken));
+                    var result = await context.AcquireTokenAsync(graphResourceId, credential, new UserAssertion(incomingToken));
 
                     var url = $"{adminOptions.Value.GraphInstance}{_azureOptions.TenantId}/users/{oid}?api-version=1.6";
                     GraphUser user = null;

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Management.KeyVault;
 using Microsoft.Extensions.Options;
 using SignService.Utils;
@@ -19,6 +21,7 @@ namespace SignService.Services
         Task<VaultModel> CreateVaultForUserAsync(string objectId, string upn, string displayName);
         Task<VaultModel> GetVaultAsync(string vaultName);
         Task<List<VaultModel>> ListKeyVaultsAsync();
+        Task<List<CertificateModel>> GetCertificatesInVaultAsync(string vaultUri);
     }
 
     public class KeyVaultAdminService : IKeyVaultAdminService
@@ -30,10 +33,12 @@ namespace SignService.Services
         readonly Guid tenantId;
         readonly Guid clientId;
         readonly string userId;
-        readonly KeyVaultManagementClient kvClient;
+        readonly KeyVaultManagementClient kvManagmentClient;
+        readonly KeyVaultClient kvClient;
         readonly IGraphHttpService graphHttpService;
+        readonly Resources resources;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IGraphHttpService graphHttpService, IHttpContextAccessor contextAccessor)
+        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IGraphHttpService graphHttpService, IHttpContextAccessor contextAccessor)
         {
             var principal = contextAccessor.HttpContext.User;
             userId = principal.FindFirst("oid").Value;
@@ -42,24 +47,33 @@ namespace SignService.Services
 
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
             resourceGroup = adminConfig.Value.ResourceGroup;
-            kvClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken));
-            kvClient.SubscriptionId = adminConfig.Value.SubscriptionId;
+            kvManagmentClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken));
+            kvManagmentClient.SubscriptionId = adminConfig.Value.SubscriptionId;
+            kvClient = new KeyVaultClient(new KeyVaultCredential(GetAppTokenForKv));
 
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
             this.graphHttpService = graphHttpService;
+            this.resources = resources.Value;
         }
 
         async Task<string> GetAppToken(string authority, string resource, string scope)
         {
-            var result = await adalContext.AcquireTokenAsync("https://management.core.windows.net/", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+            var result = await adalContext.AcquireTokenAsync(resources.AzureRM, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+
+            return result.AccessToken;
+        }
+
+        async Task<string> GetAppTokenForKv(string authority, string resource, string scope)
+        {
+            var result = await adalContext.AcquireTokenAsync(resources.VaultId, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
 
             return result.AccessToken;
         }
 
         async Task<string> GetOboToken(string authority, string resource, string scope)
         {
-            var result = await adalContext.AcquireTokenSilentAsync("https://management.core.windows.net/", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret), UserIdentifier.AnyUser).ConfigureAwait(false);
+            var result = await adalContext.AcquireTokenSilentAsync(resources.AzureRM, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret), UserIdentifier.AnyUser).ConfigureAwait(false);
 
             return result.AccessToken;
         }
@@ -67,7 +81,7 @@ namespace SignService.Services
         public async Task<List<VaultModel>> ListKeyVaultsAsync()
         {
             var totalVaults = new List<Vault>();
-            var vaults = await kvClient.Vaults.ListByResourceGroupAsync(resourceGroup)
+            var vaults = await kvManagmentClient.Vaults.ListByResourceGroupAsync(resourceGroup)
                                        .ConfigureAwait(false);
 
             totalVaults.AddRange(vaults);
@@ -76,7 +90,7 @@ namespace SignService.Services
             // Get the rest if there's more
             while (!string.IsNullOrWhiteSpace(nextLink))
             {
-                vaults = await kvClient.Vaults.ListByResourceGroupNextAsync(nextLink)
+                vaults = await kvManagmentClient.Vaults.ListByResourceGroupNextAsync(nextLink)
                                        .ConfigureAwait(false);
                 totalVaults.AddRange(vaults);
                 nextLink = vaults.NextPageLink;
@@ -87,7 +101,7 @@ namespace SignService.Services
 
         public async Task<VaultModel> GetVaultAsync(string vaultName)
         {
-            var vault = await kvClient.Vaults.GetAsync(resourceGroup, vaultName).ConfigureAwait(false);
+            var vault = await kvManagmentClient.Vaults.GetAsync(resourceGroup, vaultName).ConfigureAwait(false);
             
             return ToVaultModel(vault);
         }
@@ -225,6 +239,38 @@ namespace SignService.Services
                 return ToVaultModel(vault);
             }
         }
+
+        public async Task<List<CertificateModel>> GetCertificatesInVaultAsync(string vaultUri)
+        {
+            var totalItems = new List<CertificateItem>();
+            var certs = await kvClient.GetCertificatesAsync(vaultUri).ConfigureAwait(false);
+
+            totalItems.AddRange(certs);
+            var nextLink = certs.NextPageLink;
+
+            // Get the rest if there's more
+            while (!string.IsNullOrWhiteSpace(nextLink))
+            {
+                certs = await kvClient.GetCertificatesNextAsync(nextLink).ConfigureAwait(false);
+                totalItems.AddRange(certs);
+                nextLink = certs.NextPageLink;
+            }
+
+            return totalItems.Select(ci => new CertificateModel
+            {
+                Name =  ci.Id.Substring(ci.Id.LastIndexOf("/") + 1),
+                CertificateIdentifier = ci.Identifier.Identifier,
+                Thumbprint = BitConverter.ToString(ci.X509Thumbprint).Replace("-", ""),
+                Attributes = ci.Attributes
+            }).OrderBy(cm => cm.Name).ToList();
+        }
+
+        public async Task<X509Certificate2> GetCertificateDetails(string certificateIdentifier)
+        {
+            var bundle = await kvClient.GetCertificateAsync(certificateIdentifier).ConfigureAwait(false);
+            return new X509Certificate2(bundle.Cer);
+        }
+
         static VaultModel ToVaultModel(Vault vault)
         {
             string dname = null;

@@ -38,7 +38,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="CertificateName" class="control-label"></label>
-                <input asp-for="CertificateName" class="form-control" />
+                <select asp-for="CertificateName" class="form-control" asp-items="@(new SelectList(Model.CertificatesModels, "Name", "Name"))" >
+                </select>
                 <span asp-validation-for="CertificateName" class="text-danger"></span>
             </div>
             <div class="form-group">

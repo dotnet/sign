@@ -21,12 +21,14 @@ namespace SignService.Services
         readonly AdminConfig adminConfig;
         readonly AuthenticationContext adalContext;
         static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
+        readonly string graphResourceId;
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig)
+        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources)
         {
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
-            
+            graphResourceId = resources.Value.GraphId;
+
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", null);  
         }
 
@@ -166,7 +168,7 @@ namespace SignService.Services
 
         private async Task<HttpClient> CreateClient()
         {
-            var accessToken = await adalContext.AcquireTokenAsync("https://graph.windows.net", new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+            var accessToken = await adalContext.AcquireTokenAsync(graphResourceId, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
 
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.AccessToken);

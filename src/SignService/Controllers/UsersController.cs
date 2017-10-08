@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SignService.Models;
 using SignService.Services;
 
@@ -97,6 +98,16 @@ namespace SignService.Controllers
         {
             var user = await adminService.GetUserByObjectIdAsync(id);
 
+            List<CertificateModel> certs = null;
+            if (!string.IsNullOrWhiteSpace(user.KeyVaultUrl))
+            {
+                certs = await keyVaultAdminService.GetCertificatesInVaultAsync(user.KeyVaultUrl);
+            }
+            if (certs == null)
+            {
+                certs = new List<CertificateModel>();
+            }
+
             var model = new UpdateCreateSignServiceUserModel
             {
                 ObjectId = user.ObjectId.Value,
@@ -105,7 +116,8 @@ namespace SignService.Controllers
                 CertificateName = user.KeyVaultCertificateName,
                 DisplayName = user.DisplayName,
                 KeyVaultUrl = user.KeyVaultUrl,
-                TimestampUrl = user.TimestampUrl
+                TimestampUrl = user.TimestampUrl,
+                CertificatesModels = certs
             };
             return View(model);
         }
