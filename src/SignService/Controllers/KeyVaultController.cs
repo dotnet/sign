@@ -42,7 +42,7 @@ namespace SignService.Controllers
 
                 return View(model);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ViewBag.Id = id;
                 return View("Details.Error");

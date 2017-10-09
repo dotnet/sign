@@ -90,6 +90,13 @@ namespace SignService.Controllers
 
         public async Task<IActionResult> Details(Guid id)
         {
+            var model = await GetUserDetailsForId(id);
+
+            return View(model);
+        }
+
+        async Task<UserDetailsModel> GetUserDetailsForId(Guid id)
+        {
             var user = await adminService.GetUserByObjectIdAsync(id);
 
             // See if we have a key vault
@@ -104,8 +111,7 @@ namespace SignService.Controllers
                 User = user,
                 VaultName = vaultName
             };
-
-            return View(model);
+            return model;
         }
 
         public async Task<IActionResult> Edit(Guid id)
@@ -224,12 +230,14 @@ namespace SignService.Controllers
         {
             try
             {
-                var user = await adminService.GetUserByObjectIdAsync(id);
+                var details = await GetUserDetailsForId(id);
+
                 var pw = await adminService.UpdatePasswordAsync(id);
 
                 ViewBag.Password = pw;
 
-                return View(nameof(Details), user);
+
+                return View(nameof(Details), details);
             }
             catch (Exception e)
             {

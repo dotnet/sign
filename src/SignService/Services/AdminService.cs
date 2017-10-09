@@ -193,7 +193,7 @@ namespace SignService.Services
                     }
                 };
 
-                await graphHttpService.Patch(uri, toUpdate).ConfigureAwait(false);
+                await graphHttpService.Patch(uri, toUpdate, accessAsUser: true).ConfigureAwait(false);
                 return password;
             }
             else

@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Authentication;
 using SignService.Models;
 using SignService.Utils;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace SignService.Services
 {
@@ -23,13 +24,15 @@ namespace SignService.Services
         static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
         readonly string graphResourceId;
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources)
+        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IHttpContextAccessor contextAccessor)
         {
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
             graphResourceId = resources.Value.GraphId;
 
-            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", null);  
+            var userId = contextAccessor.HttpContext.User.FindFirst("oid").Value;
+
+            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));  
         }
 
         public async Task<List<T>> Get<T>(string url)
@@ -142,9 +145,9 @@ namespace SignService.Services
         }
 
 
-        public async Task Patch<TInput>(string url, TInput item)
+        public async Task Patch<TInput>(string url, TInput item, bool accessAsUser = false)
         {
-            using (var client = await CreateClient()
+            using (var client = await CreateClient(accessAsUser)
                                     .ConfigureAwait(false))
             {
                 string contentBody = JsonConvert.SerializeObject(item);
@@ -166,12 +169,20 @@ namespace SignService.Services
             }
         }
 
-        private async Task<HttpClient> CreateClient()
+        private async Task<HttpClient> CreateClient(bool accessAsUser = false)
         {
-            var accessToken = await adalContext.AcquireTokenAsync(graphResourceId, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+            AuthenticationResult result;
+            if (accessAsUser)
+            {
+                result = await adalContext.AcquireTokenSilentAsync(graphResourceId, azureAdOptions.ClientId).ConfigureAwait(false);
+            }
+            else
+            {
+                result = await adalContext.AcquireTokenAsync(graphResourceId, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
+            }
 
             var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken.AccessToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
             client.DefaultRequestHeaders
                    .Accept
                    .Add(new MediaTypeWithQualityHeaderValue("application/json"));

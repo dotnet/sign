@@ -142,7 +142,10 @@ namespace InstallUtility
              * 
              * 1. App Role for Admin
              * 2. Resource Access for the following
-             *      - Azure Graph (00000002-0000-0000-c000-000000000000) with the following scopes: UserProfile.Read (311a71cc-e848-46a1-bdf8-97ff7156d8e6), Directory.ReadWrite.All (78c8a3c8-a07e-4b9e-af1b-b5ccab50a175)
+             *      - Azure Graph (00000002-0000-0000-c000-000000000000) with the following scopes: 
+             *          UserProfile.Read (311a71cc-e848-46a1-bdf8-97ff7156d8e6), 
+             *          Directory.ReadWrite.All (78c8a3c8-a07e-4b9e-af1b-b5ccab50a175),
+             *          Directory.AccessAsUser.All (a42657d6-7f20-40e3-b6f0-cee03008a62a)
              *      - Key Vault app (cfa8b339-82a2-471a-a3c9-0fc0be7a4093) OBO scope: (f53da476-18e3-4152-8e01-aec403e6edc0)
              * 3. Register the four extension properties the app uses for storing data on the service account users
              * 
@@ -166,6 +169,7 @@ namespace InstallUtility
             var requiredResourceAccess = new[] 
             {
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("311a71cc-e848-46a1-bdf8-97ff7156d8e6"), type: "Scope"),
+                (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("a42657d6-7f20-40e3-b6f0-cee03008a62a"), type: "Scope"),
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("78c8a3c8-a07e-4b9e-af1b-b5ccab50a175"), type: "Role"),
                 (resource:"cfa8b339-82a2-471a-a3c9-0fc0be7a4093", scope: new Guid("f53da476-18e3-4152-8e01-aec403e6edc0"), type: "Scope")
             };
