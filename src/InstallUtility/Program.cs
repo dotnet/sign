@@ -11,11 +11,12 @@ namespace InstallUtility
     {
         static IConfiguration configuration;
         static AuthenticationContext authContext;
+        static AuthenticationResult authResult;
         static string graphResourceId;
         const string clientId = "1b730954-1685-4b74-9bfd-dac224a7b894";
         static readonly Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
         static ActiveDirectoryClient graphClient;
-
+        static string environment = string.Empty;
         static async Task Main(string[] args)
         {
             configuration = new ConfigurationBuilder()
@@ -27,16 +28,26 @@ namespace InstallUtility
 
             // Prompt here so we make sure we're in the right directory
             var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.Always));
-
+            authResult = token;
             graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
-
-            Guid applicationId; 
+            
             if (args.Length > 0)
             {
-                applicationId = Guid.Parse(args[0]);
-                
-                var app = await graphClient.Applications.GetByObjectId(applicationId.ToString()).ExecuteAsync();
-                Console.WriteLine($"Found application '{app.DisplayName}'");
+                // Read a disambiguation value
+                environment = $" ({args[0]}) ";
+            }
+
+            var serverDisplayNamePrefix = $"SignService Server{environment} - ";
+
+
+            Guid applicationId;
+
+            // Try to find a "SignService Server -" app
+            var a = await graphClient.Applications.Where(ia => ia.DisplayName.StartsWith(serverDisplayNamePrefix)).ExecuteAsync();
+            if (a.CurrentPage.Count == 1)
+            {
+                applicationId = Guid.Parse(a.CurrentPage[0].ObjectId);
+                Console.WriteLine($"Found application '{a.CurrentPage[0].DisplayName}'");
                 Console.WriteLine("Enter [Y/n] to continue: ");
                 var key = Console.ReadLine().ToUpperInvariant().Trim();
                 if (!(key == string.Empty || key == "Y"))
@@ -47,7 +58,7 @@ namespace InstallUtility
             }
             else
             {
-                var appName = $"SignService App - {Guid.NewGuid()}";
+                var appName = $"{serverDisplayNamePrefix}{Guid.NewGuid()}";
                 Console.WriteLine($"Creating application '{appName}'");
                 // Create
                 applicationId = await CreateApplication(appName);
@@ -56,13 +67,46 @@ namespace InstallUtility
             }
             
             Console.WriteLine("Updating application....");
-            await ConfigureApplication(applicationId);
+            var apps = await ConfigureApplication(applicationId);
             Console.WriteLine("Update complete.");
 
             // Need to create a resource group and grant the sign service application the correct permissions
 
+            // Print out relevant values
+            PrintApplicationInfo(apps);
+
+            Console.WriteLine("Press any key to quit....");
+            Console.ReadKey(true);
         }
 
+        static void PrintApplicationInfo((IApplication server, IApplication client) apps)
+        {
+            Console.WriteLine("Sign Server Summary");
+            Console.WriteLine("__________________________");
+            Console.WriteLine($"DisplayName:\t\t{apps.server.DisplayName}");
+            Console.WriteLine();
+            
+            Console.WriteLine($"Audience:\t\t{apps.server.IdentifierUris.First()}");
+            Console.WriteLine($"ClientId:\t\t{apps.server.AppId}");
+            Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
+            Console.WriteLine($"ApplicationObjectId:\t{apps.server.ObjectId}");
+            Console.WriteLine("__________________________");
+            Console.WriteLine();
+
+
+            Console.WriteLine("Sign Client Summary");
+            Console.WriteLine("__________________________");
+            Console.WriteLine($"DisplayName:\t\t{apps.client.DisplayName}");
+            Console.WriteLine();
+            
+            Console.WriteLine($"ClientId:\t\t{apps.client.AppId}");
+            Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
+            Console.WriteLine($"Service ResourceId:\t{apps.server.IdentifierUris.First()}");
+            Console.WriteLine("__________________________");
+            Console.WriteLine();
+        }
+
+      
         static async Task<Guid> CreateApplication(string appName)
         {
             var application = new Application
@@ -79,10 +123,10 @@ namespace InstallUtility
             return Guid.Parse(application.ObjectId);
         }
 
-        static async Task EnsureClientAppExists(IApplication serviceApplication)
+        static async Task<IApplication> EnsureClientAppExists(IApplication serviceApplication)
         {
             // Display Name of the app. The app id is of the sign service it goes to
-            var displayName = $"SignClient App - {serviceApplication.ObjectId}";
+            var displayName = $"SignClient App{environment} - {serviceApplication.AppId}";
 
             var clientAppSet = await graphClient.Applications.Where(a => a.DisplayName.StartsWith(displayName)).ExecuteAsync();
 
@@ -126,9 +170,11 @@ namespace InstallUtility
             }
 
             await app.UpdateAsync();
+
+            return app;
         }
 
-        static async Task<IApplication> ConfigureApplication(Guid appObjId)
+        static async Task<(IApplication server, IApplication client)> ConfigureApplication(Guid appObjId)
         {
             
             var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
@@ -253,8 +299,8 @@ namespace InstallUtility
                 }
             }
 
-            await EnsureClientAppExists(app);
-            return app;
+            var client = await EnsureClientAppExists(app);
+            return (app, client);
         }
     }
 }
