@@ -91,7 +91,21 @@ namespace SignService.Controllers
         public async Task<IActionResult> Details(Guid id)
         {
             var user = await adminService.GetUserByObjectIdAsync(id);
-            return View(user);
+
+            // See if we have a key vault
+            string vaultName = null;
+            if (!string.IsNullOrWhiteSpace(user.KeyVaultUrl))
+            {
+                var uri = new Uri(user.KeyVaultUrl);
+                vaultName = uri.Host.Substring(0, uri.Host.IndexOf("."));
+            }
+            var model = new UserDetailsModel
+            {
+                User = user,
+                VaultName = vaultName
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> Edit(Guid id)
@@ -206,7 +220,7 @@ namespace SignService.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(Guid id, UpdateCreateSignServiceUserModel model)
+        public async Task<IActionResult> ResetPassword(Guid id, GraphUser model)
         {
             try
             {
