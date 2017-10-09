@@ -2,8 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.ActiveDirectory.GraphClient;
+using Microsoft.Azure.Management.Authorization;
+using Microsoft.Azure.Management.Authorization.Models;
+using Microsoft.Azure.Management.ResourceManager;
+using Microsoft.Azure.Management.ResourceManager.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Rest;
+using Microsoft.Rest.Azure.OData;
 
 namespace InstallUtility
 {
@@ -13,6 +19,7 @@ namespace InstallUtility
         static AuthenticationContext authContext;
         static AuthenticationResult authResult;
         static string graphResourceId;
+        static string azureRmResourceId;
         const string clientId = "1b730954-1685-4b74-9bfd-dac224a7b894";
         static readonly Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
         static ActiveDirectoryClient graphClient;
@@ -24,10 +31,11 @@ namespace InstallUtility
                 .Build();
             
             graphResourceId = configuration["AzureAd:GraphResourceId"];
+            azureRmResourceId = configuration["AzureAd:AzureRmResourceId"];
             authContext = new AuthenticationContext($"{configuration["AzureAd:Instance"]}common");
 
             // Prompt here so we make sure we're in the right directory
-            var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.Always));
+            var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.Auto));
             authResult = token;
             graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
             
@@ -70,13 +78,63 @@ namespace InstallUtility
             var apps = await ConfigureApplication(applicationId);
             Console.WriteLine("Update complete.");
 
-            // Need to create a resource group and grant the sign service application the correct permissions
+            // Need to create a resource group and grant the sign service application the Read permissions
+            await CreateOrUpdateResourceGroup(apps.server);
 
             // Print out relevant values
             PrintApplicationInfo(apps);
 
             Console.WriteLine("Press any key to quit....");
             Console.ReadKey(true);
+        }
+
+        static async Task CreateOrUpdateResourceGroup(IApplication serverApplication)
+        {
+
+            Console.WriteLine("Add or update Key Vault Resource Group (required once)? [y/N] to continue: ");
+            var key = Console.ReadLine()
+                             .ToUpperInvariant()
+                             .Trim();
+            if (key != "Y")
+            {
+                return;
+            }
+
+            Console.Write("SubscriptionId: ");
+            var subscriptionId = Console.ReadLine();
+            Console.Write("Resource Group Name (blank for default 'SignService-KeyVaults'): ");
+            var name = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(name))
+                name = "SignService-KeyVaults";
+            Console.WriteLine("Location (eastus, westus, etc): ");
+            var location = Console.ReadLine();
+
+            var accessToken = await authContext.AcquireTokenSilentAsync(azureRmResourceId, clientId);
+
+            var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken));
+            rgc.SubscriptionId = subscriptionId;
+            var rg = new ResourceGroup(location, name: name);
+            rg = await rgc.ResourceGroups.CreateOrUpdateAsync(name, rg);
+
+
+            
+            var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken));
+            ac.SubscriptionId = subscriptionId;
+
+            //var principal = await graphClient.ServicePrincipalsByAppId[serverApplication.AppId].ExecuteAsync();
+            
+            
+            // Get the reader role
+            var roleDefinitions = await ac.RoleDefinitions.ListAsync(rg.Id, new ODataQuery<RoleDefinitionFilter>(f => f.RoleName == "Reader"));
+            var roleDefinition = roleDefinitions.First();
+
+            //var rap = new RoleAssignmentProperties
+            //{
+            //    PrincipalId = principal.ObjectId,
+            //    RoleDefinitionId = roleDefinition.Id
+            //};
+
+            Console.ReadLine();
         }
 
         static void PrintApplicationInfo((IApplication server, IApplication client) apps)
