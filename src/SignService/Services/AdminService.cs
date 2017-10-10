@@ -180,7 +180,7 @@ namespace SignService.Services
             var uri = $"/users/{user.ObjectId}?api-version=1.6";
             var password = GetRandomPassword();
 
-            if (user.SignServiceConfigured == true)
+            if (user.SignServiceConfigured != null)
             {
                 // new user so we don't touch existing values
                 var toUpdate = new GraphUser
