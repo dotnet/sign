@@ -238,7 +238,7 @@ namespace InstallUtility
 
             await app.UpdateAsync();
 
-            var clientSp = EnsureServicePrinicpalExists(app);
+            var clientSp = EnsureServicePrincipalExists(app);
 
             return app;
         }
@@ -368,13 +368,13 @@ namespace InstallUtility
                 }
             }
 
-            var serverSp = await EnsureServicePrinicpalExists(app);
+            var serverSp = await EnsureServicePrincipalExists(app);
 
             var client = await EnsureClientAppExists(app);
             return (app, serverSp, client);
         }
 
-        async static Task<IServicePrincipal> EnsureServicePrinicpalExists(IApplication application)
+        async static Task<IServicePrincipal> EnsureServicePrincipalExists(IApplication application)
         {
             // see if it exists already
             var appid = application.AppId;
