@@ -77,14 +77,15 @@ namespace InstallUtility
             }
             
             Console.WriteLine("Updating application....");
-            var apps = await ConfigureApplication(applicationId);
+            var serverApp = await ConfigureApplication(applicationId);
+            var clientApp = await EnsureClientAppExists(serverApp.application);
             Console.WriteLine("Update complete.");
 
             // Need to create a resource group and grant the sign service application the Read permissions
-            await CreateOrUpdateResourceGroup(apps.serverServicePrincipal);
+            await CreateOrUpdateResourceGroup(serverApp.servicePrincipal);
 
             // Print out relevant values
-            PrintApplicationInfo(apps);
+            PrintApplicationInfo(serverApp, clientApp);
 
             Console.WriteLine("Press any key to quit....");
             Console.ReadKey(true);
@@ -146,33 +147,37 @@ namespace InstallUtility
             }
         }
 
-        static void PrintApplicationInfo((IApplication server, IServicePrincipal serverServicePrincipal, IApplication client) apps)
+        static void PrintApplicationInfo((IApplication application, IServicePrincipal servicePrincipal) server, (IApplication application, IServicePrincipal servicePrincipal) client)
         {
             Console.WriteLine("Sign Server Summary");
             Console.WriteLine("__________________________");
-            Console.WriteLine($"DisplayName:\t\t{apps.server.DisplayName}");
+            Console.WriteLine($"DisplayName:\t\t{server.application.DisplayName}");
             Console.WriteLine();
             
-            Console.WriteLine($"Audience:\t\t{apps.server.IdentifierUris.First()}");
-            Console.WriteLine($"ClientId:\t\t{apps.server.AppId}");
+            Console.WriteLine($"Audience:\t\t{server.application.IdentifierUris.First()}");
+            Console.WriteLine($"ClientId:\t\t{server.application.AppId}");
             Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
-            Console.WriteLine($"ApplicationObjectId:\t{apps.server.ObjectId}");
+            Console.WriteLine($"ApplicationObjectId:\t{server.application.ObjectId}");
             Console.WriteLine("__________________________");
             Console.WriteLine();
 
 
             Console.WriteLine("Sign Client Summary");
             Console.WriteLine("__________________________");
-            Console.WriteLine($"DisplayName:\t\t{apps.client.DisplayName}");
+            Console.WriteLine($"DisplayName:\t\t{client.application.DisplayName}");
             Console.WriteLine();
             
-            Console.WriteLine($"ClientId:\t\t{apps.client.AppId}");
+            Console.WriteLine($"ClientId:\t\t{client.application.AppId}");
             Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
-            Console.WriteLine($"Service ResourceId:\t{apps.server.IdentifierUris.First()}");
+            Console.WriteLine($"Service ResourceId:\t{server.application.IdentifierUris.First()}");
             Console.WriteLine("__________________________");
             Console.WriteLine();
         }
 
+        static async Task PromptForConsent(IApplication server, IServicePrincipal serverServicePrincipal, IApplication client)
+        {
+            
+        }
       
         static async Task<Guid> CreateApplication(string appName)
         {
@@ -190,7 +195,7 @@ namespace InstallUtility
             return Guid.Parse(application.ObjectId);
         }
 
-        static async Task<IApplication> EnsureClientAppExists(IApplication serviceApplication)
+        static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication)
         {
             // Display Name of the app. The app id is of the sign service it goes to
             var displayName = $"SignClient App{environment} - {serviceApplication.AppId}";
@@ -238,12 +243,12 @@ namespace InstallUtility
 
             await app.UpdateAsync();
 
-            var clientSp = EnsureServicePrincipalExists(app);
+            var clientSp = await EnsureServicePrincipalExists(app);
 
-            return app;
+            return (app, clientSp);
         }
 
-        static async Task<(IApplication server, IServicePrincipal serverServicePrincipal, IApplication client)> ConfigureApplication(Guid appObjId)
+        static async Task<(IApplication application, IServicePrincipal servicePrincipal)> ConfigureApplication(Guid appObjId)
         {
             
             var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
@@ -369,9 +374,8 @@ namespace InstallUtility
             }
 
             var serverSp = await EnsureServicePrincipalExists(app);
-
-            var client = await EnsureClientAppExists(app);
-            return (app, serverSp, client);
+            
+            return (app, serverSp);
         }
 
         async static Task<IServicePrincipal> EnsureServicePrincipalExists(IApplication application)
