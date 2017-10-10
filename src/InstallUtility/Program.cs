@@ -274,30 +274,26 @@ namespace InstallUtility
                     foreach (var role in kvp.Value)
                     {
                         var assn = input.principal.AppRoleAssignments.CurrentPage.FirstOrDefault(ara => ara.Id == role.Id && ara.ResourceId == resourceSpid);
-                        if (assn == null)
+                        if (assn != null)
+                            continue;
+
+                        if (!output.TryGetValue(input.principal, out var list))
                         {
-                            if (!output.TryGetValue(input.principal, out var list))
-                            {
-                                list = new List<AppRoleAssignment>();
-                                output.Add(input.principal, list);
-                            }
-
-                            var a = new AppRoleAssignment
-                            {
-                                Id = role.Id,
-                                PrincipalId = new Guid(input.principal.ObjectId),
-                                ResourceId = resourceSpid,
-                                PrincipalType = "ServicePrincipal"
-                            };
-                            list.Add(a);
+                            list = new List<AppRoleAssignment>();
+                            output.Add(input.principal, list);
                         }
+
+                        var a = new AppRoleAssignment
+                        {
+                            Id = role.Id,
+                            PrincipalId = new Guid(input.principal.ObjectId),
+                            ResourceId = resourceSpid,
+                            PrincipalType = "ServicePrincipal"
+                        };
+                        list.Add(a);
                     }
-
-                    
                 }
-                
             }
-
 
             return output;
         }
