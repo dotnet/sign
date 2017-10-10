@@ -189,18 +189,29 @@ namespace InstallUtility
                 (spid: client.servicePrincipal.ObjectId, permissions: clientData.permissions)
             });
 
+            var roles = await GetAppRoleAssignmentsToAdd(new[]
+            {
+                (spid: server.servicePrincipal, permissions: serverData.roles),
+                (spid: client.servicePrincipal, permissions: clientData.roles)
+            });
 
             // Nothing to do
-            if (perms.Count == 0)
+            if (perms.Count == 0 && roles.Count == 0)
                 return;
 
             // Get the friendly text
             var toConsent = serverData.permissions.Concat(clientData.permissions)
                                   .SelectMany(kvp => kvp.Value)
-                                  .OrderBy(p => p.AdminConsentDisplayName)
                                   .Select(p => (p.AdminConsentDisplayName))
-                                  .Distinct();
-                                  
+                                  .ToList();
+            var rolesToConsent = serverData.roles.Concat(clientData.roles)
+                            .SelectMany(kvp => kvp.Value)
+                            .Select(r => r.DisplayName);
+
+            toConsent.AddRange(rolesToConsent);
+
+            toConsent = toConsent.Distinct().ToList();
+            toConsent.Sort();
 
             Console.WriteLine("If you're a directory administrator, you need to grant consent to the service.");
             Console.WriteLine("Either proceed here as an admin or have them grant consent in the Azure Portal");
@@ -235,6 +246,60 @@ namespace InstallUtility
                     await perm.UpdateAsync();
                 }
             }
+
+            foreach (var role in roles)
+            {
+                var sp = (ServicePrincipal)role.Key;
+                foreach (var ara in role.Value)
+                {
+                    sp.AppRoleAssignments.Add(ara);
+                }
+                await sp.UpdateAsync();
+            }
+        }
+
+        static async Task<Dictionary<IServicePrincipal, List<AppRoleAssignment>>> GetAppRoleAssignmentsToAdd((IServicePrincipal principal, Dictionary<string, List<AppRole>> roles)[] inputs)
+        {
+            var output = new Dictionary<IServicePrincipal, List<AppRoleAssignment>>();
+
+            foreach (var input in inputs)
+            {
+                foreach (var kvp in input.roles)
+                {
+                    var appid = kvp.Key;
+                    var resourceSp = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).ExecuteSingleAsync();
+                    var resourceSpid = Guid.Parse(resourceSp.ObjectId);
+
+                    // See if the assignment already exists
+                    foreach (var role in kvp.Value)
+                    {
+                        var assn = input.principal.AppRoleAssignments.CurrentPage.FirstOrDefault(ara => ara.Id == role.Id && ara.ResourceId == resourceSpid);
+                        if (assn == null)
+                        {
+                            if (!output.TryGetValue(input.principal, out var list))
+                            {
+                                list = new List<AppRoleAssignment>();
+                                output.Add(input.principal, list);
+                            }
+
+                            var a = new AppRoleAssignment
+                            {
+                                Id = role.Id,
+                                PrincipalId = new Guid(input.principal.ObjectId),
+                                ResourceId = resourceSpid,
+                                PrincipalType = "ServicePrincipal"
+                            };
+                            list.Add(a);
+                        }
+                    }
+
+                    
+                }
+                
+            }
+
+
+            return output;
         }
 
         static async Task<List<IOAuth2PermissionGrant>> GetPermissionsToAddUpdate((string spid, Dictionary<string, List<OAuth2Permission>> permissions)[] inputs)
@@ -522,7 +587,7 @@ namespace InstallUtility
         {
             // see if it exists already
             var appid = application.AppId;
-            var sc = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).ExecuteAsync();
+            var sc = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).Expand(sp => sp.AppRoleAssignments).ExecuteAsync();
 
             var s = sc.CurrentPage.FirstOrDefault();
             if (s == null)
