@@ -131,11 +131,13 @@ namespace SignService.Controllers
             return RedirectToAction(nameof(Details), new { id = model.VaultName });
         }
 
-        public async Task<IActionResult> CancelCertificateRequest(string id, string certificateName)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelCertificateRequest(UpdateCertificateRequestModel model)
         {
-            var op = await keyVaultAdminService.CancelCsrAsync(id, certificateName);
+            var op = await keyVaultAdminService.CancelCsrAsync(model.VaultName, model.CertificateName);
 
-            return RedirectToAction(nameof(Details), new { id = id });
+            return RedirectToAction(nameof(Details), new { id = model.VaultName });
         }
     }
 }

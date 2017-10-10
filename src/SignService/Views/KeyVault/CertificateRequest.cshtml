@@ -12,7 +12,7 @@
     <div class="col-md-4">
         
         <div>
-<textarea cols="90" rows="20" readonly="readonly">
+<textarea cols="100" rows="20" readonly="readonly">
 @Model.Csr
 </textarea>
         </div>
@@ -31,6 +31,13 @@
             <input asp-for="VaultName" class="hidden"/>
             <input asp-for="CertificateName" class="hidden"/>
             <input asp-for="Csr" class="hidden"/>
+        </form>
+        <form asp-action="CancelCertificateRequest" asp-antiforgery="true" >
+            <input asp-for="VaultName" class="hidden"/>
+            <input asp-for="CertificateName" class="hidden"/>
+            <div class="form-group">
+                <input type="submit" value="Cancel Request" class="btn btn-default"/>
+            </div>
         </form>
     </div>
 </div>

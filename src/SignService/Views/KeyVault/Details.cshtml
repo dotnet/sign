@@ -100,12 +100,6 @@
             <th>
                 @if (item.Operation?.Status == "inProgress")
                 {
-                    @Html.ActionLink("Cancel", "CancelCertificateRequest", new
-                    {
-                        id = Model.Vault.Name,
-                        certificateName = item.Name
-                    });
-                    @Html.Encode(" | ")
                     @Html.ActionLink("View", "CertificateRequest", new
                     {
                         id = Model.Vault.Name,
