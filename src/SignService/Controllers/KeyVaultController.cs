@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.KeyVault.Models;
 using SignService.Models;
 using SignService.Services;
+using SignService.Utils;
 
 namespace SignService.Controllers
 {
@@ -80,6 +81,26 @@ namespace SignService.Controllers
                 ModelState.AddModelError("", e.Message);
                 return View(model);
             }
+        }
+
+        public async Task<IActionResult> CertificateRequest(string id, string certificateName)
+        {
+            var vault = await keyVaultAdminService.GetVaultAsync(id);
+            var op = await keyVaultAdminService.GetCertificateOperation(vault.VaultUri, certificateName);
+
+            string str = null;
+            if (op.Csr?.Length > 0)
+            {
+                str = Crypt32.CryptBinaryToString(op.Csr, true, true);
+            }
+            var model = new UpdateCertificateRequestModel
+            {
+                CertificateName = certificateName,
+                VaultName = id,
+                Csr = str
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> CancelCertificateRequest(string id, string certificateName)
