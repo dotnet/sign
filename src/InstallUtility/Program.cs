@@ -37,7 +37,7 @@ namespace InstallUtility
             authContext = new AuthenticationContext($"{configuration["AzureAd:Instance"]}common");
 
             // Prompt here so we make sure we're in the right directory
-            var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.Auto));
+            var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.Always));
             authResult = token;
             graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
             
