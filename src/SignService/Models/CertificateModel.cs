@@ -15,5 +15,6 @@ namespace SignService.Models
         public string CertificateIdentifier { get; set; }
         public string Thumbprint { get; set; }
         public CertificateAttributes Attributes { get; set; }
+        public CertificateOperation Operation { get; set; }
     }
 }

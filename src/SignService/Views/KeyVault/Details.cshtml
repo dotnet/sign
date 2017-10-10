@@ -66,6 +66,10 @@
         <th>
             @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Created)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Operation.Status)
+        </th>
+        <th></th>
     </tr>
     </thead>
     <tbody>
@@ -90,13 +94,26 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Attributes.Updated)
             </td>
+            <th>
+                @Html.DisplayFor(modelItem => item.Operation.Status)
+            </th>
+            <th>
+                @if (item.Operation?.Status == "inProgress")
+                {
+                    @Html.ActionLink("Cancel", "CancelCertificateRequest", new
+                    {
+                        id = Model.Vault.Name,
+                        certificateName = item.Name
+                    }); 
+                }
+                
+            </th>
         </tr>
     }
     </tbody>
 </table>
 
 <div>
-    @Html.ActionLink("Edit", "Edit", new {  id = Model.Vault.Name }) |
-    @Html.ActionLink("Reset Password", "ResetPassword", new {  id = Model.Vault.Name }) |
+    @Html.ActionLink("New Certificate", "CreateCertificate", new {  id = Model.Vault.Name }) |
     <a asp-action="Index">Back to List</a>
 </div>

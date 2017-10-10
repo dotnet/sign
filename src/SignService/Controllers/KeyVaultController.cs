@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.KeyVault.Models;
 using SignService.Models;
 using SignService.Services;
 
@@ -30,14 +31,22 @@ namespace SignService.Controllers
         {
             try
             {
-
                 var vault = await keyVaultAdminService.GetVaultAsync(id);
                 var certificates = await keyVaultAdminService.GetCertificatesInVaultAsync(vault.VaultUri);
 
+                // See if there are any pending ops
+                var ops = certificates.Select(c => new { cert = c, operation = keyVaultAdminService.GetCertificateOperation(vault.VaultUri, c.Name) }).ToList();
+                await Task.WhenAll(ops.Select(a => a.operation));
+
+                foreach (var op in ops)
+                {
+                    op.cert.Operation = op.operation.Result; // completed, safe
+                }
+                
                 var model = new KeyVaultDetailsModel
                 {
                     Vault = vault,
-                    CertificateModels = certificates
+                    CertificateModels = ops.Select(a => a.cert).ToList()
                 };
 
                 return View(model);
@@ -48,28 +57,36 @@ namespace SignService.Controllers
                 return View("Details.Error");
             }
         }
-        
-        // GET: KeyVault/Edit/5
-        public ActionResult Edit(int id)
+
+        // GET: KeyVault/CreateCertificate/vaultName
+        public IActionResult CreateCertificate(string id)
         {
-            return View();
+            return View(new CreateCertificateRequestModel{VaultName = id});
         }
 
         // POST: KeyVault/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> CreateCertificate(CreateCertificateRequestModel model)
         {
             try
             {
-                // TODO: Add update logic here
+                var csr = await keyVaultAdminService.CreateCsrAsync(model.VaultName, model.CertificateName, model.CertificateName);
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new {id = model.VaultName});
             }
-            catch
+            catch(Exception e)
             {
-                return View();
+                ModelState.AddModelError("", e.Message);
+                return View(model);
             }
+        }
+
+        public async Task<IActionResult> CancelCertificateRequest(string id, string certificateName)
+        {
+            var op = await keyVaultAdminService.CancelCsrAsync(id, certificateName);
+
+            return RedirectToAction(nameof(Details), new { id = id });
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +24,10 @@ namespace SignService.Services
         Task<VaultModel> GetVaultAsync(string vaultName);
         Task<List<VaultModel>> ListKeyVaultsAsync();
         Task<List<CertificateModel>> GetCertificatesInVaultAsync(string vaultUri);
+        Task<CertificateOperation> CancelCsrAsync(string vaultName, string certificateName);
+        Task<CertificateBundle> MergeCertificate(string vaultName, string certificateName, X509Certificate2Collection publicCertificates);
+        Task<CertificateOperation> GetCertificateOperation(string vaultUrl, string certificateName);
+        Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName);
     }
 
     public class KeyVaultAdminService : IKeyVaultAdminService
@@ -256,13 +262,96 @@ namespace SignService.Services
                 nextLink = certs.NextPageLink;
             }
 
-            return totalItems.Select(ci => new CertificateModel
+            // Get keys since they may be there for pending certs
+            var totalKeys = new List<KeyItem>();
+            var keys = await kvClient.GetKeysAsync(vaultUri).ConfigureAwait(false);
+            totalKeys.AddRange(keys);
+
+            nextLink = keys.NextPageLink;
+            // Get the rest if there's more
+            while (!string.IsNullOrWhiteSpace(nextLink))
+            {
+                keys = await kvClient.GetKeysNextAsync(nextLink).ConfigureAwait(false);
+                totalKeys.AddRange(keys);
+                nextLink = keys.NextPageLink;
+            }
+
+            // only get the ones where we don't have a cert
+            var keyDict = totalKeys.ToDictionary(ki => ki.Kid.Substring(ki.Kid.LastIndexOf("/") + 1));
+            
+            var models = totalItems
+                .Select(ci => new CertificateModel
             {
                 Name =  ci.Id.Substring(ci.Id.LastIndexOf("/") + 1),
                 CertificateIdentifier = ci.Identifier.Identifier,
                 Thumbprint = BitConverter.ToString(ci.X509Thumbprint).Replace("-", ""),
                 Attributes = ci.Attributes
-            }).OrderBy(cm => cm.Name).ToList();
+            }).ToList();
+
+            foreach (var model in models)
+            {
+                keyDict.Remove(model.Name);
+            }
+
+            models.AddRange(keyDict.Select(kvp => new CertificateModel
+            {
+                Name = kvp.Key
+            }));
+
+            return models.OrderBy(cm => cm.Name).ToList();
+        }
+
+        public async Task<CertificateOperation> GetCertificateOperation(string vaultUrl, string certificateName)
+        {
+            try
+            {
+                var op = await kvClient.GetCertificateOperationAsync(vaultUrl, certificateName).ConfigureAwait(false);
+                return op;
+
+            } // May not be any pending operations
+            catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        public async Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName)
+        {
+            var policy = new CertificatePolicy()
+            {
+                X509CertificateProperties = new X509CertificateProperties
+                {
+                    Subject = $"CN={displayName}"
+                },
+                KeyProperties = new KeyProperties
+                {
+                    KeySize = 2048,
+                    KeyType = "RSA-HSM"
+                },
+                IssuerParameters = new IssuerParameters
+                {
+                    Name = "Unknown" // External CA
+                }
+            };
+
+            var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
+            var op = await kvClient.CreateCertificateAsync(vault.VaultUri, certificateName, policy).ConfigureAwait(false);
+            return op;
+        }
+
+        public async Task<CertificateOperation> CancelCsrAsync(string vaultName, string certificateName)
+        {
+            var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
+            var op = await kvClient.UpdateCertificateOperationAsync(vault.VaultUri, certificateName, true).ConfigureAwait(false);
+            op = await kvClient.DeleteCertificateOperationAsync(vault.VaultUri, certificateName).ConfigureAwait(false);
+            return op;
+        }
+
+        public async Task<CertificateBundle> MergeCertificate(string vaultName, string certificateName, X509Certificate2Collection publicCertificates)
+        {
+            var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
+            var op = await kvClient.MergeCertificateAsync(vault.VaultUri, certificateName, publicCertificates).ConfigureAwait(false);
+            return op;
         }
 
         public async Task<X509Certificate2> GetCertificateDetails(string certificateIdentifier)
