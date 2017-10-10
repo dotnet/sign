@@ -81,9 +81,12 @@ namespace InstallUtility
             var clientApp = await EnsureClientAppExists(serverApp.application);
             Console.WriteLine("Update complete.");
 
+            // Prompt for consent
+            await PromptForConsent(serverApp, clientApp);
+
             // Need to create a resource group and grant the sign service application the Read permissions
             await CreateOrUpdateResourceGroup(serverApp.servicePrincipal);
-
+            
             // Print out relevant values
             PrintApplicationInfo(serverApp, clientApp);
 
@@ -174,11 +177,148 @@ namespace InstallUtility
             Console.WriteLine();
         }
 
-        static async Task PromptForConsent(IApplication server, IServicePrincipal serverServicePrincipal, IApplication client)
+        static async Task PromptForConsent((IApplication application, IServicePrincipal servicePrincipal) server, (IApplication application, IServicePrincipal servicePrincipal) client)
         {
-            
+            // Look up the permissions and see if they're already consented. If there's a difference, prompt
+            var serverData = await GetApplicationPermissions(server.application);
+            var clientData = await GetApplicationPermissions(client.application);
+
+            var perms = await GetPermissionsToAddUpdate(new[]
+            {
+                (spid: server.servicePrincipal.ObjectId, permissions: serverData.permissions),
+                (spid: client.servicePrincipal.ObjectId, permissions: clientData.permissions)
+            });
+
+
+            // Nothing to do
+            if (perms.Count == 0)
+                return;
+
+            // Get the friendly text
+            var toConsent = serverData.permissions.Concat(clientData.permissions)
+                                  .SelectMany(kvp => kvp.Value)
+                                  .OrderBy(p => p.AdminConsentDisplayName)
+                                  .Select(p => (p.AdminConsentDisplayName))
+                                  .Distinct();
+                                  
+
+            Console.WriteLine("If you're a directory administrator, you need to grant consent to the service.");
+            Console.WriteLine("Either proceed here as an admin or have them grant consent in the Azure Portal");
+            Console.WriteLine();
+
+            Console.WriteLine("Required Permissions");
+            Console.WriteLine("____________________");
+            foreach (var item in toConsent)
+            {
+                Console.WriteLine($"{item}");
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("Do you consent to these permissions on behalf or your organization? [y/N] to continue: ");
+            var key = Console.ReadLine()
+                             .ToUpperInvariant()
+                             .Trim();
+            if (key != "Y")
+            {
+                return;
+            }
+
+            // if the objectId on the permission isn't set, it's an add
+            foreach (var perm in perms)
+            {
+                if (string.IsNullOrWhiteSpace(perm.ObjectId))
+                {
+                    await graphClient.Oauth2PermissionGrants.AddOAuth2PermissionGrantAsync(perm);
+                }
+                else
+                {
+                    await perm.UpdateAsync();
+                }
+            }
         }
-      
+
+        static async Task<List<IOAuth2PermissionGrant>> GetPermissionsToAddUpdate((string spid, Dictionary<string, List<OAuth2Permission>> permissions)[] inputs)
+        {
+            var output = new List<IOAuth2PermissionGrant>();
+            // Build a list of OAuth2Permission's to add or update
+
+            foreach (var input in inputs)
+            {
+                var spid = input.spid;
+                // See if there's an existing grant and if it has all of the scopes
+                var grants = await graphClient.Oauth2PermissionGrants.Where(grant => grant.ClientId == spid && grant.ConsentType == "AllPrincipals").ExecuteAsync();
+
+                foreach (var kvp in input.permissions)
+                {
+                    // Get the service prinicipal for the resource
+                    var appid = kvp.Key;
+                    var resourceSp = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).ExecuteSingleAsync();
+
+                    var grant = grants.CurrentPage.FirstOrDefault(g => g.ResourceId == resourceSp.ObjectId);
+
+                    if (grant == null)
+                    {
+                        grant = new OAuth2PermissionGrant
+                        {
+                            ClientId = spid,
+                            ConsentType = "AllPrincipals",
+                            ResourceId = resourceSp.ObjectId,
+                            Scope = string.Empty,
+                            StartTime = DateTime.MinValue,
+                            ExpiryTime = DateTime.MaxValue
+                        };
+                    }
+
+                    // see if we have all the scopes
+                    var scopes = grant.Scope.Split(' ');
+                    foreach (var scope in kvp.Value)
+                    {
+                        if (!scopes.Contains(scope.Value))
+                        {
+                            // something isn't here, add ours and add to output
+                            grant.Scope = string.Join(" ", kvp.Value.Select(p => p.Value));
+                            output.Add(grant);
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+            return output;
+        }
+
+        static async Task<(Dictionary<string, List<OAuth2Permission>> permissions, Dictionary<string, List<AppRole>> roles)> GetApplicationPermissions(IApplication application)
+        {
+            var permissions = new Dictionary<string, List<OAuth2Permission>>();
+            var roles = new Dictionary<string, List<AppRole>>();
+
+            foreach (var rra in application.RequiredResourceAccess)
+            {
+                permissions.Add(rra.ResourceAppId, new List<OAuth2Permission>());
+                roles.Add(rra.ResourceAppId, new List<AppRole>());
+
+                var rraid = rra.ResourceAppId;
+
+                var sp = await graphClient.ServicePrincipals.Where(a => a.AppId == rraid).ExecuteSingleAsync();
+                foreach (var ra in rra.ResourceAccess)
+                {
+                    if (ra.Type == "Scope")
+                    {
+                        var scope = sp.Oauth2Permissions.First(p => p.Id == ra.Id);
+                        permissions[rra.ResourceAppId].Add(scope);
+                    }
+                    else if (ra.Type == "Role")
+                    {
+                        var role = sp.AppRoles.First(r => r.Id == ra.Id);
+                        roles[rra.ResourceAppId].Add(role);
+                    }
+                }
+            }
+
+            return (permissions, roles);
+        }
+
         static async Task<Guid> CreateApplication(string appName)
         {
             var application = new Application
