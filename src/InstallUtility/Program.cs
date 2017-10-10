@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.ActiveDirectory.GraphClient;
 using Microsoft.Azure.Management.Authorization;
@@ -120,9 +122,6 @@ namespace InstallUtility
             
             var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken));
             ac.SubscriptionId = subscriptionId;
-
-            //var principal = await graphClient.ServicePrincipalsByAppId[serverApplication.AppId].ExecuteAsync();
-            
             
             // Get the reader role
             var roleDefinitions = await ac.RoleDefinitions.ListAsync(rg.Id, new ODataQuery<RoleDefinitionFilter>(f => f.RoleName == "Reader"));
@@ -137,7 +136,7 @@ namespace InstallUtility
             Console.ReadLine();
         }
 
-        static void PrintApplicationInfo((IApplication server, IApplication client) apps)
+        static void PrintApplicationInfo((IApplication server, IServicePrincipal serverServicePrincipal, IApplication client) apps)
         {
             Console.WriteLine("Sign Server Summary");
             Console.WriteLine("__________________________");
@@ -229,10 +228,12 @@ namespace InstallUtility
 
             await app.UpdateAsync();
 
+            var clientSp = EnsureServicePrinicpalExists(app);
+
             return app;
         }
 
-        static async Task<(IApplication server, IApplication client)> ConfigureApplication(Guid appObjId)
+        static async Task<(IApplication server, IServicePrincipal serverServicePrincipal, IApplication client)> ConfigureApplication(Guid appObjId)
         {
             
             var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
@@ -357,8 +358,33 @@ namespace InstallUtility
                 }
             }
 
+            var serverSp = await EnsureServicePrinicpalExists(app);
+
             var client = await EnsureClientAppExists(app);
-            return (app, client);
+            return (app, serverSp, client);
+        }
+
+        async static Task<IServicePrincipal> EnsureServicePrinicpalExists(IApplication application)
+        {
+            // see if it exists already
+            var appid = application.AppId;
+            var sc = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).ExecuteAsync();
+
+            var s = sc.CurrentPage.FirstOrDefault();
+            if (s == null)
+            {
+                // Create it
+                s = new ServicePrincipal()
+                {
+                    AppId = appid,
+                    AccountEnabled = true,
+                    Tags = { "WindowsAzureActiveDirectoryIntegratedApp" } // This is what VS does...
+                };
+
+                await graphClient.ServicePrincipals.AddServicePrincipalAsync(s);
+            }
+
+            return s;
         }
     }
 }
