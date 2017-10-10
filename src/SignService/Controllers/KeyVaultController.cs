@@ -126,8 +126,16 @@ namespace SignService.Controllers
             
             var collection = new X509Certificate2Collection(cert);
 
-            await keyVaultAdminService.MergeCertificate(model.VaultName, model.CertificateName, collection);
-
+            try
+            {
+                await keyVaultAdminService.MergeCertificate(model.VaultName, model.CertificateName, collection);
+            }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", e.Message);
+                return View(nameof(CertificateRequest), model);
+            }
+            
             return RedirectToAction(nameof(Details), new { id = model.VaultName });
         }
 
