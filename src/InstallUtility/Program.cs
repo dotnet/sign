@@ -81,7 +81,7 @@ namespace InstallUtility
             Console.WriteLine("Update complete.");
 
             // Need to create a resource group and grant the sign service application the Read permissions
-            await CreateOrUpdateResourceGroup(apps.server);
+            await CreateOrUpdateResourceGroup(apps.serverServicePrincipal);
 
             // Print out relevant values
             PrintApplicationInfo(apps);
@@ -90,7 +90,7 @@ namespace InstallUtility
             Console.ReadKey(true);
         }
 
-        static async Task CreateOrUpdateResourceGroup(IApplication serverApplication)
+        static async Task CreateOrUpdateResourceGroup(IServicePrincipal serverApplication)
         {
 
             Console.WriteLine("Add or update Key Vault Resource Group (required once)? [y/N] to continue: ");
@@ -117,23 +117,33 @@ namespace InstallUtility
             rgc.SubscriptionId = subscriptionId;
             var rg = new ResourceGroup(location, name: name);
             rg = await rgc.ResourceGroups.CreateOrUpdateAsync(name, rg);
-
-
             
             var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken));
             ac.SubscriptionId = subscriptionId;
-            
+
+
+            // See if the resource group has the reader role
             // Get the reader role
-            var roleDefinitions = await ac.RoleDefinitions.ListAsync(rg.Id, new ODataQuery<RoleDefinitionFilter>(f => f.RoleName == "Reader"));
+            var roleFilter = new ODataQuery<RoleDefinitionFilter>(f => f.RoleName == "Reader");
+
+            var roleDefinitions = await ac.RoleDefinitions.ListAsync(rg.Id, roleFilter);
             var roleDefinition = roleDefinitions.First();
+            var roleId = roleDefinition.Id;
 
-            //var rap = new RoleAssignmentProperties
-            //{
-            //    PrincipalId = principal.ObjectId,
-            //    RoleDefinitionId = roleDefinition.Id
-            //};
+            var spid = serverApplication.ObjectId;
 
-            Console.ReadLine();
+            var raps = await ac.RoleAssignments.ListForScopeAsync(rg.Id, new ODataQuery<RoleAssignmentFilter>(f => f.PrincipalId == spid));
+
+            if (raps.All(ra => ra.Properties.RoleDefinitionId != roleId))
+            {
+                // none found, add one
+                var rap = new RoleAssignmentProperties
+                {
+                    PrincipalId = spid,
+                    RoleDefinitionId = roleId
+                };
+                var ra = await ac.RoleAssignments.CreateAsync(rg.Id, Guid.NewGuid().ToString(), rap);
+            }
         }
 
         static void PrintApplicationInfo((IApplication server, IServicePrincipal serverServicePrincipal, IApplication client) apps)
