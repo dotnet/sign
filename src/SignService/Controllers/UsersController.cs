@@ -79,7 +79,12 @@ namespace SignService.Controllers
 
                 ViewBag.Password = res.Item2;
 
-                return View(nameof(Details), res.Item1);
+                var model = new UserDetailsModel
+                {
+                    User = res.Item1
+                };
+
+                return View(nameof(Details), model);
             }
             catch (Exception e)
             {
@@ -137,7 +142,9 @@ namespace SignService.Controllers
                 DisplayName = user.DisplayName,
                 KeyVaultUrl = user.KeyVaultUrl,
                 TimestampUrl = user.TimestampUrl,
-                CertificatesModels = certs
+
+                // Only show enabled ones here
+                CertificatesModels = certs.Where(cm => cm.Attributes.Enabled == true).ToList()
             };
             return View(model);
         }
