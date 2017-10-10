@@ -8,6 +8,9 @@ using Microsoft.Azure.KeyVault.Models;
 using SignService.Models;
 using SignService.Services;
 using SignService.Utils;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace SignService.Controllers
 {
@@ -101,6 +104,31 @@ namespace SignService.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MergeCertificate(UpdateCertificateRequestModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(nameof(CertificateRequest), model);
+            }
+
+            X509Certificate2 cert;
+            using (var ms = new MemoryStream())
+            {
+                // get file data
+                await model.Certificate.CopyToAsync(ms);
+                ms.Position = 0;
+                cert = new X509Certificate2(ms.ToArray());
+            }
+            
+            var collection = new X509Certificate2Collection(cert);
+
+            await keyVaultAdminService.MergeCertificate(model.VaultName, model.CertificateName, collection);
+
+            return RedirectToAction(nameof(Details), new { id = model.VaultName });
         }
 
         public async Task<IActionResult> CancelCertificateRequest(string id, string certificateName)

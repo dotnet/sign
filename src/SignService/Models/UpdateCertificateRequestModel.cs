@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SignService.Models
@@ -14,6 +16,10 @@ namespace SignService.Models
         [HiddenInput]
         public string CertificateName { get; set; }
 
+        [HiddenInput]
         public string Csr { get; set; }
+
+        [Required]
+        public IFormFile Certificate { get; set; }
     }
 }

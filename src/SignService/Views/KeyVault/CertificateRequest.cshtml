@@ -17,16 +17,20 @@
 </textarea>
         </div>
 
-        <form asp-action="MergeCertificate" asp-antiforgery="true">
+        <form asp-action="MergeCertificate" asp-antiforgery="true" enctype="multipart/form-data" >
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <input type="file" id="cerFile"/>
+                <label asp-for="Certificate" class="control-label"></label>
+                <input asp-for="Certificate" class="form-control" />
+                <span asp-validation-for="Certificate" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Upload CA Cer" class="btn btn-default"/>
             </div>
             <input asp-for="VaultName" class="hidden"/>
             <input asp-for="CertificateName" class="hidden"/>
+            <input asp-for="Csr" class="hidden"/>
         </form>
     </div>
 </div>
