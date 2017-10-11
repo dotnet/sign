@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SignService.SigningTools;
 using SignService.Utils;
 using Microsoft.AspNetCore.Http;
+using SignService.Services;
 
 namespace SignService
 {
@@ -26,8 +26,6 @@ namespace SignService
 
     class AzureSignToolCodeSignService : ICodeSignService
     {
-        readonly string timeStampUrl;
-        readonly Settings settings;
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<AzureSignToolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
@@ -41,10 +39,8 @@ namespace SignService
         };
 
 
-        public AzureSignToolCodeSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, ILogger<AzureSignToolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
+        public AzureSignToolCodeSignService(IHttpContextAccessor contextAccessor, ILogger<AzureSignToolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
         {
-            timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
-            this.settings = settings.Value;
             this.contextAccessor = contextAccessor;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
@@ -97,7 +93,7 @@ namespace SignService
 
                 string args;
             
-                args = $@"sign ""{file}"" -tr {timeStampUrl} -fd sha256 -td sha256 {descArgs} -kvu {settings.CertificateInfo.KeyVaultUrl} -kvc {settings.CertificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
+                args = $@"sign ""{file}"" -tr {keyVaultService.CertificateInfo.TimestampUrl} -fd sha256 -td sha256 {descArgs} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
 
                 if (!Sign(args))
                 {

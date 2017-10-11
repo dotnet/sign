@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26823.1
+VisualStudioVersion = 15.0.26923.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92C73EE1-4EF3-4721-B6A9-9F458A673CA3}"
 EndProject
@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		scripts\appsettings.json = scripts\appsettings.json
+		src\Directory.build.props = src\Directory.build.props
 		README.md = README.md
 		scripts\Sign-Package.ps1 = scripts\Sign-Package.ps1
 		src\SignClient.nuspec = src\SignClient.nuspec
@@ -19,6 +20,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignClient", "src\SignClient\SignClient.csproj", "{84FC3FBF-E14C-4268-8693-45CC82451DF3}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker\docker-compose.dcproj", "{0A2976F1-5A72-4828-8312-A78DA9D0E550}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InstallUtility", "src\InstallUtility\InstallUtility.csproj", "{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}"
 EndProject
 Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SignServiceCloudService", "src\SignServiceCloudService\SignServiceCloudService.ccproj", "{EABA4762-B925-4E94-8644-0EEF2EC86111}"
 EndProject
@@ -40,6 +43,10 @@ Global
 		{84FC3FBF-E14C-4268-8693-45CC82451DF3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A2976F1-5A72-4828-8312-A78DA9D0E550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0A2976F1-5A72-4828-8312-A78DA9D0E550}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -55,6 +62,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9F556193-4978-4F31-A905-AC5699E05122} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{84FC3FBF-E14C-4268-8693-45CC82451DF3} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
+		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{EABA4762-B925-4E94-8644-0EEF2EC86111} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 	EndGlobalSection

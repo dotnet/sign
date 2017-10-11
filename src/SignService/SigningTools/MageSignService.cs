@@ -15,29 +15,25 @@ using SignService.Utils;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using SignService.Services;
 
 namespace SignService.SigningTools
 {
     public class MageSignService : ICodeSignService
     {
         readonly AzureAdOptions aadOptions;
-        readonly CertificateInfo certificateInfo;
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<MageSignService> logger;
         readonly string magetoolPath;
-        readonly string timeStampUrl;
         readonly Lazy<ISigningToolAggregate> signToolAggregate;
         readonly ParallelOptions options = new ParallelOptions
         {
             MaxDegreeOfParallelism = 4
         };
 
-        public MageSignService(IOptions<Settings> settings, IOptions<AzureAdOptions> aadOptions, IHostingEnvironment hostingEnvironment, IHttpContextAccessor contextAccessor, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
+        public MageSignService(IOptions<AzureAdOptions> aadOptions, IHostingEnvironment hostingEnvironment, IHttpContextAccessor contextAccessor, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
         {
-            timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
-
             this.aadOptions = aadOptions.Value;
-            certificateInfo = settings.Value.CertificateInfo;
             this.contextAccessor = contextAccessor;
             this.logger = logger;
             magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
@@ -70,6 +66,7 @@ namespace SignService.SigningTools
 
             var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             var certificate = keyVaultService.GetCertificateAsync().Result;
+            var timeStampUrl = keyVaultService.CertificateInfo.TimestampUrl;
 
             using (var rsaPrivateKey = keyVaultService.ToRSA()
                                                       .Result)

@@ -16,7 +16,6 @@ namespace SignService.SigningTools
     public class SigningToolAggregate : ISigningToolAggregate
     {
         readonly ILogger<SigningToolAggregate> logger;
-        readonly IOptions<Settings> settings;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
         readonly string makeappxPath;
@@ -25,7 +24,6 @@ namespace SignService.SigningTools
         public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptions<Settings> settings)
         {
             this.logger = logger;
-            this.settings = settings;
             makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
             // pe files
             defaultCodeSignService = services.Single(c => c.IsDefault);

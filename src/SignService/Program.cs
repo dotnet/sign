@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore;
+using Microsoft.Extensions.Configuration;
 
 namespace SignService
 {
@@ -18,6 +19,11 @@ namespace SignService
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                    .ConfigureAppConfiguration((builder =>
+                                                {
+                                                    // Look here as well since this location may be easier for VM deployments
+                                                    builder.AddJsonFile(@"App_Data\appsettings.json", true, true);
+                                                }))
                    .UseStartup<Startup>()
                    .Build();
     }

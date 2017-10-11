@@ -1,0 +1,61 @@
+﻿@model SignService.Models.UpdateCreateSignServiceUserModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+<h4>UpdateCreateSignServiceUserModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" asp-antiforgery="true">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="ObjectId" class="control-label"></label>
+                <input asp-for="ObjectId" class="form-control" />
+                <span asp-validation-for="ObjectId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DisplayName" class="control-label"></label>
+                <input asp-for="DisplayName" class="form-control" />
+                <span asp-validation-for="DisplayName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Username" class="control-label"></label>
+                <input asp-for="Username" class="form-control" readonly="readonly" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Configured" class="control-label"></label>
+                <input asp-for="Configured" class="form-control" />
+                <span asp-validation-for="Configured" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="KeyVaultUrl" class="control-label"></label>
+                <input asp-for="KeyVaultUrl" class="form-control" />
+                <span asp-validation-for="KeyVaultUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CertificateName" class="control-label"></label>
+                <select asp-for="CertificateName" class="form-control" asp-items="@(new SelectList(Model.CertificatesModels, "Name", "Name"))" >
+                </select>
+                <span asp-validation-for="CertificateName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TimestampUrl" class="control-label"></label>
+                <input asp-for="TimestampUrl" class="form-control" />
+                <span asp-validation-for="TimestampUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

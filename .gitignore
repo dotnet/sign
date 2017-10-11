@@ -245,10 +245,11 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /src/SignClient/Properties/launchSettings.json
-/src/SignService/appsettings.development.json
+/src/SignService/App_Data/
 
 /src/SignService/tools/SDK/
 !**/KeyVaultSignToolWrapper/x86/
 !**/KeyVaultSignToolWrapper/x64/
 /src/SignService/Properties/PublishProfiles
 /src/SignServiceCloudService/ServiceConfiguration.Deploy.cscfg
+/src/InstallUtility/Properties/launchSettings.json

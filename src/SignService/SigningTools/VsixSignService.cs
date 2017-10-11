@@ -9,28 +9,23 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using SignService.Utils;
+using SignService.Services;
 
 namespace SignService.SigningTools
 {
     public class VsixSignService : ICodeSignService
     {
-        readonly CertificateInfo certificateInfo;
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<VsixSignService> logger;
         readonly string signtoolPath;
-        readonly string timeStampUrl;
 
         readonly ParallelOptions options = new ParallelOptions
         {
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IOptions<Settings> settings, IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
+        public VsixSignService(IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
         {
-            timeStampUrl = settings.Value.CertificateInfo.TimestampUrl;
-            certificateInfo = settings.Value.CertificateInfo;
             this.contextAccessor = contextAccessor;
             this.logger = logger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
@@ -51,14 +46,13 @@ namespace SignService.SigningTools
         {
             logger.LogInformation("Signing OpenVsixSignTool job {0} with {1} files", name, files.Count());
 
-            // If KeyVault is enabled, use that
-
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? "sha1" : "sha256";
             
             var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
-            var args = $@"sign --timestamp {timeStampUrl} -ta {alg} -fd {alg} -kvu {certificateInfo.KeyVaultUrl} -kvc {certificateInfo.KeyVaultCertificateName} -kva {keyVaultAccessToken}";
+
+            var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
             
 
             Parallel.ForEach(files, options, (file, state) =>

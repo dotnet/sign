@@ -9,6 +9,6 @@ namespace SignService
     {
         public string TimestampUrl { get; set; }
         public string KeyVaultUrl { get; set; }
-        public string KeyVaultCertificateName { get; set; }
+        public string CertificateName { get; set; }
     }
 }

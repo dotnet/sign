@@ -1,0 +1,82 @@
+﻿@model IEnumerable<SignService.Models.GraphUser>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h2>Users</h2>
+
+<p>
+    <a asp-action="Create">Create New Sign Service Account</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserPrincipalName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DisplayName)
+            </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.GivenName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Surname)
+                </th>
+
+            <th>
+                @Html.DisplayNameFor(model => model.KeyVaultUrl)
+            </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.KeyVaultCertificateName)
+                </th>
+
+                <th>
+                    @Html.DisplayNameFor(model => model.TimestampUrl)
+                </th>
+            
+            <th>
+                @Html.DisplayNameFor(model => model.SignServiceConfigured)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.UserPrincipalName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DisplayName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GivenName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Surname)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.KeyVaultUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.KeyVaultCertificateName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TimestampUrl)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SignServiceConfigured)
+                
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id=item.ObjectId }) |
+                @Html.ActionLink("Details", "Details", new { id=item.ObjectId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ObjectId }) |
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -1,0 +1,85 @@
+﻿@model SignService.Models.UserDetailsModel
+
+@{
+    ViewData["Title"] = "UserDetail";
+
+    var password = ViewBag.Password;
+    var hasPassword = !string.IsNullOrWhiteSpace(password);
+}
+
+<h2>UserDetail</h2>
+
+<div>
+    <h4>GraphUser</h4>
+    <hr />
+    @if (hasPassword)
+    {
+        <div class="alert-success">User Created. Save the password, it won't be visible again.</div>
+        <div class="password">@password</div>
+    }
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.User.ObjectId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.ObjectId)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.UserPrincipalName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.UserPrincipalName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.GivenName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.GivenName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.Surname)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.Surname)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.DisplayName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.DisplayName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.SignServiceConfigured)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.SignServiceConfigured)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.KeyVaultUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.KeyVaultUrl)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.TimestampUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.TimestampUrl)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.User.KeyVaultCertificateName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.User.KeyVaultCertificateName)
+        </dd>
+    </dl>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new {  id = Model.User.ObjectId }) |
+    @Html.ActionLink("Reset Password", "ResetPassword", new {  id = Model.User.ObjectId }) |
+    @if (Model.HasVaultName) {
+        @Html.ActionLink("Vault Details", "Details", "KeyVault", new { id = Model.VaultName });
+        @Html.Encode(" | ");
+    }
+    <a asp-action="Index">Back to List</a>
+</div>

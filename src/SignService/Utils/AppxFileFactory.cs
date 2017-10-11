@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using SignService.Services;
 
 namespace SignService.Utils
 {
@@ -16,7 +16,6 @@ namespace SignService.Utils
     public class AppxFileFactory : IAppxFileFactory
     {
         readonly ILogger<AppxFileFactory> logger;
-        readonly IOptions<Settings> settings;
         readonly IHttpContextAccessor contextAccessor;
         string publisher;
         readonly string makeappxPath;
@@ -24,7 +23,6 @@ namespace SignService.Utils
         public AppxFileFactory(ILogger<AppxFileFactory> logger, IOptions<Settings> settings, IHttpContextAccessor contextAccessor)
         {
             this.logger = logger;
-            this.settings = settings;
             this.contextAccessor = contextAccessor;
             makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
         }

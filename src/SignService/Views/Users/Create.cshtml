@@ -1,0 +1,60 @@
+﻿@model SignService.Models.CreateSignServiceUserModel
+
+@{
+    ViewData["Title"] = "CreateUser";
+}
+
+<h2>CreateUser</h2>
+
+<h4>CreateSignServiceUserModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create" asp-antiforgery="true">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Username" class="control-label"></label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DisplayName" class="control-label"></label>
+                <input asp-for="DisplayName" class="form-control" />
+                <span asp-validation-for="DisplayName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input asp-for="Configured" /> @Html.DisplayNameFor(model => model.Configured)
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="KeyVaultUrl" class="control-label"></label>
+                <input asp-for="KeyVaultUrl" class="form-control" />
+                <span asp-validation-for="KeyVaultUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CertificateName" class="control-label"></label>
+                <input asp-for="CertificateName" class="form-control" />
+                <span asp-validation-for="CertificateName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TimestampUrl" class="control-label"></label>
+                <input asp-for="TimestampUrl" class="form-control" />
+                <span asp-validation-for="TimestampUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Users">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

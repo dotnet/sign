@@ -2,38 +2,30 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
-using Microsoft.Extensions.Options;
 
 namespace SignService.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [RequireHttps]
     [Route("[controller]")]
     public class SignController : Controller
     {
         readonly ISigningToolAggregate codeSignAggregate;
-        readonly IOptionsSnapshot<Settings> settings;
         readonly ILogger<SignController> logger;
-
-
-
-        public SignController(ISigningToolAggregate codeSignAggregate, IOptionsSnapshot<Settings> settings, ILogger<SignController> logger)
+        
+        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
         {
             this.codeSignAggregate = codeSignAggregate;
-            this.settings = settings;
             this.logger = logger;
         }
-
-
 
         [HttpPost("singleFile")]
         public async Task<IActionResult> SignSingleFile(IFormFile source, HashMode hashMode, string name, string description, string descriptionUrl)

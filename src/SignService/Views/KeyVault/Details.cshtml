@@ -1,0 +1,119 @@
+﻿@model SignService.Models.KeyVaultDetailsModel
+
+@{
+    ViewData["Title"] = "Key Vault Details";
+}
+
+<h2>Vault Details for @Model.Vault.DisplayName (@Model.Vault.Username)</h2>
+
+<h4>Details</h4>
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Vault.DisplayName)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Vault.DisplayName)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Vault.Username)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Vault.Username)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Vault.Name)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Vault.Name)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Vault.VaultUri)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Vault.VaultUri)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Vault.Location)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Vault.Location)
+        </dd>
+    </dl>
+</div>
+<h4>Certificates</h4>
+<hr />
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Thumbprint)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.NotBefore)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Expires)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Enabled)
+        
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Created)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Operation.Status)
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.CertificateModels) {
+        <tr>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Thumbprint)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Attributes.NotBefore)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Attributes.Expires)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Attributes.Enabled)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Attributes.Updated)
+            </td>
+            <th>
+                @Html.DisplayFor(modelItem => item.Operation.Status)
+            </th>
+            <th>
+                @if (item.Operation?.Status == "inProgress")
+                {
+                    @Html.ActionLink("View", "CertificateRequest", new
+                    {
+                        id = Model.Vault.Name,
+                        certificateName = item.Name
+                    });
+                }
+                
+            </th>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<div>
+    @Html.ActionLink("New Certificate", "CreateCertificate", new {  id = Model.Vault.Name }) |
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -6,6 +6,7 @@
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\x64\</WinSdkBinDir>
     <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools\</NetSdkBinDir>
     <DockerComposeProjectPath>..\..\docker\docker-compose.dcproj</DockerComposeProjectPath>
+    <UserSecretsId>9c2a9e27-e4ca-46ef-a555-2b557d723c4d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +19,7 @@
     
     <SdkFile Include="$(NetSdkBinDir)mage.exe" />
     
-    <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*">
+    <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*;App_Data\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
@@ -26,13 +27,23 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.16.1" />
+    <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.3.0-preview" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
 
   <Target Name="PrebuildScript" BeforeTargets="CoreBuild">
     <Copy SourceFiles="@(SdkFile)" DestinationFolder="tools\SDK" SkipUnchangedFiles="true" />
   </Target>
 
+  <ItemGroup>
+    <MsDeploySkipRules Include="CustomSkipFolder">
+      <ObjectName>dirPath</ObjectName>
+      <AbsolutePath>\\App_Data</AbsolutePath>
+    </MsDeploySkipRules>
+  </ItemGroup>
+  
 </Project>
