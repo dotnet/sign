@@ -107,6 +107,17 @@ namespace SignService
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
 
+            // see if we have a temp path override
+            var customTemp = Environment.GetEnvironmentVariable("CustomTempPath");
+            if (!string.IsNullOrWhiteSpace(customTemp))
+            {
+                if (Directory.Exists(customTemp))
+                {
+                    Environment.SetEnvironmentVariable("TMP", customTemp);
+                    Environment.SetEnvironmentVariable("TEMP", customTemp);
+                }
+            }
+
             app.UseStaticFiles();
             app.UseSession();
 

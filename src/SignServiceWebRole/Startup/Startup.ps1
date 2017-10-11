@@ -35,6 +35,8 @@ $tempPath = write-host ([Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]:
 [Environment]::SetEnvironmentVariable("TEMP", $tempPath, "Machine")
 [Environment]::SetEnvironmentVariable("TEMP", $tempPath, "User")
 
+[Environment]::SetEnvironmentVariable("CustomTempPath", $tempPath, "Machine")
+
 ###
 
 Write-Verbose "========== .NET Core Windows Hosting Installation ==========$nl" 
