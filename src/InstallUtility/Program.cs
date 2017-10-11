@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.Azure.ActiveDirectory.GraphClient;
 using Microsoft.Azure.Management.Authorization;
@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure.OData;
+using System.Text;
 
 namespace InstallUtility
 {
@@ -51,6 +52,7 @@ namespace InstallUtility
 
 
             Guid applicationId;
+            string password = null;
 
             // Try to find a "SignService Server -" app
             var a = await graphClient.Applications.Where(ia => ia.DisplayName.StartsWith(serverDisplayNamePrefix)).ExecuteAsync();
@@ -71,7 +73,9 @@ namespace InstallUtility
                 var appName = $"{serverDisplayNamePrefix}{Guid.NewGuid()}";
                 Console.WriteLine($"Creating application '{appName}'");
                 // Create
-                applicationId = await CreateApplication(appName);
+                var newApp = await CreateApplication(appName);
+                applicationId = newApp.Item1;
+                password = newApp.Item2;
 
                 Console.WriteLine("Created application");
             }
@@ -88,7 +92,7 @@ namespace InstallUtility
             await CreateOrUpdateResourceGroup(serverApp.servicePrincipal);
             
             // Print out relevant values
-            PrintApplicationInfo(serverApp, clientApp);
+            PrintApplicationInfo(serverApp, password, clientApp);
 
             Console.WriteLine("Press any key to quit....");
             Console.ReadKey(true);
@@ -150,7 +154,7 @@ namespace InstallUtility
             }
         }
 
-        static void PrintApplicationInfo((IApplication application, IServicePrincipal servicePrincipal) server, (IApplication application, IServicePrincipal servicePrincipal) client)
+        static void PrintApplicationInfo((IApplication application, IServicePrincipal servicePrincipal) server, string password, (IApplication application, IServicePrincipal servicePrincipal) client)
         {
             Console.WriteLine("Sign Server Summary");
             Console.WriteLine("__________________________");
@@ -159,6 +163,7 @@ namespace InstallUtility
             
             Console.WriteLine($"Audience:\t\t{server.application.IdentifierUris.First()}");
             Console.WriteLine($"ClientId:\t\t{server.application.AppId}");
+            if(password != null) Console.WriteLine($"ClientSecret:\t\t{password}");
             Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
             Console.WriteLine($"ApplicationObjectId:\t{server.application.ObjectId}");
             Console.WriteLine("__________________________");
@@ -380,20 +385,43 @@ namespace InstallUtility
             return (permissions, roles);
         }
 
-        static async Task<Guid> CreateApplication(string appName)
+        static async Task<(Guid, string)> CreateApplication(string appName)
         {
+            var randomBytes = new byte[32];
+            using (var rnd = RandomNumberGenerator.Create())
+            {
+                rnd.GetBytes(randomBytes);
+            }
+
+            var password = Convert.ToBase64String(randomBytes);
+
             var application = new Application
             {
                 DisplayName = appName,
                 Homepage = "https://localhost:44351/",
-                ReplyUrls = { "https://localhost:44351/signin-oidc" },
+                ReplyUrls =
+                {
+                    "https://localhost:44351/signin-oidc"
+                },
                 PublicClient = false,
                 AvailableToOtherTenants = false,
-                IdentifierUris = { $"https://SignService/{Guid.NewGuid()}" }
+                IdentifierUris =
+                {
+                    $"https://SignService/{Guid.NewGuid()}"
+                },
+                PasswordCredentials =
+                {
+                    new PasswordCredential
+                    {
+                        CustomKeyIdentifier = Encoding.Unicode.GetBytes("InstallerKey"),
+                        Value = password,
+                        EndDate = DateTime.UtcNow.AddYears(200)
+                    }
+                }
             };
 
             await graphClient.Applications.AddApplicationAsync(application);
-            return Guid.Parse(application.ObjectId);
+            return (Guid.Parse(application.ObjectId), password);
         }
 
         static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication)
@@ -468,6 +496,7 @@ namespace InstallUtility
              *          Directory.ReadWrite.All (78c8a3c8-a07e-4b9e-af1b-b5ccab50a175),
              *          Directory.AccessAsUser.All (a42657d6-7f20-40e3-b6f0-cee03008a62a)
              *      - Key Vault app (cfa8b339-82a2-471a-a3c9-0fc0be7a4093) OBO scope: (f53da476-18e3-4152-8e01-aec403e6edc0)
+             *      - Windows Azure Service Management API (797f4846-ba00-4fd7-ba43-dac1f8f63013) OBO scope: (41094075-9dad-400e-a0bd-54e686782033)
              * 3. Register the four extension properties the app uses for storing data on the service account users
              * 
              */
@@ -492,7 +521,8 @@ namespace InstallUtility
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("311a71cc-e848-46a1-bdf8-97ff7156d8e6"), type: "Scope"),
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("a42657d6-7f20-40e3-b6f0-cee03008a62a"), type: "Scope"),
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("78c8a3c8-a07e-4b9e-af1b-b5ccab50a175"), type: "Role"),
-                (resource:"cfa8b339-82a2-471a-a3c9-0fc0be7a4093", scope: new Guid("f53da476-18e3-4152-8e01-aec403e6edc0"), type: "Scope")
+                (resource:"cfa8b339-82a2-471a-a3c9-0fc0be7a4093", scope: new Guid("f53da476-18e3-4152-8e01-aec403e6edc0"), type: "Scope"),
+                (resource:"797f4846-ba00-4fd7-ba43-dac1f8f63013", scope: new Guid("41094075-9dad-400e-a0bd-54e686782033"), type: "Scope")
             };
 
             foreach (var rra in requiredResourceAccess)
