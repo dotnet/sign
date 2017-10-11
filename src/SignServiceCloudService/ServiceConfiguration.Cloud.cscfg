@@ -4,19 +4,21 @@
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="__DiagnosticConnectionString__" />
-      <Setting name="Authentication__AzureAd__AADInstance" value="__Authentication-AzureAd-AADInstance__" />
-      <Setting name="Authentication__AzureAd__Audience" value="__Authentication-AzureAd-Audience__" />
-      <Setting name="Authentication__AzureAd__ClientId" value="__Authentication-AzureAd-ClientId__" />
-      <Setting name="Authentication__AzureAd__TenantId" value="__Authentication-AzureAd-TenantId__" />
-      <Setting name="Authentication__AzureAd__ClientSecret" value="__Authentication-AzureAd-ClientSecret__" />
-      <Setting name="CertificateInfo__KeyVaultUrl" value="__CertificateInfo-KeyVaultUrl__" />
-      <Setting name="CertificateInfo__KeyVaultCertificatename" value="__CertificateInfo-KeyVaultCertificatename__" />
-      <Setting name="CertificateInfo__TimeStampUrl" value="__CertificateInfo-TimeStampUrl__" />
+      <Setting name="AzureAd__AADInstance" value="__AzureAd-AADInstance__" />
+      <Setting name="AzureAd__Audience" value="__AzureAd-Audience__" />
+      <Setting name="AzureAd__ClientId" value="__AzureAd-ClientId__" />
+      <Setting name="AzureAd__TenantId" value="__AzureAd-TenantId__" />
+      <Setting name="AzureAd__ClientSecret" value="__AzureAd-ClientSecret__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="__RemoteAccessEnabled__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="__AccountUsername__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="__AccountEncryptedPassword__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="__AccountExpiration__" />
       <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="__RemoteForwarderEnabled__" />
+      <Setting name="AzureAd__Domain" value="__AzureAd-Domain__" />
+      <Setting name="AzureAd__ApplicationObjectId" value="__AzureAd-ApplicationObjectId__" />
+      <Setting name="Admin__SubscriptionId" value="__Admin-SubscriptionId__" />
+      <Setting name="Admin__Location" value="__Admin-Location__" />
+      <Setting name="Admin__ResourceGroup" value="__Admin-ResourceGroup__" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Certificate1" thumbprint="ABCDEF01234567ABCDEF01234567ABCDEF012345" thumbprintAlgorithm="sha1" />

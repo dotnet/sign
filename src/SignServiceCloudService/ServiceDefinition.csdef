@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ServiceDefinition name="SignServiceCloudService" xmlns="http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceDefinition" schemaVersion="2015-04.2.6">
-  <WebRole name="SignServiceWebRole" vmsize="Standard_D2_v2">
+  <WebRole name="SignServiceWebRole" vmsize="Standard_D2_v3">
     <Sites>
       <Site name="Web">
         <Bindings>
@@ -10,14 +10,16 @@
     </Sites>
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" />
-      <Setting name="Authentication__AzureAd__AADInstance" />
-      <Setting name="Authentication__AzureAd__Audience" />
-      <Setting name="Authentication__AzureAd__ClientId" />
-      <Setting name="Authentication__AzureAd__TenantId" />
-      <Setting name="Authentication__AzureAd__ClientSecret" />
-      <Setting name="CertificateInfo__KeyVaultUrl" />
-      <Setting name="CertificateInfo__KeyVaultCertificatename" />
-      <Setting name="CertificateInfo__TimeStampUrl" />
+      <Setting name="AzureAd__AADInstance" />
+      <Setting name="AzureAd__Audience" />
+      <Setting name="AzureAd__ClientId" />
+      <Setting name="AzureAd__TenantId" />
+      <Setting name="AzureAd__ClientSecret" />
+      <Setting name="AzureAd__Domain" />
+      <Setting name="AzureAd__ApplicationObjectId" />
+      <Setting name="Admin__SubscriptionId" />
+      <Setting name="Admin__Location" />
+      <Setting name="Admin__ResourceGroup" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="https" port="443" certificate="Certificate1" />
@@ -38,5 +40,8 @@
       <Import moduleName="RemoteAccess" />
       <Import moduleName="RemoteForwarder" />
     </Imports>
+    <LocalResources>
+      <LocalStorage name="CustomTempPath" cleanOnRoleRecycle="true" sizeInMB="1024" />
+    </LocalResources>
   </WebRole>
 </ServiceDefinition>

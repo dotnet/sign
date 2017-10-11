@@ -14,20 +14,26 @@ Write-Verbose "IsEmulated = $Env:IsEmulated $nl"
 [Reflection.Assembly]::LoadWithPartialName("Microsoft.WindowsAzure.ServiceRuntime")
 
 $keys = @(
-	"Authentication__AzureAd__AADInstance",
-	"Authentication__AzureAd__Audience",
-	"Authentication__AzureAd__ClientId",
-	"Authentication__AzureAd__TenantId",
-	"Authentication__AzureAd__ClientSecret",
-	"CertificateInfo__KeyVaultUrl",
-	"CertificateInfo__KeyVaultCertificatename",
-	"CertificateInfo__TimeStampUrl"
+	"AzureAd__AADInstance",
+	"AzureAd__Audience",
+	"AzureAd__ClientId",
+	"AzureAd__TenantId",
+	"AzureAd__ClientSecret",
+	"AzureAd__Domain",
+	"AzureAd__ApplicationObjectId",
+	"Admin__SubscriptionId",
+	"Admin__Location",
+	"Admin__ResourceGroup"
 )
 
 foreach($key in $keys){
   [Environment]::SetEnvironmentVariable($key, [Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetConfigurationSettingValue($key), "Machine")
 }
 
+## Custom temp path that has a 1GB limit instead of 100 MB
+$tempPath = write-host ([Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("CustomTempPath")).RootPath.TrimEnd('\\')
+[Environment]::SetEnvironmentVariable("TEMP", $tempPath, "Machine")
+[Environment]::SetEnvironmentVariable("TEMP", $tempPath, "User")
 
 ###
 
@@ -43,22 +49,22 @@ elseif (!$isEmulated) # skip install on emulator
 
     Write-Verbose "Downloading .NET Core$nl" 
 
+	[void]([System.Reflection.Assembly]::LoadWithPartialName("Microsoft.WindowsAzure.ServiceRuntime"))
+    $tempPath = write-host ([Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("CustomTempPath")).RootPath.TrimEnd('\\')
+
 	
 	# Install the VC Redist first
-	$tempFile = [System.IO.Path]::GetTempFileName() |
-    Rename-Item -NewName { $_ -replace 'tmp$', 'exe' } -PassThru
-	Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?LinkId=746572 -OutFile $tempFile
+	$tempFile = New-Item ($tempPath + "\vcredist.exe")
+    Invoke-WebRequest -Uri https://go.microsoft.com/fwlink/?LinkId=746572 -OutFile $tempFile
 
+    $proc = (Start-Process $tempFile -PassThru "/quiet /install /log C:\Logs\vcredist.x64.log")
+    $proc | Wait-Process
+	
 
-	$proc = (Start-Process $tempFile -PassThru "/quiet /install /log C:\Logs\vcredist.x64.log")
-	$proc | Wait-Process
-
-	$tempFile = [System.IO.Path]::GetTempFileName() |
-    Rename-Item -NewName { $_ -replace 'tmp$', 'exe' } -PassThru
-	Invoke-WebRequest -Uri https://aka.ms/dotnetcore.2.0.0-windowshosting -OutFile $tempFile
-
+	# Get and install the hosting module
+	$tempFile = New-Item ($tempPath + "\netcore-sh.exe")
+    Invoke-WebRequest -Uri https://aka.ms/dotnetcore.2.0.0-windowshosting -OutFile $tempFile
 
 	$proc = (Start-Process $tempFile -PassThru "/quiet /install /log C:\Logs\dotnet_install.log")
 	$proc | Wait-Process
-
 }
