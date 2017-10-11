@@ -31,7 +31,7 @@ foreach($key in $keys){
 }
 
 ## Custom temp path that has a 1GB limit instead of 100 MB
-$tempPath = write-host ([Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("CustomTempPath")).RootPath.TrimEnd('\\')
+$tempPath = [Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("CustomTempPath").RootPath.TrimEnd('\\')
 [Environment]::SetEnvironmentVariable("TEMP", $tempPath, "Machine")
 [Environment]::SetEnvironmentVariable("TEMP", $tempPath, "User")
 
@@ -52,7 +52,7 @@ elseif (!$isEmulated) # skip install on emulator
     Write-Verbose "Downloading .NET Core$nl" 
 
 	[void]([System.Reflection.Assembly]::LoadWithPartialName("Microsoft.WindowsAzure.ServiceRuntime"))
-    $tempPath = write-host ([Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("CustomTempPath")).RootPath.TrimEnd('\\')
+    $tempPath = [Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalResource("CustomTempPath").RootPath.TrimEnd('\\')
 
 	
 	# Install the VC Redist first
