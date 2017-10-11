@@ -144,7 +144,7 @@ namespace SignService.Controllers
                 TimestampUrl = user.TimestampUrl,
 
                 // Only show enabled ones here
-                CertificatesModels = certs.Where(cm => cm.Attributes.Enabled == true).ToList()
+                CertificatesModels = certs.Where(cm => cm.Attributes?.Enabled == true).ToList()
             };
             return View(model);
         }
