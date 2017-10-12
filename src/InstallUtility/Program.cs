@@ -52,7 +52,7 @@ namespace InstallUtility
 
 
             Guid applicationId;
-            string password = null;
+            string password = null;            
 
             // Try to find a "SignService Server -" app
             var a = await graphClient.Applications.Where(ia => ia.DisplayName.StartsWith(serverDisplayNamePrefix)).ExecuteAsync();
@@ -85,6 +85,12 @@ namespace InstallUtility
             var clientApp = await EnsureClientAppExists(serverApp.application);
             Console.WriteLine("Update complete.");
 
+            // If password is not null, we created the app, add the user admin role assignment
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                await AddAdminRoleAssignmentToServer(serverApp.servicePrincipal);
+            }
+
             // Prompt for consent
             await PromptForConsent(serverApp, clientApp);
 
@@ -97,6 +103,23 @@ namespace InstallUtility
             Console.WriteLine("Press any key to quit....");
             Console.ReadKey(true);
         }
+
+        static async Task AddAdminRoleAssignmentToServer(IServicePrincipal serverApplication)
+        {
+            // Get the admin role, 
+            var role = serverApplication.AppRoles.First(r => r.Value == "admin_signservice");
+            
+            var ara = new AppRoleAssignment
+            {
+                PrincipalId = Guid.Parse(authResult.UserInfo.UniqueId),
+                PrincipalType = "User",
+                Id = role.Id,
+                ResourceId = Guid.Parse(serverApplication.ObjectId)
+            };
+
+            await graphClient.Users.GetByObjectId(authResult.UserInfo.UniqueId).AppRoleAssignments.AddAppRoleAssignmentAsync(ara);
+        }
+
 
         static async Task CreateOrUpdateResourceGroup(IServicePrincipal serverApplication)
         {
