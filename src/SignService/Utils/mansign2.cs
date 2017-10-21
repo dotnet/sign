@@ -26,6 +26,12 @@ using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using System.Collections;
 using Microsoft.Azure.KeyVault;
 
+#pragma warning disable IDE0016 
+#pragma warning disable IDE0017 
+#pragma warning disable IDE0018 
+#pragma warning disable IDE0019
+#pragma warning disable IDE0029
+
 namespace System.Deployment.Internal.CodeSigning
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -1797,3 +1803,8 @@ namespace System.Deployment.Internal.CodeSigning
     }
 
 }
+#pragma warning restore IDE0016
+#pragma warning restore IDE0017
+#pragma warning restore IDE0018
+#pragma warning restore IDE0019
+#pragma warning restore IDE0029

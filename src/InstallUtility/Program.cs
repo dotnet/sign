@@ -144,13 +144,17 @@ namespace InstallUtility
 
             var accessToken = await authContext.AcquireTokenSilentAsync(azureRmResourceId, clientId);
 
-            var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken));
-            rgc.SubscriptionId = subscriptionId;
+            var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken))
+            {
+                SubscriptionId = subscriptionId
+            };
             var rg = new ResourceGroup(location, name: name);
             rg = await rgc.ResourceGroups.CreateOrUpdateAsync(name, rg);
-            
-            var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken));
-            ac.SubscriptionId = subscriptionId;
+
+            var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken))
+            {
+                SubscriptionId = subscriptionId
+            };
 
 
             // See if the resource group has the reader role

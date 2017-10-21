@@ -53,8 +53,10 @@ namespace SignService.Services
 
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
             resourceGroup = adminConfig.Value.ResourceGroup;
-            kvManagmentClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken));
-            kvManagmentClient.SubscriptionId = adminConfig.Value.SubscriptionId;
+            kvManagmentClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken))
+            {
+                SubscriptionId = adminConfig.Value.SubscriptionId
+            };
             kvClient = new KeyVaultClient(new KeyVaultCredential(GetAppTokenForKv));
 
             this.azureAdOptions = azureAdOptions.Value;

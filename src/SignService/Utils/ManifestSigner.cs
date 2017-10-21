@@ -19,8 +19,10 @@ namespace SignService.Utils
             var useSha256 = hashMode == HashMode.Sha256;
             try
             {
-                XmlDocument manifestDom = new XmlDocument();
-                manifestDom.PreserveWhitespace = true;
+                XmlDocument manifestDom = new XmlDocument
+                {
+                    PreserveWhitespace = true
+                };
                 manifestDom.Load(path);
                 SignedCmiManifest2 signedCmiManifest2 = new SignedCmiManifest2(manifestDom, useSha256);
                 CmiManifestSigner2 signer = !useSha256 || !(rsaPrivateKey is RSACryptoServiceProvider) ? new CmiManifestSigner2((AsymmetricAlgorithm)rsaPrivateKey, publicCertificate, useSha256) : new CmiManifestSigner2((AsymmetricAlgorithm)SignedCmiManifest2.GetFixedRSACryptoServiceProvider(rsaPrivateKey as RSACryptoServiceProvider, useSha256), publicCertificate, useSha256);

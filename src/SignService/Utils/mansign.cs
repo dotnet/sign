@@ -23,6 +23,11 @@ using Microsoft.Azure.KeyVault;
 
 // From: https://github.com/Microsoft/referencesource/blob/7de0d30c7c5ef56ab60fee41fcdb50005d24979a/inc/mansign.cs
 
+#pragma warning disable IDE0016 
+#pragma warning disable IDE0017 
+#pragma warning disable IDE0018 
+#pragma warning disable IDE0019
+#pragma warning disable IDE0029
 namespace System.Deployment.Internal.CodeSigning
 {
 
@@ -1590,3 +1595,8 @@ namespace System.Deployment.Internal.CodeSigning
         }
     }
 }
+#pragma warning restore IDE0016
+#pragma warning restore IDE0017
+#pragma warning restore IDE0018
+#pragma warning restore IDE0019
+#pragma warning restore IDE0029
