@@ -26,13 +26,7 @@ namespace SignService.Controllers
             this.codeSignAggregate = codeSignAggregate;
             this.logger = logger;
         }
-
-        [HttpPost("singleFile")]
-        public async Task<IActionResult> SignSingleFile(IFormFile source, HashMode hashMode, string name, string description, string descriptionUrl)
-        {
-            return await SignFile(source, null, hashMode, name, description, descriptionUrl);
-        }
-
+        
         [HttpPost]
         public async Task<IActionResult> SignFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
         {
@@ -98,12 +92,6 @@ namespace SignService.Controllers
             {
                 Directory.Delete(dataDir, true);
             }
-        }
-
-        [HttpPost("zipFile")]
-        public async Task<IActionResult> SignZipFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
-        {
-            return await SignFile(source, filelist, hashMode, name, description, descriptionUrl);
         }
     }
 }
