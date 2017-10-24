@@ -31,6 +31,9 @@ namespace SignService
             var filesInDir = Directory.EnumerateFiles(dataDirectory, "*.*", SearchOption.AllDirectories);
             FilesInDirectory = filesInDir.ToList();
 
+            // don't allow parent directory traversal
+            filter = filter.Replace(@"..\", "").Replace("../", "");
+
             var globs = filter.Split('\n').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
 
             if (globs.Count > 0)
