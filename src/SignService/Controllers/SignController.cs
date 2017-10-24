@@ -72,7 +72,7 @@ namespace SignService.Controllers
                     using (var sr = new StreamReader(filelist.OpenReadStream()))
                     {
                         filter = await sr.ReadToEndAsync();
-                        filter = filter.Replace("\r\n", "\n").Replace("/", "\\").Trim();
+                        filter = filter.Replace("\r\n", "\n").Trim();
                     }
                 }
 
