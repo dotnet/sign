@@ -80,7 +80,7 @@ namespace SignService.SigningTools
                     // Then the nested clickonce/vsto file
                     // finally the top-level clickonce/vsto file
 
-                    using (var zip = new TemporaryZipFile(file, filter, logger, false))
+                    using (var zip = new TemporaryZipFile(file, filter, logger))
                     {
                         // Look for the data files first - these are .deploy files
                         // we need to rename them, sign, then restore the name
