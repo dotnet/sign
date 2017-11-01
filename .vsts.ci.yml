@@ -34,7 +34,7 @@ steps:
     $content = $content.Replace("BACDEF01234567ABCDEF01234567ABCDEF012345", "__PasswordEncryption__")
     # Save
     [System.IO.File]::WriteAllText($file, $content)
-  
+  displayName: Tokenize certificate fields in cscfg
   workingDirectory: $(Build.ArtifactStagingDirectory)\app.publish
 
 #- task: PublishBuildArtifacts@1
