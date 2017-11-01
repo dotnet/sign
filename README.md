@@ -13,7 +13,7 @@ There are a few pieces to the security model:
 3. Service account users in AD
 4. Key Vault HSM's, one for each service account user
 
-![Architecture diagram](docs/images/SigningServiceArchitecture.svg)
+![Architecture diagram](docs/images/SigningServiceArchitecture.png?raw=true)
 
 The system is designed to support multiple certificates belonging to different users. Many organizations may only have a single certificate, and thus will have a single user service account and a single vault. You may have multiple service accounts configured to the same vault as well for granular auditing.
 
