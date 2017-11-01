@@ -70,6 +70,9 @@ namespace InstallUtility
             }
             else
             {
+                // Ensure the Key Vault SP exists, as it might not if a key vault hasn't been created yet
+                await EnsureServicePrincipalExists("cfa8b339-82a2-471a-a3c9-0fc0be7a4093");
+
                 var appName = $"{serverDisplayNamePrefix}{Guid.NewGuid()}";
                 Console.WriteLine($"Creating application '{appName}'");
                 // Create
@@ -499,7 +502,7 @@ namespace InstallUtility
 
             await app.UpdateAsync();
 
-            var clientSp = await EnsureServicePrincipalExists(app);
+            var clientSp = await EnsureServicePrincipalExists(app.AppId);
 
             return (app, clientSp);
         }
@@ -631,15 +634,14 @@ namespace InstallUtility
                 }
             }
 
-            var serverSp = await EnsureServicePrincipalExists(app);
+            var serverSp = await EnsureServicePrincipalExists(app.AppId);
             
             return (app, serverSp);
         }
 
-        async static Task<IServicePrincipal> EnsureServicePrincipalExists(IApplication application)
+        async static Task<IServicePrincipal> EnsureServicePrincipalExists(string appid)
         {
             // see if it exists already
-            var appid = application.AppId;
             var sc = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).Expand(sp => sp.AppRoleAssignments).ExecuteAsync();
 
             var s = sc.CurrentPage.FirstOrDefault();
@@ -649,8 +651,7 @@ namespace InstallUtility
                 s = new ServicePrincipal()
                 {
                     AppId = appid,
-                    AccountEnabled = true,
-                    Tags = { "WindowsAzureActiveDirectoryIntegratedApp" } // This is what VS does...
+                    AccountEnabled = true
                 };
 
                 await graphClient.ServicePrincipals.AddServicePrincipalAsync(s);
