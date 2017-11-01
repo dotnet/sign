@@ -1,13 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26923.0
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92C73EE1-4EF3-4721-B6A9-9F458A673CA3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3E52C226-1DA9-4712-AC4E-A8820473DDA8}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.vsts.ci.yml = .vsts.ci.yml
 		scripts\appsettings.json = scripts\appsettings.json
 		src\Directory.build.props = src\Directory.build.props
 		README.md = README.md
