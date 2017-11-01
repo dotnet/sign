@@ -3,14 +3,23 @@
 # Authenticode Signing Service and Client
 
 This project aims to make it easier to integrate Authenticode signing into a CI process by providing a secured API
-for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD with two application
-entries for security:
+for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD and Azure Key Vault for security.
 
-1. One registration for the service itself
-2. One registration to represent each code signing client you want to allow
+## Architecture and Security
+There are a few pieces to the security model:
 
-Azure AD was chosen as it makes it easy to restrict access to a single application/user in a secure way. Azure App Services 
-also provide a secure location to store certificates, so the combination works well.
+1. One app registration for the service itself
+2. One app registration to for the sign client
+3. Service account users in AD
+4. Key Vault HSM's, one for each service account user
+
+![Architecture diagram](docs/images/SigningServiceArchitecture.svg?raw=true)
+
+The system is designed to support multiple certificates belonging to different users. Many organizations may only have a single certificate, and thus will have a single user service account and a single vault. You may have multiple service accounts configured to the same vault as well for granular auditing.
+
+Certificates are stored in a Key Vault. Due to the way Key Vault's security works - you can control access to the vault as a whole, not per certificate - every user service account gets its own vault. There are no charges per vault; only per certificate.
+
+There is an administrator UI to create sign service user accounts and set the properties. The admin UI also creates the Key Vaults and configures the permissions appropriately. 
 
 The service currently supports either individual files, or a zip archive that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if additional filters or functionality is required.
 
@@ -19,13 +28,31 @@ The service currently supports either individual files, or a zip archive that co
 - `.vsix` via [OpenOpcSignTool](https://github.com/vcsjones/OpenOpcSignTool)
 - ClickOnce `.application` and `.vsto` (via `Mage`). Special instructions below.
 
-
 # Deployment
-This service must run on Windows Server 2016 due to dependencies on new APIs for signing. 
 
-You will need an Azure AD tenant and an Azure Key Vault. These are free if you don't already have one. In the "old" Azure Portal, you'll need to
-create two application entries: one for the server and one for your client.
-![](docs/images/app-entries.png?raw=true)
+This service must run on Windows Server 2016 due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Cloud Service Web Role for a PaaS offering (recommended).
+
+You will need an Azure AD tenant and an Azure subscription. For easiest deployment, it's easiest if you are a global admin on your AAD tenant, but you may opt to have a global admin consent to the applications separately as well. Admin consent is ultimately required, however.
+
+While you can create the required entries manually, it's far easier to run the provided `InstallUtility` application.
+
+## Overview
+
+1. Clone this repo
+2. Build & Run `InstallUtility`
+3. Configure DNS for your service, get an SSL certificate
+4. Update `ReplyUrl` in the `SignService` application to point to your hostname
+5. Build and publish service to Azure with appropriate config values.
+6. Login to SignService admin UI, create user account, upload cert or create CSR.
+7. Provide sign client configuration to your users
+
+
+## 1. Clone Repo
+
+`git clone https://github.com/onovotny/SignService`
+
+## 2. Build & Run `InstallUtility`
+
 
 ## Azure AD Configuration
 ### Server
