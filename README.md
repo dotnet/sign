@@ -1,5 +1,3 @@
-# NOTE: This readme is out-of-date with the server configuration. Updated instructions will be provided shortly. 
-
 # Authenticode Signing Service and Client
 
 This project aims to make it easier to integrate Authenticode signing into a CI process by providing a secured API
