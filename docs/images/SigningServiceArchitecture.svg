@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 22.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1"
+	 id="Layer_1" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 477.8 171.4"
+	 style="enable-background:new 0 0 477.8 171.4;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#0078D7;}
+	.st1{fill:#0078D7;enable-background:new    ;}
+	.st2{font-family:'SegoeUI';}
+	.st3{font-size:9px;}
+	.st4{font-family:'Calibri';}
+	.st5{fill:#7F7F7F;}
+	.st6{fill:none;}
+	.st7{fill:#505050;}
+	.st8{fill:#FFFFFF;}
+	.st9{enable-background:new    ;}
+	.st10{font-family:'SegoeUI-Light';}
+	.st11{font-size:8px;}
+	.st12{font-size:12.0001px;}
+	
+		.st13{fill:none;stroke:#D8D8D8;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:3;stroke-dasharray:10.5,7.5;}
+	.st14{font-size:10px;}
+</style>
+<v:documentProperties  v:langID="1033" v:viewMarkup="false">
+	<v:userDefs>
+		<v:ud  v:nameU="msvNoAutoConnect" v:val="VT0(1):26"></v:ud>
+	</v:userDefs>
+</v:documentProperties>
+<g>
+	<title>Page-1</title>
+	<v:pageProperties  v:drawingScale="1" v:drawingUnits="19" v:pageScale="1" v:shadowOffsetX="9" v:shadowOffsetY="-9">
+		</v:pageProperties>
+	<v:layer  v:index="0" v:name="Connector"></v:layer>
+	<g id="group1-1" transform="translate(252,-577.667)">
+		<title>Web role</title>
+		<desc>Sign Service</desc>
+		<g id="shape2-2" transform="translate(11.8927,-5.65875)">
+			<title>Sheet.2</title>
+			<path class="st0" d="M-49.5,732.7c0.8,1.5,2.1,2.5,3.5,2.7v-3.4C-47.3,732-48.5,732.2-49.5,732.7z"/>
+		</g>
+		<g id="shape3-4" transform="translate(19.3455,-18.6202)">
+			<title>Sheet.3</title>
+			<path class="st0" d="M-47.6,734.9c-0.6-0.5-1.2-1-1.9-1.3c0.5,0.5,0.9,1.1,1.3,1.7C-48,735.2-47.8,735.1-47.6,734.9z"/>
+		</g>
+		<g id="shape4-6" transform="translate(11.898,-17.4502)">
+			<title>Sheet.4</title>
+			<path class="st0" d="M-49.5,734.6c1,0.4,2.2,0.7,3.5,0.7v-3.4C-47.4,732.1-48.7,733.1-49.5,734.6z"/>
+		</g>
+		<g id="shape5-8" transform="translate(10.6838,-13.6852)">
+			<title>Sheet.5</title>
+			<path class="st0" d="M-48.6,731.5c-0.5,1.1-0.8,2.4-0.9,3.8h4.7v-3C-46.2,732.2-47.5,731.9-48.6,731.5z"/>
+		</g>
+		<g id="shape6-10" transform="translate(10.6815,-8.96475)">
+			<title>Sheet.6</title>
+			<path class="st0" d="M-49.5,731.4c0,1.4,0.4,2.8,0.9,3.9c1.1-0.5,2.4-0.8,3.8-0.8v-3.1H-49.5L-49.5,731.4z"/>
+		</g>
+		<g id="shape7-12" transform="translate(10.4295,-6.1545)">
+			<title>Sheet.7</title>
+			<path class="st0" d="M-49.5,734c0.6,0.5,1.2,1,1.9,1.3c-0.5-0.5-0.9-1.1-1.3-1.7C-49.1,733.7-49.3,733.8-49.5,734z"/>
+		</g>
+		<g id="shape8-14" transform="translate(10.4363,-18.6278)">
+			<title>Sheet.8</title>
+			<path class="st0" d="M-47.6,733.6c-0.7,0.3-1.3,0.8-1.9,1.3c0.2,0.1,0.4,0.3,0.6,0.4C-48.5,734.7-48.1,734.1-47.6,733.6z"/>
+		</g>
+		<g id="shape9-16" transform="translate(7.94775,-13.6852)">
+			<title>Sheet.9</title>
+			<path class="st0" d="M-46.8,731c-0.3-0.2-0.5-0.3-0.8-0.5c-1.2,1.4-1.9,3.1-2,4.8h1.8C-47.7,733.7-47.3,732.3-46.8,731z"/>
+		</g>
+		<g id="shape10-18" transform="translate(7.94625,-8.01525)">
+			<title>Sheet.10</title>
+			<path class="st0" d="M-47.8,730.5h-1.8c0.1,1.7,0.7,3.5,2,4.8c0.2-0.2,0.5-0.3,0.8-0.5C-47.3,733.5-47.7,732.1-47.8,730.5z"/>
+		</g>
+		<g id="shape11-20" transform="translate(16.2967,-8.96475)">
+			<title>Sheet.11</title>
+			<path class="st0" d="M-45.7,735.3c0.5-1.1,0.8-2.5,0.9-3.9h-4.7v3.1C-48.1,734.5-46.8,734.8-45.7,735.3z"/>
+		</g>
+		<g id="shape12-22" transform="translate(20.9955,-8.016)">
+			<title>Sheet.12</title>
+			<path class="st0" d="M-49.5,734.8c0.3,0.2,0.5,0.3,0.8,0.5c1.2-1.4,1.9-3.1,2-4.8h-1.7C-48.6,732.1-48.9,733.5-49.5,734.8z"/>
+		</g>
+		<g id="shape13-24" transform="translate(20.9962,-13.6845)">
+			<title>Sheet.13</title>
+			<path class="st0" d="M-49.5,731c0.6,1.2,0.9,2.7,1,4.3h1.8c-0.1-1.7-0.8-3.4-2-4.8C-49,730.7-49.2,730.9-49.5,731z"/>
+		</g>
+		<g id="shape14-26" transform="translate(16.2967,-17.448)">
+			<title>Sheet.14</title>
+			<path class="st0" d="M-46,734.6c-0.8-1.5-2.1-2.5-3.5-2.7v3.4C-48.2,735.3-47,735-46,734.6z"/>
+		</g>
+		<g id="shape15-28">
+			<title>Sheet.15</title>
+			<path class="st0" d="M-18.9,709.4h-29.2c-0.8,0-1.4,0.7-1.4,1.6v22.6c0,0.9,0.6,1.6,1.4,1.6h29.2c0.8,0,1.4-0.7,1.4-1.6V711
+				C-17.5,710.1-18.1,709.4-18.9,709.4z M-27.2,728.5c-1.8,1.8-4.1,2.7-6.5,2.7c-2.3,0-4.7-0.9-6.5-2.7c-1.8-1.8-2.7-4.1-2.7-6.5
+				c0-2.3,0.9-4.7,2.7-6.5c1.8-1.8,4.1-2.7,6.5-2.7c2.3,0,4.7,0.9,6.5,2.7c1.8,1.8,2.7,4.1,2.7,6.4
+				C-24.5,724.3-25.4,726.7-27.2,728.5z"/>
+		</g>
+		<g id="shape16-30" transform="translate(16.2967,-13.6845)">
+			<title>Sheet.16</title>
+			<path class="st0" d="M-44.8,735.3c0-1.4-0.3-2.7-0.9-3.8c-1.1,0.5-2.4,0.8-3.8,0.8v3H-44.8z"/>
+		</g>
+		<g id="shape17-32" transform="translate(16.2967,-5.6565)">
+			<title>Sheet.17</title>
+			<path class="st0" d="M-46,732.7c-1-0.4-2.2-0.7-3.5-0.7v3.4C-48.1,735.1-46.9,734.1-46,732.7z"/>
+		</g>
+		<g id="shape18-34" transform="translate(19.3432,-6.15375)">
+			<title>Sheet.18</title>
+			<path class="st0" d="M-49.5,735.3c0.7-0.3,1.3-0.8,1.9-1.3c-0.2-0.1-0.4-0.3-0.6-0.4C-48.6,734.2-49,734.8-49.5,735.3z"/>
+		</g>
+		<g id="shape1-36">
+			<v:textBlock  v:margins="rect(0,0,0,0)" v:verticalAlign="0"></v:textBlock>
+			<v:textRect  cx="16.011" cy="811.105" height="31.5" width="72"></v:textRect>
+			<text transform="matrix(1 0 0 1 -57.38 745.407)" class="st1 st2 st3">Sign Service<v:paragraph  v:horizAlign="1" v:spLine="-1"></v:paragraph><v:tabList></v:tabList></text>
+		</g>
+	</g>
+	<g id="group19-38" transform="translate(234,-704.697)">
+		<title>Azure  Active Directory</title>
+		<desc>AAD</desc>
+		<g id="group20-39" transform="translate(8.99512,-9.2025)">
+			<title>Sheet.20</title>
+			<g id="shape21-40">
+				<title>Sheet.21</title>
+				<path class="st0" d="M-49.5,730.3c0.2,0.4,0.3,0.8,0.3,1.2c0,0.2,0,0.4-0.1,0.7l5.2,3.1v-9.1c-0.1,0-0.4-0.5-0.4-0.6
+					L-49.5,730.3z"/>
+			</g>
+		</g>
+		<g id="group22-42" transform="translate(15.5771,-9.1989)">
+			<title>Sheet.22</title>
+			<g id="shape23-43">
+				<title>Sheet.23</title>
+				<path class="st0" d="M-48.5,725.5c-0.1,0-0.9,0.7-1,0.7v9l5.2-3.3c0-0.2-0.1-0.3-0.1-0.5c0-0.3,0.1-0.6,0.2-0.9L-48.5,725.5z"/>
+			</g>
+		</g>
+		<g id="group24-45">
+			<title>Sheet.24</title>
+			<g id="shape25-46">
+				<title>Sheet.25</title>
+				<path class="st0" d="M-26.4,724.7c-0.7,0-1.3-0.3-1.7-0.7l-4.2,3c0.3,0.4,0.4,0.8,0.4,1.3c0,1.4-1.1,2.4-2.4,2.4
+					c-1.3,0-2.4-1.1-2.4-2.4c0-0.6,0.2-1.1,0.6-1.6l-4.8-2.6c-0.4,0.4-1,0.7-1.6,0.7c-1.3,0-2.4-1.1-2.4-2.4c0-1.3,1.1-2.4,2.4-2.4
+					c0.4,0,0.8,0.1,1.1,0.3l5-4.7c-0.4-0.5-0.5-1-0.5-1.6c0-1.5,1.2-2.7,2.7-2.7s2.7,1.2,2.7,2.7c0,0.5-0.1,1-0.4,1.4l4.2,5
+					c0.4-0.3,0.9-0.5,1.4-0.5c1.3,0,2.4,1.1,2.4,2.4C-24,723.6-25,724.7-26.4,724.7z M-34.2,705v-0.3l-0.1,0.1l-0.2-0.2v0.4
+					l-15,17.8l15.1,12.3v0.1l15.2-12.4L-34.2,705z"/>
+			</g>
+		</g>
+		<g id="shape19-48">
+			<v:textBlock  v:margins="rect(0,4,4,4)" v:verticalAlign="0"></v:textBlock>
+			<v:textRect  cx="15.1283" cy="812.412" height="30.606" width="72"></v:textRect>
+			<text transform="matrix(1 0 0 1 -43.33 748.517)" class="st1 st2 st3">AAD<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+		</g>
+	</g>
+	<g id="group26-50" transform="translate(395.043,-648)">
+		<title>Key Vault</title>
+		<desc>User’s Key Vault</desc>
+		<g id="shape27-51">
+			<title>Sheet.27</title>
+			<path class="st0" d="M-14.9,718.1c0-5.6-2.7-10.6-6.8-13.8c0,0.2,0,0.4,0,0.5c0,1.7-0.5,3.3-1.2,4.7c2,2.2,3.2,5.2,3.2,8.4
+				c0,7-5.6,12.6-12.6,12.6c-7,0-12.6-5.6-12.6-12.6c0-3.5,1.4-6.6,3.6-8.9c-0.6-1.3-1-2.8-1-4.3c0-0.3,0-0.7,0.1-1
+				c-4.5,3.1-7.4,8.4-7.4,14.2c0,9.6,7.7,17.3,17.3,17.3S-14.9,727.7-14.9,718.1z"/>
+		</g>
+		<g id="shape28-53" transform="translate(9.58182,-8.11364)">
+			<title>Sheet.28</title>
+			<path class="st0" d="M-41.5,704.9c-4.4,0-8,3.6-8,8c0,3.6,2.4,6.6,5.7,7.6v7.9h-3.7v4h3.7v2.9h4.4v-14.8c3.3-0.9,5.7-4,5.7-7.6
+				C-33.6,708.4-37.1,704.9-41.5,704.9z M-41.5,709c2.1,0,3.8,1.7,3.8,3.8c0,2.1-1.7,3.8-3.8,3.8s-3.8-1.7-3.8-3.8
+				C-45.3,710.7-43.6,709-41.5,709z"/>
+		</g>
+		<g id="shape26-55">
+			<v:textBlock  v:margins="rect(0,0,0,0)" v:verticalAlign="0"></v:textBlock>
+			<v:textRect  cx="17.4375" cy="816.75" height="38.5591" width="72"></v:textRect>
+			<text transform="matrix(1 0 0 1 -61.66 748.877)" class="st1 st4 st3">User’s Key Vault<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+		</g>
+	</g>
+	<g id="group29-57" transform="translate(459,-651.048)">
+		<title>Certificate</title>
+		<desc>Code Signing Certificate</desc>
+		<g id="shape30-58" transform="translate(-1.93845E-13,-10.4723)">
+			<title>Sheet.30</title>
+			<path class="st5" d="M-33.5,733.5h-13c-0.7,0-1.2-0.5-1.2-1.2v-13.4h3.8v-3.7h24c0.7,0,1.2,0.5,1.2,1.2v0.2
+				c0.6,0.2,1.2,0.4,1.8,0.7v-0.9c0-1.7-1.4-3-3-3H-45l-4.5,4.6v14.4c0,1.7,1.4,3,3,3h14.1C-32.8,734.7-33.2,734.1-33.5,733.5z"/>
+		</g>
+		<g id="group31-60" transform="translate(16.3462,0)">
+			<title>Sheet.31</title>
+			<g id="group32-61" transform="translate(1.42763,0)">
+				<title>Sheet.32</title>
+				<g id="shape33-62">
+					<title>Sheet.33</title>
+					<path class="st5" d="M-35,726.2l4.5,6.8l-4.2-1.1l-1.2,3.4l-4.5-6l-3.4,6l-1.5-3.6l-4.2,1.1l4.1-7.1c0,0,1.1,1.9,5.2,1.9
+						C-36.1,727.6-35,726.2-35,726.2z"/>
+				</g>
+			</g>
+			<g id="group34-64" transform="translate(3.83888,-10.316)">
+				<title>Sheet.34</title>
+				<g id="shape35-65">
+					<title>Sheet.35</title>
+					<path class="st5" d="M-42.3,735.3c-4,0-7.2-3.2-7.2-7.1c0-3.9,3.2-7.1,7.2-7.1c4,0,7.2,3.2,7.2,7.1
+						C-35.1,732.1-38.3,735.3-42.3,735.3z M-42.3,722.7c-3.1,0-5.6,2.5-5.6,5.5c0,3,2.5,5.5,5.6,5.5c3.1,0,5.6-2.5,5.6-5.5
+						C-36.7,725.2-39.2,722.7-42.3,722.7z"/>
+				</g>
+			</g>
+			<g id="group36-67" transform="translate(0,-6.54206)">
+				<title>Sheet.36</title>
+				<g id="shape37-68">
+					<title>Sheet.37</title>
+					<path class="st5" d="M-38.5,735.3c-6.1,0-11-4.9-11-10.9s5-10.9,11-10.9s11,4.9,11,10.9S-32.4,735.3-38.5,735.3z M-38.5,715.1
+						c-5.2,0-9.4,4.2-9.4,9.3c0,5.1,4.2,9.3,9.4,9.3c5.2,0,9.4-4.2,9.4-9.3C-29,719.3-33.3,715.1-38.5,715.1z"/>
+				</g>
+			</g>
+		</g>
+		<g id="shape29-70">
+			<v:textBlock  v:margins="rect(0,0,0,0)" v:verticalAlign="0"></v:textBlock>
+			<v:textRect  cx="19.1978" cy="811.93" height="31.5" width="72"></v:textRect>
+			<text transform="matrix(1 0 0 1 -56.92 747.587)" class="st5 st2 st3">Code Signing </text>
+			<text transform="matrix(1 0 0 1 -50.37 758.387)" class="st5 st2 st3">Certificate</text>
+			<v:paragraph  v:horizAlign="1"></v:paragraph>
+			<v:tabList></v:tabList>
+		</g>
+	</g>
+	<g id="shape50-73" transform="translate(430.48,-667.28)">
+		<title>Arrow</title>
+		<path class="st6" d=""/>
+		<g transform="scale(-3.52,-3.52) ">
+			<g id="lend5">
+				<path class="st7" d="M-28.8,731.8l7,3.5l-7,3.5C-27.6,736.6-27.6,734-28.8,731.8"/>
+			</g>
+		</g>
+		<path class="st7" d="M-27.9,735.3"/>
+	</g>
+	<g id="shape51-79" transform="translate(-171.726,-445.933) rotate(-35.1838)">
+		<title>Arrow.51</title>
+		<desc>Sign O.B.O. User</desc>
+		<v:textBlock  v:margins="rect(4,4,4,4)"></v:textBlock>
+		<v:textRect  cx="66.5172" cy="792" height="0" width="133.04"></v:textRect>
+		<path class="st6" d=""/>
+		<g transform="scale(-3.52,-3.52) ">
+			<g id="lend5_1_">
+				<path class="st7" d="M118.2,713.6l7,3.5l-7,3.5C119.4,718.4,119.4,715.8,118.2,713.6"/>
+			</g>
+		</g>
+		<path class="st7" d="M119.1,717.1"/>
+		
+			<rect x="30.9" y="712.3" transform="matrix(-1 2.845792e-06 -2.845792e-06 -1 117.4565 1434.2845)" class="st8" width="55.6" height="9.6"/>
+		<text transform="matrix(1 0 0 1 30.9302 719.5425)" class="st9 st10 st11">Sign O.B.O. User<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+	</g>
+	<g id="group53-86" transform="translate(49.5,-577.667)">
+		<title>Sheet.53</title>
+		<g id="group38-87" transform="translate(16.8757,-22.6526)">
+			<title>gears</title>
+			<g id="group39-88" transform="translate(-7.31415E-13,-11.0229)">
+				<title>Sheet.39</title>
+				<g id="shape40-89">
+					<title>Sheet.40</title>
+					<path class="st5" d="M-42.7,730.7c-1.2,0-2.2-1-2.2-2.2c0-1.2,1-2.2,2.2-2.2c1.2,0,2.1,1,2.1,2.2
+						C-40.5,729.7-41.5,730.7-42.7,730.7z M-38.5,723.2l-1.8,0.9l-1.1-0.4l-0.7-1.9h-1.5l-0.6,1.9l-1.1,0.4l-1.8-0.8l-1.1,1.1
+						l0.9,1.8l-0.4,1.1l-1.9,0.7v1.5l1.9,0.6l0.5,1.1l-0.9,1.8l1.1,1.1l1.8-0.9l1.1,0.5l0.7,1.9h1.5l0.6-1.9l1-0.5l1.8,0.8l1.1-1.1
+						l-0.9-1.8l0.4-1.1l1.9-0.7v-1.5l-1.9-0.6l-0.4-1.1l0.9-1.8L-38.5,723.2z"/>
+				</g>
+			</g>
+			<g id="group41-91" transform="translate(10.08,1.13687E-13)">
+				<title>Sheet.41</title>
+				<g id="shape42-92">
+					<title>Sheet.42</title>
+					<path class="st5" d="M-39.9,728.8c-1.7,0-3.1-1.4-3.1-3.1s1.4-3.1,3.1-3.1s3,1.4,3,3.1C-36.9,727.4-38.2,728.8-39.9,728.8z
+						 M-33.9,718.1l-2.5,1.3l-1.5-0.6l-0.9-2.6H-41l-0.8,2.6l-1.5,0.6l-2.5-1.2l-1.5,1.6l1.3,2.5l-0.6,1.5l-2.7,1v2.2l2.6,0.9
+						l0.6,1.5l-1.2,2.5l1.5,1.6l2.5-1.3l1.5,0.6l1,2.6h2.2l0.9-2.6l1.5-0.6l2.5,1.2l1.5-1.5l-1.3-2.5l0.6-1.5l2.6-0.9v-2.2l-2.6-0.9
+						l-0.6-1.5l1.2-2.5L-33.9,718.1z"/>
+				</g>
+			</g>
+		</g>
+		<g id="shape43-94">
+			<title>Sheet.43</title>
+			<desc>Sign Client</desc>
+			<v:textBlock  v:margins="rect(4,4,4,4)"></v:textBlock>
+			<v:textRect  cx="31.5" cy="783" height="18" width="63"></v:textRect>
+			<rect x="-49.5" y="717.3" class="st6" width="63" height="18"/>
+			<text transform="matrix(1 0 0 1 -43.57 729.907)" class="st9 st4 st12">Sign Client<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+		</g>
+	</g>
+	<g id="shape55-97" transform="translate(-338.682,-502.33) rotate(-32.3835)">
+		<title>Arrow.55</title>
+		<desc>Login / Get Access Token</desc>
+		<v:textBlock  v:margins="rect(4,4,4,4)"></v:textBlock>
+		<v:textRect  cx="88.2216" cy="792" height="0" width="176.45"></v:textRect>
+		<path class="st6" d=""/>
+		<g transform="scale(-3.52,-3.52) ">
+			<g id="lend5_2_">
+				<path class="st7" d="M158,714.1l7,3.5l-7,3.5C159.1,718.9,159.1,716.3,158,714.1"/>
+			</g>
+		</g>
+		<path class="st7" d="M158.8,717.6"/>
+		
+			<rect x="34.4" y="712.8" transform="matrix(-1 2.112056e-06 -2.112056e-06 -1 153.5682 1435.2245)" class="st8" width="84.8" height="9.6"/>
+		<text transform="matrix(1 0 0 1 34.3615 720.0124)" class="st9 st10 st11">Login / Get Access Token<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+	</g>
+	<g id="shape57-104" transform="translate(173.374,-598.949) rotate(4.40818)">
+		<title>Arrow.57</title>
+		<desc>POST files</desc>
+		<v:textBlock  v:margins="rect(4,4,4,4)"></v:textBlock>
+		<v:textRect  cx="69.3928" cy="792" height="0" width="138.79"></v:textRect>
+		<path class="st6" d=""/>
+		<g transform="scale(-3.52,-3.52) ">
+			<g id="lend5_3_">
+				<path class="st7" d="M78,735.8l7,3.5l-7,3.5C79.2,740.6,79.2,738,78,735.8"/>
+			</g>
+		</g>
+		<path class="st7" d="M78.9,739.3"/>
+		
+			<rect x="10.9" y="722.6" transform="matrix(2.136477e-06 1 -1 2.136477e-06 754.9608 723.5959)" class="st8" width="9.6" height="33.3"/>
+		<text transform="matrix(1 0 0 1 -0.9814 741.6793)" class="st9 st10 st11">POST files<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+	</g>
+	<g id="shape59-111" transform="translate(-510.293,334.781) rotate(-100.772)">
+		<title>Arrow double</title>
+		<desc>Get O.B.O. Token</desc>
+		<v:textBlock  v:margins="rect(4,4,4,4)"></v:textBlock>
+		<v:textRect  cx="49.8154" cy="792" height="0" transform="rotate(180)" width="99.64"></v:textRect>
+		<path class="st6" d=""/>
+		<g transform="scale(3.52) ">
+			<g id="lend5_4_">
+				<path class="st7" d="M72,757.5l-7-3.5l7-3.5C70.8,752.7,70.8,755.3,72,757.5"/>
+			</g>
+		</g>
+		<g transform="scale(-3.52,-3.52) ">
+			<g id="lend5_5_">
+				<path class="st7" d="M157.5,750.4l7,3.5l-7,3.5C158.7,755.3,158.7,752.7,157.5,750.4"/>
+			</g>
+		</g>
+		<path class="st7" d="M158.4,754"/>
+		
+			<rect x="110" y="724.7" transform="matrix(-2.897760e-06 -1 1 -2.897760e-06 -639.2065 868.7316)" class="st8" width="9.6" height="58.5"/>
+		<text transform="matrix(-1 0 0 -1 143.9858 751.5681)" class="st9 st10 st11">Get O.B.O. Token<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+	</g>
+	<g id="shape62-121" transform="translate(369,-607.5)">
+		<title>Dotted line box no fill</title>
+		<path class="st13" d="M-49.5,735.3H108v-99H-49.5V735.3z"/>
+	</g>
+	<g id="shape63-123" transform="translate(445.5,-607.5)">
+		<title>Segoe UI Text 10pt</title>
+		<desc>HSM Boundary</desc>
+		<v:textBlock  v:margins="rect(4,4,4,4)"></v:textBlock>
+		<v:textRect  cx="40.5" cy="780.75" height="22.5" width="81"></v:textRect>
+		<rect x="-49.5" y="712.8" class="st6" width="81" height="22.5"/>
+		<text transform="matrix(1 0 0 1 -42.17 727.057)" class="st9 st2 st14">HSM Boundary<v:paragraph  v:horizAlign="1"></v:paragraph><v:tabList></v:tabList></text>
+	</g>
+</g>
+</svg>
