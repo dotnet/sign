@@ -57,13 +57,41 @@ You'll need a DNS name and matching SSL certificate. Something like `codesign.yo
 
 In the Azure Portal, navigate to your `SignService Server` application, and add a `ReplyUrl` entry with your hostname, such as `https://codesign.yourorganization.com/signin-oidc`
 
-## Build and publish
+## 5. Build and publish
 
 There's a few parts to this, and I strongly recommend using Azure Key Vault to hold all of the settings you need for your service. 
 
-Follow the steps in my [blog](https://oren.codes/2017/10/18/continuous-deployment-of-cloud-services-with-vsts/) to create a CI/CD pipeline for the cloud service. Create a key vault
+Follow the steps in my [blog](https://oren.codes/2017/10/18/continuous-deployment-of-cloud-services-with-vsts/) to create a CI/CD pipeline for the cloud service. Create a key vault to hold the configuration values and link them into VSTS as a variable group.
 
+You should have the following secrets with the appropriate values in the Vault:
 
+- AccountEncryptedPassword
+- AccountUsername
+- Admin-Location
+- Admin-ResourceGroup
+- Admin-SubscriptionId
+- AzureAd-AADInstance
+- AzureAd-ApplicationObjectId
+- AzureAd-Audience
+- AzureAd-ClientId
+- AzureAd-ClientSecret
+- AzureAd-Domain
+- AzureAd-TenantId
+- DiagnosticConnectionString
+- PasswordEncryption
+- SslCertificateSha1
 
-### VM configuration
-Use IIS on Server 2016. Under the App Pool advanced settings, Set the App Pool CLR version to `No Managed Code` and "Load User Profile" to `true`. Edit your `appsettings.json` accordingly as per the above table. You'll need to install the .NET Core as described here: https://docs.microsoft.com/en-us/aspnet/core/publishing/iis.
+Most of these values map to the `appsettings.json` values. `AccountUsername` comes from your Cloud Service config. `PasswordEncryption` is the thumbprint of the certificate used by the tools to encrypt the password. `AccountEncryptedPassword` is the encrypted password value. `SslCertificateSha1` is the thumbprint of your configured SSL certificate. One way to get these values is to publish to cloud services using the `Local` configuration, setting the values in the UI and then copying them into Key Vault.
+
+Once you have those variables in Key Vault and linked into a Variable Group in VSTS, add that variable group to your Release Management definition to make them available there. The tokenize step, as described in my blog, will take put those values in the `cscfg` before it's deployed in the final step.
+
+## 6. First time login
+
+When you first configure the application using the `InstallUtility`, only the user who ran the utility is an admin of the Signing Service. To add additional administrators, go to the AAD Portal, then to Enterprise Applications, find the `SignService - Server` application, then under `Users and Groups`, you can add a role assignment to any additional users who need admin access.
+
+Then you can proceed to the portal by navigating to the root URL in a browser and following the steps in the [admin guide](Administration.md) to 
+create a sign service user account, specify the configuration settings, and create/upload a certificate.
+
+# VM configuration
+
+Use IIS on Server 2016. Under the App Pool advanced settings, Set the App Pool CLR version to `No Managed Code` and "Load User Profile" to `true`. Edit your `appsettings.json` accordingly as per the above table. You can put the `appsettings.json` file in the `~/App_Data` directory and the application will pick it up. You'll need to install the .NET Core as described here: https://docs.microsoft.com/en-us/aspnet/core/publishing/iis.
