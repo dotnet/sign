@@ -92,6 +92,13 @@ When you first configure the application using the `InstallUtility`, only the us
 Then you can proceed to the portal by navigating to the root URL in a browser and following the steps in the [admin guide](Administration.md) to 
 create a sign service user account, specify the configuration settings, and create/upload a certificate.
 
+## 7. Sign Client configuration
+
+You'll need to provide the client configuration to your users. There are two parts to the configuration: 
+
+1. Public part, the `appsettings.json` file that the Sign Client requires. You'll need the `ClientId`, `TenantId`, Service Url, and `ResourceId`. An example of this is in the main readme.
+2. Secret part. The username and password should be treated securely as secrets. AppVeyor allows you to encrypt certain settings; VSTS has secret variables and other build systems have something similar. Technically the username isn't really a secret, but there's no reason to provide any additional information to give an attacker a head-start, so best keep that secret too.
+
 # VM configuration
 
 Use IIS on Server 2016. Under the App Pool advanced settings, Set the App Pool CLR version to `No Managed Code` and "Load User Profile" to `true`. Edit your `appsettings.json` accordingly as per the above table. You can put the `appsettings.json` file in the `~/App_Data` directory and the application will pick it up. You'll need to install the .NET Core as described here: https://docs.microsoft.com/en-us/aspnet/core/publishing/iis.
