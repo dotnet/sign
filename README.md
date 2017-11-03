@@ -18,7 +18,9 @@ The system is designed to support multiple certificates belonging to different u
 
 Certificates are stored in a Key Vault. Due to the way Key Vault's security works - you can control access to the vault as a whole, not per certificate - every user service account gets its own vault. There are no charges per vault; only per certificate.
 
-There is an administrator UI to create sign service user accounts and set the properties. The admin UI also creates the Key Vaults and configures the permissions appropriately. 
+There is an administrator UI to create sign service user accounts and set the properties. The admin UI also creates the Key Vaults and configures the permissions appropriately.
+
+The Sign Service requires user accounts to be used as service accounts. This is due to a current limitation of Azure AD that doesn't allow a Service Principal to Service Principal On-Behalf-Of flow. That flow is part of the defense-in-depth, preventing the signing service from having direct access to the signing functions on its own. The service can only access the signing method on-behalf-of the user at the time of request.
 
 The service currently supports either individual files, or a zip archive that contains supported files to sign (works well for NuGet packages). The service code is easy to extend if additional filters or functionality is required.
 
