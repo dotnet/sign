@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure.OData;
 using System.Text;
+using Microsoft.Azure.ActiveDirectory.GraphClient.Extensions;
 
 namespace InstallUtility
 {
@@ -35,13 +36,20 @@ namespace InstallUtility
             
             graphResourceId = configuration["AzureAd:GraphResourceId"];
             azureRmResourceId = configuration["AzureAd:AzureRmResourceId"];
-            authContext = new AuthenticationContext($"{configuration["AzureAd:Instance"]}common");
+            authContext = new AuthenticationContext(configuration["AzureAd:Instance"]);
 
             // Prompt here so we make sure we're in the right directory
             var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.SelectAccount));
             authResult = token;
+
+            if("f8cdef31-a31e-4b4a-93e4-5f571e91255a".Equals(token.TenantId, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Microsoft Accounts's with the common endpoint are not supported. Update appsettings.json with your tenant-specific endpoint");
+                return;
+            }
+
             graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
-            
+
             if (args.Length > 0)
             {
                 // Read a disambiguation value
@@ -52,10 +60,19 @@ namespace InstallUtility
 
 
             Guid applicationId;
-            string password = null;            
-
+            string password = null;
             // Try to find a "SignService Server -" app
-            var a = await graphClient.Applications.Where(ia => ia.DisplayName.StartsWith(serverDisplayNamePrefix)).ExecuteAsync();
+            IPagedCollection<IApplication> a;
+
+            try
+            {
+                a = await graphClient.Applications.Where(ia => ia.DisplayName.StartsWith(serverDisplayNamePrefix)).ExecuteAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Guest users are not supported. You must be a member user.");
+                return;
+            }
             if (a.CurrentPage.Count == 1)
             {
                 applicationId = Guid.Parse(a.CurrentPage[0].ObjectId);
