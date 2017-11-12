@@ -9,11 +9,6 @@
       <Setting name="AzureAd__ClientId" value="" />
       <Setting name="AzureAd__TenantId" value="" />
       <Setting name="AzureAd__ClientSecret" value="" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.Enabled" value="" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountUsername" value="" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountEncryptedPassword" value="" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteAccess.AccountExpiration" value="" />
-      <Setting name="Microsoft.WindowsAzure.Plugins.RemoteForwarder.Enabled" value="" />
       <Setting name="AzureAd__Domain" value="" />
       <Setting name="AzureAd__ApplicationObjectId" value="" />
       <Setting name="Admin__SubscriptionId" value="" />
@@ -22,7 +17,6 @@
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Certificate1" thumbprint="ABCDEF01234567ABCDEF01234567ABCDEF012345" thumbprintAlgorithm="sha1" />
-      <Certificate name="Microsoft.WindowsAzure.Plugins.RemoteAccess.PasswordEncryption" thumbprint="ABCDEF01234567ABCDEF01234567ABCDEF012345" thumbprintAlgorithm="sha1" />
     </Certificates>
   </Role>
 </ServiceConfiguration>

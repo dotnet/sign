@@ -36,10 +36,6 @@
     <Certificates>
       <Certificate name="Certificate1" storeLocation="LocalMachine" storeName="My" />
     </Certificates>
-    <Imports>
-      <Import moduleName="RemoteAccess" />
-      <Import moduleName="RemoteForwarder" />
-    </Imports>
     <LocalResources>
       <LocalStorage name="CustomTempPath" cleanOnRoleRecycle="true" sizeInMB="1024" />
     </LocalResources>
