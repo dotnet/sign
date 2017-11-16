@@ -41,7 +41,8 @@ $tempPath = [Microsoft.WindowsAzure.ServiceRuntime.RoleEnvironment]::GetLocalRes
 
 Write-Verbose "========== .NET Core Windows Hosting Installation ==========$nl" 
 
-if (Test-Path "$Env:ProgramFiles\dotnet\dotnet.exe")
+## Check the Host FXR since that has a version in the path, allows us to update
+if (Test-Path "$Env:ProgramFiles\dotnet\host\fxr\2.0.3\hostfxr.dll")
 {
     Write-Verbose ".NET Core Installed $nl" 
 }
@@ -65,7 +66,7 @@ elseif (!$isEmulated) # skip install on emulator
 
 	# Get and install the hosting module
 	$tempFile = New-Item ($tempPath + "\netcore-sh.exe")
-    Invoke-WebRequest -Uri https://aka.ms/dotnetcore.2.0.0-windowshosting -OutFile $tempFile
+    Invoke-WebRequest -Uri https://download.microsoft.com/download/5/C/1/5C190037-632B-443D-842D-39085F02E1E8/DotNetCore.2.0.3-WindowsHosting.exe -OutFile $tempFile
 
 	$proc = (Start-Process $tempFile -PassThru "/quiet /install /log C:\Logs\dotnet_install.log")
 	$proc | Wait-Process
