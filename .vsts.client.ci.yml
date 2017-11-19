@@ -17,7 +17,7 @@ steps:
     dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp2.0
 
     # Create package
-    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) /p:NuspecFile=../SignClient.nuspec /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
+    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) --no-build /p:NuspecFile=../SignClient.nuspec /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
         
   displayName: Build Client
 
