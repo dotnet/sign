@@ -16,6 +16,7 @@ steps:
     # Copy sdk files locally before build
     msbuild src/SignService/SignService.csproj /t:PrebuildScript /p:Configuration=$(BuildConfiguration)
 
+    # Build service
     msbuild src/SignService/SignService.csproj /t:Publish /p:Configuration=$(BuildConfiguration)
 
     # Build & Publish Cloud Service
