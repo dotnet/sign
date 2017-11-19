@@ -37,8 +37,7 @@ steps:
   displayName: Tokenize certificate fields in cscfg
   workingDirectory: $(Build.ArtifactStagingDirectory)\app.publish
 
-#- task: PublishBuildArtifacts@1
-- task: 2FF763A7-CE83-4E1F-BC89-0AE63477CEBE@1
+- task: PublishBuildArtifacts@1
   displayName: Publish SignService Artifact
   inputs:
     pathToPublish: $(Build.ArtifactStagingDirectory)\app.publish
