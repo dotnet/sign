@@ -1,0 +1,38 @@
+queue: "Hosted VS2017"
+variables: 
+  BuildConfiguration: Release
+steps:
+- task: BatchScript@1
+  inputs:
+    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+    arguments: -no_logo
+    modifyEnvironment: true
+  displayName: Setup Environment Variables
+
+- powershell: |
+    # Publish 1.1 version
+    dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp1.1
+    
+    # Publish 2.0 version
+    dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp2.0
+
+    # Create package
+    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) /p:NuspecFile=../SignClient.nuspec /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
+        
+  displayName: Build Client
+
+- task: PowerShell@2
+  displayName: Authenticode Sign Client artifacts
+  inputs:
+    filePath: scripts/Sign-Package.ps1
+  env:
+    SignClientUser: $(SignClientUser)
+    SignClientSecret: $(SignClientSecret)
+    ArtifactDirectory: $(Build.ArtifactStagingDirectory)\Client
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish SignClient Artifact
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)\Client
+    artifactType: container
+    artifactName: SignClient
