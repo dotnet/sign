@@ -89,8 +89,6 @@ namespace SignService
                 app.UseDeveloperExceptionPage();
             }
 
-            loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
-
             Func<JsonSerializerSettings> jsonSettingsProvider = () =>
             {
                 var settings = new JsonSerializerSettings
