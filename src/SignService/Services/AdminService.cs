@@ -250,7 +250,7 @@ namespace SignService.Services
         private static string GetRandomPassword()
         {
             // From @vcsjones, thanks!
-            const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:',.?/`~""();";
+            const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:,.?/~();";
             const int PASSWORD_LENGTH = 16; // AAD has a max of 16 char passwords
             var builder = new StringBuilder();
             using (var rng = RandomNumberGenerator.Create())
