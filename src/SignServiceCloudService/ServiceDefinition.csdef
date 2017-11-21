@@ -20,6 +20,7 @@
       <Setting name="Admin__SubscriptionId" />
       <Setting name="Admin__Location" />
       <Setting name="Admin__ResourceGroup" />
+      <Setting name="ApplicationInsights__InstrumentationKey" />
     </ConfigurationSettings>
     <Endpoints>
       <InputEndpoint name="Endpoint1" protocol="https" port="443" certificate="Certificate1" />
