@@ -15,6 +15,7 @@
       <Setting name="Admin__Location" value="" />
       <Setting name="Admin__ResourceGroup" value="" />
       <Setting name="ApplicationInsights__InstrumentationKey" value="" />
+      <Setting name="APPINSIGHTS_INSTRUMENTATIONKEY" value="" />
     </ConfigurationSettings>
     <Certificates>
       <Certificate name="Certificate1" thumbprint="ABCDEF01234567ABCDEF01234567ABCDEF012345" thumbprintAlgorithm="sha1" />

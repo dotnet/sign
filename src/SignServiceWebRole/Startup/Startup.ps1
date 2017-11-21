@@ -24,7 +24,8 @@ $keys = @(
 	"Admin__SubscriptionId",
 	"Admin__Location",
 	"Admin__ResourceGroup",
-	"ApplicationInsights__InstrumentationKey"
+	"ApplicationInsights__InstrumentationKey",
+	"APPINSIGHTS_INSTRUMENTATIONKEY"
 )
 
 foreach($key in $keys){
