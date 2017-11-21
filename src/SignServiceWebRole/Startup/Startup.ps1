@@ -23,8 +23,7 @@ $keys = @(
 	"AzureAd__ApplicationObjectId",
 	"Admin__SubscriptionId",
 	"Admin__Location",
-	"Admin__ResourceGroup",
-	"ApplicationInsights__InstrumentationKey"
+	"Admin__ResourceGroup"
 )
 
 foreach($key in $keys){
