@@ -25,7 +25,7 @@ namespace SignService.Services
         Task<List<VaultModel>> ListKeyVaultsAsync();
         Task<List<CertificateModel>> GetCertificatesInVaultAsync(string vaultUri);
         Task<CertificateOperation> CancelCsrAsync(string vaultName, string certificateName);
-        Task<CertificateBundle> MergeCertificate(string vaultName, string certificateName, X509Certificate2Collection publicCertificates);
+        Task<CertificateBundle> MergeCertificate(string vaultName, string certificateName, byte[] certData);
         Task<CertificateOperation> GetCertificateOperation(string vaultUrl, string certificateName);
         Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName);
     }
@@ -349,8 +349,12 @@ namespace SignService.Services
             return op;
         }
 
-        public async Task<CertificateBundle> MergeCertificate(string vaultName, string certificateName, X509Certificate2Collection publicCertificates)
+        public async Task<CertificateBundle> MergeCertificate(string vaultName, string certificateName, byte[] certData)
         {
+            // Get an X509CCertificate2Collection from the cert data
+            // this supports either P7b or CER
+            var publicCertificates = CryptoUtil.GetCertificatesFromCryptoData(certData);
+
             var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
             var op = await kvClient.MergeCertificateAsync(vault.VaultUri, certificateName, publicCertificates).ConfigureAwait(false);
             return op;
@@ -377,5 +381,7 @@ namespace SignService.Services
 
             return model;
         }
+
+     
     }
 }

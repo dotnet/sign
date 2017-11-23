@@ -115,20 +115,18 @@ namespace SignService.Controllers
                 return View(nameof(CertificateRequest), model);
             }
 
-            X509Certificate2 cert;
+            byte[] data;
             using (var ms = new MemoryStream())
             {
                 // get file data
                 await model.Certificate.CopyToAsync(ms);
                 ms.Position = 0;
-                cert = new X509Certificate2(ms.ToArray());
+                data = ms.ToArray();
             }
-            
-            var collection = new X509Certificate2Collection(cert);
 
             try
             {
-                await keyVaultAdminService.MergeCertificate(model.VaultName, model.CertificateName, collection);
+                await keyVaultAdminService.MergeCertificate(model.VaultName, model.CertificateName, data);
             }
             catch (Exception e)
             {
