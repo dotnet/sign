@@ -42,6 +42,13 @@ namespace SignService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Configure SnapshotCollector from application settings
+            services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+
+            // Add SnapshotCollector telemetry processor.
+            services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+
+
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             // Add framework services.
@@ -62,7 +69,7 @@ namespace SignService
             services.Configure<Settings>(s => s.WinSdkBinDirectory = Path.Combine(environment.ContentRootPath, @"tools\SDK"));
 
             services.Configure<AdminConfig>(Configuration.GetSection("Admin"));
-            services.Configure<Resources>(Configuration.GetSection("Resources"));
+            services.Configure<Utils.Resources>(Configuration.GetSection("Resources"));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
