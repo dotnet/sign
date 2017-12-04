@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 
 namespace SignService
 {
@@ -21,8 +24,16 @@ namespace SignService
             WebHost.CreateDefaultBuilder(args)
                     .ConfigureAppConfiguration((builder =>
                                                 {
-                                                    // Look here as well since this location may be easier for VM deployments
-                                                    builder.AddJsonFile(@"App_Data\appsettings.json", true, true);
+                                                    // build the current config so we can get the key vault url
+                                                    var built = builder.Build();
+
+                                                    var endpoint = built["ConfigurationKeyVaultUrl"];
+                                                    if (!string.IsNullOrWhiteSpace(endpoint))
+                                                    {
+                                                        var tokenProvider = new AzureServiceTokenProvider(azureAdInstance: built["AzureAd:AADInstance"]);
+                                                        var kvClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(tokenProvider.KeyVaultTokenCallback));
+                                                        builder.AddAzureKeyVault(endpoint, kvClient, new DefaultKeyVaultSecretManager()); 
+                                                    }
                                                 }))
                    .UseStartup<Startup>()
                    .Build();

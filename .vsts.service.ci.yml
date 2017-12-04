@@ -1,0 +1,30 @@
+queue: "Hosted VS2017"
+variables: 
+  BuildConfiguration: Release
+steps:
+- task: BatchScript@1
+  inputs:
+    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+    arguments: -no_logo
+    modifyEnvironment: true
+  displayName: Setup Environment Variables
+
+- powershell: |
+    # Restore
+    msbuild /t:restore SignService.sln 
+
+    # Copy sdk files locally before build
+    msbuild src/SignService/SignService.csproj /t:PrebuildScript /p:Configuration=$(BuildConfiguration)
+
+    # Build service
+    msbuild src/SignService/SignService.csproj /p:Configuration=$(BuildConfiguration) /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\"
+
+  displayName: Build / Publish Service
+
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish SignService Artifact
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)
+    artifactType: container
+    artifactName: SignService

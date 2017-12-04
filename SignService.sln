@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27110.0
+VisualStudioVersion = 15.0.27128.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{92C73EE1-4EF3-4721-B6A9-9F458A673CA3}"
 EndProject
@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		.vsts.client.ci.yml = .vsts.client.ci.yml
-		.vsts.cloudservice.ci.yml = .vsts.cloudservice.ci.yml
+		.vsts.service.ci.yml = .vsts.service.ci.yml
 		scripts\appsettings.json = scripts\appsettings.json
 		src\Directory.build.props = src\Directory.build.props
 		README.md = README.md
@@ -24,10 +24,6 @@ EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker\docker-compose.dcproj", "{0A2976F1-5A72-4828-8312-A78DA9D0E550}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InstallUtility", "src\InstallUtility\InstallUtility.csproj", "{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}"
-EndProject
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "SignServiceCloudService", "src\SignServiceCloudService\SignServiceCloudService.ccproj", "{EABA4762-B925-4E94-8644-0EEF2EC86111}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignServiceWebRole", "src\SignServiceWebRole\SignServiceWebRole.csproj", "{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,14 +45,6 @@ Global
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EABA4762-B925-4E94-8644-0EEF2EC86111}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,8 +53,6 @@ Global
 		{9F556193-4978-4F31-A905-AC5699E05122} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{84FC3FBF-E14C-4268-8693-45CC82451DF3} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
-		{EABA4762-B925-4E94-8644-0EEF2EC86111} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
-		{BEB4BB3A-0ADB-4639-817E-9DBD13483A3A} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7AA1043F-37A2-404F-8EC3-34C747C1CEB7}
