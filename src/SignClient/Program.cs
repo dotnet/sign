@@ -40,9 +40,9 @@ namespace SignClient
                 ArgumentSyntax.Parse(args, syntax =>
                 {
                     syntax.DefineCommand("sign", ref command, Command.Sign, "Sign a file");
-                    syntax.DefineOption("c|config", ref configFile, "Full path to config json file");
-                    syntax.DefineOption("i|input", ref iFile, "Full path to input file");
-                    syntax.DefineOption("o|output", ref oFile, "Full path to output file. May be same as input to overwrite");
+                    syntax.DefineOption("c|config", ref configFile, "Path to config json file");
+                    syntax.DefineOption("i|input", ref iFile, "Path to input file");
+                    syntax.DefineOption("o|output", ref oFile, "Path to output file. May be same as input to overwrite");
                     syntax.DefineOption("h|hashmode", ref hashMode, s => (HashMode)Enum.Parse(typeof(HashMode), s, true), "Hash mode: either dual or Sha256. Default is dual, to sign with both Sha-1 and Sha-256 for files that support it. For files that don't support dual, Sha-256 is used");
                     syntax.DefineOption("f|filelist", ref fFile, "Full path to file containing paths of files to sign within an archive");
                     syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
@@ -75,9 +75,9 @@ namespace SignClient
                 {
                     oFile = iFile;
                 }
-
+                
                 var builder = new ConfigurationBuilder()
-                    .AddJsonFile(configFile)
+                    .AddJsonFile(ExpandFilePath(configFile))
                     .AddEnvironmentVariables();
 
                 var configuration = builder.Build();
@@ -133,8 +133,8 @@ namespace SignClient
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
 
                 // Prepare input/output file
-                var input = new FileInfo(iFile);
-                var output = new FileInfo(oFile);
+                var input = new FileInfo(ExpandFilePath(iFile));
+                var output = new FileInfo(ExpandFilePath(oFile));
                 Directory.CreateDirectory(output.DirectoryName);
 
 
@@ -143,7 +143,7 @@ namespace SignClient
                 HttpResponseMessage response;
                 if (command == Command.Sign)
                 {
-                    response = await client.SignFile(input, !string.IsNullOrWhiteSpace(fFile) ? new FileInfo(fFile) : null, hashMode, name, desc, descUrl);
+                    response = await client.SignFile(input, !string.IsNullOrWhiteSpace(fFile) ? new FileInfo(ExpandFilePath(fFile)) : null, hashMode, name, desc, descUrl);
                 }
                 else
                 {
@@ -174,6 +174,23 @@ namespace SignClient
             }
 
             return 0;
+        }
+
+        static string ExpandFilePath(string file)
+        {
+#if NETCOREAPP2_0
+            if (!Path.IsPathRooted(file))
+            {
+                return $"{Environment.CurrentDirectory}{Path.DirectorySeparatorChar}{file}";
+            }
+            return file;
+#else
+            if (!Path.IsPathRooted(file))
+            {
+                throw new ArgumentException("Path must be rooted on .NET Core App 1.1.");
+            }
+            return file;
+#endif
         }
 
         enum Command

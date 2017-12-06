@@ -129,12 +129,12 @@ After signing contents of the archive, the archive itself is signed if supported
 usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
                   [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
 
-    -c, --config <arg>            Full path to config json file
-    -i, --input <arg>             Full path to input file
-    -o, --output <arg>            Full path to output file. May be same
+    -c, --config <arg>            Path to config json file
+    -i, --input <arg>             Path to input file
+    -o, --output <arg>            Path to output file. May be same
                                   as input to overwrite
     -h, --hashmode <arg>          Hash mode: Sha256.
-    -f, --filter <arg>            Full path to file containing paths of
+    -f, --filter <arg>            Path to file containing paths of
                                   files to sign within an archive
     -s, --secret <arg>            Client Secret
     -n, --name <arg>              Name of project for tracking
