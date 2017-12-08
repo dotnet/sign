@@ -183,6 +183,7 @@ namespace SignService
 
                 if (signtool.ExitCode == 0)
                 {
+                    logger.LogInformation("Sign tool completed successfuly");
                     return true;
                 }
 
