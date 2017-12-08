@@ -161,7 +161,7 @@ namespace SignService
                 // redact args for log
                 var redacted = args;
                 if (args.Contains("-kva"))
-                    redacted = args.Substring(args.IndexOf("-kva"));
+                    redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
 
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, redacted);
                 signtool.Start();
