@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
+using SignService.Utils;
 
 namespace SignService.Controllers
 {
@@ -20,7 +21,8 @@ namespace SignService.Controllers
     {
         readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger<SignController> logger;
-        
+        private object dataDirectory;
+
         public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
         {
             this.codeSignAggregate = codeSignAggregate;
@@ -90,7 +92,7 @@ namespace SignService.Controllers
             }
             finally
             {
-                Directory.Delete(dataDir, true);
+                DirectoryUtility.SafeDelete(dataDir);
             }
         }
     }

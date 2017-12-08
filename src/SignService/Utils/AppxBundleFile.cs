@@ -7,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using SignService.Utils;
+
 namespace SignService
 {
     public class AppxBundleFile : IDisposable
@@ -103,7 +105,7 @@ namespace SignService
 
         public void Dispose()
         {
-            Directory.Delete(dataDirectory, true);
+            DirectoryUtility.SafeDelete(dataDirectory);
         }
 
     }

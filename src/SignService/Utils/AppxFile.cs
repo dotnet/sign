@@ -108,7 +108,7 @@ namespace SignService.Utils
 
         public void Dispose()
         {
-            Directory.Delete(dataDirectory, true);
+            DirectoryUtility.SafeDelete(dataDirectory);
         }
     }
 }

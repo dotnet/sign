@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SignService.Utils;
 using Wyam.Core.IO.Globbing;
 
 namespace SignService
@@ -62,7 +63,7 @@ namespace SignService
 
         public void Dispose()
         {
-            Directory.Delete(dataDirectory, true);
+            DirectoryUtility.SafeDelete(dataDirectory);
         }
 
     }
