@@ -197,7 +197,7 @@ namespace SignService.SigningTools
 
                 if (RunSignTool(args, inputFile, hashMode, rsaPrivateKey, publicCertificate, timestampUrl))
                 {
-                    logger.LogInformation($"Signed {args}");
+                    logger.LogInformation($"Signed successfully");
                     return true;
                 }
 
@@ -207,7 +207,7 @@ namespace SignService.SigningTools
 
             } while (attempt <= 3);
 
-            logger.LogError($"Failed to sign {args}. Attempts exceeded");
+            logger.LogError($"Failed to sign. Attempts exceeded");
 
             return false;
         }
@@ -221,14 +221,23 @@ namespace SignService.SigningTools
                 {
                     FileName = magetoolPath,
                     UseShellExecute = false,
-                    RedirectStandardError = false,
-                    RedirectStandardOutput = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     Arguments = args
                 }
             })
             {
                 logger.LogInformation("Signing {fileName}", signtool.StartInfo.FileName);
                 signtool.Start();
+
+                var output = signtool.StandardOutput.ReadToEnd();
+                var error = signtool.StandardError.ReadToEnd();
+                logger.LogInformation("Mage Out {MageOutput}", output);
+
+                if(!string.IsNullOrWhiteSpace(error))
+                    logger.LogInformation("Mage Err {MageError}", error);
+
                 if (!signtool.WaitForExit(30 * 1000))
                 {
                     logger.LogError("Error: Mage took too long to respond {exitCode}", signtool.ExitCode);

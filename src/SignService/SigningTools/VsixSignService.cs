@@ -82,7 +82,7 @@ namespace SignService.SigningTools
 
                 if (RunSignTool(args))
                 {
-                    logger.LogInformation($"Signed {args}");
+                    logger.LogInformation($"Signed successfully");
                     return true;
                 }
 
@@ -92,7 +92,7 @@ namespace SignService.SigningTools
 
             } while (attempt <= 3);
 
-            logger.LogError($"Failed to sign {args}. Attempts exceeded");
+            logger.LogError($"Failed to sign. Attempts exceeded");
 
             return false;
         }
@@ -106,14 +106,23 @@ namespace SignService.SigningTools
                 {
                     FileName = signtoolPath,
                     UseShellExecute = false,
-                    RedirectStandardError = false,
-                    RedirectStandardOutput = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     Arguments = args
                 }
             })
             {
                 logger.LogInformation("Signing {fileName}", signtool.StartInfo.FileName);
                 signtool.Start();
+
+                var output = signtool.StandardOutput.ReadToEnd();
+                var error = signtool.StandardError.ReadToEnd();
+                logger.LogInformation("Vsix Out {VsixOutput}", output);
+
+                if(!string.IsNullOrWhiteSpace(error))
+                    logger.LogInformation("Vsix Err {VsixError}", error);
+
                 if (!signtool.WaitForExit(30 * 1000))
                 {
                     logger.LogError("Error: OpenVsixSignTool took too long to respond {exitCode}", signtool.ExitCode);

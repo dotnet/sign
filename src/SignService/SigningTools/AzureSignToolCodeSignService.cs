@@ -118,7 +118,6 @@ namespace SignService
 
                 if (RunSignTool(args))
                 {
-                    logger.LogInformation($"Signed {args}");
                     return true;
                 }
 
@@ -128,7 +127,7 @@ namespace SignService
 
             } while (attempt <= 3);
 
-            logger.LogError($"Failed to sign {args}. Attempts exceeded");
+            logger.LogError($"Failed to sign. Attempts exceeded");
 
             return false;
         }
@@ -152,8 +151,9 @@ namespace SignService
                 {
                     FileName = keyVaultSignToolPath,
                     UseShellExecute = false,
-                    RedirectStandardError = false,
-                    RedirectStandardOutput = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     Arguments = args
                 }
             })
@@ -165,6 +165,15 @@ namespace SignService
 
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, redacted);
                 signtool.Start();
+                var output = signtool.StandardOutput.ReadToEnd();
+                var error = signtool.StandardError.ReadToEnd();
+                logger.LogInformation("SignTool Out {SignToolOutput}", output);
+
+                if(!string.IsNullOrWhiteSpace(error))
+                    logger.LogError("SignTool Err {SignToolError}", error);
+
+
+
                 if (!signtool.WaitForExit(30 * 1000))
                 {
                     logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);

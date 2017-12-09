@@ -68,14 +68,22 @@ namespace SignService
                 {
                     FileName = makeAppxPath,
                     UseShellExecute = false,
-                    RedirectStandardError = false,
-                    RedirectStandardOutput = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
                     Arguments = args
                 }
             })
             {
                 logger.LogInformation($"Running Makeappx with parameters: '{args}'");
                 makeappx.Start();
+                var output = makeappx.StandardOutput.ReadToEnd();
+                var error = makeappx.StandardError.ReadToEnd();
+                logger.LogInformation("MakeAppx Out {MakeAppxOutput}", output);
+
+                if(!string.IsNullOrWhiteSpace(error))
+                    logger.LogInformation("MakeAppx Err {MakeAppxError}", error);
+
                 if (!makeappx.WaitForExit(30 * 1000))
                 {
                     logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
