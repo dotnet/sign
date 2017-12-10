@@ -72,6 +72,7 @@ namespace SignService
             services.Configure<Utils.Resources>(Configuration.GetSection("Resources"));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
 
             // The Key Vault Service must be scoped as the context is per user in the request
             services.AddScoped<IKeyVaultService, KeyVaultService>();

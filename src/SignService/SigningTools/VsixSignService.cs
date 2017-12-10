@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SignService.Services;
+using SignService.Utils;
 
 namespace SignService.SigningTools
 {
@@ -17,18 +18,25 @@ namespace SignService.SigningTools
     {
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<VsixSignService> logger;
+        readonly ITelemetryLogger telemetryLogger;
         readonly string signtoolPath;
+        readonly string signToolName;
 
         readonly ParallelOptions options = new ParallelOptions
         {
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IHttpContextAccessor contextAccessor, IHostingEnvironment hostingEnvironment, ILogger<VsixSignService> logger)
+        public VsixSignService(IHttpContextAccessor contextAccessor, 
+                               IHostingEnvironment hostingEnvironment, 
+                               ILogger<VsixSignService> logger,
+                               ITelemetryLogger telemetryLogger)
         {
             this.contextAccessor = contextAccessor;
             this.logger = logger;
+            this.telemetryLogger = telemetryLogger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
+            signToolName = Path.GetFileName(signtoolPath);
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
@@ -57,6 +65,7 @@ namespace SignService.SigningTools
 
             Parallel.ForEach(files, options, (file, state) =>
                                              {
+                                                 telemetryLogger.OnSignFile(file, signToolName);
                                                  var fileArgs = $@"{args} ""{file}""";
 
                                                  if (!Sign(fileArgs))
@@ -113,6 +122,14 @@ namespace SignService.SigningTools
                 }
             })
             {
+                var startTime = DateTimeOffset.UtcNow; 
+                var stopwatch = Stopwatch.StartNew();
+
+                // redact args for log
+                var redacted = args;
+                if (args.Contains("-kva"))
+                    redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
+
                 logger.LogInformation("Signing {fileName}", signtool.StartInfo.FileName);
                 signtool.Start();
 
@@ -135,9 +152,12 @@ namespace SignService.SigningTools
                         throw new Exception("OpenVsixSignTool timed out and could not be killed", ex);
                     }
 
+                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
                     logger.LogError("Error: OpenVsixSignTool took too long to respond {exitCode}", signtool.ExitCode);
                     throw new Exception($"OpenVsixSignTool took too long to respond");
                 }
+
+                telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
 
                 if (signtool.ExitCode == 0)
                 {

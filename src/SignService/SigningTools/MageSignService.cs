@@ -24,19 +24,28 @@ namespace SignService.SigningTools
         readonly AzureAdOptions aadOptions;
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<MageSignService> logger;
+        readonly ITelemetryLogger telemetryLogger;
         readonly string magetoolPath;
+        readonly string signToolName;
         readonly Lazy<ISigningToolAggregate> signToolAggregate;
         readonly ParallelOptions options = new ParallelOptions
         {
             MaxDegreeOfParallelism = 4
         };
 
-        public MageSignService(IOptions<AzureAdOptions> aadOptions, IHostingEnvironment hostingEnvironment, IHttpContextAccessor contextAccessor, IServiceProvider serviceProvider, ILogger<MageSignService> logger)
+        public MageSignService(IOptions<AzureAdOptions> aadOptions, 
+                               IHostingEnvironment hostingEnvironment, 
+                               IHttpContextAccessor contextAccessor, 
+                               IServiceProvider serviceProvider, 
+                               ILogger<MageSignService> logger,
+                               ITelemetryLogger telemetryLogger)
         {
             this.aadOptions = aadOptions.Value;
             this.contextAccessor = contextAccessor;
             this.logger = logger;
+            this.telemetryLogger = telemetryLogger;
             magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
+            signToolName = Path.GetFileName(magetoolPath);
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             signToolAggregate = new Lazy<ISigningToolAggregate>(() => serviceProvider.GetService<ISigningToolAggregate>());
         }
@@ -127,6 +136,7 @@ namespace SignService.SigningTools
 
                         var fileArgs = $@"-update ""{manifestFile}"" {args}";
 
+                        telemetryLogger.OnSignFile(manifestFile, signToolName);
                         if (!Sign(fileArgs, manifestFile, hashMode, rsaPrivateKey, certificate, timeStampUrl))
                         {
                             throw new Exception($"Could not sign {manifestFile}");
@@ -163,6 +173,7 @@ namespace SignService.SigningTools
                             if (!string.IsNullOrWhiteSpace(descriptionUrl))
                                 fileArgs += $@" -SupportURL {descriptionUrl}";
 
+                            telemetryLogger.OnSignFile(f, signToolName);
                             if (!Sign(fileArgs, f, hashMode, rsaPrivateKey, certificate, timeStampUrl))
                             {
                                 throw new Exception($"Could not sign {f}");
@@ -228,6 +239,8 @@ namespace SignService.SigningTools
                 }
             })
             {
+                var startTime = DateTimeOffset.UtcNow;
+                var stopwatch = Stopwatch.StartNew();
                 logger.LogInformation("Signing {fileName}", signtool.StartInfo.FileName);
                 signtool.Start();
 
@@ -258,6 +271,8 @@ namespace SignService.SigningTools
                 {
                     // Now add the signature 
                     ManifestSigner.SignFile(inputFile, hashMode, rsaPrivateKey, publicCertificate, timestampUrl);
+
+                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, inputFile, signtool.ExitCode);
 
                     return true;
                 }

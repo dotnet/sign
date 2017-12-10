@@ -29,8 +29,9 @@ namespace SignService
         readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<AzureSignToolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
-        
+        readonly ITelemetryLogger telemetryLogger;
         readonly string keyVaultSignToolPath;
+        readonly string signToolName;
 
         // Four things at once as we're hitting the sign server
         readonly ParallelOptions options = new ParallelOptions
@@ -39,12 +40,18 @@ namespace SignService
         };
 
 
-        public AzureSignToolCodeSignService(IHttpContextAccessor contextAccessor, ILogger<AzureSignToolCodeSignService> logger, IAppxFileFactory appxFileFactory, IHostingEnvironment hostingEnvironment)
+        public AzureSignToolCodeSignService(IHttpContextAccessor contextAccessor, 
+                                            ILogger<AzureSignToolCodeSignService> logger, 
+                                            IAppxFileFactory appxFileFactory, 
+                                            IHostingEnvironment hostingEnvironment,
+                                            ITelemetryLogger telemetryLogger)
         {
             this.contextAccessor = contextAccessor;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
-            keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\AzureSignTool\\AzureSignTool.exe"); 
+            this.telemetryLogger = telemetryLogger;
+            keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\AzureSignTool\\AzureSignTool.exe");
+            signToolName = Path.GetFileName(keyVaultSignToolPath);
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
@@ -84,6 +91,8 @@ namespace SignService
 
             Parallel.ForEach(files, options, (file, state) =>
             {
+                telemetryLogger.OnSignFile(file, signToolName);
+
                 // check to see if it's an appx and strip it first
                 var ext = Path.GetExtension(file).ToLowerInvariant();
                 if (".appx".Equals(ext, StringComparison.OrdinalIgnoreCase) || ".eappx".Equals(ext, StringComparison.OrdinalIgnoreCase))
@@ -158,6 +167,9 @@ namespace SignService
                 }
             })
             {
+                var startTime = DateTimeOffset.UtcNow;
+                var stopwatch = Stopwatch.StartNew();
+
                 // redact args for log
                 var redacted = args;
                 if (args.Contains("-kva"))
@@ -186,12 +198,16 @@ namespace SignService
                         throw new Exception("SignTool timed out and could not be killed", ex);
                     }
 
+                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
                     logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
                     throw new Exception($"Sign tool took too long to respond with {redacted}");
                 }
 
+                telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
+
                 if (signtool.ExitCode == 0)
                 {
+                    
                     logger.LogInformation("Sign tool completed successfuly");
                     return true;
                 }
