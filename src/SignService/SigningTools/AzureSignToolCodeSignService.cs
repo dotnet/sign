@@ -102,7 +102,7 @@ namespace SignService
 
                 string args;
             
-                args = $@"sign ""{file}"" -tr {keyVaultService.CertificateInfo.TimestampUrl} -fd sha256 -td sha256 {descArgs} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
+                args = $@"sign ""{file}"" -v -tr {keyVaultService.CertificateInfo.TimestampUrl} -fd sha256 -td sha256 {descArgs} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
 
                 if (!Sign(args))
                 {
