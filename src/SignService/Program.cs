@@ -36,7 +36,6 @@ namespace SignService
                                                     }
                                                 }))
                    .UseStartup<Startup>()
-                   .UseApplicationInsights()
                    .Build();
     }
 }
