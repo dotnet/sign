@@ -32,14 +32,7 @@ namespace SignService
         readonly ITelemetryLogger telemetryLogger;
         readonly string keyVaultSignToolPath;
         readonly string signToolName;
-
-        // Four things at once as we're hitting the sign server
-        readonly ParallelOptions options = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 4
-        };
-
-
+        
         public AzureSignToolCodeSignService(IHttpContextAccessor contextAccessor, 
                                             ILogger<AzureSignToolCodeSignService> logger, 
                                             IAppxFileFactory appxFileFactory, 
@@ -89,7 +82,9 @@ namespace SignService
             var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
-            Parallel.ForEach(files, options, (file, state) =>
+            // loop through all of the files here, looking for appx/eappx
+            // mark each as being signed and strip appx
+            Parallel.ForEach(files, (file, state) =>
             {
                 telemetryLogger.OnSignFile(file, signToolName);
 
@@ -100,15 +95,21 @@ namespace SignService
                     StripAppx(file);
                 }
 
-                string args;
-            
-                args = $@"sign ""{file}"" -v -tr {keyVaultService.CertificateInfo.TimestampUrl} -fd sha256 -td sha256 {descArgs} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
+            });
+
+            // generate a file list for sining
+            using (var fileList = new TemporaryFile())
+            {
+                // generate a file of files
+                File.WriteAllLines(fileList.FileName, files);
+
+                var args = $@"sign -ifl ""{fileList.FileName}"" -v -tr {keyVaultService.CertificateInfo.TimestampUrl} -fd sha256 -td sha256 {descArgs} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
 
                 if (!Sign(args))
                 {
-                    throw new Exception($"Could not append sign {file}");
+                    throw new Exception($"Could not append sign one of \n{string.Join("\n", files)}");
                 }
-            });
+            }
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs

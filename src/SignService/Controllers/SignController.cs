@@ -21,7 +21,6 @@ namespace SignService.Controllers
     {
         readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger<SignController> logger;
-        private object dataDirectory;
 
         public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
         {
