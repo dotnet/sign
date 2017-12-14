@@ -19,7 +19,7 @@
     
     <SdkFile Include="$(NetSdkBinDir)mage.exe" />
     
-    <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*;App_Data\**\*">
+    <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
