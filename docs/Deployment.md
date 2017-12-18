@@ -1,6 +1,6 @@
 # Deployment
 
-This service must run on Windows Server 2016 due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Cloud Service Web Role for a PaaS offering (recommended).
+This service must run on Windows Server 2016 due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Website (recommended) *[note: 2016 is being rolled out to app services through early/mid January]*.
 
 You will need an Azure AD tenant and an Azure subscription. For easiest deployment, it's easiest if you are a global admin on your AAD tenant, but you may opt to have a global admin consent to the applications separately as well. Admin consent is ultimately required, however.
 
@@ -8,12 +8,14 @@ While you can create the required entries manually, it's far easier to run the p
 
 ## Overview
 
+Below are the minimum steps needed to get this deployed to Azure App services. You may configure custom domains with custom SSL certificates if you'd like.
+
 1. Clone this repo
 2. Build & Run `InstallUtility`
-3. Configure DNS for your service, get an SSL certificate
+3. Create App Service (Web Site) and Key Vault for runtime settings
 4. Update `ReplyUrl` in the `SignService` application to point to your hostname
-5. Build and publish service to Azure with appropriate config values.
-6. Login to SignService admin UI, create user account, upload cert or create CSR.
+5. Build and publish service to Azure
+6. Login to SignService admin UI, create user account, upload cert or create CSR
 7. Provide sign client configuration to your users
 
 
@@ -49,41 +51,45 @@ You'll need those during the installer steps.
 4. When prompted, allow the admin consent if you're a global admin in the AAD tenant. If you're not, you can have a global admin re-run the tool or manually hit the "Grant Permissions" button in the Azure Portal. Admin Consent is required before you can use the application.
 5. When the utility completes, it'll print the configuration values you'll need later. Copy these and set them aside for later.
 
-## 3. Configure DNS for your service, get an SSL certificate
+## 3. Create App Service
 
-You'll need a DNS name and matching SSL certificate. Something like `codesign.yourorganization.com`. If you plan on using Azure Cloud Service Web Roles, which is the recommended option as it's PaaS, create a Cloud Service Web Role in order to get the correct CNAME values for DNS. You'll also need to upload the SSL certificate to the Cloud Service configuration. Take note of the SSL Certificate's `SHA-1 Thumbprint` as you'll need it later.
+Azure Web Sites is the easiest way to host this service. A `B1` or higher instance works for this. The service keeps its runtime configuration and secrets in an Azure Key Vault, so one of those is required as well. A Managed Service Identity secures access from the website to the Key Vault without requiring explicit credentials.
+
+1. Create a new Web Service. Enable Application Insights, if desired, to capture logging/telemetry data.
+2. On the website configuration in the portal, enable its Managed Service Identity
+3. On the website extensions, Add/ensure both "Application Insights" and the ".NET Core" extensions are present. Add them if required.
+4. Create a new Azure Key Vault (standard is fine since it's just holding secrets). Add an access policy for your managed service identity granting it `Get` and `List` permissions for secrets.
+5. Add the following secrets (you may omit ones that match the defaults in the `appsettings.json`, like `AzureAd--AADInstance` for most people). The  ones are most likely:
+   - `Admin--Location`
+   - `Admin--ResourceGroup`
+   - `Admin--SubscriptionId`
+   - `AzureAd--ApplicationObjectId`
+   - `AzureAd--Audience`
+   - `AzureAd--ClientId`
+   - `AzureAd--ClientSecret`
+   - `AzureAd--Domain`
+   - `AzureAd--TenantId`
+6. In your website configuration, add the URL to the Key Vault as a configuration option `ConfigurationKeyVaultUrl`. That's where the app will pull its configuration from.
 
 ## 4. Update `ReplyUrl`
 
-In the Azure Portal, navigate to your `SignService Server` application, and add a `ReplyUrl` entry with your hostname, such as `https://codesign.yourorganization.com/signin-oidc`
+In the Azure Portal, navigate to your `SignService Server` application, and add a `ReplyUrl` entry with your hostname, such as `https://your-website-name.azurewebsites.net/signin-oidc`
 
 ## 5. Build and publish
 
-There's a few parts to this, and I strongly recommend using Azure Key Vault to hold all of the settings you need for your service. 
+There are many ways to push code to App Services. You can publish directly from Visual Studio, you can use Visual Studio Team Services to setup a CI/CD pipeline, or you can do it with another set of tools.
 
-Follow the steps in my [blog](https://oren.codes/2017/10/18/continuous-deployment-of-cloud-services-with-vsts/) to create a CI/CD pipeline for the cloud service. Create a key vault to hold the configuration values and link them into VSTS as a variable group.
+### Visual Studio Publish
 
-You should have the following secrets with the appropriate values in the Vault:
+While generally discouraged for production scenarios, you can use VS to quickly publish to your App Service. Open the solution, right-click the "SignService" project and select `Publish...` and follow the prompts.
 
-- AccountEncryptedPassword
-- AccountUsername
-- Admin-Location
-- Admin-ResourceGroup
-- Admin-SubscriptionId
-- AzureAd-AADInstance
-- AzureAd-ApplicationObjectId
-- AzureAd-Audience
-- AzureAd-ClientId
-- AzureAd-ClientSecret
-- AzureAd-Domain
-- AzureAd-TenantId
-- DiagnosticConnectionString
-- PasswordEncryption
-- SslCertificateSha1
+### Visual Studio Team Services
 
-Most of these values map to the `appsettings.json` values. `AccountUsername` comes from your Cloud Service config. `PasswordEncryption` is the thumbprint of the certificate used by the tools to encrypt the password. `AccountEncryptedPassword` is the encrypted password value. `SslCertificateSha1` is the thumbprint of your configured SSL certificate. One way to get these values is to publish to cloud services using the `Local` configuration, setting the values in the UI and then copying them into Key Vault.
+The recommended way to build and publish this service is with Visual Studio Team Services. It's free for up to five users.
 
-Once you have those variables in Key Vault and linked into a Variable Group in VSTS, add that variable group to your Release Management definition to make them available there. The tokenize step, as described in my blog, will take put those values in the `cscfg` before it's deployed in the final step.
+Create a new build definition that points to your git clone. This lets you control updates by pulling from the source at your discretion. Use the YAML builds definition point it to the `.vsts.service.ci.yml` file to create a publish artifact.
+
+Create a new Release Management definition and add an App Service task. You may need to create an Azure Service Endpoint if you don't have one for your subscription yet.
 
 ## 6. First time login
 
@@ -94,7 +100,7 @@ create a sign service user account, specify the configuration settings, and crea
 
 ## 7. Sign Client configuration
 
-You'll need to provide the client configuration to your users. There are two parts to the configuration: 
+You'll need to provide the client configuration to your users. There are two parts to the configuration:
 
 1. Public part, the `appsettings.json` file that the Sign Client requires. You'll need the `ClientId`, `TenantId`, Service Url, and `ResourceId`. An example of this is in the main readme.
 2. Secret part. The username and password should be treated securely as secrets. AppVeyor allows you to encrypt certain settings; VSTS has secret variables and other build systems have something similar. Technically the username isn't really a secret, but there's no reason to provide any additional information to give an attacker a head-start, so best keep that secret too.
