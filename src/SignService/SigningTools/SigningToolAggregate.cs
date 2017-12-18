@@ -21,7 +21,7 @@ namespace SignService.SigningTools
         readonly string makeappxPath;
 
 
-        public SigningToolAggregate(IList<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptions<Settings> settings)
+        public SigningToolAggregate(IEnumerable<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptions<Settings> settings)
         {
             this.logger = logger;
             makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
@@ -32,7 +32,7 @@ namespace SignService.SigningTools
                        from ext in cs.SupportedFileExtensions
                        select new { cs, ext };
 
-            this.codeSignServices = list.ToDictionary(k => k.ext.ToLowerInvariant(), v => v.cs);
+            codeSignServices = list.ToDictionary(k => k.ext.ToLowerInvariant(), v => v.cs);
         }
 
 

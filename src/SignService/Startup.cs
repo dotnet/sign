@@ -87,7 +87,7 @@ namespace SignService
             services.AddSingleton<ICodeSignService, VsixSignService>();
             services.AddSingleton<ICodeSignService, MageSignService>();
 
-            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>(sp => new SigningToolAggregate(sp.GetServices<ICodeSignService>().ToList(), sp.GetService<ILogger<SigningToolAggregate>>(), sp.GetService<IOptions<Settings>>()));
+            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>();
 
             services.AddMvc();
         }
