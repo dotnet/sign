@@ -56,8 +56,8 @@ You'll need those during the installer steps.
 Azure Web Sites is the easiest way to host this service. A `B1` or higher instance works for this. The service keeps its runtime configuration and secrets in an Azure Key Vault, so one of those is required as well. A Managed Service Identity secures access from the website to the Key Vault without requiring explicit credentials.
 
 1. Create a new Web Service. Enable Application Insights, if desired, to capture logging/telemetry data.
-2. On the website configuration in the portal, enable its Managed Service Identity
-3. On the website extensions, Add/ensure both "Application Insights" and the ".NET Core" extensions are present. Add them if required.
+2. On the website configuration in the portal, [enable its Managed Service Identity](https://docs.microsoft.com/en-us/azure/app-service/app-service-managed-service-identity)
+3. On the website [extensions](https://azure.microsoft.com/en-us/blog/azure-web-sites-extensions/), Add/ensure both "Application Insights" and the ".NET Core" extensions are present. Add them if required.
 4. Create a new Azure Key Vault (standard is fine since it's just holding secrets). Add an access policy for your managed service identity granting it `Get` and `List` permissions for secrets.
 5. Add the following secrets (you may omit ones that match the defaults in the `appsettings.json`, like `AzureAd--AADInstance` for most people). The  ones are most likely:
    - `Admin--Location`
@@ -69,7 +69,7 @@ Azure Web Sites is the easiest way to host this service. A `B1` or higher instan
    - `AzureAd--ClientSecret`
    - `AzureAd--Domain`
    - `AzureAd--TenantId`
-6. In your website configuration, add the URL to the Key Vault as a configuration option `ConfigurationKeyVaultUrl`. That's where the app will pull its configuration from.
+6. In your website [configuration](https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure), add the URL to the Key Vault as a configuration option `ConfigurationKeyVaultUrl`. That's where the app will pull its configuration from.
 
 ## 4. Update `ReplyUrl`
 
