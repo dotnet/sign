@@ -41,7 +41,7 @@ namespace SignService.Services
         {
             logger.LogDebug("Retrieving application configuration data");
 
-            var authContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}");
+            var authContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", null);
             var clientCredentials = new ClientCredential(azureAdOptions.Value.ClientId, azureAdOptions.Value.ClientSecret);
 
             
