@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SignService.Services;
 
 namespace SignService.Utils
@@ -18,11 +18,11 @@ namespace SignService.Utils
         string publisher;
         readonly string makeappxPath;
 
-        public AppxFileFactory(ILogger<AppxFileFactory> logger, IOptions<Settings> settings, IKeyVaultService keyVaultService)
+        public AppxFileFactory(ILogger<AppxFileFactory> logger, IHostingEnvironment hostingEnvironment, IKeyVaultService keyVaultService)
         {
             this.logger = logger;
             this.keyVaultService = keyVaultService;
-            makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
+            makeappxPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\makeappx.exe");
         }
 
         public AppxFile Create(string inputFileName)

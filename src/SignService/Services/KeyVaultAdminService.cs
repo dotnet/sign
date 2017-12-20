@@ -42,9 +42,9 @@ namespace SignService.Services
         readonly KeyVaultManagementClient kvManagmentClient;
         readonly KeyVaultClient kvClient;
         readonly IGraphHttpService graphHttpService;
-        readonly Resources resources;
+        readonly ResourceIds resources;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IGraphHttpService graphHttpService, IUser user, IHttpContextAccessor contextAccessor)
+        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IGraphHttpService graphHttpService, IUser user, IHttpContextAccessor contextAccessor)
         {
             userId = user.ObjectId;
             tenantId = Guid.Parse(user.TenantId);

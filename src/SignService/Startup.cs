@@ -14,10 +14,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.SigningTools;
 using SignService.Utils;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using SignService.Services;
 using Newtonsoft.Json;
@@ -63,16 +61,13 @@ namespace SignService
                     .AddCookie();
 
             services.AddSession();
-
-            services.Configure<Settings>(Configuration);
-            // Path to the tools\sdk directory
-            services.Configure<Settings>(s => s.WinSdkBinDirectory = Path.Combine(environment.ContentRootPath, @"tools\SDK"));
-
+            
+            services.Configure<ResourceIds>(Configuration.GetSection("Resources"));
             services.Configure<AdminConfig>(Configuration.GetSection("Admin"));
-            services.Configure<Utils.Resources>(Configuration.GetSection("Resources"));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
+            services.AddSingleton<IApplicationConfiguration, ApplicationConfiguration>();
 
             // Add in our User wrapper
             services.AddScoped<IUser, HttpContextUser>();
@@ -97,7 +92,11 @@ namespace SignService
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, 
+                              IHostingEnvironment env, 
+                              ILoggerFactory loggerFactory, 
+                              IServiceProvider serviceProvider,
+                              IApplicationConfiguration applicationConfiguration)
         {
             if (env.IsDevelopment())
             {
@@ -105,6 +104,9 @@ namespace SignService
             }
 
             loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
+
+            // Retreive application specific config from Azure AD
+            applicationConfiguration.InitializeAsync().Wait();
 
             Func<JsonSerializerSettings> jsonSettingsProvider = () =>
             {

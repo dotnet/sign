@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SignService.Utils
+namespace SignService
 {
-    public class Resources
+    public class ResourceIds
     {
         public string GraphId { get; set; }
         public string VaultId { get; set; }

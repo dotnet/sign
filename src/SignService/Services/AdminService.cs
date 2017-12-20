@@ -29,13 +29,15 @@ namespace SignService.Services
     {
         readonly AdminConfig configuration;
         readonly AzureAdOptions azureAdOptions;
+        readonly IApplicationConfiguration applicationConfiguration;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
         
-        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IGraphHttpService graphHttpService)
+        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
         {
             this.configuration = configuration.Value;
             this.azureAdOptions = azureAdOptions.Value;
+            this.applicationConfiguration = applicationConfiguration;
             this.graphHttpService = graphHttpService;
             extensionPrefix = $"extension_{azureAdOptions.Value.ClientId.Replace("-", "")}_";
         }
@@ -144,7 +146,7 @@ namespace SignService.Services
             // if username doesn't contain an @, use the default domain
             if (!username.Contains("@"))
             {
-                username += $"@{azureAdOptions.Domain}";
+                username += $"@{applicationConfiguration.PrimaryDomain}";
             }
 
             var user = new GraphUser

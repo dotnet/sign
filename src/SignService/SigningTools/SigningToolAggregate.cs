@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace SignService.SigningTools
 {
@@ -21,10 +21,13 @@ namespace SignService.SigningTools
         readonly string makeappxPath;
 
 
-        public SigningToolAggregate(IEnumerable<ICodeSignService> services, ILogger<SigningToolAggregate> logger, IOptions<Settings> settings)
+        public SigningToolAggregate(IEnumerable<ICodeSignService> services, 
+                                    IHostingEnvironment hostingEnvironment, 
+                                    ILogger<SigningToolAggregate> logger)
         {
             this.logger = logger;
-            makeappxPath = Path.Combine(settings.Value.WinSdkBinDirectory, "makeappx.exe");
+            makeappxPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\makeappx.exe");
+
             // pe files
             defaultCodeSignService = services.Single(c => c.IsDefault);
 

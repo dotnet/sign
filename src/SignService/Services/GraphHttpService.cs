@@ -24,7 +24,7 @@ namespace SignService.Services
         static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
         readonly string graphResourceId;
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IUser user, IHttpContextAccessor contextAccessor)
+        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IUser user, IHttpContextAccessor contextAccessor)
         {
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;

@@ -49,12 +49,12 @@ namespace Microsoft.AspNetCore.Authentication
             readonly IHttpContextAccessor contextAccessor;
             readonly string graphResourceId;
 
-            public ConfigureAzureOptions(IOptions<AzureAdOptions> azureOptions, IOptions<Settings> settings, IOptions<AdminConfig> adminOptions, IHttpContextAccessor contextAccessor)
+            public ConfigureAzureOptions(IOptions<AzureAdOptions> azureOptions, IOptions<ResourceIds> settings, IOptions<AdminConfig> adminOptions, IHttpContextAccessor contextAccessor)
             {
                 _azureOptions = azureOptions.Value;
                 this.adminOptions = adminOptions;
                 this.contextAccessor = contextAccessor;
-                graphResourceId = settings.Value.Resources.GraphId;
+                graphResourceId = settings.Value.GraphId;
             }
 
             public void Configure(string name, JwtBearerOptions options)

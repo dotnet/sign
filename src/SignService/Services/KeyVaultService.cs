@@ -25,11 +25,11 @@ namespace SignService.Services
         KeyIdentifier keyIdentifier;
         string validatedToken;
         readonly CertificateInfo certificateInfo;
-        readonly IOptionsSnapshot<Settings> settings;
+        readonly IOptionsSnapshot<ResourceIds> settings;
         readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
         readonly IUser user;
 
-        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, IUser user, ILogger<KeyVaultService> logger)
+        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, IUser user, ILogger<KeyVaultService> logger)
         {
             async Task<string> Authenticate(string authority, string resource, string scope)
             {
@@ -63,7 +63,7 @@ namespace SignService.Services
 
                 AuthenticationResult result = null;
 
-                result = await context.AcquireTokenAsync(settings.Value.Resources.VaultId, credential, new UserAssertion(user.IncomingAccessToken));
+                result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(user.IncomingAccessToken));
 
                 if (result == null)
                 {
