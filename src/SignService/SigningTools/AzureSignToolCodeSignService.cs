@@ -6,11 +6,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
 using SignService.Utils;
-using Microsoft.AspNetCore.Http;
 using SignService.Services;
 
 namespace SignService
@@ -26,22 +24,22 @@ namespace SignService
 
     class AzureSignToolCodeSignService : ICodeSignService
     {
-        readonly IHttpContextAccessor contextAccessor;
         readonly ILogger<AzureSignToolCodeSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
+        readonly IKeyVaultService keyVaultService;
         readonly ITelemetryLogger telemetryLogger;
         readonly string keyVaultSignToolPath;
         readonly string signToolName;
         
-        public AzureSignToolCodeSignService(IHttpContextAccessor contextAccessor, 
-                                            ILogger<AzureSignToolCodeSignService> logger, 
+        public AzureSignToolCodeSignService(ILogger<AzureSignToolCodeSignService> logger, 
                                             IAppxFileFactory appxFileFactory, 
+                                            IKeyVaultService keyVaultService,
                                             IHostingEnvironment hostingEnvironment,
                                             ITelemetryLogger telemetryLogger)
         {
-            this.contextAccessor = contextAccessor;
             this.logger = logger;
             this.appxFileFactory = appxFileFactory;
+            this.keyVaultService = keyVaultService;
             this.telemetryLogger = telemetryLogger;
             keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\AzureSignTool\\AzureSignTool.exe");
             signToolName = Path.GetFileName(keyVaultSignToolPath);
@@ -79,7 +77,6 @@ namespace SignService
             var descArgs = string.Join(" ", descArgsList);
             string keyVaultAccessToken = null;
             
-            var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
             // loop through all of the files here, looking for appx/eappx

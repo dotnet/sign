@@ -44,11 +44,10 @@ namespace SignService.Services
         readonly IGraphHttpService graphHttpService;
         readonly Resources resources;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IGraphHttpService graphHttpService, IHttpContextAccessor contextAccessor)
+        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IGraphHttpService graphHttpService, IUser user, IHttpContextAccessor contextAccessor)
         {
-            var principal = contextAccessor.HttpContext.User;
-            userId = principal.FindFirst("oid").Value;
-            tenantId = Guid.Parse(principal.FindFirst("tid").Value);
+            userId = user.ObjectId;
+            tenantId = Guid.Parse(user.TenantId);
             clientId = Guid.Parse(azureAdOptions.Value.ClientId);
 
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));

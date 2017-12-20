@@ -8,8 +8,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
 
 namespace SignService.Services
 {
@@ -29,9 +27,9 @@ namespace SignService.Services
         readonly CertificateInfo certificateInfo;
         readonly IOptionsSnapshot<Settings> settings;
         readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
-        readonly IHttpContextAccessor contextAccessor;
+        readonly IUser user;
 
-        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, IHttpContextAccessor contextAccessor, ILogger<KeyVaultService> logger)
+        public KeyVaultService(IOptionsSnapshot<Settings> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, IUser user, ILogger<KeyVaultService> logger)
         {
             async Task<string> Authenticate(string authority, string resource, string scope)
             {
@@ -40,18 +38,17 @@ namespace SignService.Services
 
             client = new KeyVaultClient(Authenticate, new HttpClient());
             
-            var principal = contextAccessor.HttpContext.User;
 
             // This must be here because we add it in the request validation
             certificateInfo = new CertificateInfo
             {
-                TimestampUrl = principal.FindFirst("timestampUrl").Value,
-                KeyVaultUrl = principal.FindFirst("keyVaultUrl").Value,
-                CertificateName = principal.FindFirst("keyVaultCertificateName").Value
+                TimestampUrl = user.TimestampUrl,
+                KeyVaultUrl = user.KeyVaultUrl,
+                CertificateName = user.CertificateName
             };
             this.settings = settings;
             this.aadOptions = aadOptions;
-            this.contextAccessor = contextAccessor;
+            this.user = user;
         }
 
         public CertificateInfo CertificateInfo => certificateInfo;
@@ -66,8 +63,7 @@ namespace SignService.Services
 
                 AuthenticationResult result = null;
 
-                var incomingToken = contextAccessor.HttpContext.User.FindFirst("access_token").Value;
-                result = await context.AcquireTokenAsync(settings.Value.Resources.VaultId, credential, new UserAssertion(incomingToken));
+                result = await context.AcquireTokenAsync(settings.Value.Resources.VaultId, credential, new UserAssertion(user.IncomingAccessToken));
 
                 if (result == null)
                 {

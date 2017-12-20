@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -24,13 +24,13 @@ namespace SignService.Services
         static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
         readonly string graphResourceId;
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IHttpContextAccessor contextAccessor)
+        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<Resources> resources, IUser user, IHttpContextAccessor contextAccessor)
         {
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
             graphResourceId = resources.Value.GraphId;
 
-            var userId = contextAccessor.HttpContext.User.FindFirst("oid").Value;
+            var userId = user.ObjectId;
 
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));  
         }

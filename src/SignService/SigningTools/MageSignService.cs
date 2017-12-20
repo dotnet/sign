@@ -14,7 +14,6 @@ using Microsoft.Extensions.Options;
 using SignService.Utils;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using SignService.Services;
 
 namespace SignService.SigningTools
@@ -22,7 +21,7 @@ namespace SignService.SigningTools
     public class MageSignService : ICodeSignService
     {
         readonly AzureAdOptions aadOptions;
-        readonly IHttpContextAccessor contextAccessor;
+        readonly IKeyVaultService keyVaultService;
         readonly ILogger<MageSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
         readonly string magetoolPath;
@@ -35,13 +34,13 @@ namespace SignService.SigningTools
 
         public MageSignService(IOptions<AzureAdOptions> aadOptions, 
                                IHostingEnvironment hostingEnvironment, 
-                               IHttpContextAccessor contextAccessor, 
+                               IKeyVaultService keyVaultService,
                                IServiceProvider serviceProvider, 
                                ILogger<MageSignService> logger,
                                ITelemetryLogger telemetryLogger)
         {
             this.aadOptions = aadOptions.Value;
-            this.contextAccessor = contextAccessor;
+            this.keyVaultService = keyVaultService;
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
             magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
@@ -72,8 +71,7 @@ namespace SignService.SigningTools
             if(!string.IsNullOrWhiteSpace(name))
                 args += $@" -n ""{name}""";
 
-
-            var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
+            
             var certificate = keyVaultService.GetCertificateAsync().Result;
             var timeStampUrl = keyVaultService.CertificateInfo.TimestampUrl;
 

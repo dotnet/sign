@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SignService.Services;
 using SignService.Utils;
@@ -16,7 +14,7 @@ namespace SignService.SigningTools
 {
     public class VsixSignService : ICodeSignService
     {
-        readonly IHttpContextAccessor contextAccessor;
+        readonly IKeyVaultService keyVaultService;
         readonly ILogger<VsixSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
         readonly string signtoolPath;
@@ -27,12 +25,12 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IHttpContextAccessor contextAccessor, 
+        public VsixSignService(IKeyVaultService keyVaultService, 
                                IHostingEnvironment hostingEnvironment, 
                                ILogger<VsixSignService> logger,
                                ITelemetryLogger telemetryLogger)
         {
-            this.contextAccessor = contextAccessor;
+            this.keyVaultService = keyVaultService;
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
             signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
@@ -57,7 +55,6 @@ namespace SignService.SigningTools
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? "sha1" : "sha256";
             
-            var keyVaultService = contextAccessor.HttpContext.RequestServices.GetService<IKeyVaultService>();
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
             var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";

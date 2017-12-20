@@ -74,6 +74,9 @@ namespace SignService
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
 
+            // Add in our User wrapper
+            services.AddScoped<IUser, HttpContextUser>();
+
             // The Key Vault Service must be scoped as the context is per user in the request
             services.AddScoped<IKeyVaultService, KeyVaultService>();
 
@@ -82,12 +85,13 @@ namespace SignService
             services.AddScoped<IGraphHttpService, GraphHttpService>();
             services.AddScoped<IKeyVaultAdminService, KeyVaultAdminService>();
 
-            services.AddSingleton<IAppxFileFactory, AppxFileFactory>();
-            services.AddSingleton<ICodeSignService, AzureSignToolCodeSignService>();
-            services.AddSingleton<ICodeSignService, VsixSignService>();
-            services.AddSingleton<ICodeSignService, MageSignService>();
+            // Code signing tools contain per-user/request data
+            services.AddScoped<IAppxFileFactory, AppxFileFactory>();
+            services.AddScoped<ICodeSignService, AzureSignToolCodeSignService>();
+            services.AddScoped<ICodeSignService, VsixSignService>();
+            services.AddScoped<ICodeSignService, MageSignService>();
 
-            services.AddSingleton<ISigningToolAggregate, SigningToolAggregate>();
+            services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
             services.AddMvc();
         }
