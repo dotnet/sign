@@ -86,6 +86,13 @@
             "metadata": {
                 "description": "Client Secret (Key) of the Azure AD application created for the Sign Service"
             }
+        },
+        "keyVaultsResourceGroup": {
+            "type": "string",
+            "defaultValue": "SignService-KeyVaults",
+            "metadata": {
+                "description": "Name of the resource group where KeyVaults will be created"
+            }
         }
     },
     "variables": {
@@ -220,7 +227,7 @@
             "name": "[concat(parameters('keyVaultName'), '/Admin--ResourceGroup')]",
             "apiVersion": "2015-06-01",
             "properties": {
-                "value": "[resourceGroup().name]"
+                "value": "[parameters('keyVaultsResourceGroup')]"
             },
             "dependsOn": [
                 "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
