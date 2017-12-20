@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{27C2600E-1
 		docs\Deployment.md = docs\Deployment.md
 	EndProjectSection
 EndProject
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ArmDeploy", "arm\ArmDeploy\ArmDeploy.deployproj", "{752A5273-E533-4285-A74B-C0D6657636CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{752A5273-E533-4285-A74B-C0D6657636CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{752A5273-E533-4285-A74B-C0D6657636CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{752A5273-E533-4285-A74B-C0D6657636CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{752A5273-E533-4285-A74B-C0D6657636CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +67,7 @@ Global
 		{84FC3FBF-E14C-4268-8693-45CC82451DF3} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{C491BF8B-B3BD-4EDA-A5FC-4685CF99B88D} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{27C2600E-1F26-4527-8F33-4F4A37D18728} = {3E52C226-1DA9-4712-AC4E-A8820473DDA8}
+		{752A5273-E533-4285-A74B-C0D6657636CB} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7AA1043F-37A2-404F-8EC3-34C747C1CEB7}
