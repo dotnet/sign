@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Authentication
                     OnTokenValidated = OnTokenValidated
                 };
                 options.TokenValidationParameters.RoleClaimType = "roles";
+                options.TokenValidationParameters.NameClaimType = "name";
             }
 
             async Task OnTokenValidated(JwtBearer.TokenValidatedContext tokenValidatedContext)
