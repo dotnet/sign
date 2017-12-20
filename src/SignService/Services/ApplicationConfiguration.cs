@@ -57,7 +57,13 @@ namespace SignService.Services
             PrimaryDomain = domains.First(d => d.@default == true).Name;
             logger.LogInformation("Found Primary Domain {PrimaryDomain}", PrimaryDomain);
 
+            var clientId = azureAdOptions.Value.ClientId;
+            var app = await graphClient.Applications.Where(a => a.AppId == clientId).ExecuteSingleAsync();
 
+            
+            ApplicationObjectId = app.ObjectId;
+
+            logger.LogInformation("Found ApplicationObjectId {ApplicationObjectId} for ClientId {ClientId}", ApplicationObjectId, clientId);
 
         }
 

@@ -88,20 +88,20 @@ namespace SignService.Services
 
             foreach (var prop in extensionProperties)
             {
-                var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{azureAdOptions.ApplicationObjectId}/extensionProperties?api-version=1.6", prop).ConfigureAwait(false);
+                var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6", prop).ConfigureAwait(false);
                 created.Add(c);
             }
         }
 
         public async Task UnRegisterExtensionPropertiesAsync()
         {
-            var uri = $"/applications/{azureAdOptions.ApplicationObjectId}/extensionProperties?api-version=1.6";
+            var uri = $"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6";
 
             var result = await graphHttpService.Get<ExtensionProperty>(uri).ConfigureAwait(false);
 
             foreach (var prop in result)
             {
-                await graphHttpService.Delete($"/applications/{azureAdOptions.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6").ConfigureAwait(false);
+                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6").ConfigureAwait(false);
             }
         }
 

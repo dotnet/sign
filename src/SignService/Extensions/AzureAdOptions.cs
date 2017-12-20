@@ -7,8 +7,6 @@
         public string ClientSecret { get; set; }
         public string AADInstance { get; set; }
         public string TenantId { get; set; }
-        public string ApplicationObjectId { get; set; }
-
         public string CallbackPath { get; set; }
     }
 }
