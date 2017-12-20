@@ -166,14 +166,16 @@ namespace InstallUtility
 
             var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken))
             {
-                SubscriptionId = subscriptionId
+                SubscriptionId = subscriptionId,
+                BaseUri = new Uri(configuration["AzureRM:Instance"])
             };
             var rg = new ResourceGroup(location, name: name);
             rg = await rgc.ResourceGroups.CreateOrUpdateAsync(name, rg);
 
             var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken))
             {
-                SubscriptionId = subscriptionId
+                SubscriptionId = subscriptionId,
+                BaseUri = new Uri(configuration["AzureRM:Instance"])
             };
 
 

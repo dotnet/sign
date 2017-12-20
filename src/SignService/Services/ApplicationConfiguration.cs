@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Azure.ActiveDirectory.GraphClient;
+using Microsoft.Azure.Management.ResourceManager;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Rest;
 
 namespace SignService.Services
 {
@@ -16,6 +18,8 @@ namespace SignService.Services
 
         string ApplicationObjectId { get; }
         string PrimaryDomain { get; }
+
+        string Location { get; }
     }
 
     class ApplicationConfiguration : IApplicationConfiguration
@@ -64,10 +68,25 @@ namespace SignService.Services
             ApplicationObjectId = app.ObjectId;
 
             logger.LogInformation("Found ApplicationObjectId {ApplicationObjectId} for ClientId {ClientId}", ApplicationObjectId, clientId);
+            
 
+            var armAccessToken = await authContext.AcquireTokenAsync(resourceIds.Value.AzureRM, clientCredentials);
+            var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))
+            {
+                SubscriptionId = adminConfig.Value.SubscriptionId,
+                BaseUri = new Uri(adminConfig.Value.ArmInstance)
+            };
+
+            // get the resource group
+            var rg = await rgc.ResourceGroups.GetAsync(adminConfig.Value.ResourceGroup);
+
+            Location = rg.Location;
+
+            logger.LogInformation("Found Location {Location} for ResourceGroup {ResourceGroup}", Location, adminConfig.Value.ResourceGroup);
         }
 
         public string ApplicationObjectId { get; private set; }
         public string PrimaryDomain { get; private set; }
+        public string Location { get; private set; }
     }
 }

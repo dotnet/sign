@@ -42,9 +42,16 @@ namespace SignService.Services
         readonly KeyVaultManagementClient kvManagmentClient;
         readonly KeyVaultClient kvClient;
         readonly IGraphHttpService graphHttpService;
+        readonly IApplicationConfiguration applicationConfiguration;
         readonly ResourceIds resources;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IGraphHttpService graphHttpService, IUser user, IHttpContextAccessor contextAccessor)
+        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, 
+                                    IOptionsSnapshot<AdminConfig> adminConfig, 
+                                    IOptionsSnapshot<ResourceIds> resources, 
+                                    IGraphHttpService graphHttpService, 
+                                    IApplicationConfiguration applicationConfiguration,
+                                    IUser user, 
+                                    IHttpContextAccessor contextAccessor)
         {
             userId = user.ObjectId;
             tenantId = Guid.Parse(user.TenantId);
@@ -54,13 +61,16 @@ namespace SignService.Services
             resourceGroup = adminConfig.Value.ResourceGroup;
             kvManagmentClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken))
             {
-                SubscriptionId = adminConfig.Value.SubscriptionId
+                SubscriptionId = adminConfig.Value.SubscriptionId,
+                BaseUri = new Uri(adminConfig.Value.ArmInstance)
+
             };
             kvClient = new KeyVaultClient(new KeyVaultCredential(GetAppTokenForKv));
 
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
             this.graphHttpService = graphHttpService;
+            this.applicationConfiguration = applicationConfiguration;
             this.resources = resources.Value;
         }
 
@@ -120,7 +130,7 @@ namespace SignService.Services
 
             var parameters = new VaultCreateOrUpdateParameters()
             {
-                Location = adminConfig.Location,
+                Location = applicationConfiguration.Location,
                 Properties = new VaultProperties()
                 {
                     TenantId = tenantId,
