@@ -9,10 +9,6 @@
         "description": "Describes the name of the new website"
       }
     },
-    "hostingPlanName": {
-      "type": "string",
-      "minLength": 1
-    },
     "skuName": {
       "type": "string",
       "defaultValue": "B1",
@@ -89,12 +85,13 @@
     }
   },
   "variables": {
-    "appInsightsName": "[parameters('webSiteName')]"
+    "appInsightsName": "[parameters('webSiteName')]",
+    "hostingPlanName": "[concat(parameters('webSiteName'), '-asp')]"
   },
   "resources": [
     {
       "apiVersion": "2015-08-01",
-      "name": "[parameters('hostingPlanName')]",
+      "name": "[variables('hostingPlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
       "tags": {
@@ -105,7 +102,7 @@
         "capacity": "[parameters('skuCapacity')]"
       },
       "properties": {
-        "name": "[parameters('hostingPlanName')]"
+        "name": "[variables('hostingPlanName')]"
       }
     },
     {
@@ -117,16 +114,16 @@
         "type": "SystemAssigned"
       },
       "tags": {
-        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('hostingPlanName'))]": "Resource",
         "displayName": "Website"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+        "[resourceId('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]",
         "[resourceId('microsoft.insights/components/', variables('appInsightsName'))]"
       ],
       "properties": {
         "name": "[parameters('webSiteName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
       },
       "resources": [
         {
