@@ -15,6 +15,7 @@ namespace SignService
 {
     public class Program
     {
+        public static string AssemblyInformationalVersion => ThisAssembly.AssemblyInformationalVersion;
         public static void Main(string[] args)
         {
             BuildWebHost(args).Run();
