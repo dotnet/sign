@@ -10,10 +10,6 @@ steps:
   displayName: Setup Environment Variables
 
 - powershell: |    
-    # https://github.com/NuGet/Home/issues/4337
-    dotnet restore src/SignClient/SignClient.csproj -c $(BuildConfiguration) 
-    dotnet restore src/SignClient/SignClient.csproj -c $(BuildConfiguration) 
-
     # Publish 1.1 version
     dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp1.1
     
@@ -21,7 +17,7 @@ steps:
     dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp2.0
 
     # Create package
-    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) --no-build /p:NuspecFile=../SignClient.nuspec /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
+    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) --no-build /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
         
   displayName: Build Client
 

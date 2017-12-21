@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;netcoreapp2.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <NuSpecFile>..\SignClient.nuspec</NuSpecFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,5 +21,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
   </ItemGroup>
+
+  <Target Name="SetVersionForNuSpec" BeforeTargets="_IntermediatePack" DependsOnTargets="GetBuildVersion">
+    <PropertyGroup>
+      <NuSpecProperties>version=$(PackageVersion)</NuSpecProperties>
+    </PropertyGroup>
+  </Target>
 
 </Project>
