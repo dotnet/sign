@@ -1,274 +1,274 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-      "webSiteName": {
-        "type": "string",
-        "minLength": 1,
-        "metadata": {
-          "description": "Describes the name of the new website"
-        }
-      },
-        "hostingPlanName": {
-            "type": "string",
-            "minLength": 1
-        },
-        "skuName": {
-            "type": "string",
-            "defaultValue": "B1",
-            "allowedValues": [
-                "B1",
-                "B2",
-                "B3",
-                "S1",
-                "S2",
-                "S3",
-                "P1",
-                "P2",
-                "P3",
-                "P4"
-            ],
-            "metadata": {
-                "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
-            }
-        },
-        "skuCapacity": {
-            "type": "int",
-            "defaultValue": 1,
-            "minValue": 1,
-            "metadata": {
-                "description": "Describes plan's instance count"
-            }
-        },
-        "keyVaultName": {
-            "type": "string",
-            "defaultValue": "SignServiceKeyVault",
-            "metadata": {
-                "description": "Name of the Key Vault to use to store service secrets"
-            }
-        },
-        "keyVaultSku": {
-            "type": "string",
-            "defaultValue": "Standard",
-            "allowedValues": [
-                "Standard",
-                "Premium"
-            ],
-            "metadata": {
-                "description": "SKU for the key vault"
-            }
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "webSiteName": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Describes the name of the new website"
+      }
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "B1",
+      "allowedValues": [
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
+    "skuCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Describes plan's instance count"
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "SignServiceKeyVault",
+      "metadata": {
+        "description": "Name of the Key Vault to use to store service secrets"
+      }
+    },
+    "keyVaultSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "SKU for the key vault"
+      }
 
-        },
-        "applicationClientId": {
-            "type": "string",
-            "minLength": 1,
-            "metadata": {
-                "description": "Client Id (applicationId) of the Azure AD application created for the Sign Service"
-            }
-        },
-        "applicationAudience": {
-            "type": "string",
-            "minLength": 1,
-            "metadata": {
-                "description": "Audience of the Azure AD application created for the Sign Service"
-            }
-        },
-        "applicationClientSecret": {
-            "type": "string",
-            "minLength": 1,
-            "metadata": {
-                "description": "Client Secret (Key) of the Azure AD application created for the Sign Service"
-            }
-        },
-        "keyVaultsResourceGroup": {
-            "type": "string",
-            "defaultValue": "SignService-KeyVaults",
-            "metadata": {
-                "description": "Name of the resource group where KeyVaults will be created"
-            }
-        }
     },
-    "variables": {
-        "appInsightsName": "[parameters('webSiteName')]"
+    "applicationClientId": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Client Id (applicationId) of the Azure AD application created for the Sign Service"
+      }
     },
-    "resources": [
+    "applicationAudience": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Audience of the Azure AD application created for the Sign Service"
+      }
+    },
+    "applicationClientSecret": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Client Secret (Key) of the Azure AD application created for the Sign Service"
+      }
+    },
+    "keyVaultsResourceGroup": {
+      "type": "string",
+      "defaultValue": "SignService-KeyVaults",
+      "metadata": {
+        "description": "Name of the resource group where KeyVaults will be created"
+      }
+    }
+  },
+  "variables": {
+    "appInsightsName": "[parameters('webSiteName')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "HostingPlan"
+      },
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "capacity": "[parameters('skuCapacity')]"
+      },
+      "properties": {
+        "name": "[parameters('hostingPlanName')]"
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('webSiteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "tags": {
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
+        "displayName": "Website"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+        "[resourceId('microsoft.insights/components/', variables('appInsightsName'))]"
+      ],
+      "properties": {
+        "name": "[parameters('webSiteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      },
+      "resources": [
         {
-            "apiVersion": "2015-08-01",
-            "name": "[parameters('hostingPlanName')]",
-            "type": "Microsoft.Web/serverfarms",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "HostingPlan"
-            },
-            "sku": {
-                "name": "[parameters('skuName')]",
-                "capacity": "[parameters('skuCapacity')]"
-            },
-            "properties": {
-                "name": "[parameters('hostingPlanName')]"
-            }
+          "apiVersion": "2015-08-01",
+          "name": "appsettings",
+          "type": "config",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
+          ],
+          "properties": {
+            "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(concat('microsoft.insights/components/', variables('appInsightsName'))).InstrumentationKey]",
+            "ConfigurationKeyVaultUrl": "[concat('https://', parameters('keyVaultName'), 'vault.azure.net/')]"
+          }
         },
         {
-            "apiVersion": "2015-08-01",
-            "name": "[parameters('webSiteName')]",
-            "type": "Microsoft.Web/sites",
-            "location": "[resourceGroup().location]",
-            "identity": {
-                "type": "SystemAssigned"
-            },
-            "tags": {
-                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
-                "displayName": "Website"
-            },
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "[resourceId('microsoft.insights/components/', variables('appInsightsName'))]"
-            ],
-            "properties": {
-                "name": "[parameters('webSiteName')]",
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
-            },
-            "resources": [
-                {
-                    "apiVersion": "2015-08-01",
-                    "name": "appsettings",
-                    "type": "config",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
-                    ],
-                    "properties": {
-                        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(concat('microsoft.insights/components/', variables('appInsightsName'))).InstrumentationKey]",
-                        "ConfigurationKeyVaultUrl": "[concat('https://', parameters('keyVaultName'), 'vault.azure.net/')]"
-                    }
-                },
-                {
-                    "apiVersion": "2015-08-01",
-                    "name": "Microsoft.ApplicationInsights.AzureWebSites",
-                    "type": "siteextensions",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
-                    ],
-                    "properties": {
-                    }
-                },
-                {
-                    "apiVersion": "2015-08-01",
-                    "name": "Microsoft.AspNetCore.AzureAppServices.SiteExtension",
-                    "type": "siteextensions",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
-                    ],
-                    "properties": {
-                    }
-                }
-            ]
+          "apiVersion": "2015-08-01",
+          "name": "Microsoft.ApplicationInsights.AzureWebSites",
+          "type": "siteextensions",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
+          ],
+          "properties": {
+          }
         },
         {
-            "apiVersion": "2014-04-01",
-            "name": "[variables('appInsightsName')]",
-            "type": "Microsoft.Insights/components",
-            "location": "East US",
-            "tags": {
-                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('webSiteName'))]": "Resource",
-                "displayName": "AppInsightsComponent"
-            },
-            "properties": {
-                "applicationId": "[variables('appInsightsName')]"
-            }
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults",
-            "name": "[parameters('keyVaultName')]",
-            "apiVersion": "2015-06-01",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
-            ],
-            "tags": {
-                "displayName": "KeyVault"
-            },
-            "properties": {
-                "tenantId": "[subscription().tenantId]",
-                "accessPolicies": [
-                    {
-                        "tenantId": "[subscription().tenantId]",
-                        "objectId": "[reference(concat('Microsoft.Web/sites/', parameters('webSiteName')), '2015-08-01', 'full').identity.principalId]",
-                        "permissions": {
-                            "secrets": ["get", "list"]
-                        }
-                    }
-                ],
-                "sku": {
-                    "name": "[parameters('keyVaultSku')]",
-                    "family": "A"
-                }
-            }
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/Admin--ResourceGroup')]",
-            "apiVersion": "2015-06-01",
-            "properties": {
-                "value": "[parameters('keyVaultsResourceGroup')]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/Admin--SubscriptionId')]",
-            "apiVersion": "2015-06-01",
-            "properties": {
-                "value": "[subscription().subscriptionId]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/AzureAd--Audience')]",
-            "apiVersion": "2015-06-01",
-            "properties": {
-                "value": "[parameters('applicationAudience')]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/AzureAd--ClientId')]",
-            "apiVersion": "2015-06-01",
-            "properties": {
-                "value": "[parameters('applicationClientId')]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/AzureAd--ClientSecret')]",
-            "apiVersion": "2015-06-01",
-            "properties": {
-                "value": "[parameters('applicationClientSecret')]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-            ]
-        },
-        {
-            "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(parameters('keyVaultName'), '/AzureAd--TenantId')]",
-            "apiVersion": "2015-06-01",
-            "properties": {
-                "value": "[subscription().tenantId]"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
-            ]
+          "apiVersion": "2015-08-01",
+          "name": "Microsoft.AspNetCore.AzureAppServices.SiteExtension",
+          "type": "siteextensions",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
+          ],
+          "properties": {
+          }
         }
-    ]
+      ]
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "name": "[variables('appInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "location": "East US",
+      "tags": {
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('webSiteName'))]": "Resource",
+        "displayName": "AppInsightsComponent"
+      },
+      "properties": {
+        "applicationId": "[variables('appInsightsName')]"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "[parameters('keyVaultName')]",
+      "apiVersion": "2015-06-01",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
+      ],
+      "tags": {
+        "displayName": "KeyVault"
+      },
+      "properties": {
+        "tenantId": "[subscription().tenantId]",
+        "accessPolicies": [
+          {
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[reference(concat('Microsoft.Web/sites/', parameters('webSiteName')), '2015-08-01', 'full').identity.principalId]",
+            "permissions": {
+              "secrets": [ "get", "list" ]
+            }
+          }
+        ],
+        "sku": {
+          "name": "[parameters('keyVaultSku')]",
+          "family": "A"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/Admin--ResourceGroup')]",
+      "apiVersion": "2015-06-01",
+      "properties": {
+        "value": "[parameters('keyVaultsResourceGroup')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/Admin--SubscriptionId')]",
+      "apiVersion": "2015-06-01",
+      "properties": {
+        "value": "[subscription().subscriptionId]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/AzureAd--Audience')]",
+      "apiVersion": "2015-06-01",
+      "properties": {
+        "value": "[parameters('applicationAudience')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/AzureAd--ClientId')]",
+      "apiVersion": "2015-06-01",
+      "properties": {
+        "value": "[parameters('applicationClientId')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/AzureAd--ClientSecret')]",
+      "apiVersion": "2015-06-01",
+      "properties": {
+        "value": "[parameters('applicationClientSecret')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "name": "[concat(parameters('keyVaultName'), '/AzureAd--TenantId')]",
+      "apiVersion": "2015-06-01",
+      "properties": {
+        "value": "[subscription().tenantId]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+      ]
+    }
+  ]
 }
