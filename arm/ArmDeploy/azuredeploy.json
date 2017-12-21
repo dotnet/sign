@@ -36,13 +36,6 @@
         "description": "Describes plan's instance count"
       }
     },
-    "keyVaultName": {
-      "type": "string",
-      "defaultValue": "SignServiceKeyVault",
-      "metadata": {
-        "description": "Name of the Key Vault to use to store service secrets"
-      }
-    },
     "keyVaultSku": {
       "type": "string",
       "defaultValue": "Standard",
@@ -86,7 +79,8 @@
   },
   "variables": {
     "appInsightsName": "[parameters('webSiteName')]",
-    "hostingPlanName": "[concat(parameters('webSiteName'), '-asp')]"
+    "hostingPlanName": "[concat(parameters('webSiteName'), '-asp')]",
+    "keyVaultName": "[concat(parameters('webSiteName'), '-kv')]"
   },
   "resources": [
     {
@@ -135,7 +129,7 @@
           ],
           "properties": {
             "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(concat('microsoft.insights/components/', variables('appInsightsName'))).InstrumentationKey]",
-            "ConfigurationKeyVaultUrl": "[concat('https://', parameters('keyVaultName'), 'vault.azure.net/')]"
+            "ConfigurationKeyVaultUrl": "[concat('https://', variables('keyVaultName'), 'vault.azure.net/')]"
           }
         },
         {
@@ -175,7 +169,7 @@
     },
     {
       "type": "Microsoft.KeyVault/vaults",
-      "name": "[parameters('keyVaultName')]",
+      "name": "[variables('keyVaultName')]",
       "apiVersion": "2015-06-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
@@ -203,68 +197,68 @@
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/Admin--ResourceGroup')]",
+      "name": "[concat(variables('keyVaultName'), '/Admin--ResourceGroup')]",
       "apiVersion": "2015-06-01",
       "properties": {
         "value": "[parameters('keyVaultsResourceGroup')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/Admin--SubscriptionId')]",
+      "name": "[concat(variables('keyVaultName'), '/Admin--SubscriptionId')]",
       "apiVersion": "2015-06-01",
       "properties": {
         "value": "[subscription().subscriptionId]"
       },
       "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/AzureAd--Audience')]",
+      "name": "[concat(variables('keyVaultName'), '/AzureAd--Audience')]",
       "apiVersion": "2015-06-01",
       "properties": {
         "value": "[parameters('applicationAudience')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/AzureAd--ClientId')]",
+      "name": "[concat(variables('keyVaultName'), '/AzureAd--ClientId')]",
       "apiVersion": "2015-06-01",
       "properties": {
         "value": "[parameters('applicationClientId')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/AzureAd--ClientSecret')]",
+      "name": "[concat(variables('keyVaultName'), '/AzureAd--ClientSecret')]",
       "apiVersion": "2015-06-01",
       "properties": {
         "value": "[parameters('applicationClientSecret')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     },
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
-      "name": "[concat(parameters('keyVaultName'), '/AzureAd--TenantId')]",
+      "name": "[concat(variables('keyVaultName'), '/AzureAd--TenantId')]",
       "apiVersion": "2015-06-01",
       "properties": {
         "value": "[subscription().tenantId]"
       },
       "dependsOn": [
-        "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     }
   ]
