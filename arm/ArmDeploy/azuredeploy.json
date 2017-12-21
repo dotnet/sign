@@ -79,8 +79,8 @@
   },
   "variables": {
     "appInsightsName": "[parameters('webSiteName')]",
-    "hostingPlanName": "[concat(parameters('webSiteName'), '-asp')]",
-    "keyVaultName": "[concat(parameters('webSiteName'), '-kv')]"
+    "hostingPlanName": "[concat(parameters('webSiteName'), '-asp-', uniqueString(subscription().subscriptionId))]",
+    "keyVaultName": "[concat(parameters('webSiteName'), '-kv-', uniqueString(subscription().subscriptionId))]"
   },
   "resources": [
     {
@@ -147,7 +147,8 @@
           "name": "Microsoft.AspNetCore.AzureAppServices.SiteExtension",
           "type": "siteextensions",
           "dependsOn": [
-            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
+            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]",
+            "[resourceId('Microsoft.Web/Sites/siteextensions', parameters('webSiteName'), 'Microsoft.ApplicationInsights.AzureWebSites')]"
           ],
           "properties": {
           }
@@ -261,5 +262,7 @@
         "[concat('Microsoft.KeyVault/vaults/', variables('keyVaultName'))]"
       ]
     }
-  ]
+  ],
+  "outputs": {
+  }
 }
