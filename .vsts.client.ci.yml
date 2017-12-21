@@ -9,7 +9,11 @@ steps:
     modifyEnvironment: true
   displayName: Setup Environment Variables
 
-- powershell: |
+- powershell: |    
+    # https://github.com/NuGet/Home/issues/4337
+    dotnet restore src/SignClient/SignClient.csproj -c $(BuildConfiguration) 
+    dotnet restore src/SignClient/SignClient.csproj -c $(BuildConfiguration) 
+
     # Publish 1.1 version
     dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp1.1
     
