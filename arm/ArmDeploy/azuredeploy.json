@@ -80,7 +80,7 @@
   "variables": {
     "appInsightsName": "[parameters('webSiteName')]",
     "hostingPlanName": "[concat(parameters('webSiteName'), '-asp-', uniqueString(subscription().subscriptionId))]",
-    "keyVaultName": "[concat(parameters('webSiteName'), '-kv-', uniqueString(subscription().subscriptionId))]"
+    "keyVaultName": "[concat(parameters('webSiteName'), '-kv-', substring(uniqueString(subscription().subscriptionId), 0, 5))]"
   },
   "resources": [
     {
