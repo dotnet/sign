@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ using Microsoft.AspNetCore.Http;
 using SignService.Services;
 using Newtonsoft.Json;
 using Microsoft.ApplicationInsights.AspNetCore;
+using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 
@@ -45,7 +47,6 @@ namespace SignService
 
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
-
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -105,6 +106,8 @@ namespace SignService
 
             loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
 
+            TelemetryConfiguration.Active.TelemetryInitializers.Add(new VersionTelemetry());
+            
             // Retreive application specific config from Azure AD
             applicationConfiguration.InitializeAsync().Wait();
 
@@ -160,5 +163,15 @@ namespace SignService
                 return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
             }
         }
+
+        private class VersionTelemetry : ITelemetryInitializer
+        {
+            public void Initialize(ITelemetry telemetry)
+            {
+                telemetry.Context.Component.Version = Program.AssemblyInformationalVersion;
+            }
+        }
+
+
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,7 @@ namespace Microsoft.AspNetCore.Authentication
             readonly IOptions<AdminConfig> adminOptions;
             readonly IHttpContextAccessor contextAccessor;
             readonly string graphResourceId;
+            readonly TelemetryClient telemetryClient = new TelemetryClient();
 
             public ConfigureAzureOptions(IOptions<AzureAdOptions> azureOptions, IOptions<ResourceIds> settings, IOptions<AdminConfig> adminOptions, IHttpContextAccessor contextAccessor)
             {
@@ -117,6 +119,8 @@ namespace Microsoft.AspNetCore.Authentication
                     // If we get here, it's an unknown value
                     tokenValidatedContext.Fail("User is not configured");
                 }
+
+                telemetryClient.Context.User.AuthenticatedUserId = upn;
             }
 
             public void Configure(JwtBearerOptions options)
