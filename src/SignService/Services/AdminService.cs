@@ -88,7 +88,7 @@ namespace SignService.Services
 
             foreach (var prop in extensionProperties)
             {
-                var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6", prop).ConfigureAwait(false);
+                var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6", prop, accessAsUser: true).ConfigureAwait(false);
                 created.Add(c);
             }
         }
@@ -101,7 +101,7 @@ namespace SignService.Services
 
             foreach (var prop in result)
             {
-                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6").ConfigureAwait(false);
+                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6", accessAsUser: true).ConfigureAwait(false);
             }
         }
 

@@ -101,9 +101,9 @@ namespace SignService.Services
             }
         }
 
-        public async Task Delete(string url)
+        public async Task Delete(string url, bool accessAsUser = false)
         {
-            using (var client = await CreateClient()
+            using (var client = await CreateClient(accessAsUser)
                                     .ConfigureAwait(false))
             {
                 var response = await client.DeleteAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
@@ -119,9 +119,9 @@ namespace SignService.Services
             }
         }
 
-        public async Task<TOutput> Post<TInput, TOutput>(string url, TInput item)
+        public async Task<TOutput> Post<TInput, TOutput>(string url, TInput item, bool accessAsUser = false)
         {
-            using (var client = await CreateClient()
+            using (var client = await CreateClient(accessAsUser)
                                     .ConfigureAwait(false))
             {
                 var skipNulls = new JsonSerializerSettings

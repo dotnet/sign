@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignService.Services
@@ -8,8 +8,8 @@ namespace SignService.Services
         Task<List<T>> Get<T>(string url);
         Task<T> GetScalar<T>(string url);
         Task<T> GetValue<T>(string url);
-        Task<TOutput> Post<TInput, TOutput>(string url, TInput item);
+        Task<TOutput> Post<TInput, TOutput>(string url, TInput item, bool accessAsUser = false);
         Task Patch<TInput>(string url, TInput item, bool accessAsUser = false);
-        Task Delete(string url);
+        Task Delete(string url, bool accessAsUser = false);
     }
 }
