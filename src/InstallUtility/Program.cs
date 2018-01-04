@@ -233,83 +233,94 @@ namespace InstallUtility
 
         static async Task PromptForConsent((IApplication application, IServicePrincipal servicePrincipal) server, (IApplication application, IServicePrincipal servicePrincipal) client)
         {
-            // Look up the permissions and see if they're already consented. If there's a difference, prompt
-            var serverData = await GetApplicationPermissions(server.application);
-            var clientData = await GetApplicationPermissions(client.application);
-
-            var perms = await GetPermissionsToAddUpdate(new[]
+            try
             {
+                // Look up the permissions and see if they're already consented. If there's a difference, prompt
+                var serverData = await GetApplicationPermissions(server.application);
+                var clientData = await GetApplicationPermissions(client.application);
+
+                var perms = await GetPermissionsToAddUpdate(new[]
+                {
                 (spid: server.servicePrincipal.ObjectId, permissions: serverData.permissions),
                 (spid: client.servicePrincipal.ObjectId, permissions: clientData.permissions)
             });
 
-            var roles = await GetAppRoleAssignmentsToAdd(new[]
-            {
+                var roles = await GetAppRoleAssignmentsToAdd(new[]
+                {
                 (spid: server.servicePrincipal, permissions: serverData.roles),
                 (spid: client.servicePrincipal, permissions: clientData.roles)
             });
 
-            // Nothing to do
-            if (perms.Count == 0 && roles.Count == 0)
-                return;
+                // Nothing to do
+                if (perms.Count == 0 && roles.Count == 0)
+                    return;
 
-            // Get the friendly text
-            var toConsent = serverData.permissions.Concat(clientData.permissions)
-                                  .SelectMany(kvp => kvp.Value)
-                                  .Select(p => (p.AdminConsentDisplayName))
-                                  .ToList();
-            var rolesToConsent = serverData.roles.Concat(clientData.roles)
-                            .SelectMany(kvp => kvp.Value)
-                            .Select(r => r.DisplayName);
+                // Get the friendly text
+                var toConsent = serverData.permissions.Concat(clientData.permissions)
+                                      .SelectMany(kvp => kvp.Value)
+                                      .Select(p => (p.AdminConsentDisplayName))
+                                      .ToList();
+                var rolesToConsent = serverData.roles.Concat(clientData.roles)
+                                .SelectMany(kvp => kvp.Value)
+                                .Select(r => r.DisplayName);
 
-            toConsent.AddRange(rolesToConsent);
+                toConsent.AddRange(rolesToConsent);
 
-            toConsent = toConsent.Distinct().ToList();
-            toConsent.Sort();
+                toConsent = toConsent.Distinct().ToList();
+                toConsent.Sort();
 
-            Console.WriteLine("If you're a directory administrator, you need to grant consent to the service.");
-            Console.WriteLine("Either proceed here as an admin or have them grant consent in the Azure Portal");
-            Console.WriteLine();
+                Console.WriteLine("If you're a directory administrator, you need to grant consent to the service.");
+                Console.WriteLine("Either proceed here as an admin or have them grant consent in the Azure Portal");
+                Console.WriteLine();
 
-            Console.WriteLine("Required Permissions");
-            Console.WriteLine("____________________");
-            foreach (var item in toConsent)
-            {
-                Console.WriteLine($"{item}");
-            }
-            Console.WriteLine();
-
-            Console.WriteLine("Do you consent to these permissions on behalf or your organization? [y/N] to continue: ");
-            var key = Console.ReadLine()
-                             .ToUpperInvariant()
-                             .Trim();
-            if (key != "Y")
-            {
-                return;
-            }
-
-            // if the objectId on the permission isn't set, it's an add
-            foreach (var perm in perms)
-            {
-                if (string.IsNullOrWhiteSpace(perm.ObjectId))
+                Console.WriteLine("Required Permissions");
+                Console.WriteLine("____________________");
+                foreach (var item in toConsent)
                 {
-                    await graphClient.Oauth2PermissionGrants.AddOAuth2PermissionGrantAsync(perm);
+                    Console.WriteLine($"{item}");
                 }
-                else
-                {
-                    await perm.UpdateAsync();
-                }
-            }
+                Console.WriteLine();
 
-            foreach (var role in roles)
-            {
-                var sp = (ServicePrincipal)role.Key;
-                foreach (var ara in role.Value)
+                Console.WriteLine("Do you consent to these permissions on behalf or your organization? [y/N] to continue: ");
+                var key = Console.ReadLine()
+                                 .ToUpperInvariant()
+                                 .Trim();
+                if (key != "Y")
                 {
-                    sp.AppRoleAssignments.Add(ara);
+                    return;
                 }
-                await sp.UpdateAsync();
+
+                // if the objectId on the permission isn't set, it's an add
+                foreach (var perm in perms)
+                {
+                    if (string.IsNullOrWhiteSpace(perm.ObjectId))
+                    {
+                        await graphClient.Oauth2PermissionGrants.AddOAuth2PermissionGrantAsync(perm);
+                    }
+                    else
+                    {
+                        await perm.UpdateAsync();
+                    }
+                }
+
+                foreach (var role in roles)
+                {
+                    var sp = (ServicePrincipal)role.Key;
+                    foreach (var ara in role.Value)
+                    {
+                        sp.AppRoleAssignments.Add(ara);
+                    }
+                    await sp.UpdateAsync();
+                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("Do you do not appear to be a Global Admin. A global admin needs to run this utility or perform additional steps.");
+                Console.WriteLine("1. Press \"Grant Permissions\" on the Azure Portal for the two applications ");
+                Console.WriteLine("2. Add one or more users as a role on the sign service server application in the Enterprise Apps");
+                Console.WriteLine("3. On first run of the admin UI, click \"Register Extension attributes\"" );
+            }
+            
         }
 
         static async Task<Dictionary<IServicePrincipal, List<AppRoleAssignment>>> GetAppRoleAssignmentsToAdd((IServicePrincipal principal, Dictionary<string, List<AppRole>> roles)[] inputs)
