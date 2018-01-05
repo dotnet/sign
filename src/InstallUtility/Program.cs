@@ -28,6 +28,10 @@ namespace InstallUtility
         static readonly Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
         static ActiveDirectoryClient graphClient;
         static string environment = string.Empty;
+
+        const string SignServerName = "SignService Server";
+        const string SingClientName = "SignClient App";
+
         static async Task Main(string[] args)
         {
             configuration = new ConfigurationBuilder()
@@ -56,7 +60,7 @@ namespace InstallUtility
                 environment = $" ({args[0]}) ";
             }
 
-            var serverDisplayNamePrefix = $"SignService Server{environment} - ";
+            var serverDisplayNamePrefix = $"{SignServerName}{environment} - ";
 
 
             Guid applicationId;
@@ -318,7 +322,7 @@ namespace InstallUtility
                 Console.WriteLine("Do you do not appear to be a Global Admin. A global admin needs to run this utility or perform additional steps.");
                 Console.WriteLine("1. Press \"Grant Permissions\" on the Azure Portal for the two applications ");
                 Console.WriteLine("2. Add one or more users as a role on the sign service server application in the Enterprise Apps");
-                Console.WriteLine("3. On first run of the admin UI, click \"Register Extension attributes\"" );
+                Console.WriteLine("3. On first run of the admin UI, click \"Register Extension attributes\" in the \"Adv Setup\" area" );
             }
             
         }
@@ -487,7 +491,7 @@ namespace InstallUtility
         static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication)
         {
             // Display Name of the app. The app id is of the sign service it goes to
-            var displayName = $"SignClient App{environment} - {serviceApplication.AppId}";
+            var displayName = $"{SingClientName}{environment} - {serviceApplication.AppId}";
 
             var clientAppSet = await graphClient.Applications.Where(a => a.DisplayName.StartsWith(displayName)).ExecuteAsync();
 
@@ -655,14 +659,24 @@ namespace InstallUtility
                 }
             };
 
-            foreach (var prop in extensionProperties)
+            try
             {
-                // See if it exists
-                if(appsExtsList.CurrentPage.FirstOrDefault(ep => ep.Name.EndsWith(prop.Name)) == null)
+                foreach (var prop in extensionProperties)
                 {
-                    await appExts.AddExtensionPropertyAsync(prop);
+                    // See if it exists
+                    if (appsExtsList.CurrentPage.FirstOrDefault(ep => ep.Name.EndsWith(prop.Name)) == null)
+                    {
+                        await appExts.AddExtensionPropertyAsync(prop);
+                    }
                 }
             }
+            catch (Exception )
+            {
+                // We'll get here if the user doesn't have permission to create extension attributes
+                Console.WriteLine("Warning: You do not have permission to create the required extension attributes, skipped.");
+                Console.WriteLine("A Global Admin must access the Admin UI, navigate to 'Adv Setup' and click on 'Register Extension Properties'");
+            }
+            
 
             var serverSp = await EnsureServicePrincipalExists(app.AppId);
             
