@@ -84,12 +84,22 @@ namespace SignService.Services
                 }
             };
 
-            var created = new List<ExtensionProperty>();
+            // Get current properties
+            var uri = $"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6";
+
+            var appExts = await graphHttpService.Get<ExtensionProperty>(uri).ConfigureAwait(false);
+
 
             foreach (var prop in extensionProperties)
             {
-                var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6", prop, accessAsUser: true).ConfigureAwait(false);
-                created.Add(c);
+                // Only add it if it doesn't exist already
+                if (appExts.FirstOrDefault(ep => ep.Name.EndsWith(prop.Name)) == null)
+                {
+                    var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6", 
+                                                                                              prop, 
+                                                                                              accessAsUser: true)
+                                                  .ConfigureAwait(false);
+                }
             }
         }
 
@@ -101,7 +111,9 @@ namespace SignService.Services
 
             foreach (var prop in result)
             {
-                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6", accessAsUser: true).ConfigureAwait(false);
+                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6", 
+                                              accessAsUser: true)
+                                      .ConfigureAwait(false);
             }
         }
 
