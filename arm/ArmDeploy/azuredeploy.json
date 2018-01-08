@@ -5,6 +5,7 @@
     "webSiteName": {
       "type": "string",
       "minLength": 1,
+      "maxLength": 16,
       "metadata": {
         "description": "Describes the name of the new website"
       }
