@@ -65,6 +65,7 @@ namespace SignService
             
             services.Configure<ResourceIds>(Configuration.GetSection("Resources"));
             services.Configure<AdminConfig>(Configuration.GetSection("Admin"));
+            services.Configure<WindowsSdkFiles>(ConfigureWindowsSdkFiles);
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
@@ -150,6 +151,26 @@ namespace SignService
             Environment.SetEnvironmentVariable("PATH", newPath);
         }
 
+        void ConfigureWindowsSdkFiles(WindowsSdkFiles options)
+        {
+            var contentPath = environment.ContentRootPath;
+
+            // If we're running on Azure App Services, we have to invoke from the underlying
+            // location due to CSRSS/registration-free COM manifest issues
+            
+            // running on azure
+            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("REGION_NAME")))
+            {
+                var home = Environment.GetEnvironmentVariable("HOME_EXPANDED");
+                if (!string.IsNullOrWhiteSpace(home))
+                {
+                    contentPath = $@"{home}\site\wwwroot";
+                }
+            }
+
+            options.MakeAppxPath = Path.Combine(contentPath, "tools\\SDK\\makeappx.exe");
+        }
+        
         private class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
         {
             private readonly IServiceProvider _serviceProvider;

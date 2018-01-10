@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace SignService.SigningTools
 {
@@ -22,11 +23,11 @@ namespace SignService.SigningTools
 
 
         public SigningToolAggregate(IEnumerable<ICodeSignService> services, 
-                                    IHostingEnvironment hostingEnvironment, 
+                                    IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles, 
                                     ILogger<SigningToolAggregate> logger)
         {
             this.logger = logger;
-            makeappxPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\makeappx.exe");
+            makeappxPath = windowSdkFiles.Value.MakeAppxPath;
 
             // pe files
             defaultCodeSignService = services.Single(c => c.IsDefault);
@@ -78,9 +79,9 @@ namespace SignService.SigningTools
             // expand the archives and sign recursively first
 
             var bundles = (from file in files
-                            let ext = Path.GetExtension(file).ToLowerInvariant()
-                            where ext == ".appxbundle"
-                            select file).ToList();
+                           let ext = Path.GetExtension(file).ToLowerInvariant()
+                           where ext == ".appxbundle" || ext == ".eappxbundle"
+                           select file).ToList();
 
             var tempBundles = new List<AppxBundleFile>();
             try

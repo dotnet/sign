@@ -10,10 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<SdkFile Include="$(WinSdkBinDir)appxpackaging.dll" />
+    <SdkFile Include="$(WinSdkBinDir)appxpackaging.dll" />
     <SdkFile Include="$(WinSdkBinDir)opcservices.dll" />
     <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
-    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />-->
+    <SdkFile Include="$(WinSdkBinDir)Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
     <SdkFile Include="$(WinSdkBinDir)makeappx.exe" />
     <SdkFile Include="$(WinSdkBinDir)makepri.exe" />
     
@@ -43,10 +43,6 @@
 
   <Target Name="PrebuildScript" BeforeTargets="CoreBuild">
     <Copy SourceFiles="@(SdkFile)" DestinationFolder="tools\SDK" SkipUnchangedFiles="true" />
-    <PropertyGroup>
-      <MtCmd>"$(WinSdkBinDir)mt.exe" -nologo -manifest blank.manifest -outputresource:tools\SDK\makeappx.exe;#1</MtCmd>
-    </PropertyGroup>
-    <Exec Command="$(MtCmd)" WorkingDirectory="$(MSBuildThisFileDirectory)" />
   </Target>
 
   <ItemGroup>
