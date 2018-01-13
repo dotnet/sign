@@ -29,8 +29,8 @@ namespace InstallUtility
         static ActiveDirectoryClient graphClient;
         static string environment = string.Empty;
 
-        const string SignServerName = "SignService Server";
-        const string SingClientName = "SignClient App";
+        const string SignServerName = "TEST- SignService Server";
+        const string SingClientName = "TEST- SignClient App";
 
         static async Task Main(string[] args)
         {

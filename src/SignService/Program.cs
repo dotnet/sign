@@ -25,6 +25,9 @@ namespace SignService
             WebHost.CreateDefaultBuilder(args)
                     .ConfigureAppConfiguration((builder =>
                                                 {
+                                                    // Support optional App_Data location
+
+                                                    builder.AddJsonFile(@"App_Data\appsettings.json", true, true);
                                                     // build the current config so we can get the key vault url
                                                     var built = builder.Build();
 

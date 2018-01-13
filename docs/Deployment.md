@@ -19,6 +19,17 @@ Below are the minimum steps needed to get this deployed to Azure App services. Y
 7. Provide sign client configuration to your users
 
 
+While not required, it is strongly recommended that a global admin run the `InstallUtility` tool. If a non-admin
+user runs the tool, a global admin will still need to perform the following actions to complete configuration:
+
+1. Run the tool again to enable admin consent (or go to the Azure Portal and click "Grant Permissions" on the two apps that were created.
+2. In the "Enterprise Applications" area, add application role assignements to themselves and to whomever needs to access the Sign Service Admin UI (step 6 below).
+3. Login to the Admin UI, go to the "Adv Setup" tab and click "Register Extension Attributes."
+
+Once that's done, any user granted the "Admin SignService" role can administer the sign service. 
+
+Note: Only global admins can reset passwords if they need to be changed; any user can disable an account if needed.
+
 ## 1. Clone Repo
 
 `git clone https://github.com/onovotny/SignService`
@@ -53,7 +64,25 @@ You'll need those during the installer steps.
 
 ## 3. Create App Service
 
-Azure Web Sites is the easiest way to host this service. A `B1` or higher instance works for this. The service keeps its runtime configuration and secrets in an Azure Key Vault, so one of those is required as well. A Managed Service Identity secures access from the website to the Key Vault without requiring explicit credentials.
+Azure Web Sites is the easiest way to host this service. You can use the ARM template or create the resources manually.
+You only need to complete either **3a** or **3b**.
+
+### 3a. ARM template
+
+The template is located in the `src\ArmDeploy` directory. 
+
+1. The easiest way to invoke the template is to load the solution in 
+Visual Studio, right-click the `ArmDeploy` project and click `Deploy`.
+2. Visual Studio will prompt for a destination Resource Group. The recommendation is to create a new one for this (and don't use the `KeyVaults-SignService` one configured to hold the resource key vaults).
+3. Click `Edit Parameters` and specify the required values. The last four came from the output of the `InstallUtility` for the Service application.
+4. Save the values then hit `Deploy`. It will take several minutes to complete.
+
+
+### 3b. Manual
+
+If you'd like to create the Azure resources manually, here are the steps:
+
+A `B1` or higher instance works for this. The service keeps its runtime configuration and secrets in an Azure Key Vault, so one of those is required as well. A Managed Service Identity secures access from the website to the Key Vault without requiring explicit credentials.
 
 1. Create a new Web Service. Enable Application Insights, if desired, to capture logging/telemetry data.
 2. On the website configuration in the portal, [enable its Managed Service Identity](https://docs.microsoft.com/en-us/azure/app-service/app-service-managed-service-identity)
@@ -105,3 +134,23 @@ You'll need to provide the client configuration to your users. There are two par
 # VM configuration
 
 Use IIS on Server 2016. Under the App Pool advanced settings, Set the App Pool CLR version to `No Managed Code` and "Load User Profile" to `true`. Edit your `appsettings.json` accordingly as per the above table. You can put the `appsettings.json` file in the `~/App_Data` directory and the application will pick it up. You'll need to install the .NET Core as described here: https://docs.microsoft.com/en-us/aspnet/core/publishing/iis.
+
+# Tips
+
+## Azure AD / Global Admin
+
+Due to the way permissions and consent works in Azure AD, a Global Admin is required to be involved
+in the setup in some form. If this is not possible, there's an alternative: create a new Azure AD
+environment just for this. Azure AD itself is free for these scenarios.
+
+Here are the instructions for creating a new Azure AD Tenant: https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-howto-tenant
+
+Once you have the tenant, make sure you have a local user who configured as a Global Admin. You'll
+need to login with that account to the Azure Portal to create a new Azure Subscription (Pay as you go). 
+When you create a new subscription, it'll be attached to the Azure AD instance you're signed in with by default.
+
+Once configured, you can use the "Add Guest User" button to add your existing Azure AD/Microsoft accounts and use
+those to sign in to the Sign Service Admin UI (I would add them as a global admin to your tenant). 
+
+It is critical that the Azure subscription and resources (Key Vaults) reside in the same tenant that the application
+is, since the application needs to create users and authenticate to the Key Vault using that directory.
