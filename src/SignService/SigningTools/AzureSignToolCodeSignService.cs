@@ -221,7 +221,9 @@ namespace SignService
             ".msi",
             ".msp",
             ".msm",
+            ".mst",
             ".cab",
+            ".cat",
             ".dll",
             ".exe",
             ".sys",
@@ -232,7 +234,11 @@ namespace SignService
             ".eappx",
             ".eappxbundle",
             ".ps1",
-            ".psm1"
+            ".psm1",
+            ".vbs",
+            ".ocx",
+            ".stl"
+            
         };
 
         public bool IsDefault => true;
