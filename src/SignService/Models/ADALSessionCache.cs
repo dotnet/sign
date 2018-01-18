@@ -10,7 +10,7 @@ namespace SignService.Models
 {
     public class ADALSessionCache : TokenCache
     {
-        private static ReaderWriterLockSlim SessionLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        ReaderWriterLockSlim SessionLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         string CacheId = string.Empty;
         IHttpContextAccessor httpContext = null;
 
