@@ -66,6 +66,7 @@ namespace SignService.SigningTools
                     await Submit(hashMode, name, description, descriptionUrl, allFiles, filter);
                     
                     // After signing the contents, save the zip
+                    // For NuPkg, this step removes the signature too, but that's ok as it'll get signed below
                     tempZips.ForEach(tz => tz.Save());
                 }
             }

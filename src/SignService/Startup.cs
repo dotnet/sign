@@ -84,10 +84,16 @@ namespace SignService
 
             // Code signing tools contain per-user/request data
             services.AddScoped<IAppxFileFactory, AppxFileFactory>();
-            services.AddScoped<ICodeSignService, AzureSignToolCodeSignService>();
+            services.AddScoped<ICodeSignService, AzureSignToolSignService>();
             services.AddScoped<ICodeSignService, VsixSignService>();
             services.AddScoped<ICodeSignService, MageSignService>();
             services.AddScoped<ICodeSignService, AppInstallerService>();
+
+            // If the NuGet signing feature flag is enabled, add the service
+            if (bool.TryParse(Configuration["FeatureFlags:NuGetSignTool"], out var flagEnabled) && flagEnabled)
+            {
+                services.AddScoped<ICodeSignService, NuGetSignService>();
+            }
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 

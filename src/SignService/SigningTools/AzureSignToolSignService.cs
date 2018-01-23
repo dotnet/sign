@@ -13,25 +13,17 @@ using SignService.Services;
 
 namespace SignService
 {
-    public interface ICodeSignService
+
+    class AzureSignToolSignService : ICodeSignService
     {
-        Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter);
-
-        IReadOnlyCollection<string> SupportedFileExtensions { get; }
-
-        bool IsDefault { get; }
-    }
-
-    class AzureSignToolCodeSignService : ICodeSignService
-    {
-        readonly ILogger<AzureSignToolCodeSignService> logger;
+        readonly ILogger<AzureSignToolSignService> logger;
         readonly IAppxFileFactory appxFileFactory;
         readonly IKeyVaultService keyVaultService;
         readonly ITelemetryLogger telemetryLogger;
         readonly string keyVaultSignToolPath;
         readonly string signToolName;
         
-        public AzureSignToolCodeSignService(ILogger<AzureSignToolCodeSignService> logger, 
+        public AzureSignToolSignService(ILogger<AzureSignToolSignService> logger, 
                                             IAppxFileFactory appxFileFactory, 
                                             IKeyVaultService keyVaultService,
                                             IHostingEnvironment hostingEnvironment,
