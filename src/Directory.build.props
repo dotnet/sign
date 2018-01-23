@@ -4,13 +4,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.7" PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.16" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- https://github.com/NuGet/Home/issues/4337 -->
 
   <PropertyGroup>
-    <NerdbankGitVersioningVersion>2.1.7</NerdbankGitVersioningVersion>
+    <NerdbankGitVersioningVersion>2.1.16</NerdbankGitVersioningVersion>
   </PropertyGroup>
 
   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' == 'true' ">
