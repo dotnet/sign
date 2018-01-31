@@ -44,7 +44,8 @@ namespace SignService.SigningTools
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>
         {
-            ".nupkg"
+            ".nupkg",
+            ".snupkg"
         };
         public bool IsDefault { get; }
 

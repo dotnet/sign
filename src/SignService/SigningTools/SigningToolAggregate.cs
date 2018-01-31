@@ -46,7 +46,7 @@ namespace SignService.SigningTools
             // See if any of them are archives
             var archives = (from file in files
                             let ext = Path.GetExtension(file).ToLowerInvariant()
-                            where ext == ".zip" || ext == ".nupkg" || ext == ".vsix" || ext == ".appxupload"
+                            where ext == ".zip" || ext == ".nupkg" || ext == ".snupkg" || ext == ".vsix" || ext == ".appxupload"
                             select file).ToList();
 
             // expand the archives and sign recursively first
@@ -112,16 +112,16 @@ namespace SignService.SigningTools
             // split by code sign service and fallback to default
 
             var grouped = (from kvp in codeSignServices
-                      join file in files on kvp.Key equals Path.GetExtension(file).ToLowerInvariant()
-                      group file by kvp.Value into g
-                      select g).ToList();
+                           join file in files on kvp.Key equals Path.GetExtension(file).ToLowerInvariant()
+                           group file by kvp.Value into g
+                           select g).ToList();
 
             // get all files and exclude existing; 
 
             // This is to catch PE files that don't have the correct extension set
             var defaultFiles = files.Except(grouped.SelectMany(g => g))
                                     .Where(IsPeFile)
-                                    .Select(f => new {defaultCodeSignService,f })
+                                    .Select(f => new { defaultCodeSignService, f })
                                     .GroupBy(a => a.defaultCodeSignService, k => k.f)
                                     .SingleOrDefault(); // one group here
             
