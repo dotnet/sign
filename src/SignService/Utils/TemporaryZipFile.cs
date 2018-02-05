@@ -40,16 +40,15 @@ namespace SignService
                                           .ToList();
 
             var antiglobs = filter.Split('\n').Where(s => (!string.IsNullOrWhiteSpace(s)))
-                                          .Where(s => (s.StartsWith("!")))
-                                          .Select(s => s.Substring(1))
-                                          .ToList();
+                                              .Where(s => (s.StartsWith("!")))
+                                              .Select(s => s.Substring(1))
+                                              .ToList();
 
             if (globs.Count > 0)
             {
                 var files = Globber.GetFiles(new DirectoryInfo(dataDirectory), globs);
                 FilteredFilesInDirectory = files.Select(f => f.FullName).ToList();
             }
-
 
             // If no filtered, default to all
             if (FilteredFilesInDirectory == null)
