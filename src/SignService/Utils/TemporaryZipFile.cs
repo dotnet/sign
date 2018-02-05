@@ -35,7 +35,14 @@ namespace SignService
             // don't allow parent directory traversal
             filter = filter.Replace(@"..\", "").Replace("../", "");
 
-            var globs = filter.Split('\n').Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var globs = filter.Split('\n').Where(s => (!string.IsNullOrWhiteSpace(s)))
+                                          .Where(s => (!s.StartsWith("!")))
+                                          .ToList();
+
+            var antiglobs = filter.Split('\n').Where(s => (!string.IsNullOrWhiteSpace(s)))
+                                          .Where(s => (s.StartsWith("!")))
+                                          .Select(s => s.Substring(1))
+                                          .ToList();
 
             if (globs.Count > 0)
             {
@@ -43,9 +50,19 @@ namespace SignService
                 FilteredFilesInDirectory = files.Select(f => f.FullName).ToList();
             }
 
+
             // If no filtered, default to all
             if (FilteredFilesInDirectory == null)
                 FilteredFilesInDirectory = FilesInDirectory.ToList();
+
+            if (antiglobs.Count > 0)
+            {
+                var antifiles = Globber.GetFiles(new DirectoryInfo(dataDirectory), antiglobs)
+                                       .Select(f => f.FullName)
+                                       .ToList();
+
+                FilteredFilesInDirectory = FilteredFilesInDirectory.Except(antifiles).ToList();
+            }
 
             FilesExceptFiltered = FilesInDirectory.Except(FilteredFilesInDirectory).ToList();
         }
