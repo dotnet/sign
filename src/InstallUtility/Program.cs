@@ -218,7 +218,6 @@ namespace InstallUtility
             Console.WriteLine($"ClientId:\t\t{server.application.AppId}");
             if(password != null) Console.WriteLine($"ClientSecret:\t\t{password}");
             Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
-            Console.WriteLine($"ApplicationObjectId:\t{server.application.ObjectId}");
             Console.WriteLine("__________________________");
             Console.WriteLine();
 
