@@ -6,6 +6,11 @@ You will need an Azure AD tenant and an Azure subscription. For easiest deployme
 
 While you can create the required entries manually, it's far easier to run the provided `InstallUtility` application.
 
+## Requirements
+
+- Visual Studio running on Windows
+- Docker for Windows
+
 ## Overview
 
 Below are the minimum steps needed to get this deployed to Azure App services. You may configure custom domains with custom SSL certificates if you'd like.
@@ -34,7 +39,10 @@ Note: Only global admins can reset passwords if they need to be changed; any use
 
 `git clone https://github.com/onovotny/SignService`
 
-## 2. Build & Run `InstallUtility`
+## 2. Update client settings
+https://github.com/onovotny/SignService/issues/30
+
+## 3. Build & Run `InstallUtility`
 
 The `InstallUtility` automates the creation of resources the application needs:
 
@@ -62,12 +70,12 @@ You'll need those during the installer steps.
 4. When prompted, allow the admin consent if you're a global admin in the AAD tenant. If you're not, you can have a global admin re-run the tool or manually hit the "Grant Permissions" button in the Azure Portal. Admin Consent is required before you can use the application.
 5. When the utility completes, it'll print the configuration values you'll need later. Copy these and set them aside for later.
 
-## 3. Create App Service
+## 4. Create App Service
 
 Azure Web Sites is the easiest way to host this service. You can use the ARM template or create the resources manually.
-You only need to complete either **3a** or **3b**.
+You only need to complete either **4a** or **4b**.
 
-### 3a. ARM template
+### 4a. ARM template
 
 The template is located in the `src\ArmDeploy` directory. 
 
@@ -78,7 +86,7 @@ Visual Studio, right-click the `ArmDeploy` project and click `Deploy`.
 4. Save the values then hit `Deploy`. It will take several minutes to complete.
 
 
-### 3b. Manual
+### 4b. Manual
 
 If you'd like to create the Azure resources manually, here are the steps:
 
@@ -97,11 +105,11 @@ A `B1` or higher instance works for this. The service keeps its runtime configur
    - `AzureAd--TenantId`
 6. In your website [configuration](https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure), add the URL to the Key Vault as a configuration option `ConfigurationKeyVaultUrl`. That's where the app will pull its configuration from.
 
-## 4. Update `ReplyUrl`
+## 5. Update `ReplyUrl`
 
 In the Azure Portal, navigate to your `SignService Server` application, and add a `ReplyUrl` entry with your hostname, such as `https://your-website-name.azurewebsites.net/signin-oidc`
 
-## 5. Build and publish
+## 6. Build and publish
 
 There are many ways to push code to App Services. You can publish directly from Visual Studio, you can use Visual Studio Team Services to setup a CI/CD pipeline, or you can do it with another set of tools.
 
@@ -117,14 +125,14 @@ Create a new build definition that points to your git clone. This lets you contr
 
 Create a new Release Management definition and add an App Service task. You may need to create an Azure Service Endpoint if you don't have one for your subscription yet.
 
-## 6. First time login
+## 7. First time login
 
 When you first configure the application using the `InstallUtility`, only the user who ran the utility is an admin of the Signing Service. To add additional administrators, go to the AAD Portal, then to Enterprise Applications, find the `SignService - Server` application, then under `Users and Groups`, you can add a role assignment to any additional users who need admin access.
 
 Then you can proceed to the portal by navigating to the root URL in a browser and following the steps in the [admin guide](Administration.md) to 
 create a sign service user account, specify the configuration settings, and create/upload a certificate.
 
-## 7. Sign Client configuration
+## 8. Sign Client configuration
 
 You'll need to provide the client configuration to your users. There are two parts to the configuration:
 
