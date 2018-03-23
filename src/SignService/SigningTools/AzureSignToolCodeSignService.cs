@@ -94,7 +94,7 @@ namespace SignService
 
             });
 
-            // generate a file list for sining
+            // generate a file list for signing
             using (var fileList = new TemporaryFile())
             {
                 // generate a file of files

@@ -48,7 +48,7 @@ dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_explicit_tuple_names = true:suggestion
 
-dotnet_style_require_accessibility_modifiers = never
+dotnet_style_require_accessibility_modifiers = omit_if_default:suggestion
 
 # CSharp code style settings:
 [*.cs]

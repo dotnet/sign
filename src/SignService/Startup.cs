@@ -87,6 +87,7 @@ namespace SignService
             services.AddScoped<ICodeSignService, AzureSignToolCodeSignService>();
             services.AddScoped<ICodeSignService, VsixSignService>();
             services.AddScoped<ICodeSignService, MageSignService>();
+            services.AddScoped<ICodeSignService, AppInstallerService>();
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
