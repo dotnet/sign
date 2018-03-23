@@ -29,6 +29,7 @@ The service currently supports either individual files, or a zip archive that co
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.appx`, `.appxbundle`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and Any PE file (via [AzureSignTool](https://github.com/vcsjones/AzureSignTool))
 - `.vsix` via [OpenOpcSignTool](https://github.com/vcsjones/OpenOpcSignTool)
 - ClickOnce `.application` and `.vsto` (via `Mage`). Special instructions below.
+- `.nupkg` via [NuGetKeyVaultSignTool](https://github.com/onovotny/NuGetKeyVaultSignTool)
 
 ## Installation and Administration
 
