@@ -23,6 +23,7 @@ namespace SignService
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                    .UseApplicationInsights()
                     .ConfigureAppConfiguration((builder =>
                                                 {
                                                     // Support optional App_Data location
