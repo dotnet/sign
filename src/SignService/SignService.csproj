@@ -3,7 +3,20 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\</WinSdkBinDir>
+    
+    <WinSdk17134BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17134.0\x64\</WinSdk17134BinDir>
+    <WinSdk16299BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.16299.0\x64\</WinSdk16299BinDir>
+    <WinSdk15063BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\x64\</WinSdk15063BinDir>
+    <WinSdk14393BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.14393.0\x64\</WinSdk14393BinDir>
+
+    <ProbingFile>makeappx.exe</ProbingFile>
+    
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk15063BinDir)$(ProbingFile)')">$(WinSdk15063BinDir)</WinSdkBinDir>
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk14393BinDir)$(ProbingFile)')">$(WinSdk14393BinDir)</WinSdkBinDir>
+    
+    
     <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools\</NetSdkBinDir>
     <DockerComposeProjectPath>..\..\docker\docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>9c2a9e27-e4ca-46ef-a555-2b557d723c4d</UserSecretsId>
@@ -41,8 +54,12 @@
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
 
-  <Target Name="PrebuildScript" BeforeTargets="CoreBuild">
+  <Target Name="PrebuildScript" BeforeTargets="CoreBuild" Condition="'$(WinSdkBinDir)' != ''">
     <Copy SourceFiles="@(SdkFile)" DestinationFolder="tools\SDK" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PrebuildScript" BeforeTargets="CoreBuild" Condition="'$(WinSdkBinDir)' == ''">
+    <Error Text="No supported WinSDK could be found!" />
   </Target>
 
   <ItemGroup>
