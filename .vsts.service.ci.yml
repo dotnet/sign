@@ -9,6 +9,10 @@ steps:
     modifyEnvironment: true
   displayName: Setup Environment Variables
 
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '2.1.300-rc1-008673'
+
 - powershell: |
     # Restore
     msbuild /t:restore SignService.sln 

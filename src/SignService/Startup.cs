@@ -123,7 +123,7 @@ namespace SignService
             {
                 var settings = new JsonSerializerSettings
                 {
-                    ContractResolver = new CoreContractResolver(serviceProvider),
+                    ContractResolver = new CoreContractResolver(app.ApplicationServices),
                 };
                 return settings;
             };
