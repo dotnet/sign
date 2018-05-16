@@ -14,14 +14,17 @@ steps:
     version: '2.1.300-rc1-008673'
 
 - powershell: |
+    
+    mkdir $(Build.ArtifactStagingDirectory)\logs
+
     # Restore
     msbuild /t:restore SignService.sln 
 
     # Copy sdk files locally before build
-    msbuild src/SignService/SignService.csproj /t:PrebuildScript /p:Configuration=$(BuildConfiguration)
+    msbuild src/SignService/SignService.csproj /t:PrebuildScript /p:Configuration=$(BuildConfiguration) /bl:$(Build.ArtifactStagingDirectory)\logs\PreBuild.binlog
 
     # Build service
-    msbuild src/SignService/SignService.csproj /p:Configuration=$(BuildConfiguration) /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\"
+    msbuild src/SignService/SignService.csproj /p:Configuration=$(BuildConfiguration) /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\website\" /bl:$(Build.ArtifactStagingDirectory)\logs\Build.binlog
 
   displayName: Build / Publish Service
 
@@ -29,6 +32,13 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: Publish SignService Artifact
   inputs:
-    pathToPublish: $(Build.ArtifactStagingDirectory)
+    pathToPublish: $(Build.ArtifactStagingDirectory)\website
     artifactType: container
     artifactName: SignService
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Build logs
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)\logs
+    artifactType: container
+    artifactName: Logs
