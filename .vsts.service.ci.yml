@@ -42,3 +42,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\logs
     artifactType: container
     artifactName: Logs
+  condition: always()
