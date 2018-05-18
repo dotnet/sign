@@ -178,19 +178,11 @@ namespace SignClient
 
         static string ExpandFilePath(string file)
         {
-#if NETCOREAPP2_0
             if (!Path.IsPathRooted(file))
             {
                 return $"{Environment.CurrentDirectory}{Path.DirectorySeparatorChar}{file}";
             }
             return file;
-#else
-            if (!Path.IsPathRooted(file))
-            {
-                throw new ArgumentException("Path must be rooted on .NET Core App 1.1.");
-            }
-            return file;
-#endif
         }
 
         enum Command
