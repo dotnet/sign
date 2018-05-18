@@ -1,3 +1,7 @@
+trigger:
+- master
+- rel/*
+
 queue: "Hosted VS2017"
 variables: 
   BuildConfiguration: Release
@@ -9,15 +13,13 @@ steps:
     modifyEnvironment: true
   displayName: Setup Environment Variables
 
-- powershell: |    
-    # Publish 1.1 version
-    dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp1.1
-    
-    # Publish 2.0 version
-    dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp2.0
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '2.1.300-rc1-008673'
 
+- powershell: |    
     # Create package
-    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) --no-build /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
+    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
         
   displayName: Build Client
 
@@ -29,6 +31,7 @@ steps:
     SignClientUser: $(SignClientUser)
     SignClientSecret: $(SignClientSecret)
     ArtifactDirectory: $(Build.ArtifactStagingDirectory)\Client
+  condition: eq(variables['system.pullrequest.isfork'], false)
 
 - task: PublishBuildArtifacts@1
   displayName: Publish SignClient Artifact
@@ -36,3 +39,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\Client
     artifactType: container
     artifactName: SignClient
+  condition: eq(variables['system.pullrequest.isfork'], false)
