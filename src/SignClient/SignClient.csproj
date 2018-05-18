@@ -4,15 +4,16 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
+    <Description>Client-side tools for Sign Service</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.0-rc1-final" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.0-rc1-final" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.0-rc1-final" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.5" />
     <PackageReference Include="Refit" Version="4.4.17" />
-    <PackageReference Include="System.CommandLine" Version="0.1.0-e170419-1" />
   </ItemGroup>
 
 </Project>
