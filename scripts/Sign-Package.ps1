@@ -14,9 +14,6 @@ $fileList = "$currentDirectory\filelist.txt"
 
 dotnet tool install --tool-path "$currentDirectory" --version $Env:NBGV_SemVer2 --source-feed $Env:ArtifactDirectory SignClient 
 
-# VSTS workaround for now
-$env:PATH = "$env:PATH;$env:USERPROFILE/.dotnet/tools"
-
 $nupgks = ls $Env:ArtifactDirectory\*.nupkg | Select -ExpandProperty FullName
 
 foreach ($nupkg in $nupgks){
