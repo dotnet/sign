@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.2.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.3.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.2.3" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.1.0" />
@@ -58,7 +58,7 @@
     
   </ItemGroup>
 
-  <Target Name="PrebuildScript" BeforeTargets="CoreBuild" >
+  <Target Name="PrebuildScript" BeforeTargets="CoreBuild">
     <Copy Condition="'$(WinSdkBinDir)' != ''" SourceFiles="@(SdkFile)" DestinationFolder="tools\SDK" SkipUnchangedFiles="true" />
     
     <Error Condition="'$(WinSdkBinDir)' == ''" Text="No supported WinSDK could be found!" />
