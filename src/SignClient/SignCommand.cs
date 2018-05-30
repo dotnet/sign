@@ -16,7 +16,6 @@ namespace SignClient
     {
         readonly CommandLineApplication signCommandLineApplication;
 
-
         static class EXIT_CODES
         {
             public const int SUCCESS = 0;
@@ -82,7 +81,6 @@ namespace SignClient
                     {
                         var authority = $"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}";
 
-
                         var clientId = configuration["SignClient:AzureAd:ClientId"];
                         var resourceId = configuration["SignClient:Service:ResourceId"];
 
@@ -121,23 +119,19 @@ namespace SignClient
                     }
                 };
 
-
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
 
                 // Prepare input/output file
                 var input = new FileInfo(ExpandFilePath(inputFile.Value()));
                 var output = new FileInfo(ExpandFilePath(outputFile.Value()));
                 Directory.CreateDirectory(output.DirectoryName);
-
-
+                
                 // Do action
 
                 HttpResponseMessage response;
                 
                 response = await client.SignFile(input, fileList.HasValue() ? new FileInfo(ExpandFilePath(fileList.Value())) : null, HashMode.Sha256, name.Value(), description.Value(), description.Value());
                 
-
-
                 // Check response
 
                 if (!response.IsSuccessStatusCode)

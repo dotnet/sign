@@ -8,7 +8,6 @@ namespace SignClient
     {
         public static int Main(string[] args)
         {
-
             var application = new CommandLineApplication(throwOnUnexpectedArg: false);
             var signCommand = application.Command("sign", throwOnUnexpectedArg: false, configuration: cfg =>
             {
@@ -29,7 +28,6 @@ namespace SignClient
                     var sign = new SignCommand(application);
                     return sign.SignAsync(configFile, inputFile, outputFile, fileList, secret, user, name, description, descUrl);
                 });
-                
             });
 
             application.HelpOption("-? | -h | --help");
