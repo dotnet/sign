@@ -1,6 +1,15 @@
 trigger:
-- master
-- rel/*
+  branches:
+    include:
+      - master
+      - rel/*
+  paths:
+    include:
+      - src/SignClient/*
+      - .editorconfig
+      - .vsts.client.ci.yml
+      - version.json
+      - scripts/*
 
 queue: Hosted VS2017
 variables: 
