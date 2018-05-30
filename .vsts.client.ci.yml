@@ -25,7 +25,7 @@ steps:
     command: pack
     packagesToPack: src/SignClient/SignClient.csproj
     packDirectory: $(Build.ArtifactStagingDirectory)\Client
-    configuration: $(BuildConfiguration)    
+    configuration: $(BuildConfiguration)
   displayName: Build Client
 
 - task: PowerShell@2
