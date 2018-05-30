@@ -19,7 +19,6 @@
     
     <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools\</NetSdkBinDir>
     <DockerComposeProjectPath>..\..\docker\docker-compose.dcproj</DockerComposeProjectPath>
-    <UserSecretsId>9c2a9e27-e4ca-46ef-a555-2b557d723c4d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +47,6 @@
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />    
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager" Version="1.6.0-preview" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.1.0" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="2.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
