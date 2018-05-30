@@ -2,7 +2,7 @@ trigger:
 - master
 - rel/*
 
-queue: "Hosted VS2017"
+queue: Hosted VS2017
 variables: 
   BuildConfiguration: Release
 
@@ -11,10 +11,12 @@ steps:
   inputs:
     version: '2.1.300'
 
-- powershell: |    
-    # Create package
-    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
-        
+- task: DotNetCoreCLI@2
+  inputs:
+    command: pack
+    packagesToPack: src/SignClient/SignClient.csproj
+    packDirectory: $(Build.ArtifactStagingDirectory)\Client
+    configuration: $(BuildConfiguration)    
   displayName: Build Client
 
 - task: PowerShell@2
