@@ -18,10 +18,10 @@ namespace SignService
         public static string AssemblyInformationalVersion => ThisAssembly.AssemblyInformationalVersion;
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            BuildWebHost(args).Build().Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
+        public static IWebHostBuilder BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                     .UseApplicationInsights()
                     .ConfigureAppConfiguration((builder =>
@@ -37,10 +37,9 @@ namespace SignService
                                                     {
                                                         var tokenProvider = new AzureServiceTokenProvider(azureAdInstance: built["AzureAd:AADInstance"]);
                                                         var kvClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(tokenProvider.KeyVaultTokenCallback));
-                                                        builder.AddAzureKeyVault(endpoint, kvClient, new DefaultKeyVaultSecretManager()); 
+                                                        builder.AddAzureKeyVault(endpoint, kvClient, new DefaultKeyVaultSecretManager());
                                                     }
                                                 }))
-                   .UseStartup<Startup>()
-                   .Build();
+                   .UseStartup<Startup>();
     }
 }

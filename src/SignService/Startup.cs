@@ -111,6 +111,11 @@ namespace SignService
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
             loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
 
@@ -137,7 +142,8 @@ namespace SignService
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
 
-
+            
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSession();
 
