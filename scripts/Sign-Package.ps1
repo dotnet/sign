@@ -12,7 +12,7 @@ if([string]::IsNullOrEmpty($Env:SignClientSecret)){
 $appSettings = "$currentDirectory\appsettings.json"
 $fileList = "$currentDirectory\filelist.txt"
 
-dotnet tool install --tool-path "$currentDirectory" --version $Env:NBGV_SemVer2 --source-feed $Env:ArtifactDirectory SignClient 
+dotnet tool install --tool-path "$currentDirectory" --version $Env:NBGV_SemVer2 --add-source $Env:ArtifactDirectory SignClient 
 
 $nupgks = ls $Env:ArtifactDirectory\*.nupkg | Select -ExpandProperty FullName
 
