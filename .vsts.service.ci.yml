@@ -1,3 +1,7 @@
+trigger:
+- master
+- rel/*
+
 queue: "Hosted VS2017"
 variables: 
   BuildConfiguration: Release
@@ -33,3 +37,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\website
     artifactType: container
     artifactName: SignService
+  condition: eq(variables['system.pullrequest.isfork'], false)

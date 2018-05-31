@@ -12,14 +12,14 @@ if([string]::IsNullOrEmpty($Env:SignClientSecret)){
 $appSettings = "$currentDirectory\appsettings.json"
 $fileList = "$currentDirectory\filelist.txt"
 
-$appPath = "$currentDirectory\..\src\SignClient\bin\Release\netcoreapp2.0\publish\SignClient.dll"
+dotnet tool install --tool-path "$currentDirectory" --version $Env:NBGV_SemVer2 --add-source $Env:ArtifactDirectory SignClient 
 
 $nupgks = ls $Env:ArtifactDirectory\*.nupkg | Select -ExpandProperty FullName
 
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	dotnet $appPath 'sign' -c $appSettings -i $nupkg -f $fileList -r $Env:SignClientUser -s $Env:SignClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
+	& "$currentDirectory\SignClient" 'sign' -c $appSettings -i $nupkg -f $fileList -r $Env:SignClientUser -s $Env:SignClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
 
 	Write-Host "Finished signing $nupkg"
 }

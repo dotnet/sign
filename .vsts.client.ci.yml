@@ -1,24 +1,31 @@
-queue: "Hosted VS2017"
+trigger:
+  branches:
+    include:
+      - master
+      - rel/*
+  paths:
+    include:
+      - src/SignClient/*
+      - .editorconfig
+      - .vsts.client.ci.yml
+      - version.json
+      - scripts/*
+
+queue: Hosted VS2017
 variables: 
   BuildConfiguration: Release
+
 steps:
-- task: BatchScript@1
+- task: DotNetCoreInstaller@0
   inputs:
-    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-    arguments: -no_logo
-    modifyEnvironment: true
-  displayName: Setup Environment Variables
+    version: '2.1.300'
 
-- powershell: |    
-    # Publish 1.1 version
-    dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp1.1
-    
-    # Publish 2.0 version
-    dotnet publish src/SignClient/SignClient.csproj -c $(BuildConfiguration) -f netcoreapp2.0
-
-    # Create package
-    dotnet pack src/SignClient/SignClient.csproj -c $(BuildConfiguration) --no-build /p:PackageOutputPath=$(Build.ArtifactStagingDirectory)\Client
-        
+- task: DotNetCoreCLI@2
+  inputs:
+    command: pack
+    packagesToPack: src/SignClient/SignClient.csproj
+    packDirectory: $(Build.ArtifactStagingDirectory)\Client
+    configuration: $(BuildConfiguration)
   displayName: Build Client
 
 - task: PowerShell@2
@@ -29,6 +36,7 @@ steps:
     SignClientUser: $(SignClientUser)
     SignClientSecret: $(SignClientSecret)
     ArtifactDirectory: $(Build.ArtifactStagingDirectory)\Client
+  condition: eq(variables['system.pullrequest.isfork'], false)
 
 - task: PublishBuildArtifacts@1
   displayName: Publish SignClient Artifact
@@ -36,3 +44,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\Client
     artifactType: container
     artifactName: SignClient
+  condition: eq(variables['system.pullrequest.isfork'], false)
