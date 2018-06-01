@@ -15,7 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\Directory.build.props = src\Directory.build.props
 		README.md = README.md
 		scripts\Sign-Package.ps1 = scripts\Sign-Package.ps1
-		src\SignClient.nuspec = src\SignClient.nuspec
 		version.json = version.json
 	EndProjectSection
 EndProject

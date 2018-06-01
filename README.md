@@ -81,28 +81,11 @@ You'll need to create an `appsettings.json` similar to the following:
 }
 ```
 
-Then, somewhere in your build, you'll need to call the client tool. I use AppVeyor and have the following in my yml:
+Then, somewhere in your build, you'll need to call the client tool. I use VSTS and call the following
+script to sign my files.
 
-```yml
-environment:
-  SignClientSecret:
-    secure: <the encrypted client secret using the appveyor secret encryption tool>
-  SignClientUser:
-    secure: <the encrypted username using the appveyor secret encryption tool>
 
-install: 
-  - cmd: nuget install SignClient -Version 0.9.0 -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion
-
-build: 
- ...
-
-after_build:
-  - cmd: msbuild Zeroconf\Zeroconf.csproj /t:pack /p:Configuration=Release /p:PackageOutputPath=%APPVEYOR_BUILD_FOLDER%
-  - ps: '.\SignClient\Sign-Package.ps1'
-
-```
-
-Sign-Package.ps1 looks like this:
+Sign-Package.ps1:
 
 ```powershell
 $currentDirectory = split-path $MyInvocation.MyCommand.Definition
@@ -116,15 +99,14 @@ if([string]::IsNullOrEmpty($env:SignClientSecret)){
 # Setup Variables we need to pass into the sign client tool
 
 $appSettings = "$currentDirectory\appsettings.json"
-
-$appPath = "$currentDirectory\..\packages\SignClient\tools\SignClient.dll"
-
 $nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
+
+dotnet tool install --tool-path "$currentDirectory" SignClient 
 
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	dotnet $appPath 'sign' -c $appSettings -i $nupkg -r $env:SignClientUser -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf'
+	& "$currentDirectory\SignClient" 'sign' -c $appSettings -i $nupkg -r $env:SignClientUser -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf'
 
 	Write-Host "Finished signing $nupkg"
 }
@@ -148,14 +130,13 @@ After signing contents of the archive, the archive itself is signed if supported
 (currently `VSIX`).
 
 ```
-usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] [-h <arg>]
+usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] 
                   [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
 
     -c, --config <arg>            Path to config json file
     -i, --input <arg>             Path to input file
     -o, --output <arg>            Path to output file. May be same
                                   as input to overwrite
-    -h, --hashmode <arg>          Hash mode: Sha256.
     -f, --filter <arg>            Path to file containing paths of
                                   files to sign within an archive
     -s, --secret <arg>            Client Secret

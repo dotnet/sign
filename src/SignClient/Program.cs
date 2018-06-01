@@ -1,14 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.CommandLine;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Refit;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace SignClient
 {
@@ -16,186 +8,35 @@ namespace SignClient
     {
         public static int Main(string[] args)
         {
-            return DoMain(args)
-                .Result;
-        }
-
-        static async Task<int> DoMain(string[] args)
-        {
-            try
+            var application = new CommandLineApplication(throwOnUnexpectedArg: false);
+            var signCommand = application.Command("sign", throwOnUnexpectedArg: false, configuration: cfg =>
             {
-                // default args
-                var desc = string.Empty;
-                var descUrl = string.Empty;
-                var iFile = string.Empty;
-                var oFile = string.Empty;
-                var fFile = string.Empty;
-                var name = string.Empty;
-                var configFile = string.Empty;
-                var clientSecret = string.Empty;
-                var userName = string.Empty;
-                var hashMode = HashMode.Sha256;
-
-                var command = Command.Sign;
-                ArgumentSyntax.Parse(args, syntax =>
+                cfg.Description = "Signs a file or set of files";
+                cfg.HelpOption("-? | -h | --help");
+                var configFile  = cfg.Option("-c | --config", "Path to config json file", CommandOptionType.SingleValue);
+                var inputFile   = cfg.Option("-i | --input", "Path to config input file", CommandOptionType.SingleValue);
+                var outputFile  = cfg.Option("-o | --output", "Path to output file. May be same as input to overwrite", CommandOptionType.SingleValue);
+                var fileList    = cfg.Option("-f | --filelist", "Full path to file containing paths of files to sign within an archive", CommandOptionType.SingleValue);
+                var secret      = cfg.Option("-s | --secret", "Client Secret", CommandOptionType.SingleValue);
+                var user        = cfg.Option("-r | --user", "Username", CommandOptionType.SingleValue);
+                var name        = cfg.Option("-n | --name", "Name of project for tracking", CommandOptionType.SingleValue);
+                var description = cfg.Option("-d | --description", "Description", CommandOptionType.SingleValue);
+                var descUrl     = cfg.Option("-u | --descriptionUrl", "Description Url", CommandOptionType.SingleValue);
+                
+                cfg.OnExecute(() =>
                 {
-                    syntax.DefineCommand("sign", ref command, Command.Sign, "Sign a file");
-                    syntax.DefineOption("c|config", ref configFile, "Path to config json file");
-                    syntax.DefineOption("i|input", ref iFile, "Path to input file");
-                    syntax.DefineOption("o|output", ref oFile, "Path to output file. May be same as input to overwrite");
-                    syntax.DefineOption("h|hashmode", ref hashMode, s => (HashMode)Enum.Parse(typeof(HashMode), s, true), "Hash mode: either dual or Sha256. Default is dual, to sign with both Sha-1 and Sha-256 for files that support it. For files that don't support dual, Sha-256 is used");
-                    syntax.DefineOption("f|filelist", ref fFile, "Full path to file containing paths of files to sign within an archive");
-                    syntax.DefineOption("s|secret", ref clientSecret, "Client Secret");
-                    syntax.DefineOption("r|user", ref userName, "Username");
-                    syntax.DefineOption("n|name", ref name, "Name of project for tracking");
-                    syntax.DefineOption("d|description", ref desc, "Description");
-                    syntax.DefineOption("u|descriptionUrl", ref descUrl, "Description Url");
+                    var sign = new SignCommand(application);
+                    return sign.SignAsync(configFile, inputFile, outputFile, fileList, secret, user, name, description, descUrl);
                 });
+            });
 
-                // verify required parameters
-                if (string.IsNullOrWhiteSpace(configFile))
-                {
-                    Console.Error.WriteLine("-config parameter is required");
-                    return -1;
-                }
-
-                if (string.IsNullOrWhiteSpace(iFile))
-                {
-                    Console.Error.WriteLine("-input parameter is required");
-                    return -1;
-                }
-
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    Console.Error.WriteLine("-name parameter is required");
-                    return -1;
-                }
-
-                if (string.IsNullOrWhiteSpace(oFile))
-                {
-                    oFile = iFile;
-                }
-                
-                var builder = new ConfigurationBuilder()
-                    .AddJsonFile(ExpandFilePath(configFile))
-                    .AddEnvironmentVariables();
-
-                var configuration = builder.Build();
-
-
-                // Setup Refit
-                var settings = new RefitSettings
-                {
-                    AuthorizationHeaderValueGetter = async () =>
-                    {
-                        var authority = $"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}";
-                        
-
-                        var clientId = configuration["SignClient:AzureAd:ClientId"];
-                        var resourceId = configuration["SignClient:Service:ResourceId"];
-
-                        // See if we have a Username option
-                        if (!string.IsNullOrWhiteSpace(userName))
-                        {
-                            // ROPC flow
-                            // Cannot use ADAL since there's no support for ROPC in .NET Core
-                            var parameters = new Dictionary<string, string>
-                            {
-                                {"resource", resourceId },
-                                {"client_id", clientId },
-                                {"grant_type", "password" },
-                                {"username", userName },
-                                {"password", clientSecret },
-                            };
-                            using (var adalClient = new HttpClient())
-                            {
-                                var result = await adalClient.PostAsync($"{authority}/oauth2/token", new FormUrlEncodedContent(parameters));
-
-                                var res = await result.Content.ReadAsStringAsync();
-                                result.EnsureSuccessStatusCode();
-
-                                var jObj = JObject.Parse(res);
-                                var token = jObj["access_token"].Value<string>();
-                                return token;
-                            }
-                        }
-                        else
-                        {
-                            // Client credential flow
-                            var context = new AuthenticationContext(authority);
-                            var res = await context.AcquireTokenAsync(resourceId, new ClientCredential(clientId, clientSecret));
-                            return res.AccessToken;
-                        }
-                    }
-                };
-
-
-                var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
-
-                // Prepare input/output file
-                var input = new FileInfo(ExpandFilePath(iFile));
-                var output = new FileInfo(ExpandFilePath(oFile));
-                Directory.CreateDirectory(output.DirectoryName);
-
-
-                // Do action
-                
-                HttpResponseMessage response;
-                if (command == Command.Sign)
-                {
-                    response = await client.SignFile(input, !string.IsNullOrWhiteSpace(fFile) ? new FileInfo(ExpandFilePath(fFile)) : null, hashMode, name, desc, descUrl);
-                }
-                else
-                {
-                    throw new ArgumentException("type must be sign");
-                }
-
-
-                // Check response
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    Console.Error.WriteLine($"Server returned non Ok response: {(int)response.StatusCode} {response.ReasonPhrase}");
-                    return -1;
-                }
-
-                var str = await response.Content.ReadAsStreamAsync();
-
-                using (var fs = output.OpenWrite())
-                {
-                    await str.CopyToAsync(fs);
-                }
-            }
-            catch (Exception e)
+            application.HelpOption("-? | -h | --help");
+            application.VersionOption("-v | --version", typeof(Program).Assembly.GetName().Version.ToString(3));
+            if (args.Length == 0)
             {
-                Console.Error.WriteLine("Exception:" + e);
-
-                return -1;
+                application.ShowHelp();
             }
-
-            return 0;
-        }
-
-        static string ExpandFilePath(string file)
-        {
-#if NETCOREAPP2_0
-            if (!Path.IsPathRooted(file))
-            {
-                return $"{Environment.CurrentDirectory}{Path.DirectorySeparatorChar}{file}";
-            }
-            return file;
-#else
-            if (!Path.IsPathRooted(file))
-            {
-                throw new ArgumentException("Path must be rooted on .NET Core App 1.1.");
-            }
-            return file;
-#endif
-        }
-
-        enum Command
-        {
-            Sign
+            return application.Execute(args);
         }
     }
 }

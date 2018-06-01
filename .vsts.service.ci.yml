@@ -44,3 +44,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\website
     artifactType: container
     artifactName: SignService
+  condition: eq(variables['system.pullrequest.isfork'], false)
