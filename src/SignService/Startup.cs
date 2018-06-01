@@ -24,6 +24,7 @@ using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.SnapshotCollector;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SignService
 {
@@ -97,7 +98,8 @@ namespace SignService
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
-            services.AddMvc();
+            services.AddMvc()
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1); ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
