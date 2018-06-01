@@ -38,6 +38,27 @@ Documentation is here:
 - [Deployment](docs/Deployment.md)
 - [Administration](docs/Administration.md)
 
+## Migrating to 1.0
+
+The latest 1.0 release runs on ASP.NET Core 2.1. If you have the service configured, there's
+a minor change you need to make for the Key Vault configuration settings. If you're installing
+fresh, the ARM template has already been updated.
+
+The service leverages the built-in Key Vault configuration support. To use this, two environment
+variables must be set in your `launchSettings.json` and the App Service's Application Settings:
+
+In your launchSettings.json, in the environment variables section, add two values:
+
+```json
+"environmentVariables": {
+  "ASPNETCORE_ENVIRONMENT": "Development",
+  "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
+  "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://<config vault name>.vault.azure.net"
+}
+```
+
+In the App Service's Application Settings, rename the `ConfigurationKeyVaultUrl` to `ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT`
+
 ## Client Configuration
 
 The client is distributed via [NuGet](https://www.nuget.org/packages/SignClient) and uses both a json config file and command line parameters. Common settings, like the client id and service url are stored in a config file, while per-file parameters and the client secret are passed in on the command line.

@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +20,7 @@ using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.SnapshotCollector;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SignService
 {
@@ -97,7 +94,8 @@ namespace SignService
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
-            services.AddMvc();
+            services.AddMvc()
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1); ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -110,6 +108,11 @@ namespace SignService
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
             }
 
             loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
@@ -137,7 +140,8 @@ namespace SignService
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
 
-
+            
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSession();
 

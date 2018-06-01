@@ -30,8 +30,8 @@ namespace SignService.Utils
             if (appId == null)
             {
                 var settings = JsonConvert.DefaultSettings();
-                var jsonContract = settings.ContractResolver.ResolveContract(typeof(IOptionsSnapshot<AzureAdOptions>));
-                var aadOptions = (IOptionsSnapshot<AzureAdOptions>)jsonContract.DefaultCreator();
+                var jsonContract = settings.ContractResolver.ResolveContract(typeof(IOptions<AzureAdOptions>));
+                var aadOptions = (IOptions<AzureAdOptions>)jsonContract.DefaultCreator();
                 appId = aadOptions.Value.ClientId.Replace("-", "");
             }
         }
