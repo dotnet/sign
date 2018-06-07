@@ -169,7 +169,10 @@ namespace SignService.Services
                                   "GetIssuers",
                                   "ListIssuers",
                                   "SetIssuers",
-                                  "DeleteIssuers"
+                                  "DeleteIssuers",
+                                  "Backup",
+                                  "Restore",
+                                  "Recover"
                               }
                           }
                         },
@@ -207,7 +210,10 @@ namespace SignService.Services
                                     "GetIssuers",
                                     "ListIssuers",
                                     "SetIssuers",
-                                    "DeleteIssuers"
+                                    "DeleteIssuers",
+                                    "Backup",
+                                    "Restore",
+                                    "Recover"
                                 }
                             }
                         },
