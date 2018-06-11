@@ -118,7 +118,8 @@
       ],
       "properties": {
         "name": "[parameters('webSiteName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "httpsOnly": true
       },
       "resources": [
         {
@@ -130,9 +131,29 @@
           ],
           "properties": {
             "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(concat('microsoft.insights/components/', variables('appInsightsName'))).InstrumentationKey]",
+            "APPINSIGHTS_PORTALINFO": "ASP.NETCORE",
             "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "[concat('https://', variables('keyVaultName'), '.vault.azure.net')]",
             "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
             "WEBSITE_DISABLE_MSI": "false"
+
+          }
+        },
+        {
+          "apiVersion": "2015-08-01",
+          "name": "web",
+          "type": "config",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
+          ],
+          "properties": {
+            "nodeVersion": "",
+            "phpVersion": "",
+            "pythonVersion": "",
+            "javaVersion": null,
+            "http20Enabled": true,
+            "minTlsVersion": "1.2",
+            "ftpsState": "Disabled"
+
           }
         },
         {
