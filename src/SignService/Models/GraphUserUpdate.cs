@@ -14,7 +14,7 @@ namespace SignService.Models
     {
         [JsonProperty(PropertyName = "objectId")]
         public Guid ObjectId { get; internal set; }
-        
+
         /// <summary>
         ///     The name displayed in the address book for the user. This is usually the combination of the user's first name,
         ///     middle initial and last name. This property is required when a user is created and it cannot be cleared during
@@ -22,7 +22,7 @@ namespace SignService.Models
         /// </summary>
         [JsonProperty(PropertyName = "displayName")]
         public string DisplayName { get; set; }
-        
+
         /// <summary>
         ///     True to mark the user as configured for the sign service
         /// </summary>

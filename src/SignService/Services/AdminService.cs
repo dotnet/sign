@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using SignService.Models;
-using SignService.Utils;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
+using SignService.Models;
 
 namespace SignService.Services
 {
@@ -32,7 +29,7 @@ namespace SignService.Services
         readonly IApplicationConfiguration applicationConfiguration;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
-        
+
         public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
         {
             this.configuration = configuration.Value;
@@ -95,8 +92,8 @@ namespace SignService.Services
                 // Only add it if it doesn't exist already
                 if (appExts.FirstOrDefault(ep => ep.Name.EndsWith(prop.Name)) == null)
                 {
-                    var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6", 
-                                                                                              prop, 
+                    var c = await graphHttpService.Post<ExtensionProperty, ExtensionProperty>($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties?api-version=1.6",
+                                                                                              prop,
                                                                                               accessAsUser: true)
                                                   .ConfigureAwait(false);
                 }
@@ -111,7 +108,7 @@ namespace SignService.Services
 
             foreach (var prop in result)
             {
-                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6", 
+                await graphHttpService.Delete($"/applications/{applicationConfiguration.ApplicationObjectId}/extensionProperties/{prop.ObjectId}?api-version=1.6",
                                               accessAsUser: true)
                                       .ConfigureAwait(false);
             }
@@ -121,10 +118,10 @@ namespace SignService.Services
         {
             displayName = displayName.Replace("'", ""); // don't unescape
 
-            var uri =$"/users?api-version=1.6&$filter=startswith(displayName, '{displayName}') or startswith(givenName, '{displayName}') or startswith(surname, '{displayName}')";
-            
+            var uri = $"/users?api-version=1.6&$filter=startswith(displayName, '{displayName}') or startswith(givenName, '{displayName}') or startswith(surname, '{displayName}')";
+
             var result = await graphHttpService.Get<GraphUser>(uri).ConfigureAwait(false);
-            
+
             return result;
         }
 
@@ -143,16 +140,34 @@ namespace SignService.Services
             var uri = $"/users?api-version=1.6";
 
             // validate the args are present
-            if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentException("Argument cannot be blank", nameof(displayName));
-            if (string.IsNullOrWhiteSpace(username)) throw new ArgumentException("Argument cannot be blank", nameof(username));
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                throw new ArgumentException("Argument cannot be blank", nameof(displayName));
+            }
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ArgumentException("Argument cannot be blank", nameof(username));
+            }
 
             if (configured)
             {
-                if (string.IsNullOrWhiteSpace(keyVaultUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
-                if (string.IsNullOrWhiteSpace(keyVaultCertName)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultCertName));
-                if (string.IsNullOrWhiteSpace(timestampUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(timestampUrl));
+                if (string.IsNullOrWhiteSpace(keyVaultUrl))
+                {
+                    throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
+                }
+
+                if (string.IsNullOrWhiteSpace(keyVaultCertName))
+                {
+                    throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultCertName));
+                }
+
+                if (string.IsNullOrWhiteSpace(timestampUrl))
+                {
+                    throw new ArgumentException("Argument cannot be blank when configured is true", nameof(timestampUrl));
+                }
             }
-           
+
             var password = GetRandomPassword();
 
             // if username doesn't contain an @, use the default domain
@@ -221,14 +236,28 @@ namespace SignService.Services
             var uri = $"/users/{objectId}?api-version=1.6";
 
             // We never want to set DisplayName to blank
-            if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(displayName));
+            if (string.IsNullOrWhiteSpace(displayName))
+            {
+                throw new ArgumentException("Argument cannot be blank when configured is true", nameof(displayName));
+            }
 
             if (configured == true)
             {
                 // validate the args are present
-                if (string.IsNullOrWhiteSpace(keyVaultUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
-                if (string.IsNullOrWhiteSpace(keyVaultCertName)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultCertName));
-                if (string.IsNullOrWhiteSpace(timestampUrl)) throw new ArgumentException("Argument cannot be blank when configured is true", nameof(timestampUrl));
+                if (string.IsNullOrWhiteSpace(keyVaultUrl))
+                {
+                    throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
+                }
+
+                if (string.IsNullOrWhiteSpace(keyVaultCertName))
+                {
+                    throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultCertName));
+                }
+
+                if (string.IsNullOrWhiteSpace(timestampUrl))
+                {
+                    throw new ArgumentException("Argument cannot be blank when configured is true", nameof(timestampUrl));
+                }
             }
 
             var user = new GraphUserUpdate
@@ -239,7 +268,7 @@ namespace SignService.Services
                 KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
                 KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
                 TimestampUrl = string.IsNullOrWhiteSpace(timestampUrl) ? null : timestampUrl
-            }; 
+            };
 
             await graphHttpService.Patch(uri, user).ConfigureAwait(false);
         }
@@ -261,7 +290,7 @@ namespace SignService.Services
             }
         }
 
-        private static string GetRandomPassword()
+        static string GetRandomPassword()
         {
             // From @vcsjones, thanks!
             const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:,.?/~();";

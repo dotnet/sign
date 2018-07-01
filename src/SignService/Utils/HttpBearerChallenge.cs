@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SignService.Utils
 {
@@ -10,9 +8,9 @@ namespace SignService.Utils
     /// </summary>
     public sealed class HttpBearerChallenge
     {
-        private const string Authorization = "authorization";
-        private const string AuthorizationUri = "authorization_uri";
-        private const string Bearer = "Bearer";
+        const string Authorization = "authorization";
+        const string AuthorizationUri = "authorization_uri";
+        const string Bearer = "Bearer";
 
         /// <summary>
         /// Tests whether an authentication header is a Bearer challenge
@@ -26,15 +24,19 @@ namespace SignService.Utils
         public static bool IsBearerChallenge(string challenge)
         {
             if (string.IsNullOrEmpty(challenge))
+            {
                 return false;
+            }
 
             if (!challenge.Trim().StartsWith(Bearer + " "))
+            {
                 return false;
+            }
 
             return true;
         }
 
-        private Dictionary<string, string> _parameters = null;
+        Dictionary<string, string> _parameters = null;
 
         /// <summary>
         /// Parses an HTTP WWW-Authentication Bearer challenge from a server.
@@ -78,11 +80,15 @@ namespace SignService.Utils
 
             // Minimum set of parameters
             if (_parameters.Count < 1)
+            {
                 throw new ArgumentException("Invalid challenge parameters", "challenge");
+            }
 
             // Must specify authorization or authorization_uri
             if (!_parameters.ContainsKey(Authorization) && !_parameters.ContainsKey(AuthorizationUri))
+            {
                 throw new ArgumentException("Invalid challenge parameters", "challenge");
+            }
         }
 
         /// <summary>
@@ -111,10 +117,14 @@ namespace SignService.Utils
                 var value = string.Empty;
 
                 if (_parameters.TryGetValue("authorization_uri", out value))
+                {
                     return value;
+                }
 
                 if (_parameters.TryGetValue("authorization", out value))
+                {
                     return value;
+                }
 
                 return string.Empty;
             }
@@ -131,7 +141,9 @@ namespace SignService.Utils
                 var value = string.Empty;
 
                 if (_parameters.TryGetValue("resource", out value))
+                {
                     return value;
+                }
 
                 return SourceAuthority;
             }
@@ -147,7 +159,9 @@ namespace SignService.Utils
                 var value = string.Empty;
 
                 if (_parameters.TryGetValue("scope", out value))
+                {
                     return value;
+                }
 
                 return string.Empty;
             }
@@ -163,35 +177,45 @@ namespace SignService.Utils
         /// </summary>
         public Uri SourceUri { get; } = null;
 
-        private static string ValidateChallenge(string challenge)
+        static string ValidateChallenge(string challenge)
         {
             if (string.IsNullOrEmpty(challenge))
+            {
                 throw new ArgumentNullException("challenge");
+            }
 
             var trimmedChallenge = challenge.Trim();
 
             if (!trimmedChallenge.StartsWith(Bearer + " "))
+            {
                 throw new ArgumentException("Challenge is not Bearer", "challenge");
+            }
 
             return trimmedChallenge.Substring(Bearer.Length + 1);
         }
 
-        private static string ValidateRequestURI(Uri requestUri)
+        static string ValidateRequestURI(Uri requestUri)
         {
             if (null == requestUri)
+            {
                 throw new ArgumentNullException("requestUri");
+            }
 
             if (!requestUri.IsAbsoluteUri)
+            {
                 throw new ArgumentException("The requestUri must be an absolute URI", "requestUri");
+            }
 
             if (!requestUri.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase) && !requestUri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase))
+            {
                 throw new ArgumentException("The requestUri must be HTTP or HTTPS", "requestUri");
+            }
 
             return requestUri.FullAuthority();
         }
     }
 
-    internal static class UriExtensions
+    static class UriExtensions
     {
         /// <summary>
         /// Returns an authority string for URI that is guaranteed to contain

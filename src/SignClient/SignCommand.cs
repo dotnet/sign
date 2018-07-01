@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -125,13 +124,13 @@ namespace SignClient
                 var input = new FileInfo(ExpandFilePath(inputFile.Value()));
                 var output = new FileInfo(ExpandFilePath(outputFile.Value()));
                 Directory.CreateDirectory(output.DirectoryName);
-                
+
                 // Do action
 
                 HttpResponseMessage response;
-                
+
                 response = await client.SignFile(input, fileList.HasValue() ? new FileInfo(ExpandFilePath(fileList.Value())) : null, HashMode.Sha256, name.Value(), description.Value(), description.Value());
-                
+
                 // Check response
 
                 if (!response.IsSuccessStatusCode)

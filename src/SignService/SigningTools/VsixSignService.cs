@@ -25,8 +25,8 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public VsixSignService(IKeyVaultService keyVaultService, 
-                               IHostingEnvironment hostingEnvironment, 
+        public VsixSignService(IKeyVaultService keyVaultService,
+                               IHostingEnvironment hostingEnvironment,
                                ILogger<VsixSignService> logger,
                                ITelemetryLogger telemetryLogger)
         {
@@ -54,11 +54,11 @@ namespace SignService.SigningTools
 
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? "sha1" : "sha256";
-            
+
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
             var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
-            
+
 
             Parallel.ForEach(files, options, (file, state) =>
                                              {
@@ -119,13 +119,15 @@ namespace SignService.SigningTools
                 }
             })
             {
-                var startTime = DateTimeOffset.UtcNow; 
+                var startTime = DateTimeOffset.UtcNow;
                 var stopwatch = Stopwatch.StartNew();
 
                 // redact args for log
                 var redacted = args;
                 if (args.Contains("-kva"))
+                {
                     redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
+                }
 
                 logger.LogInformation("Signing {fileName}", signtool.StartInfo.FileName);
                 signtool.Start();
@@ -134,8 +136,10 @@ namespace SignService.SigningTools
                 var error = signtool.StandardError.ReadToEnd();
                 logger.LogInformation("Vsix Out {VsixOutput}", output);
 
-                if(!string.IsNullOrWhiteSpace(error))
+                if (!string.IsNullOrWhiteSpace(error))
+                {
                     logger.LogInformation("Vsix Err {VsixError}", error);
+                }
 
                 if (!signtool.WaitForExit(30 * 1000))
                 {

@@ -1,5 +1,3 @@
-using System;
-
 namespace SignService.Models
 {
     public interface IGraphUserExtensions

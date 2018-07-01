@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Cryptography;
 
 namespace SignService.Services
 {
@@ -33,11 +33,11 @@ namespace SignService.Services
         {
             async Task<string> Authenticate(string authority, string resource, string scope)
             {
-                return await GetAccessTokenAsync().ConfigureAwait(false); 
+                return await GetAccessTokenAsync().ConfigureAwait(false);
             }
 
             client = new KeyVaultClient(Authenticate, new HttpClient());
-            
+
 
             // This must be here because we add it in the request validation
             certificateInfo = new CertificateInfo

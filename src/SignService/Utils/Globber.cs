@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
@@ -17,8 +15,8 @@ namespace Wyam.Core.IO.Globbing
     /// </summary>
     public static class Globber
     {
-        private static readonly Regex HasBraces = new Regex(@"\{.*\}");
-        private static readonly Regex NumericSet = new Regex(@"^\{(-?[0-9]+)\.\.(-?[0-9]+)\}");
+        static readonly Regex HasBraces = new Regex(@"\{.*\}");
+        static readonly Regex NumericSet = new Regex(@"^\{(-?[0-9]+)\.\.(-?[0-9]+)\}");
 
         /// <summary>
         /// Gets files from the specified directory using globbing patterns.
@@ -39,18 +37,18 @@ namespace Wyam.Core.IO.Globbing
         {
             // Initially based on code from Reliak.FileSystemGlobbingExtensions (https://github.com/reliak/Reliak.FileSystemGlobbingExtensions)
 
-            Matcher matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
 
             // Expand braces
-            IEnumerable<string> expandedPatterns = patterns
+            var expandedPatterns = patterns
                 .SelectMany(ExpandBraces)
                 .Select(f => f.Replace("\\{", "{").Replace("\\}", "}")); // Unescape braces
 
             // Add the patterns, any that start with ! are exclusions
-            foreach (string expandedPattern in expandedPatterns)
+            foreach (var expandedPattern in expandedPatterns)
             {
-                bool isExclude = expandedPattern[0] == '!';
-                string finalPattern = isExclude ? expandedPattern.Substring(1) : expandedPattern;
+                var isExclude = expandedPattern[0] == '!';
+                var finalPattern = isExclude ? expandedPattern.Substring(1) : expandedPattern;
                 finalPattern = finalPattern
                     .Replace("\\!", "!") // Unescape negation
                     .Replace("\\", "/"); // Normalize slashes
@@ -73,7 +71,7 @@ namespace Wyam.Core.IO.Globbing
             }
 
             DirectoryInfoBase directoryInfo = new DirectoryInfoWrapper(directory);
-            PatternMatchingResult result = matcher.Execute(directoryInfo);
+            var result = matcher.Execute(directoryInfo);
             return result.Files.Select(match => directoryInfo.GetFile(match.Path)).Select(fb => new FileInfo(fb.FullName));
         }
 
@@ -100,7 +98,7 @@ namespace Wyam.Core.IO.Globbing
                 return new[] { pattern };
             }
 
-            bool escaping = false;
+            var escaping = false;
             int i;
 
             // examples and comments refer to this crazy pattern:
@@ -125,7 +123,7 @@ namespace Wyam.Core.IO.Globbing
                 string prefix = null;
                 for (i = 0; i < pattern.Length; i++)
                 {
-                    char c = pattern[i];
+                    var c = pattern[i];
                     if (c == '\\')
                     {
                         escaping = !escaping;
@@ -150,7 +148,7 @@ namespace Wyam.Core.IO.Globbing
 
                 return ExpandBraces(pattern.Substring(i)).Select(t =>
                 {
-                    string neg = string.Empty;
+                    var neg = string.Empty;
 
                     // Check for negated subpattern
                     if (t.Length > 0 && t[0] == '!')
@@ -180,16 +178,16 @@ namespace Wyam.Core.IO.Globbing
             // If the set only has a single member, then'll put the {} back
 
             // first, handle numeric sets, since they're easier
-            Match numset = NumericSet.Match(pattern);
+            var numset = NumericSet.Match(pattern);
             if (numset.Success)
             {
                 // console.error("numset", numset[1], numset[2])
-                List<string> suf = ExpandBraces(pattern.Substring(numset.Length)).ToList();
+                var suf = ExpandBraces(pattern.Substring(numset.Length)).ToList();
                 int start = int.Parse(numset.Groups[1].Value),
                 end = int.Parse(numset.Groups[2].Value),
                 inc = start > end ? -1 : 1;
-                List<string> retVal = new List<string>();
-                for (int w = start; w != (end + inc); w += inc)
+                var retVal = new List<string>();
+                for (var w = start; w != (end + inc); w += inc)
                 {
                     // append all the suffixes
                     retVal.AddRange(suf.Select(t => w + t));
@@ -203,14 +201,14 @@ namespace Wyam.Core.IO.Globbing
             // If the closing brace isn't found, then the pattern is
             // interpreted as braceExpand("\\" + pattern) so that
             // the leading \{ will be interpreted literally.
-            int depth = 1;
-            List<string> set = new List<string>();
-            string member = string.Empty;
+            var depth = 1;
+            var set = new List<string>();
+            var member = string.Empty;
             escaping = false;
 
             for (i = 1 /* skip the \{ */; i < pattern.Length && depth > 0; i++)
             {
-                char c = pattern[i];
+                var c = pattern[i];
 
                 if (escaping)
                 {
@@ -277,7 +275,7 @@ namespace Wyam.Core.IO.Globbing
             }
 
             // ["b", "c{d,e}","{f,g}h"] -> ["b", "cd", "ce", "fh", "gh"]
-            bool addBraces = set.Count == 1;
+            var addBraces = set.Count == 1;
 
             set = set.SelectMany(ExpandBraces).ToList();
 
@@ -292,7 +290,7 @@ namespace Wyam.Core.IO.Globbing
             // console.error("suffix", pattern.substr(i))
             return ExpandBraces(pattern.Substring(i)).SelectMany(suf =>
             {
-                bool negated = false;
+                var negated = false;
                 if (suf.Length > 0 && suf[0] == '!')
                 {
                     negated = true;
@@ -300,7 +298,7 @@ namespace Wyam.Core.IO.Globbing
                 }
                 return set.Select(s =>
                 {
-                    string neg = string.Empty;
+                    var neg = string.Empty;
                     if (negated && (s.Length == 0 || s[0] != '!'))
                     {
                         // Only add a new negation if there isn't already one

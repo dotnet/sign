@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -25,7 +24,7 @@ namespace SignService.Utils
     /// </summary>
     public class AutoRestCredential<T> : ServiceClientCredentials where T : ServiceClient<T>
     {
-        private ServiceClient<T> _client;
+        ServiceClient<T> _client;
 
         /// <summary>
         /// The authentication callback
@@ -55,7 +54,7 @@ namespace SignService.Utils
             return new AutoRestCredential<T>(OnAuthenticate);
         }
 
-        private async Task<string> PreAuthenticate(Uri url)
+        async Task<string> PreAuthenticate(Uri url)
         {
             if (OnAuthenticate != null)
             {
@@ -112,7 +111,9 @@ namespace SignService.Utils
 
             var accessToken = await PreAuthenticate(request.RequestUri).ConfigureAwait(false);
             if (!string.IsNullOrEmpty(accessToken))
+            {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            }
             else
             {
                 HttpResponseMessage response;

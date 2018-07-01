@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SignService.Utils
 {
@@ -44,7 +41,7 @@ namespace SignService.Utils
 
         [method: DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, EntryPoint = "CryptBinaryToString", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static unsafe extern bool CryptBinaryToString
+        static extern unsafe bool CryptBinaryToString
         (
             [param: In] byte[] pbBinary,
             [param: In, MarshalAs(UnmanagedType.U4)] uint cbBinary,
@@ -144,11 +141,11 @@ namespace SignService.Utils
 
     public sealed class Pkcs7CertificateStore : IDisposable
     {
-        private IntPtr _handle;
-        private X509Store _store;
-        private Crypt32.CRYPTOAPI_BLOB _blob;
+        IntPtr _handle;
+        X509Store _store;
+        Crypt32.CRYPTOAPI_BLOB _blob;
 
-        private Pkcs7CertificateStore(IntPtr handle, Crypt32.CRYPTOAPI_BLOB blob)
+        Pkcs7CertificateStore(IntPtr handle, Crypt32.CRYPTOAPI_BLOB blob)
         {
             _handle = handle;
             try
@@ -193,7 +190,7 @@ namespace SignService.Utils
         public void Add(X509Certificate2Collection collection) => _store.AddRange(collection);
         public X509Certificate2Collection Certificates => _store.Certificates;
 
-        private void Dispose(bool disposing)
+        void Dispose(bool disposing)
         {
             GC.SuppressFinalize(this);
             if (disposing)
@@ -203,7 +200,7 @@ namespace SignService.Utils
             FreeHandle();
         }
 
-        private void FreeHandle()
+        void FreeHandle()
         {
             if (_handle != IntPtr.Zero)
             {

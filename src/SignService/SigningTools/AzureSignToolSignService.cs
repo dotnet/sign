@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using SignService.Services;
 using SignService.SigningTools;
 using SignService.Utils;
-using SignService.Services;
 
 namespace SignService
 {
@@ -22,9 +22,9 @@ namespace SignService
         readonly ITelemetryLogger telemetryLogger;
         readonly string keyVaultSignToolPath;
         readonly string signToolName;
-        
-        public AzureSignToolSignService(ILogger<AzureSignToolSignService> logger, 
-                                            IAppxFileFactory appxFileFactory, 
+
+        public AzureSignToolSignService(ILogger<AzureSignToolSignService> logger,
+                                            IAppxFileFactory appxFileFactory,
                                             IKeyVaultService keyVaultService,
                                             IHostingEnvironment hostingEnvironment,
                                             ITelemetryLogger telemetryLogger)
@@ -41,34 +41,40 @@ namespace SignService
         {
             // Explicitly put this on a thread because Parallel.ForEach blocks
             if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
+            {
                 throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha256 is supported");
-            
+            }
+
             return Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));
         }
 
         void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing SignTool job {0} with {1} files", name, files.Count());
-            
+
             var descArgsList = new List<string>();
             if (!string.IsNullOrWhiteSpace(description))
             {
                 if (description.Contains("\""))
+                {
                     throw new ArgumentException(nameof(description));
+                }
 
                 descArgsList.Add($@"-d ""{description}""");
             }
             if (!string.IsNullOrWhiteSpace(descriptionUrl))
             {
                 if (descriptionUrl.Contains("\""))
+                {
                     throw new ArgumentException(nameof(descriptionUrl));
+                }
 
                 descArgsList.Add($@"-du ""{descriptionUrl}""");
             }
 
             var descArgs = string.Join(" ", descArgsList);
             string keyVaultAccessToken = null;
-            
+
             keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
             // loop through all of the files here, looking for appx/eappx
@@ -163,7 +169,9 @@ namespace SignService
                 // redact args for log
                 var redacted = args;
                 if (args.Contains("-kva"))
+                {
                     redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
+                }
 
                 logger.LogInformation(@"""{0}"" {1}", signtool.StartInfo.FileName, redacted);
                 signtool.Start();
@@ -171,10 +179,10 @@ namespace SignService
                 var error = signtool.StandardError.ReadToEnd();
                 logger.LogInformation("SignTool Out {SignToolOutput}", output);
 
-                if(!string.IsNullOrWhiteSpace(error))
+                if (!string.IsNullOrWhiteSpace(error))
+                {
                     logger.LogError("SignTool Err {SignToolError}", error);
-
-
+                }
 
                 if (!signtool.WaitForExit(30 * 1000))
                 {
@@ -197,7 +205,7 @@ namespace SignService
 
                 if (signtool.ExitCode == 0)
                 {
-                    
+
                     logger.LogInformation("Sign tool completed successfuly");
                     return true;
                 }
@@ -230,7 +238,7 @@ namespace SignService
             ".vbs",
             ".ocx",
             ".stl"
-            
+
         };
 
         public bool IsDefault => true;

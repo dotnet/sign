@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
@@ -9,17 +8,15 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using SignService;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
+using SignService;
 using SignService.Models;
-using SignService.Services;
-using SignService.Utils;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -35,7 +32,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         public static AuthenticationBuilder AddAzureAd(this AuthenticationBuilder builder, Action<AzureAdOptions> configureOptions)
         {
-         //   builder.Services.Configure(configureOptions);
+            //   builder.Services.Configure(configureOptions);
             builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, ConfigureAzureOidcOptions>();
             builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, ConfigureCookieOptions>();
 
@@ -43,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication
             return builder;
         }
 
-        private class ConfigureAzureOptions : IConfigureNamedOptions<JwtBearerOptions>
+        class ConfigureAzureOptions : IConfigureNamedOptions<JwtBearerOptions>
         {
             readonly AzureAdOptions _azureOptions;
             readonly IOptions<AdminConfig> adminOptions;
@@ -106,7 +103,7 @@ namespace Microsoft.AspNetCore.Authentication
                     if (user?.SignServiceConfigured == true)
                     {
                         passed = true;
-                        
+
                         identity.AddClaim(new Claim("keyVaultUrl", user.KeyVaultUrl));
                         identity.AddClaim(new Claim("keyVaultCertificateName", user.KeyVaultCertificateName));
                         identity.AddClaim(new Claim("timestampUrl", user.TimestampUrl));
@@ -129,10 +126,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        private class ConfigureCookieOptions : IConfigureNamedOptions<CookieAuthenticationOptions>
+        class ConfigureCookieOptions : IConfigureNamedOptions<CookieAuthenticationOptions>
         {
-            private readonly IOptions<AzureAdOptions> azureOptions;
-            private readonly IHttpContextAccessor contextAccessor;
+            readonly IOptions<AzureAdOptions> azureOptions;
+            readonly IHttpContextAccessor contextAccessor;
 
             public ConfigureCookieOptions(IOptions<AzureAdOptions> azureOptions, IHttpContextAccessor contextAccessor)
             {
@@ -164,10 +161,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        private class ConfigureAzureOidcOptions : IConfigureNamedOptions<OpenIdConnectOptions>
+        class ConfigureAzureOidcOptions : IConfigureNamedOptions<OpenIdConnectOptions>
         {
-            private readonly AzureAdOptions _azureOptions;
-            private readonly IHttpContextAccessor contextAccessor;
+            readonly AzureAdOptions _azureOptions;
+            readonly IHttpContextAccessor contextAccessor;
 
             public ConfigureAzureOidcOptions(IOptions<AzureAdOptions> azureOptions, IHttpContextAccessor contextAccessor)
             {
@@ -195,13 +192,13 @@ namespace Microsoft.AspNetCore.Authentication
             async Task OnAuthorizationCodeReceived(AuthorizationCodeReceivedContext context)
             {
                 var userId = context.Principal.FindFirst("oid").Value;
-                
-                
+
+
                 var adal = new AuthenticationContext($"{_azureOptions.AADInstance}{_azureOptions.TenantId}", new ADALSessionCache(userId, contextAccessor));
 
                 var redirect = $"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}";
                 // Store in cache for later redemption
-                
+
                 var res = await adal.AcquireTokenByAuthorizationCodeAsync(context.ProtocolMessage.Code, new Uri(redirect), new ClientCredential(_azureOptions.ClientId, _azureOptions.ClientSecret), "https://graph.windows.net");
 
                 context.HandleCodeRedemption(res.AccessToken, res.IdToken);

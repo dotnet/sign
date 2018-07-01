@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SignService.Utils;
 using Wyam.Core.IO.Globbing;
@@ -52,7 +51,9 @@ namespace SignService
 
             // If no filtered, default to all
             if (FilteredFilesInDirectory == null)
+            {
                 FilteredFilesInDirectory = FilesInDirectory.ToList();
+            }
 
             if (antiglobs.Count > 0)
             {

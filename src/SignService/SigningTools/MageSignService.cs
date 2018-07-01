@@ -7,14 +7,14 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SignService.Utils;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.Authentication;
 using SignService.Services;
+using SignService.Utils;
 
 namespace SignService.SigningTools
 {
@@ -32,10 +32,10 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public MageSignService(IOptions<AzureAdOptions> aadOptions, 
-                               IHostingEnvironment hostingEnvironment, 
+        public MageSignService(IOptions<AzureAdOptions> aadOptions,
+                               IHostingEnvironment hostingEnvironment,
                                IKeyVaultService keyVaultService,
-                               IServiceProvider serviceProvider, 
+                               IServiceProvider serviceProvider,
                                ILogger<MageSignService> logger,
                                ITelemetryLogger telemetryLogger)
         {
@@ -51,7 +51,9 @@ namespace SignService.SigningTools
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
             if (hashMode == HashMode.Sha1 || hashMode == HashMode.Dual)
+            {
                 throw new ArgumentOutOfRangeException(nameof(hashMode), "Only Sha256 is supported");
+            }
 
             // Explicitly put this on a thread because Parallel.ForEach blocks
             await Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files, filter));
@@ -66,12 +68,13 @@ namespace SignService.SigningTools
         void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
             logger.LogInformation("Signing Mage job {0} with {1} files", name, files.Count());
-            
-            string args = "-a sha256RSA";
-            if(!string.IsNullOrWhiteSpace(name))
-                args += $@" -n ""{name}""";
 
-            
+            var args = "-a sha256RSA";
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                args += $@" -n ""{name}""";
+            }
+
             var certificate = keyVaultService.GetCertificateAsync().Result;
             var timeStampUrl = keyVaultService.CertificateInfo.TimestampUrl;
 
@@ -169,7 +172,9 @@ namespace SignService.SigningTools
                         {
                             fileArgs = $@"-update ""{f}"" {args} -appm ""{manifestFile}"" {publisherParam}";
                             if (!string.IsNullOrWhiteSpace(descriptionUrl))
+                            {
                                 fileArgs += $@" -SupportURL {descriptionUrl}";
+                            }
 
                             telemetryLogger.OnSignFile(f, signToolName);
                             if (!Sign(fileArgs, f, hashMode, rsaPrivateKey, certificate, timeStampUrl))
@@ -246,8 +251,10 @@ namespace SignService.SigningTools
                 var error = signtool.StandardError.ReadToEnd();
                 logger.LogInformation("Mage Out {MageOutput}", output);
 
-                if(!string.IsNullOrWhiteSpace(error))
+                if (!string.IsNullOrWhiteSpace(error))
+                {
                     logger.LogInformation("Mage Err {MageError}", error);
+                }
 
                 if (!signtool.WaitForExit(30 * 1000))
                 {

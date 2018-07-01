@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +23,7 @@ namespace SignService.Controllers
             this.codeSignAggregate = codeSignAggregate;
             this.logger = logger;
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> SignFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
         {
@@ -42,7 +38,7 @@ namespace SignService.Controllers
                 ModelState.AddModelError(nameof(hashMode), "Azure Key Vault does not support SHA-1. Use sha256");
                 return BadRequest(ModelState);
             }
-            
+
 
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(dataDir);

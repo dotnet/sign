@@ -23,7 +23,7 @@ namespace SignService.Utils
         protected virtual bool SkipNulls => true;
 
         static string appId;
-        
+
         public GraphUserConverter()
         {
             // Get the settings if needed
@@ -35,7 +35,7 @@ namespace SignService.Utils
                 appId = aadOptions.Value.ClientId.Replace("-", "");
             }
         }
-        
+
         /// <summary>
         /// This method will create a Json object from the GraphUser
         /// </summary>
@@ -46,7 +46,10 @@ namespace SignService.Utils
         {
             var graphUser = value;
 
-            if (graphUser == null) return;
+            if (graphUser == null)
+            {
+                return;
+            }
 
             var jObject = new JObject();
             var extensionProps = typeof(IGraphUserExtensions).GetProperties();
@@ -56,7 +59,11 @@ namespace SignService.Utils
                 var propNameCamelCase = $"{name.Substring(0, 1).ToLowerInvariant()}{name.Substring(1)}";
                 var extPropName = $"extension_{appId}_{propNameCamelCase}";
                 var val = prop.GetValue(graphUser);
-                if (val == null && SkipNulls) continue;
+                if (val == null && SkipNulls)
+                {
+                    continue;
+                }
+
                 var newExtProp = new JProperty(extPropName, val);
 
                 //Create new prop
@@ -70,8 +77,11 @@ namespace SignService.Utils
                 var name = JsonPropertyName(coreProp);
                 var propNameCamelCase = $"{name.Substring(0, 1).ToLowerInvariant()}{name.Substring(1)}";
                 var val = coreProp.GetValue(graphUser);
-                if (val == null && SkipNulls) continue;
-                
+                if (val == null && SkipNulls)
+                {
+                    continue;
+                }
+
                 var newCoreProp = new JProperty(propNameCamelCase, JToken.FromObject(val));
 
                 jObject.Add(newCoreProp);
@@ -103,11 +113,19 @@ namespace SignService.Utils
                 var extPropName = $"extension_{appId}_{propNameCamelCase}";
 
                 var extPropValue = o.Property(extPropName);
-                if (extPropValue == null) continue;
+                if (extPropValue == null)
+                {
+                    continue;
+                }
+
                 var propVal = extPropValue.Value.ToString();
                 var convertedVal = extPropValue.Value.ToObject(prop.PropertyType);
                 var graphProp = graphProps.FirstOrDefault(m => m.Name == prop.Name);
-                if (graphProp == null) continue;
+                if (graphProp == null)
+                {
+                    continue;
+                }
+
                 graphProp.SetValue(graphUser, convertedVal);
             }
 
@@ -117,9 +135,12 @@ namespace SignService.Utils
                 var name = JsonPropertyName(coreProp);
                 var propNameCamelCase = $"{name.Substring(0, 1).ToLowerInvariant()}{name.Substring(1)}";
                 var jPropVal = o.Property(propNameCamelCase);
-                if (jPropVal == null) continue;
+                if (jPropVal == null)
+                {
+                    continue;
+                }
 
-                object convertedVal = jPropVal.Value.ToObject(coreProp.PropertyType);
+                var convertedVal = jPropVal.Value.ToObject(coreProp.PropertyType);
                 coreProp.SetValue(graphUser, convertedVal);
             }
 
@@ -134,11 +155,11 @@ namespace SignService.Utils
             var attrib = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
             return attrib?.PropertyName ?? propertyInfo.Name;
         }
-        
+
         public override bool CanConvert(Type objectType)
         {
             return (objectType == typeof(GraphUser));
         }
-      
+
     }
 }

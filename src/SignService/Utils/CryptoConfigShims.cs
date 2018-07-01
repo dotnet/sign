@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 
 namespace System.Security.Cryptography.Xml
 {
@@ -28,7 +24,7 @@ namespace System.Security.Cryptography.Xml
 
         public sealed override AsymmetricSignatureDeformatter CreateDeformatter(AsymmetricAlgorithm key)
         {
-            var item = (AsymmetricSignatureDeformatter)CryptoHelpersCreateFromName.Invoke(null, new object[] {DeformatterAlgorithm});
+            var item = (AsymmetricSignatureDeformatter)CryptoHelpersCreateFromName.Invoke(null, new object[] { DeformatterAlgorithm });
             item.SetKey(key);
             item.SetHashAlgorithm(DigestAlgorithm);
             return item;
@@ -36,7 +32,7 @@ namespace System.Security.Cryptography.Xml
 
         public sealed override AsymmetricSignatureFormatter CreateFormatter(AsymmetricAlgorithm key)
         {
-            var item = (AsymmetricSignatureFormatter)CryptoHelpersCreateFromName.Invoke(null, new object[] {FormatterAlgorithm});
+            var item = (AsymmetricSignatureFormatter)CryptoHelpersCreateFromName.Invoke(null, new object[] { FormatterAlgorithm });
             item.SetKey(key);
             item.SetHashAlgorithm(DigestAlgorithm);
             return item;
