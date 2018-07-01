@@ -19,8 +19,10 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: Copy sdk files locally before build
   inputs:
+    command: custom
     projects: src/SignService/SignService.csproj
-    arguments: '-c $(BuildConfiguration) /t:PrebuildScript'
+    custom: msbuild
+    arguments: '/p:Configuration=$(BuildConfiguration) /t:PrebuildScript'
 
 - task: DotNetCoreCLI@2
   displayName: Build and Publish
