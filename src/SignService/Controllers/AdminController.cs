@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using SignService.Models;
+using Microsoft.AspNetCore.Mvc;
 using SignService.Services;
 
 namespace SignService.Controllers
@@ -36,6 +32,6 @@ namespace SignService.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-      
+
     }
 }

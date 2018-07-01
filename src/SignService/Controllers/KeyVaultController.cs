@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.KeyVault.Models;
 using SignService.Models;
 using SignService.Services;
 using SignService.Utils;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace SignService.Controllers
 {
@@ -26,7 +21,7 @@ namespace SignService.Controllers
         public async Task<IActionResult> Index()
         {
             var vaults = await keyVaultAdminService.ListKeyVaultsAsync();
-            
+
             return View(vaults);
         }
 
@@ -46,7 +41,7 @@ namespace SignService.Controllers
                 {
                     op.cert.Operation = op.operation.Result; // completed, safe
                 }
-                
+
                 var model = new KeyVaultDetailsModel
                 {
                     Vault = vault,
@@ -65,7 +60,7 @@ namespace SignService.Controllers
         // GET: KeyVault/CreateCertificate/vaultName
         public IActionResult CreateCertificate(string id)
         {
-            return View(new CreateCertificateRequestModel{VaultName = id});
+            return View(new CreateCertificateRequestModel { VaultName = id });
         }
 
         // POST: KeyVault/Edit/5
@@ -77,9 +72,9 @@ namespace SignService.Controllers
             {
                 var csr = await keyVaultAdminService.CreateCsrAsync(model.VaultName, model.CertificateName, model.CertificateName);
 
-                return RedirectToAction(nameof(Details), new {id = model.VaultName});
+                return RedirectToAction(nameof(Details), new { id = model.VaultName });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 ModelState.AddModelError("", e.Message);
                 return View(model);
@@ -133,7 +128,7 @@ namespace SignService.Controllers
                 ModelState.AddModelError("", e.Message);
                 return View(nameof(CertificateRequest), model);
             }
-            
+
             return RedirectToAction(nameof(Details), new { id = model.VaultName });
         }
 

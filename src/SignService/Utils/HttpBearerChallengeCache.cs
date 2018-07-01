@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SignService.Utils
 {
@@ -11,7 +9,7 @@ namespace SignService.Utils
     /// </summary>
     public sealed class HttpBearerChallengeCache
     {
-        private static HttpBearerChallengeCache _instance = new HttpBearerChallengeCache();
+        static readonly HttpBearerChallengeCache _instance = new HttpBearerChallengeCache();
 
         /// <summary>
         /// Gets the singleton instance of <see cref="HttpBearerChallengeCache"/> 
@@ -22,10 +20,10 @@ namespace SignService.Utils
             return _instance;
         }
 
-        private Dictionary<string, HttpBearerChallenge> _cache = null;
-        private object _cacheLock = null;
+        Dictionary<string, HttpBearerChallenge> _cache = null;
+        readonly object _cacheLock = null;
 
-        private HttpBearerChallengeCache()
+        HttpBearerChallengeCache()
         {
             _cache = new Dictionary<string, HttpBearerChallenge>();
             _cacheLock = new object();
@@ -39,7 +37,9 @@ namespace SignService.Utils
         public HttpBearerChallenge GetChallengeForURL(Uri url)
         {
             if (url == null)
+            {
                 throw new ArgumentNullException("url");
+            }
 
             HttpBearerChallenge value = null;
 
@@ -58,7 +58,9 @@ namespace SignService.Utils
         public void RemoveChallengeForURL(Uri url)
         {
             if (url == null)
+            {
                 throw new ArgumentNullException("url");
+            }
 
             lock (_cacheLock)
             {
@@ -74,13 +76,19 @@ namespace SignService.Utils
         public void SetChallengeForURL(Uri url, HttpBearerChallenge value)
         {
             if (url == null)
+            {
                 throw new ArgumentNullException("url");
+            }
 
             if (value == null)
+            {
                 throw new ArgumentNullException("value");
+            }
 
             if (string.Compare(url.FullAuthority(), value.SourceAuthority, StringComparison.OrdinalIgnoreCase) != 0)
+            {
                 throw new ArgumentException("Source URL and Challenge URL do not match");
+            }
 
             lock (_cacheLock)
             {

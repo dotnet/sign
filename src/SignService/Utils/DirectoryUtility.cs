@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 
 namespace SignService.Utils
 {
     public static class DirectoryUtility
     {
-        readonly static TelemetryClient tc = new TelemetryClient();
+        static readonly TelemetryClient tc = new TelemetryClient();
         public static void SafeDelete(string path)
         {
             PerformSafeAction(() => DeleteDirectory(path));
         }
 
         // Deletes an empty folder from disk and the project
-        private static void DeleteDirectory(string fullPath)
+        static void DeleteDirectory(string fullPath)
         {
             if (!Directory.Exists(fullPath))
             {
@@ -34,7 +31,7 @@ namespace SignService.Utils
             }
         }
 
-        private static void PerformSafeAction(Action action)
+        static void PerformSafeAction(Action action)
         {
             try
             {
@@ -47,7 +44,7 @@ namespace SignService.Utils
         }
 
 
-        private static void Attempt(Action action, int retries = 3, int delayBeforeRetry = 150)
+        static void Attempt(Action action, int retries = 3, int delayBeforeRetry = 150)
         {
             while (retries > 0)
             {

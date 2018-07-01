@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
 using SignService.Models;
-using SignService.Utils;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 
 namespace SignService.Services
 {
@@ -32,7 +30,7 @@ namespace SignService.Services
 
             var userId = user.ObjectId;
 
-            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));  
+            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
         }
 
         public async Task<List<T>> Get<T>(string url)
@@ -150,7 +148,7 @@ namespace SignService.Services
             using (var client = await CreateClient(accessAsUser)
                                     .ConfigureAwait(false))
             {
-                string contentBody = JsonConvert.SerializeObject(item);
+                var contentBody = JsonConvert.SerializeObject(item);
 
                 var request = new HttpRequestMessage(PatchMethod, $"{azureAdOptions.TenantId}/{url}")
                 {
@@ -169,7 +167,7 @@ namespace SignService.Services
             }
         }
 
-        private async Task<HttpClient> CreateClient(bool accessAsUser = false)
+        async Task<HttpClient> CreateClient(bool accessAsUser = false)
         {
             AuthenticationResult result;
             if (accessAsUser)

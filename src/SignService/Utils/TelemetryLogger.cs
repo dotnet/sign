@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 
@@ -32,7 +29,7 @@ namespace SignService.Utils
                     { "ToolName", toolName }
                 }
             };
-            
+
             telemetryClient.TrackEvent(evt);
         }
 
@@ -46,7 +43,7 @@ namespace SignService.Utils
                 Data = redactedArgs,
                 ResultCode = resultCode.ToString(CultureInfo.InvariantCulture),
                 Timestamp = startTime,
-                Duration =  duration,
+                Duration = duration,
                 Success = resultCode == 0
             };
 

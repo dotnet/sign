@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
 
 namespace SignService
 {
@@ -28,7 +20,7 @@ namespace SignService
                                                 {
                                                     // Support optional App_Data location
                                                     builder.AddJsonFile(@"App_Data\appsettings.json", true, true);
-                         
+
                                                 }))
                    .UseStartup<Startup>();
     }

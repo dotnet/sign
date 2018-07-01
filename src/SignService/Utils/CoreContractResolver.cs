@@ -17,7 +17,9 @@ namespace SignService.Utils
             var contract = base.CreateObjectContract(objectType);
             var svc = _provider.GetService(objectType);
             if (svc != null)
+            {
                 contract.DefaultCreator = () => _provider.GetService(objectType);
+            }
 
             return contract;
         }

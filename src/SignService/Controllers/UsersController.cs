@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc;
 using SignService.Models;
 using SignService.Services;
 
@@ -47,9 +46,20 @@ namespace SignService.Controllers
         {
             if (createModel.Configured)
             {
-                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl)) ModelState.TryAddModelError(nameof(createModel.KeyVaultUrl), $"{nameof(createModel.KeyVaultUrl)} is required when Configured");
-                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl)) ModelState.TryAddModelError(nameof(createModel.TimestampUrl), $"{nameof(createModel.TimestampUrl)} is required when Configured");
-                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl)) ModelState.TryAddModelError(nameof(createModel.CertificateName), $"{nameof(createModel.CertificateName)} is required when Configured");
+                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl))
+                {
+                    ModelState.TryAddModelError(nameof(createModel.KeyVaultUrl), $"{nameof(createModel.KeyVaultUrl)} is required when Configured");
+                }
+
+                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl))
+                {
+                    ModelState.TryAddModelError(nameof(createModel.TimestampUrl), $"{nameof(createModel.TimestampUrl)} is required when Configured");
+                }
+
+                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl))
+                {
+                    ModelState.TryAddModelError(nameof(createModel.CertificateName), $"{nameof(createModel.CertificateName)} is required when Configured");
+                }
             }
             if (!ModelState.IsValid)
             {
@@ -155,9 +165,20 @@ namespace SignService.Controllers
         {
             if (model.Configured)
             {
-                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl)) ModelState.TryAddModelError(nameof(model.KeyVaultUrl), $"{nameof(model.KeyVaultUrl)} is required when Configured");
-                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl)) ModelState.TryAddModelError(nameof(model.TimestampUrl), $"{nameof(model.TimestampUrl)} is required when Configured");
-                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl)) ModelState.TryAddModelError(nameof(model.CertificateName), $"{nameof(model.CertificateName)} is required when Configured");
+                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl))
+                {
+                    ModelState.TryAddModelError(nameof(model.KeyVaultUrl), $"{nameof(model.KeyVaultUrl)} is required when Configured");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl))
+                {
+                    ModelState.TryAddModelError(nameof(model.TimestampUrl), $"{nameof(model.TimestampUrl)} is required when Configured");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl))
+                {
+                    ModelState.TryAddModelError(nameof(model.CertificateName), $"{nameof(model.CertificateName)} is required when Configured");
+                }
             }
 
             if (!ModelState.IsValid)
@@ -174,7 +195,7 @@ namespace SignService.Controllers
                                                    model.CertificateName?.Trim(),
                                                    model.TimestampUrl?.Trim());
 
-                return RedirectToAction(nameof(Details), new { id = id });
+                return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception e)
             {
@@ -227,7 +248,7 @@ namespace SignService.Controllers
         {
             var user = await adminService.GetUserByObjectIdAsync(id);
 
-            
+
             return View(user);
         }
 

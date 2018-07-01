@@ -25,8 +25,8 @@ namespace SignService.SigningTools
             MaxDegreeOfParallelism = 4
         };
 
-        public NuGetSignService(IKeyVaultService keyVaultService, 
-                                IHostingEnvironment hostingEnvironment, 
+        public NuGetSignService(IKeyVaultService keyVaultService,
+                                IHostingEnvironment hostingEnvironment,
                                 ILogger<NuGetSignService> logger,
                                 ITelemetryLogger telemetryLogger)
         {
@@ -52,11 +52,11 @@ namespace SignService.SigningTools
         void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing NuGetKeyVaultSignTool job {0} with {1} files", name, files.Count());
-            
+
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
             var args = $@"-f -tr {keyVaultService.CertificateInfo.TimestampUrl} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
-            
+
             Parallel.ForEach(files, options, (file, state) =>
             {
                 telemetryLogger.OnSignFile(file, signToolName);
@@ -116,13 +116,15 @@ namespace SignService.SigningTools
                 }
             })
             {
-                var startTime = DateTimeOffset.UtcNow; 
+                var startTime = DateTimeOffset.UtcNow;
                 var stopwatch = Stopwatch.StartNew();
 
                 // redact args for log
                 var redacted = args;
                 if (args.Contains("-kva"))
+                {
                     redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
+                }
 
                 logger.LogInformation("Signing using {fileName}", signtool.StartInfo.FileName);
                 signtool.Start();
@@ -131,8 +133,10 @@ namespace SignService.SigningTools
                 var error = signtool.StandardError.ReadToEnd();
                 logger.LogInformation("Nupkg Out {NupkgOutput}", output);
 
-                if(!string.IsNullOrWhiteSpace(error))
+                if (!string.IsNullOrWhiteSpace(error))
+                {
                     logger.LogInformation("Nupkg Err {NupkgError}", error);
+                }
 
                 if (!signtool.WaitForExit(30 * 1000))
                 {

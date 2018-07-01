@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
@@ -10,62 +6,61 @@ namespace SignService.Models
 {
     public class ADALSessionCache : TokenCache
     {
-        ReaderWriterLockSlim SessionLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-        string CacheId = string.Empty;
-        IHttpContextAccessor httpContext = null;
-
+        readonly ReaderWriterLockSlim sessionLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        readonly string cacheId = string.Empty;
+        readonly IHttpContextAccessor httpContext;
 
         public ADALSessionCache(string userId, IHttpContextAccessor httpcontext)
         {
             // not object, we want the SUB
-            CacheId = userId + "_TokenCache";
+            cacheId = userId + "_TokenCache";
             httpContext = httpcontext;
-            this.AfterAccess = AfterAccessNotification;
-            this.BeforeAccess = BeforeAccessNotification;
+            AfterAccess = AfterAccessNotification;
+            BeforeAccess = BeforeAccessNotification;
             Load();
         }
 
         public void SaveUserStateValue(string state)
         {
-            SessionLock.EnterWriteLock();
+            sessionLock.EnterWriteLock();
 
-            httpContext.HttpContext.Session.SetString(CacheId + "_state", state);
-            SessionLock.ExitWriteLock();
+            httpContext.HttpContext.Session.SetString(cacheId + "_state", state);
+            sessionLock.ExitWriteLock();
         }
         public string ReadUserStateValue()
         {
-            string state = string.Empty;
-            SessionLock.EnterReadLock();
+            var state = string.Empty;
+            sessionLock.EnterReadLock();
             //this.Deserialize((byte[])HttpContext.Current.Session[CacheId]);
-            state = httpContext.HttpContext.Session.GetString(CacheId + "_state");
-            SessionLock.ExitReadLock();
+            state = httpContext.HttpContext.Session.GetString(cacheId + "_state");
+            sessionLock.ExitReadLock();
             return state;
         }
         public void Load()
         {
-            SessionLock.EnterReadLock();
+            sessionLock.EnterReadLock();
             //this.Deserialize((byte[])HttpContext.Current.Session[CacheId]);
-            this.Deserialize((byte[])httpContext.HttpContext.Session.Get(CacheId));
-            SessionLock.ExitReadLock();
+            Deserialize(httpContext.HttpContext.Session.Get(cacheId));
+            sessionLock.ExitReadLock();
         }
 
         public void Persist()
         {
-            SessionLock.EnterWriteLock();
+            sessionLock.EnterWriteLock();
 
             // Optimistically set HasStateChanged to false. We need to do it early to avoid losing changes made by a concurrent thread.
-            this.HasStateChanged = false;
+            HasStateChanged = false;
 
             // Reflect changes in the persistent store
-            httpContext.HttpContext.Session.Set(CacheId, this.Serialize());
-            SessionLock.ExitWriteLock();
+            httpContext.HttpContext.Session.Set(cacheId, this.Serialize());
+            sessionLock.ExitWriteLock();
         }
 
         // Empties the persistent store.
         public override void Clear()
         {
             base.Clear();
-            httpContext.HttpContext.Session.Remove(CacheId);
+            httpContext.HttpContext.Session.Remove(cacheId);
         }
 
         // Triggered right before ADAL needs to access the cache.
@@ -79,7 +74,7 @@ namespace SignService.Models
         void AfterAccessNotification(TokenCacheNotificationArgs args)
         {
             // if the access operation resulted in a cache update
-            if (this.HasStateChanged)
+            if (HasStateChanged)
             {
                 Persist();
             }

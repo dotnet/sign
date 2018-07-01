@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +11,7 @@ namespace SignService.Controllers
         [HttpGet]
         public IActionResult Login(string returnUrl)
         {
-            returnUrl = returnUrl ??  Url.Action(nameof(HomeController.Index), "Home");
+            returnUrl = returnUrl ?? Url.Action(nameof(HomeController.Index), "Home");
             return Challenge(
                 new AuthenticationProperties { RedirectUri = returnUrl },
                 OpenIdConnectDefaults.AuthenticationScheme);

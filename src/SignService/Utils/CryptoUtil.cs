@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 
 namespace SignService.Utils
 {
@@ -22,11 +20,17 @@ namespace SignService.Utils
                 X509Certificate2 cert = null;
 
                 if (firstLine.Contains("PKCS7"))
+                {
                     cert = CertificateFromPkcs7Data(data);
+                }
                 else if (firstLine.Contains("CERTIFICATE"))
+                {
                     cert = CertificateFromCerData(data);
+                }
                 else
+                {
                     throw new ArgumentException("File does not have either a PKCS7 or CERTIFICATE header", nameof(data));
+                }
 
                 return new X509Certificate2Collection(cert);
             }
@@ -47,7 +51,9 @@ namespace SignService.Utils
                 {
                     var line = sr.ReadLine();
                     if (!line.StartsWith("-----"))
+                    {
                         lines.Add(line);
+                    }
                 }
                 var certLines = string.Join("", lines);
                 data = Convert.FromBase64String(certLines);
@@ -73,8 +79,10 @@ namespace SignService.Utils
                 }
             }
 
-            if(bestCertificate == null)
+            if (bestCertificate == null)
+            {
                 throw new ArgumentException("No certificates found in the file", nameof(data));
+            }
 
             return bestCertificate;
         }

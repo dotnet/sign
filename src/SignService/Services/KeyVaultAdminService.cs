@@ -3,19 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Management.KeyVault;
+using Microsoft.Azure.Management.KeyVault.Models;
 using Microsoft.Extensions.Options;
-using SignService.Utils;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using SignService.Models;
-using Microsoft.Azure.Management.KeyVault.Models;
-using Microsoft.Rest;
+using SignService.Utils;
 
 namespace SignService.Services
 {
@@ -46,12 +44,12 @@ namespace SignService.Services
         readonly IApplicationConfiguration applicationConfiguration;
         readonly ResourceIds resources;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, 
-                                    IOptionsSnapshot<AdminConfig> adminConfig, 
-                                    IOptionsSnapshot<ResourceIds> resources, 
-                                    IGraphHttpService graphHttpService, 
+        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions,
+                                    IOptionsSnapshot<AdminConfig> adminConfig,
+                                    IOptionsSnapshot<ResourceIds> resources,
+                                    IGraphHttpService graphHttpService,
                                     IApplicationConfiguration applicationConfiguration,
-                                    IUser user, 
+                                    IUser user,
                                     IHttpContextAccessor contextAccessor)
         {
             userId = user.ObjectId;
@@ -121,10 +119,10 @@ namespace SignService.Services
         public async Task<VaultModel> GetVaultAsync(string vaultName)
         {
             var vault = await kvManagmentClient.Vaults.GetAsync(resourceGroup, vaultName).ConfigureAwait(false);
-            
+
             return ToVaultModel(vault);
         }
-        
+
         public async Task<VaultModel> CreateVaultForUserAsync(string objectId, string upn, string displayName)
         {
             // Get the service principal id for this application since we'll need it
@@ -260,7 +258,7 @@ namespace SignService.Services
             {
                 client.SubscriptionId = adminConfig.SubscriptionId;
                 var vault = await client.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
-                
+
                 return ToVaultModel(vault);
             }
         }
@@ -297,15 +295,15 @@ namespace SignService.Services
 
             // only get the ones where we don't have a cert
             var keyDict = totalKeys.ToDictionary(ki => ki.Kid.Substring(ki.Kid.LastIndexOf("/") + 1));
-            
+
             var models = totalItems
                 .Select(ci => new CertificateModel
-            {
-                Name =  ci.Id.Substring(ci.Id.LastIndexOf("/") + 1),
-                CertificateIdentifier = ci.Identifier.Identifier,
-                Thumbprint = BitConverter.ToString(ci.X509Thumbprint).Replace("-", ""),
-                Attributes = ci.Attributes
-            }).ToList();
+                {
+                    Name = ci.Id.Substring(ci.Id.LastIndexOf("/") + 1),
+                    CertificateIdentifier = ci.Identifier.Identifier,
+                    Thumbprint = BitConverter.ToString(ci.X509Thumbprint).Replace("-", ""),
+                    Attributes = ci.Attributes
+                }).ToList();
 
             foreach (var model in models)
             {
@@ -399,6 +397,6 @@ namespace SignService.Services
             return model;
         }
 
-     
+
     }
 }

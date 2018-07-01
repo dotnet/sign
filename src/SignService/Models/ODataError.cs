@@ -6,7 +6,7 @@ namespace SignService.Models
     {
         [JsonProperty(PropertyName = "code")]
         public string Code { get; set; }
-        
+
         [JsonProperty(PropertyName = "message")]
         public ODataErrorMessage Message { get; set; }
 

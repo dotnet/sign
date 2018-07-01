@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -44,7 +43,7 @@ namespace SignService.Services
             var authContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", null);
             var clientCredentials = new ClientCredential(azureAdOptions.Value.ClientId, azureAdOptions.Value.ClientSecret);
 
-            
+
             // Use Graph to populate the Application Object Id and the Primary Domain
             var graphClient = new ActiveDirectoryClient(new Uri($"{adminConfig.Value.GraphInstance}{azureAdOptions.Value.TenantId}"),
                                                         async () =>
@@ -53,7 +52,7 @@ namespace SignService.Services
                                                             return result.AccessToken;
                                                         });
 
-            
+
 
             var tenantDetails = await graphClient.TenantDetails.ExecuteAsync();
             var domains = tenantDetails.CurrentPage.First().VerifiedDomains;
@@ -64,11 +63,11 @@ namespace SignService.Services
             var clientId = azureAdOptions.Value.ClientId;
             var app = await graphClient.Applications.Where(a => a.AppId == clientId).ExecuteSingleAsync();
 
-            
+
             ApplicationObjectId = app.ObjectId;
 
             logger.LogInformation("Found ApplicationObjectId {ApplicationObjectId} for ClientId {ClientId}", ApplicationObjectId, clientId);
-            
+
 
             var armAccessToken = await authContext.AcquireTokenAsync(resourceIds.Value.AzureRM, clientCredentials);
             var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))

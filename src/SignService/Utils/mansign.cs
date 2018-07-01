@@ -8,18 +8,15 @@
 // mansign.cs
 //
 
-using System;
-using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Security.Cryptography.Xml;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
-using System.Runtime.InteropServices;
-
-using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 using Microsoft.Azure.KeyVault;
+using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 // From: https://github.com/Microsoft/referencesource/blob/7de0d30c7c5ef56ab60fee41fcdb50005d24979a/inc/mansign.cs
 
@@ -31,7 +28,7 @@ using Microsoft.Azure.KeyVault;
 namespace System.Deployment.Internal.CodeSigning
 {
 
-    internal static class Win32
+    static class Win32
     {
         //
         // PInvoke dll's.
@@ -53,7 +50,7 @@ namespace System.Deployment.Internal.CodeSigning
         //
         // Constants.
         //
-        internal const int S_OK = unchecked((int)0x00000000);
+        internal const int S_OK = unchecked(0x00000000);
         internal const int NTE_BAD_KEY = unchecked((int)0x80090003);
 
         // Trust errors.
@@ -77,18 +74,18 @@ namespace System.Deployment.Internal.CodeSigning
 
 
         // Values for dwFlags of CertVerifyAuthenticodeLicense.
-        internal const int AXL_REVOCATION_NO_CHECK = unchecked((int)0x00000001);
-        internal const int AXL_REVOCATION_CHECK_END_CERT_ONLY = unchecked((int)0x00000002);
-        internal const int AXL_REVOCATION_CHECK_ENTIRE_CHAIN = unchecked((int)0x00000004);
-        internal const int AXL_URL_CACHE_ONLY_RETRIEVAL = unchecked((int)0x00000008);
-        internal const int AXL_LIFETIME_SIGNING = unchecked((int)0x00000010);
-        internal const int AXL_TRUST_MICROSOFT_ROOT_ONLY = unchecked((int)0x00000020);
+        internal const int AXL_REVOCATION_NO_CHECK = unchecked(0x00000001);
+        internal const int AXL_REVOCATION_CHECK_END_CERT_ONLY = unchecked(0x00000002);
+        internal const int AXL_REVOCATION_CHECK_ENTIRE_CHAIN = unchecked(0x00000004);
+        internal const int AXL_URL_CACHE_ONLY_RETRIEVAL = unchecked(0x00000008);
+        internal const int AXL_LIFETIME_SIGNING = unchecked(0x00000010);
+        internal const int AXL_TRUST_MICROSOFT_ROOT_ONLY = unchecked(0x00000020);
 
         // Wintrust Policy Flag
         //  These are set during install and can be modified by the user
         //  through various means.  The SETREG.EXE utility (found in the Authenticode
         //  Tools Pack) will select/deselect each of them.
-        internal const int WTPF_IGNOREREVOKATION = (int)0x00000200;  // Do revocation check
+        internal const int WTPF_IGNOREREVOKATION = 0x00000200;  // Do revocation check
 
         // The default WinVerifyTrust Authenticode policy is to treat all time stamped
         // signatures as being valid forever. This OID limits the valid lifetime of the
@@ -135,26 +132,26 @@ namespace System.Deployment.Internal.CodeSigning
         // DllImport declarations.
         //
         [DllImport(KERNEL32, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         IntPtr GetProcessHeap();
 
         [DllImport(KERNEL32, CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal extern static
+        internal static extern
         bool HeapFree(
             [In]    IntPtr hHeap,
             [In]    uint dwFlags,
             [In]    IntPtr lpMem);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int CertTimestampAuthenticodeLicense(
             [In]      ref CRYPT_DATA_BLOB pSignedLicenseBlob,
             [In]      string pwszTimestampURI,
             [In, Out]  ref CRYPT_DATA_BLOB pTimestampSignatureBlob);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int CertVerifyAuthenticodeLicense(
             [In]      ref CRYPT_DATA_BLOB pLicenseBlob,
             [In]      uint dwFlags,
@@ -162,38 +159,38 @@ namespace System.Deployment.Internal.CodeSigning
             [In, Out]  ref AXL_TIMESTAMPER_INFO pTimestamperInfo);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int CertFreeAuthenticodeSignerInfo(
             [In]      ref AXL_SIGNER_INFO pSignerInfo);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int CertFreeAuthenticodeTimestamperInfo(
             [In]      ref AXL_TIMESTAMPER_INFO pTimestamperInfo);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int _AxlGetIssuerPublicKeyHash(
             [In]     IntPtr pCertContext,
             [In, Out] ref IntPtr ppwszPublicKeyHash);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int _AxlRSAKeyValueToPublicKeyToken(
             [In]     ref CRYPT_DATA_BLOB pModulusBlob,
             [In]     ref CRYPT_DATA_BLOB pExponentBlob,
             [In, Out] ref IntPtr ppwszPublicKeyToken);
 
         [DllImport(MSCORWKS, CharSet = CharSet.Auto, SetLastError = true)]
-        internal extern static
+        internal static extern
         int _AxlPublicKeyBlobToPublicKeyToken(
             [In]     ref CRYPT_DATA_BLOB pCspPublicKeyBlob,
             [In, Out] ref IntPtr ppwszPublicKeyToken);
     }
 
-    internal class ManifestSignedXml : SignedXml
+    class ManifestSignedXml : SignedXml
     {
-        private bool m_verify = false;
+        readonly bool m_verify = false;
 
         internal ManifestSignedXml() : base() { }
         internal ManifestSignedXml(XmlElement elem) : base(elem) { }
@@ -204,17 +201,25 @@ namespace System.Deployment.Internal.CodeSigning
             m_verify = verify;
         }
 
-        private static XmlElement FindIdElement(XmlElement context, string idValue)
+        static XmlElement FindIdElement(XmlElement context, string idValue)
         {
             if (context == null)
+            {
                 return null;
+            }
 
-            XmlElement idReference = context.SelectSingleNode("//*[@Id=\"" + idValue + "\"]") as XmlElement;
+            var idReference = context.SelectSingleNode("//*[@Id=\"" + idValue + "\"]") as XmlElement;
             if (idReference != null)
+            {
                 return idReference;
+            }
+
             idReference = context.SelectSingleNode("//*[@id=\"" + idValue + "\"]") as XmlElement;
             if (idReference != null)
+            {
                 return idReference;
+            }
+
             return context.SelectSingleNode("//*[@ID=\"" + idValue + "\"]") as XmlElement;
         }
 
@@ -222,27 +227,35 @@ namespace System.Deployment.Internal.CodeSigning
         {
             // We only care about Id references inside of the KeyInfo section
             if (m_verify)
+            {
                 return base.GetIdElement(document, idValue);
+            }
 
-            KeyInfo keyInfo = this.KeyInfo;
+            var keyInfo = this.KeyInfo;
             if (keyInfo.Id != idValue)
+            {
                 return null;
+            }
+
             return keyInfo.GetXml();
         }
     }
 
-    internal class SignedCmiManifest
+    class SignedCmiManifest
     {
-        private XmlDocument m_manifestDom = null;
-        private CmiStrongNameSignerInfo m_strongNameSignerInfo = null;
-        private CmiAuthenticodeSignerInfo m_authenticodeSignerInfo = null;
+        XmlDocument m_manifestDom = null;
+        CmiStrongNameSignerInfo m_strongNameSignerInfo = null;
+        CmiAuthenticodeSignerInfo m_authenticodeSignerInfo = null;
 
-        private SignedCmiManifest() { }
+        SignedCmiManifest() { }
 
         internal SignedCmiManifest(XmlDocument manifestDom)
         {
             if (manifestDom == null)
+            {
                 throw new ArgumentNullException("manifestDom");
+            }
+
             m_manifestDom = manifestDom;
         }
 
@@ -294,16 +307,16 @@ namespace System.Deployment.Internal.CodeSigning
             m_strongNameSignerInfo = null;
             m_authenticodeSignerInfo = null;
 
-            XmlNamespaceManager nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
-            XmlElement signatureNode = m_manifestDom.SelectSingleNode("//ds:Signature", nsm) as XmlElement;
+            var signatureNode = m_manifestDom.SelectSingleNode("//ds:Signature", nsm) as XmlElement;
             if (signatureNode == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_NOSIGNATURE);
             }
 
             // Make sure it is indeed SN signature, and it is an enveloped signature.
-            string snIdName = "Id";
+            var snIdName = "Id";
             if (!signatureNode.HasAttribute(snIdName))
             {
                 snIdName = "id";
@@ -317,7 +330,7 @@ namespace System.Deployment.Internal.CodeSigning
                 }
             }
 
-            string snIdValue = signatureNode.GetAttribute(snIdName);
+            var snIdValue = signatureNode.GetAttribute(snIdName);
             if (snIdValue == null ||
                 String.Compare(snIdValue, "StrongNameSignature", StringComparison.Ordinal) != 0)
             {
@@ -325,28 +338,28 @@ namespace System.Deployment.Internal.CodeSigning
             }
 
             // Make sure it is indeed an enveloped signature.
-            bool oldFormat = false;
-            bool validFormat = false;
-            XmlNodeList referenceNodes = signatureNode.SelectNodes("ds:SignedInfo/ds:Reference", nsm);
+            var oldFormat = false;
+            var validFormat = false;
+            var referenceNodes = signatureNode.SelectNodes("ds:SignedInfo/ds:Reference", nsm);
             foreach (XmlNode referenceNode in referenceNodes)
             {
-                XmlElement reference = referenceNode as XmlElement;
+                var reference = referenceNode as XmlElement;
                 if (reference != null && reference.HasAttribute("URI"))
                 {
-                    string uriValue = reference.GetAttribute("URI");
+                    var uriValue = reference.GetAttribute("URI");
                     if (uriValue != null)
                     {
                         // We expect URI="" (empty URI value which means to hash the entire document).
                         if (uriValue.Length == 0)
                         {
-                            XmlNode transformsNode = reference.SelectSingleNode("ds:Transforms", nsm);
+                            var transformsNode = reference.SelectSingleNode("ds:Transforms", nsm);
                             if (transformsNode == null)
                             {
                                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
                             }
 
                             // Make sure the transforms are what we expected.
-                            XmlNodeList transforms = transformsNode.SelectNodes("ds:Transform", nsm);
+                            var transforms = transformsNode.SelectNodes("ds:Transform", nsm);
                             if (transforms.Count < 2)
                             {
                                 // We expect at least:
@@ -355,12 +368,12 @@ namespace System.Deployment.Internal.CodeSigning
                                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
                             }
 
-                            bool c14 = false;
-                            bool enveloped = false;
-                            for (int i = 0; i < transforms.Count; i++)
+                            var c14 = false;
+                            var enveloped = false;
+                            for (var i = 0; i < transforms.Count; i++)
                             {
-                                XmlElement transform = transforms[i] as XmlElement;
-                                string algorithm = transform.GetAttribute("Algorithm");
+                                var transform = transforms[i] as XmlElement;
+                                var algorithm = transform.GetAttribute("Algorithm");
                                 if (algorithm == null)
                                 {
                                     break;
@@ -390,14 +403,14 @@ namespace System.Deployment.Internal.CodeSigning
                         {
                             oldFormat = true;
 
-                            XmlNode transformsNode = referenceNode.SelectSingleNode("ds:Transforms", nsm);
+                            var transformsNode = referenceNode.SelectSingleNode("ds:Transforms", nsm);
                             if (transformsNode == null)
                             {
                                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
                             }
 
                             // Make sure the transforms are what we expected.
-                            XmlNodeList transforms = transformsNode.SelectNodes("ds:Transform", nsm);
+                            var transforms = transformsNode.SelectNodes("ds:Transform", nsm);
                             if (transforms.Count < 1)
                             {
                                 // We expect at least:
@@ -405,10 +418,10 @@ namespace System.Deployment.Internal.CodeSigning
                                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
                             }
 
-                            for (int i = 0; i < transforms.Count; i++)
+                            for (var i = 0; i < transforms.Count; i++)
                             {
-                                XmlElement transform = transforms[i] as XmlElement;
-                                string algorithm = transform.GetAttribute("Algorithm");
+                                var transform = transforms[i] as XmlElement;
+                                var algorithm = transform.GetAttribute("Algorithm");
                                 if (algorithm == null)
                                 {
                                     break;
@@ -431,18 +444,18 @@ namespace System.Deployment.Internal.CodeSigning
             }
 
             // It is the DSig we want, now make sure the public key matches the token.
-            string publicKeyToken = VerifyPublicKeyToken();
+            var publicKeyToken = VerifyPublicKeyToken();
 
             // OK. We found the SN signature with matching public key token, so
             // instantiate the SN signer info property.
             m_strongNameSignerInfo = new CmiStrongNameSignerInfo(Win32.TRUST_E_FAIL, publicKeyToken);
 
             // Now verify the SN signature, and Authenticode license if available.
-            ManifestSignedXml signedXml = new ManifestSignedXml(m_manifestDom, true);
+            var signedXml = new ManifestSignedXml(m_manifestDom, true);
             signedXml.LoadXml(signatureNode);
 
             AsymmetricAlgorithm key = null;
-            bool dsigValid = signedXml.CheckSignatureReturningKey(out key);
+            var dsigValid = signedXml.CheckSignatureReturningKey(out key);
             m_strongNameSignerInfo.PublicKey = key;
             if (!dsigValid)
             {
@@ -476,9 +489,9 @@ namespace System.Deployment.Internal.CodeSigning
         //
         // Privates.
         //
-        private void VerifyLicense(CmiManifestVerifyFlags verifyFlags, bool oldFormat)
+        void VerifyLicense(CmiManifestVerifyFlags verifyFlags, bool oldFormat)
         {
-            XmlNamespaceManager nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
             nsm.AddNamespace("asm2", AssemblyV2NamespaceUri);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
@@ -487,7 +500,7 @@ namespace System.Deployment.Internal.CodeSigning
             nsm.AddNamespace("as", AuthenticodeNamespaceUri);
 
             // We are done if no license.
-            XmlElement licenseNode = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/msrel:RelData/r:license", nsm) as XmlElement;
+            var licenseNode = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/msrel:RelData/r:license", nsm) as XmlElement;
             if (licenseNode == null)
             {
                 return;
@@ -501,19 +514,19 @@ namespace System.Deployment.Internal.CodeSigning
 
             unsafe
             {
-                byte[] licenseXml = Encoding.UTF8.GetBytes(licenseNode.OuterXml);
+                var licenseXml = Encoding.UTF8.GetBytes(licenseNode.OuterXml);
                 fixed (byte* pbLicense = licenseXml)
                 {
-                    Win32.AXL_SIGNER_INFO signerInfo = new Win32.AXL_SIGNER_INFO();
+                    var signerInfo = new Win32.AXL_SIGNER_INFO();
                     signerInfo.cbSize = (uint)Marshal.SizeOf(typeof(Win32.AXL_SIGNER_INFO));
-                    Win32.AXL_TIMESTAMPER_INFO timestamperInfo = new Win32.AXL_TIMESTAMPER_INFO();
+                    var timestamperInfo = new Win32.AXL_TIMESTAMPER_INFO();
                     timestamperInfo.cbSize = (uint)Marshal.SizeOf(typeof(Win32.AXL_TIMESTAMPER_INFO));
-                    Win32.CRYPT_DATA_BLOB licenseBlob = new Win32.CRYPT_DATA_BLOB();
-                    IntPtr pvLicense = new IntPtr(pbLicense);
+                    var licenseBlob = new Win32.CRYPT_DATA_BLOB();
+                    var pvLicense = new IntPtr(pbLicense);
                     licenseBlob.cbData = (uint)licenseXml.Length;
                     licenseBlob.pbData = pvLicense;
 
-                    int hr = Win32.CertVerifyAuthenticodeLicense(ref licenseBlob, (uint)verifyFlags, ref signerInfo, ref timestamperInfo);
+                    var hr = Win32.CertVerifyAuthenticodeLicense(ref licenseBlob, (uint)verifyFlags, ref signerInfo, ref timestamperInfo);
                     if (Win32.TRUST_E_NOSIGNATURE != (int)signerInfo.dwError)
                     {
                         m_authenticodeSignerInfo = new CmiAuthenticodeSignerInfo(signerInfo, timestamperInfo);
@@ -532,25 +545,30 @@ namespace System.Deployment.Internal.CodeSigning
 
 #if (true) //
             if (!oldFormat)
+            {
 #endif
                 // Make sure we have the intended Authenticode signer.
                 VerifyPublisherIdentity(nsm);
+            }
         }
 
-        private XmlElement ExtractPrincipalFromManifest()
+        XmlElement ExtractPrincipalFromManifest()
         {
-            XmlNamespaceManager nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
-            XmlNode assemblyIdentityNode = m_manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm);
+            var assemblyIdentityNode = m_manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm);
             if (assemblyIdentityNode == null)
+            {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
+            }
+
             return assemblyIdentityNode as XmlElement;
         }
 
-        private void VerifyAssemblyIdentity(XmlNamespaceManager nsm)
+        void VerifyAssemblyIdentity(XmlNamespaceManager nsm)
         {
-            XmlElement assemblyIdentity = m_manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
-            XmlElement principal = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/msrel:RelData/r:license/r:grant/as:ManifestInformation/as:assemblyIdentity", nsm) as XmlElement;
+            var assemblyIdentity = m_manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
+            var principal = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/msrel:RelData/r:license/r:grant/as:ManifestInformation/as:assemblyIdentity", nsm) as XmlElement;
 
             if (assemblyIdentity == null || principal == null ||
                 !assemblyIdentity.HasAttributes || !principal.HasAttributes)
@@ -558,7 +576,7 @@ namespace System.Deployment.Internal.CodeSigning
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
-            XmlAttributeCollection asmIdAttrs = assemblyIdentity.Attributes;
+            var asmIdAttrs = assemblyIdentity.Attributes;
 
             if (asmIdAttrs.Count == 0 || asmIdAttrs.Count != principal.Attributes.Count)
             {
@@ -577,7 +595,7 @@ namespace System.Deployment.Internal.CodeSigning
             VerifyHash(nsm);
         }
 
-        private void VerifyPublisherIdentity(XmlNamespaceManager nsm)
+        void VerifyPublisherIdentity(XmlNamespaceManager nsm)
         {
             // Nothing to do if no signature.
             if (m_authenticodeSignerInfo.ErrorCode == Win32.TRUST_E_NOSIGNATURE)
@@ -585,10 +603,10 @@ namespace System.Deployment.Internal.CodeSigning
                 return;
             }
 
-            X509Certificate2 signerCert = m_authenticodeSignerInfo.SignerChain.ChainElements[0].Certificate;
+            var signerCert = m_authenticodeSignerInfo.SignerChain.ChainElements[0].Certificate;
 
             // Find the publisherIdentity element.
-            XmlElement publisherIdentity = m_manifestDom.SelectSingleNode("asm:assembly/asm2:publisherIdentity", nsm) as XmlElement;
+            var publisherIdentity = m_manifestDom.SelectSingleNode("asm:assembly/asm2:publisherIdentity", nsm) as XmlElement;
             if (publisherIdentity == null || !publisherIdentity.HasAttributes)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
@@ -600,18 +618,18 @@ namespace System.Deployment.Internal.CodeSigning
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
-            string publisherName = publisherIdentity.GetAttribute("name");
-            string publisherIssuerKeyHash = publisherIdentity.GetAttribute("issuerKeyHash");
+            var publisherName = publisherIdentity.GetAttribute("name");
+            var publisherIssuerKeyHash = publisherIdentity.GetAttribute("issuerKeyHash");
 
             // Calculate the issuer key hash.
-            IntPtr pIssuerKeyHash = new IntPtr();
-            int hr = Win32._AxlGetIssuerPublicKeyHash(signerCert.Handle, ref pIssuerKeyHash);
+            var pIssuerKeyHash = new IntPtr();
+            var hr = Win32._AxlGetIssuerPublicKeyHash(signerCert.Handle, ref pIssuerKeyHash);
             if (hr != Win32.S_OK)
             {
                 throw new CryptographicException(hr);
             }
 
-            string issuerKeyHash = Marshal.PtrToStringUni(pIssuerKeyHash);
+            var issuerKeyHash = Marshal.PtrToStringUni(pIssuerKeyHash);
             Win32.HeapFree(Win32.GetProcessHeap(), 0, pIssuerKeyHash);
 
             // Make sure name and issuerKeyHash match.
@@ -622,14 +640,14 @@ namespace System.Deployment.Internal.CodeSigning
             }
         }
 
-        private void VerifyHash(XmlNamespaceManager nsm)
+        void VerifyHash(XmlNamespaceManager nsm)
         {
-            XmlDocument manifestDom = new XmlDocument();
+            var manifestDom = new XmlDocument();
             // We always preserve white space as Fusion XML engine always preserve white space.
             manifestDom.PreserveWhitespace = true;
             manifestDom = (XmlDocument)m_manifestDom.Clone();
 
-            XmlElement manifestInformation = manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/msrel:RelData/r:license/r:grant/as:ManifestInformation", nsm) as XmlElement;
+            var manifestInformation = manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/msrel:RelData/r:license/r:grant/as:ManifestInformation", nsm) as XmlElement;
             if (manifestInformation == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
@@ -640,7 +658,7 @@ namespace System.Deployment.Internal.CodeSigning
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
-            string hash = manifestInformation.GetAttribute("Hash");
+            var hash = manifestInformation.GetAttribute("Hash");
             if (hash == null || hash.Length == 0)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
@@ -650,7 +668,7 @@ namespace System.Deployment.Internal.CodeSigning
             // signature element.
 
             // First remove the Signture element from the DOM.
-            XmlElement dsElement = manifestDom.SelectSingleNode("asm:assembly/ds:Signature", nsm) as XmlElement;
+            var dsElement = manifestDom.SelectSingleNode("asm:assembly/ds:Signature", nsm) as XmlElement;
             if (dsElement == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
@@ -659,14 +677,14 @@ namespace System.Deployment.Internal.CodeSigning
             dsElement.ParentNode.RemoveChild(dsElement);
 
             // Now compute the hash from the manifest, without the Signature element.
-            byte[] hashBytes = HexStringToBytes(manifestInformation.GetAttribute("Hash"));
-            byte[] computedHashBytes = ComputeHashFromManifest(manifestDom);
+            var hashBytes = HexStringToBytes(manifestInformation.GetAttribute("Hash"));
+            var computedHashBytes = ComputeHashFromManifest(manifestDom);
 
             // Do they match?
             if (hashBytes.Length == 0 || hashBytes.Length != computedHashBytes.Length)
             {
 #if (true) // 
-                byte[] computedOldHashBytes = ComputeHashFromManifest(manifestDom, true);
+                var computedOldHashBytes = ComputeHashFromManifest(manifestDom, true);
 
                 // Do they match?
                 if (hashBytes.Length == 0 || hashBytes.Length != computedOldHashBytes.Length)
@@ -674,7 +692,7 @@ namespace System.Deployment.Internal.CodeSigning
                     throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                 }
 
-                for (int i = 0; i < hashBytes.Length; i++)
+                for (var i = 0; i < hashBytes.Length; i++)
                 {
                     if (hashBytes[i] != computedOldHashBytes[i])
                     {
@@ -686,12 +704,12 @@ namespace System.Deployment.Internal.CodeSigning
 #endif
             }
 
-            for (int i = 0; i < hashBytes.Length; i++)
+            for (var i = 0; i < hashBytes.Length; i++)
             {
                 if (hashBytes[i] != computedHashBytes[i])
                 {
 #if (true) // 
-                    byte[] computedOldHashBytes = ComputeHashFromManifest(manifestDom, true);
+                    var computedOldHashBytes = ComputeHashFromManifest(manifestDom, true);
 
                     // Do they match?
                     if (hashBytes.Length == 0 || hashBytes.Length != computedOldHashBytes.Length)
@@ -713,25 +731,25 @@ namespace System.Deployment.Internal.CodeSigning
             }
         }
 
-        private string VerifyPublicKeyToken()
+        string VerifyPublicKeyToken()
         {
-            XmlNamespaceManager nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(m_manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
 
-            XmlElement snModulus = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/ds:KeyValue/ds:RSAKeyValue/ds:Modulus", nsm) as XmlElement;
-            XmlElement snExponent = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/ds:KeyValue/ds:RSAKeyValue/ds:Exponent", nsm) as XmlElement;
+            var snModulus = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/ds:KeyValue/ds:RSAKeyValue/ds:Modulus", nsm) as XmlElement;
+            var snExponent = m_manifestDom.SelectSingleNode("asm:assembly/ds:Signature/ds:KeyInfo/ds:KeyValue/ds:RSAKeyValue/ds:Exponent", nsm) as XmlElement;
 
             if (snModulus == null || snExponent == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
-            byte[] modulus = Encoding.UTF8.GetBytes(snModulus.InnerXml);
-            byte[] exponent = Encoding.UTF8.GetBytes(snExponent.InnerXml);
+            var modulus = Encoding.UTF8.GetBytes(snModulus.InnerXml);
+            var exponent = Encoding.UTF8.GetBytes(snExponent.InnerXml);
 
-            string tokenString = GetPublicKeyToken(m_manifestDom);
-            byte[] publicKeyToken = HexStringToBytes(tokenString);
+            var tokenString = GetPublicKeyToken(m_manifestDom);
+            var publicKeyToken = HexStringToBytes(tokenString);
             byte[] computedPublicKeyToken;
 
             unsafe
@@ -740,9 +758,9 @@ namespace System.Deployment.Internal.CodeSigning
                 {
                     fixed (byte* pbExponent = exponent)
                     {
-                        Win32.CRYPT_DATA_BLOB modulusBlob = new Win32.CRYPT_DATA_BLOB();
-                        Win32.CRYPT_DATA_BLOB exponentBlob = new Win32.CRYPT_DATA_BLOB();
-                        IntPtr pComputedToken = new IntPtr();
+                        var modulusBlob = new Win32.CRYPT_DATA_BLOB();
+                        var exponentBlob = new Win32.CRYPT_DATA_BLOB();
+                        var pComputedToken = new IntPtr();
 
                         modulusBlob.cbData = (uint)modulus.Length;
                         modulusBlob.pbData = new IntPtr(pbModulus);
@@ -750,7 +768,7 @@ namespace System.Deployment.Internal.CodeSigning
                         exponentBlob.pbData = new IntPtr(pbExponent);
 
                         // Now compute the public key token.
-                        int hr = Win32._AxlRSAKeyValueToPublicKeyToken(ref modulusBlob, ref exponentBlob, ref pComputedToken);
+                        var hr = Win32._AxlRSAKeyValueToPublicKeyToken(ref modulusBlob, ref exponentBlob, ref pComputedToken);
                         if (hr != Win32.S_OK)
                         {
                             throw new CryptographicException(hr);
@@ -768,7 +786,7 @@ namespace System.Deployment.Internal.CodeSigning
                 throw new CryptographicException(Win32.TRUST_E_FAIL);
             }
 
-            for (int i = 0; i < publicKeyToken.Length; i++)
+            for (var i = 0; i < publicKeyToken.Length; i++)
             {
                 if (publicKeyToken[i] != computedPublicKeyToken[i])
                 {
@@ -782,43 +800,43 @@ namespace System.Deployment.Internal.CodeSigning
         //
         // Statics.
         //
-        private static void InsertPublisherIdentity(XmlDocument manifestDom, X509Certificate2 signerCert)
+        static void InsertPublisherIdentity(XmlDocument manifestDom, X509Certificate2 signerCert)
         {
 
-            XmlNamespaceManager nsm = new XmlNamespaceManager(manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
             nsm.AddNamespace("asm2", AssemblyV2NamespaceUri);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
 
-            XmlElement assembly = manifestDom.SelectSingleNode("asm:assembly", nsm) as XmlElement;
-            XmlElement assemblyIdentity = manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
+            var assembly = manifestDom.SelectSingleNode("asm:assembly", nsm) as XmlElement;
+            var assemblyIdentity = manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
             if (assemblyIdentity == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
             // Reuse existing node if exists
-            XmlElement publisherIdentity = manifestDom.SelectSingleNode("asm:assembly/asm2:publisherIdentity", nsm) as XmlElement;
+            var publisherIdentity = manifestDom.SelectSingleNode("asm:assembly/asm2:publisherIdentity", nsm) as XmlElement;
             if (publisherIdentity == null)
             {
                 // create new if not exist
                 publisherIdentity = manifestDom.CreateElement("publisherIdentity", AssemblyV2NamespaceUri);
             }
             // Get the issuer's public key blob hash.
-            IntPtr pIssuerKeyHash = new IntPtr();
-            int hr = Win32._AxlGetIssuerPublicKeyHash(signerCert.Handle, ref pIssuerKeyHash);
+            var pIssuerKeyHash = new IntPtr();
+            var hr = Win32._AxlGetIssuerPublicKeyHash(signerCert.Handle, ref pIssuerKeyHash);
             if (hr != Win32.S_OK)
             {
                 throw new CryptographicException(hr);
             }
 
-            string issuerKeyHash = Marshal.PtrToStringUni(pIssuerKeyHash);
+            var issuerKeyHash = Marshal.PtrToStringUni(pIssuerKeyHash);
             Win32.HeapFree(Win32.GetProcessHeap(), 0, pIssuerKeyHash);
 
             publisherIdentity.SetAttribute("name", signerCert.SubjectName.Name);
             publisherIdentity.SetAttribute("issuerKeyHash", issuerKeyHash);
 
-            XmlElement signature = manifestDom.SelectSingleNode("asm:assembly/ds:Signature", nsm) as XmlElement;
+            var signature = manifestDom.SelectSingleNode("asm:assembly/ds:Signature", nsm) as XmlElement;
             if (signature != null)
             {
                 assembly.InsertBefore(publisherIdentity, signature);
@@ -829,22 +847,24 @@ namespace System.Deployment.Internal.CodeSigning
             }
         }
 
-        private static void RemoveExistingSignature(XmlDocument manifestDom)
+        static void RemoveExistingSignature(XmlDocument manifestDom)
         {
-            XmlNamespaceManager nsm = new XmlNamespaceManager(manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
-            XmlNode signatureNode = manifestDom.SelectSingleNode("asm:assembly/ds:Signature", nsm);
+            var signatureNode = manifestDom.SelectSingleNode("asm:assembly/ds:Signature", nsm);
             if (signatureNode != null)
+            {
                 signatureNode.ParentNode.RemoveChild(signatureNode);
+            }
         }
 
-        private static void ReplacePublicKeyToken(XmlDocument manifestDom, AsymmetricAlgorithm snKey)
+        static void ReplacePublicKeyToken(XmlDocument manifestDom, AsymmetricAlgorithm snKey)
         {
             // Make sure we can find the publicKeyToken attribute.
-            XmlNamespaceManager nsm = new XmlNamespaceManager(manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
-            XmlElement assemblyIdentity = manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
+            var assemblyIdentity = manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
             if (assemblyIdentity == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
@@ -855,7 +875,7 @@ namespace System.Deployment.Internal.CodeSigning
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
-            byte[] cspPublicKeyBlob = ((RSACryptoServiceProvider)snKey).ExportCspBlob(false);
+            var cspPublicKeyBlob = ((RSACryptoServiceProvider)snKey).ExportCspBlob(false);
             if (cspPublicKeyBlob == null || cspPublicKeyBlob.Length == 0)
             {
                 throw new CryptographicException(Win32.NTE_BAD_KEY);
@@ -866,18 +886,18 @@ namespace System.Deployment.Internal.CodeSigning
             {
                 fixed (byte* pbPublicKeyBlob = cspPublicKeyBlob)
                 {
-                    Win32.CRYPT_DATA_BLOB publicKeyBlob = new Win32.CRYPT_DATA_BLOB();
+                    var publicKeyBlob = new Win32.CRYPT_DATA_BLOB();
                     publicKeyBlob.cbData = (uint)cspPublicKeyBlob.Length;
                     publicKeyBlob.pbData = new IntPtr(pbPublicKeyBlob);
-                    IntPtr pPublicKeyToken = new IntPtr();
+                    var pPublicKeyToken = new IntPtr();
 
-                    int hr = Win32._AxlPublicKeyBlobToPublicKeyToken(ref publicKeyBlob, ref pPublicKeyToken);
+                    var hr = Win32._AxlPublicKeyBlobToPublicKeyToken(ref publicKeyBlob, ref pPublicKeyToken);
                     if (hr != Win32.S_OK)
                     {
                         throw new CryptographicException(hr);
                     }
 
-                    string publicKeyToken = Marshal.PtrToStringUni(pPublicKeyToken);
+                    var publicKeyToken = Marshal.PtrToStringUni(pPublicKeyToken);
                     Win32.HeapFree(Win32.GetProcessHeap(), 0, pPublicKeyToken);
 
                     assemblyIdentity.SetAttribute("publicKeyToken", publicKeyToken);
@@ -885,13 +905,13 @@ namespace System.Deployment.Internal.CodeSigning
             }
         }
 
-        private static string GetPublicKeyToken(XmlDocument manifestDom)
+        static string GetPublicKeyToken(XmlDocument manifestDom)
         {
-            XmlNamespaceManager nsm = new XmlNamespaceManager(manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
 
-            XmlElement assemblyIdentity = manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
+            var assemblyIdentity = manifestDom.SelectSingleNode("asm:assembly/asm:assemblyIdentity", nsm) as XmlElement;
 
             if (assemblyIdentity == null || !assemblyIdentity.HasAttribute("publicKeyToken"))
             {
@@ -901,21 +921,21 @@ namespace System.Deployment.Internal.CodeSigning
             return assemblyIdentity.GetAttribute("publicKeyToken");
         }
 
-        private static byte[] ComputeHashFromManifest(XmlDocument manifestDom)
+        static byte[] ComputeHashFromManifest(XmlDocument manifestDom)
         {
 #if (true) // 
             return ComputeHashFromManifest(manifestDom, false);
         }
 
-        private static byte[] ComputeHashFromManifest(XmlDocument manifestDom, bool oldFormat)
+        static byte[] ComputeHashFromManifest(XmlDocument manifestDom, bool oldFormat)
         {
             if (oldFormat)
             {
-                XmlDsigExcC14NTransform exc = new XmlDsigExcC14NTransform();
+                var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(manifestDom);
-                using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
+                using (var sha1 = new SHA1CryptoServiceProvider())
                 {
-                    byte[] hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
+                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
                     if (hash == null)
                     {
                         throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
@@ -930,23 +950,23 @@ namespace System.Deployment.Internal.CodeSigning
                 // Since the DOM given to us is not guaranteed to be normalized,
                 // we need to normalize it ourselves. Also, we always preserve
                 // white space as Fusion XML engine always preserve white space.
-                XmlDocument normalizedDom = new XmlDocument();
+                var normalizedDom = new XmlDocument();
                 normalizedDom.PreserveWhitespace = true;
 
                 // Normalize the document
                 using (TextReader stringReader = new StringReader(manifestDom.OuterXml))
                 {
-                    XmlReaderSettings settings = new XmlReaderSettings();
+                    var settings = new XmlReaderSettings();
                     settings.DtdProcessing = DtdProcessing.Parse;
-                    XmlReader reader = XmlReader.Create(stringReader, settings, manifestDom.BaseURI);
+                    var reader = XmlReader.Create(stringReader, settings, manifestDom.BaseURI);
                     normalizedDom.Load(reader);
                 }
 
-                XmlDsigExcC14NTransform exc = new XmlDsigExcC14NTransform();
+                var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(normalizedDom);
-                using (SHA1CryptoServiceProvider sha1 = new SHA1CryptoServiceProvider())
+                using (var sha1 = new SHA1CryptoServiceProvider())
                 {
-                    byte[] hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
+                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
                     if (hash == null)
                     {
                         throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
@@ -959,12 +979,12 @@ namespace System.Deployment.Internal.CodeSigning
 #endif
         }
 
-        private const string AssemblyNamespaceUri = "urn:schemas-microsoft-com:asm.v1";
-        private const string AssemblyV2NamespaceUri = "urn:schemas-microsoft-com:asm.v2";
-        private const string MSRelNamespaceUri = "http://schemas.microsoft.com/windows/rel/2005/reldata";
-        private const string LicenseNamespaceUri = "urn:mpeg:mpeg21:2003:01-REL-R-NS";
-        private const string AuthenticodeNamespaceUri = "http://schemas.microsoft.com/windows/pki/2005/Authenticode";
-        private const string licenseTemplate = "<r:license xmlns:r=\"" + LicenseNamespaceUri + "\" xmlns:as=\"" + AuthenticodeNamespaceUri + "\">" +
+        const string AssemblyNamespaceUri = "urn:schemas-microsoft-com:asm.v1";
+        const string AssemblyV2NamespaceUri = "urn:schemas-microsoft-com:asm.v2";
+        const string MSRelNamespaceUri = "http://schemas.microsoft.com/windows/rel/2005/reldata";
+        const string LicenseNamespaceUri = "urn:mpeg:mpeg21:2003:01-REL-R-NS";
+        const string AuthenticodeNamespaceUri = "http://schemas.microsoft.com/windows/pki/2005/Authenticode";
+        const string licenseTemplate = "<r:license xmlns:r=\"" + LicenseNamespaceUri + "\" xmlns:as=\"" + AuthenticodeNamespaceUri + "\">" +
                                                     @"<r:grant>" +
                                                     @"<as:ManifestInformation>" +
                                                     @"<as:assemblyIdentity />" +
@@ -975,45 +995,45 @@ namespace System.Deployment.Internal.CodeSigning
                                                     @"</as:AuthenticodePublisher>" +
                                                     @"</r:grant><r:issuer></r:issuer></r:license>";
 
-        private static XmlDocument CreateLicenseDom(CmiManifestSigner signer, XmlElement principal, byte[] hash)
+        static XmlDocument CreateLicenseDom(CmiManifestSigner signer, XmlElement principal, byte[] hash)
         {
-            XmlDocument licenseDom = new XmlDocument();
+            var licenseDom = new XmlDocument();
             licenseDom.PreserveWhitespace = true;
             licenseDom.LoadXml(licenseTemplate);
-            XmlNamespaceManager nsm = new XmlNamespaceManager(licenseDom.NameTable);
+            var nsm = new XmlNamespaceManager(licenseDom.NameTable);
             nsm.AddNamespace("r", LicenseNamespaceUri);
             nsm.AddNamespace("as", AuthenticodeNamespaceUri);
-            XmlElement assemblyIdentityNode = licenseDom.SelectSingleNode("r:license/r:grant/as:ManifestInformation/as:assemblyIdentity", nsm) as XmlElement;
+            var assemblyIdentityNode = licenseDom.SelectSingleNode("r:license/r:grant/as:ManifestInformation/as:assemblyIdentity", nsm) as XmlElement;
             assemblyIdentityNode.RemoveAllAttributes();
             foreach (XmlAttribute attribute in principal.Attributes)
             {
                 assemblyIdentityNode.SetAttribute(attribute.Name, attribute.Value);
             }
 
-            XmlElement manifestInformationNode = licenseDom.SelectSingleNode("r:license/r:grant/as:ManifestInformation", nsm) as XmlElement;
+            var manifestInformationNode = licenseDom.SelectSingleNode("r:license/r:grant/as:ManifestInformation", nsm) as XmlElement;
 
             manifestInformationNode.SetAttribute("Hash", hash.Length == 0 ? "" : BytesToHexString(hash, 0, hash.Length));
             manifestInformationNode.SetAttribute("Description", signer.Description == null ? "" : signer.Description);
             manifestInformationNode.SetAttribute("Url", signer.DescriptionUrl == null ? "" : signer.DescriptionUrl);
 
-            XmlElement authenticodePublisherNode = licenseDom.SelectSingleNode("r:license/r:grant/as:AuthenticodePublisher/as:X509SubjectName", nsm) as XmlElement;
+            var authenticodePublisherNode = licenseDom.SelectSingleNode("r:license/r:grant/as:AuthenticodePublisher/as:X509SubjectName", nsm) as XmlElement;
             authenticodePublisherNode.InnerText = signer.Certificate.SubjectName.Name;
 
             return licenseDom;
         }
 
-        private static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner signer, string timeStampUrl)
+        static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner signer, string timeStampUrl)
         {
             // Make sure it is RSA, as this is the only one Fusion will support.
             //RSA rsaPublicKey = CngLightup.GetRSAPublicKey(signer.Certificate);
-            RSA rsaPublicKey = signer.Certificate.GetRSAPublicKey();
+            var rsaPublicKey = signer.Certificate.GetRSAPublicKey();
             if (rsaPublicKey == null)
             {
                 throw new NotSupportedException();
             }
 
             // Setup up XMLDSIG engine.
-            ManifestSignedXml signedXml = new ManifestSignedXml(licenseDom);
+            var signedXml = new ManifestSignedXml(licenseDom);
 
             // HACK: Fix in a better way
             if (signer.Certificate.HasPrivateKey)
@@ -1036,7 +1056,7 @@ namespace System.Deployment.Internal.CodeSigning
             signedXml.KeyInfo.AddClause(new KeyInfoX509Data(signer.Certificate, signer.IncludeOption));
 
             // Add the enveloped reference.
-            Reference reference = new Reference();
+            var reference = new Reference();
             reference.Uri = "";
 
             // Add an enveloped and an Exc-C14N transform.
@@ -1053,13 +1073,13 @@ namespace System.Deployment.Internal.CodeSigning
             signedXml.ComputeSignature();
 
             // Get the XML representation
-            XmlElement xmlDigitalSignature = signedXml.GetXml();
+            var xmlDigitalSignature = signedXml.GetXml();
             xmlDigitalSignature.SetAttribute("Id", "AuthenticodeSignature");
 
             // Insert the signature node under the issuer element.
-            XmlNamespaceManager nsm = new XmlNamespaceManager(licenseDom.NameTable);
+            var nsm = new XmlNamespaceManager(licenseDom.NameTable);
             nsm.AddNamespace("r", LicenseNamespaceUri);
-            XmlElement issuerNode = licenseDom.SelectSingleNode("r:license/r:issuer", nsm) as XmlElement;
+            var issuerNode = licenseDom.SelectSingleNode("r:license/r:issuer", nsm) as XmlElement;
             issuerNode.AppendChild(licenseDom.ImportNode(xmlDigitalSignature, true));
 
             // Time stamp it if requested.
@@ -1074,27 +1094,27 @@ namespace System.Deployment.Internal.CodeSigning
                                                              licenseDom.OuterXml + "</msrel:RelData>";
         }
 
-        private static void TimestampSignedLicenseDom(XmlDocument licenseDom, string timeStampUrl)
+        static void TimestampSignedLicenseDom(XmlDocument licenseDom, string timeStampUrl)
         {
-            Win32.CRYPT_DATA_BLOB timestampBlob = new Win32.CRYPT_DATA_BLOB();
+            var timestampBlob = new Win32.CRYPT_DATA_BLOB();
 
-            XmlNamespaceManager nsm = new XmlNamespaceManager(licenseDom.NameTable);
+            var nsm = new XmlNamespaceManager(licenseDom.NameTable);
             nsm.AddNamespace("r", LicenseNamespaceUri);
             nsm.AddNamespace("ds", SignedXml.XmlDsigNamespaceUrl);
             nsm.AddNamespace("as", AuthenticodeNamespaceUri);
 
-            byte[] licenseXml = Encoding.UTF8.GetBytes(licenseDom.OuterXml);
+            var licenseXml = Encoding.UTF8.GetBytes(licenseDom.OuterXml);
 
             unsafe
             {
                 fixed (byte* pbLicense = licenseXml)
                 {
-                    Win32.CRYPT_DATA_BLOB licenseBlob = new Win32.CRYPT_DATA_BLOB();
-                    IntPtr pvLicense = new IntPtr(pbLicense);
+                    var licenseBlob = new Win32.CRYPT_DATA_BLOB();
+                    var pvLicense = new IntPtr(pbLicense);
                     licenseBlob.cbData = (uint)licenseXml.Length;
                     licenseBlob.pbData = pvLicense;
 
-                    int hr = Win32.CertTimestampAuthenticodeLicense(ref licenseBlob, timeStampUrl, ref timestampBlob);
+                    var hr = Win32.CertTimestampAuthenticodeLicense(ref licenseBlob, timeStampUrl, ref timestampBlob);
                     if (hr != Win32.S_OK)
                     {
                         throw new CryptographicException(hr);
@@ -1102,23 +1122,23 @@ namespace System.Deployment.Internal.CodeSigning
                 }
             }
 
-            byte[] timestampSignature = new byte[timestampBlob.cbData];
+            var timestampSignature = new byte[timestampBlob.cbData];
             Marshal.Copy(timestampBlob.pbData, timestampSignature, 0, timestampSignature.Length);
             Win32.HeapFree(Win32.GetProcessHeap(), 0, timestampBlob.pbData);
 
-            XmlElement asTimestamp = licenseDom.CreateElement("as", "Timestamp", AuthenticodeNamespaceUri);
+            var asTimestamp = licenseDom.CreateElement("as", "Timestamp", AuthenticodeNamespaceUri);
             asTimestamp.InnerText = Encoding.UTF8.GetString(timestampSignature);
 
-            XmlElement dsObject = licenseDom.CreateElement("Object", SignedXml.XmlDsigNamespaceUrl);
+            var dsObject = licenseDom.CreateElement("Object", SignedXml.XmlDsigNamespaceUrl);
             dsObject.AppendChild(asTimestamp);
 
-            XmlElement signatureNode = licenseDom.SelectSingleNode("r:license/r:issuer/ds:Signature", nsm) as XmlElement;
+            var signatureNode = licenseDom.SelectSingleNode("r:license/r:issuer/ds:Signature", nsm) as XmlElement;
             signatureNode.AppendChild(dsObject);
         }
 
-        private static void StrongNameSignManifestDom(XmlDocument manifestDom, XmlDocument licenseDom, CmiManifestSigner signer)
+        static void StrongNameSignManifestDom(XmlDocument manifestDom, XmlDocument licenseDom, CmiManifestSigner signer)
         {
-            RSA snKey = signer.StrongNameKey as RSA;
+            var snKey = signer.StrongNameKey as RSA;
 
             // Make sure it is RSA, as this is the only one Fusion will support.
             if (snKey == null)
@@ -1127,18 +1147,18 @@ namespace System.Deployment.Internal.CodeSigning
             }
 
             // Setup namespace manager.
-            XmlNamespaceManager nsm = new XmlNamespaceManager(manifestDom.NameTable);
+            var nsm = new XmlNamespaceManager(manifestDom.NameTable);
             nsm.AddNamespace("asm", AssemblyNamespaceUri);
 
             // Get to root element.
-            XmlElement signatureParent = manifestDom.SelectSingleNode("asm:assembly", nsm) as XmlElement;
+            var signatureParent = manifestDom.SelectSingleNode("asm:assembly", nsm) as XmlElement;
             if (signatureParent == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
             }
 
             // Setup up XMLDSIG engine.
-            ManifestSignedXml signedXml = new ManifestSignedXml(signatureParent);
+            var signedXml = new ManifestSignedXml(signatureParent);
             signedXml.SigningKey = signer.StrongNameKey;
             signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
 
@@ -1151,7 +1171,7 @@ namespace System.Deployment.Internal.CodeSigning
             signedXml.KeyInfo.Id = "StrongNameKeyInfo";
 
             // Add the enveloped reference.
-            Reference enveloped = new Reference();
+            var enveloped = new Reference();
             enveloped.Uri = "";
 
             // Add an enveloped then Exc-C14N transform.
@@ -1170,21 +1190,21 @@ namespace System.Deployment.Internal.CodeSigning
             signedXml.ComputeSignature();
 
             // Get the XML representation
-            XmlElement xmlDigitalSignature = signedXml.GetXml();
+            var xmlDigitalSignature = signedXml.GetXml();
             xmlDigitalSignature.SetAttribute("Id", "StrongNameSignature");
 
             // Insert the signature now.
             signatureParent.AppendChild(xmlDigitalSignature);
         }
-        private static readonly char[] hexValues = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+        static readonly char[] hexValues = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-        private static string BytesToHexString(byte[] array, int start, int end)
+        static string BytesToHexString(byte[] array, int start, int end)
         {
             string result = null;
             if (array != null)
             {
-                char[] hexOrder = new char[(end - start) * 2];
-                int i = end;
+                var hexOrder = new char[(end - start) * 2];
+                var i = end;
                 int digit, j = 0;
                 while (i-- > start)
                 {
@@ -1198,12 +1218,12 @@ namespace System.Deployment.Internal.CodeSigning
             return result;
         }
 
-        private static byte[] HexStringToBytes(string hexString)
+        static byte[] HexStringToBytes(string hexString)
         {
-            uint cbHex = (uint)hexString.Length / 2;
-            byte[] hex = new byte[cbHex];
-            int i = hexString.Length - 2;
-            for (int index = 0; index < cbHex; index++)
+            var cbHex = (uint)hexString.Length / 2;
+            var hex = new byte[cbHex];
+            var i = hexString.Length - 2;
+            for (var index = 0; index < cbHex; index++)
             {
                 hex[index] = (byte)((HexToByte(hexString[i]) << 4) | HexToByte(hexString[i + 1]));
                 i -= 2;
@@ -1211,28 +1231,36 @@ namespace System.Deployment.Internal.CodeSigning
             return hex;
         }
 
-        private static byte HexToByte(char val)
+        static byte HexToByte(char val)
         {
             if (val <= '9' && val >= '0')
+            {
                 return (byte)(val - '0');
+            }
             else if (val >= 'a' && val <= 'f')
+            {
                 return (byte)((val - 'a') + 10);
+            }
             else if (val >= 'A' && val <= 'F')
+            {
                 return (byte)((val - 'A') + 10);
+            }
             else
+            {
                 return 0xFF;
+            }
         }
     }
 
     [Flags]
-    internal enum CmiManifestSignerFlag
+    enum CmiManifestSignerFlag
     {
         None = 0x00000000,
         DontReplacePublicKeyToken = 0x00000001
     }
 
     [Flags]
-    internal enum CmiManifestVerifyFlags
+    enum CmiManifestVerifyFlags
     {
         None = 0x00000000,
         RevocationNoCheck = 0x00000001,
@@ -1244,17 +1272,17 @@ namespace System.Deployment.Internal.CodeSigning
         StrongNameOnly = 0x00010000
     }
 
-    internal class CmiManifestSigner
+    class CmiManifestSigner
     {
-        private AsymmetricAlgorithm m_strongNameKey;
-        private X509Certificate2 m_certificate;
-        private string m_description;
-        private string m_url;
-        private X509Certificate2Collection m_certificates;
-        private X509IncludeOption m_includeOption;
-        private CmiManifestSignerFlag m_signerFlag;
+        readonly AsymmetricAlgorithm m_strongNameKey;
+        readonly X509Certificate2 m_certificate;
+        string m_description;
+        string m_url;
+        readonly X509Certificate2Collection m_certificates;
+        X509IncludeOption m_includeOption;
+        CmiManifestSignerFlag m_signerFlag;
 
-        private CmiManifestSigner() { }
+        CmiManifestSigner() { }
 
         internal CmiManifestSigner(AsymmetricAlgorithm strongNameKey) :
             this(strongNameKey, null)
@@ -1263,12 +1291,16 @@ namespace System.Deployment.Internal.CodeSigning
         internal CmiManifestSigner(AsymmetricAlgorithm strongNameKey, X509Certificate2 certificate)
         {
             if (strongNameKey == null)
+            {
                 throw new ArgumentNullException("strongNameKey");
+            }
 
 #if (true) // 
-            RSA rsa = strongNameKey as RSA;
+            var rsa = strongNameKey as RSA;
             if (rsa == null)
+            {
                 throw new ArgumentNullException("strongNameKey");
+            }
 #endif
             m_strongNameKey = strongNameKey;
             m_certificate = certificate;
@@ -1334,9 +1366,15 @@ namespace System.Deployment.Internal.CodeSigning
             set
             {
                 if (value < X509IncludeOption.None || value > X509IncludeOption.WholeChain)
+                {
                     throw new ArgumentException("value");
+                }
+
                 if (m_includeOption == X509IncludeOption.None)
+                {
                     throw new NotSupportedException();
+                }
+
                 m_includeOption = value;
             }
         }
@@ -1352,20 +1390,22 @@ namespace System.Deployment.Internal.CodeSigning
                 unchecked
                 {
                     if ((value & ((CmiManifestSignerFlag)~CimManifestSignerFlagMask)) != 0)
+                    {
                         throw new ArgumentException("value");
+                    }
                 }
                 m_signerFlag = value;
             }
         }
 
-        internal const uint CimManifestSignerFlagMask = (uint)0x00000001;
+        internal const uint CimManifestSignerFlagMask = 0x00000001;
     }
 
-    internal class CmiStrongNameSignerInfo
+    class CmiStrongNameSignerInfo
     {
-        private int m_error = 0;
-        private string m_publicKeyToken = null;
-        private AsymmetricAlgorithm m_snKey = null;
+        int m_error = 0;
+        string m_publicKeyToken = null;
+        AsymmetricAlgorithm m_snKey = null;
 
         internal CmiStrongNameSignerInfo() { }
 
@@ -1415,15 +1455,15 @@ namespace System.Deployment.Internal.CodeSigning
         }
     }
 
-    internal class CmiAuthenticodeSignerInfo
+    class CmiAuthenticodeSignerInfo
     {
-        private int m_error = 0;
-        private X509Chain m_signerChain = null;
-        private uint m_algHash = 0;
-        private string m_hash = null;
-        private string m_description = null;
-        private string m_descriptionUrl = null;
-        private CmiAuthenticodeTimestamperInfo m_timestamperInfo = null;
+        int m_error = 0;
+        X509Chain m_signerChain = null;
+        uint m_algHash = 0;
+        string m_hash = null;
+        string m_description = null;
+        string m_descriptionUrl = null;
+        readonly CmiAuthenticodeTimestamperInfo m_timestamperInfo = null;
 
         internal CmiAuthenticodeSignerInfo() { }
 
@@ -1541,20 +1581,20 @@ namespace System.Deployment.Internal.CodeSigning
         }
     }
 
-    internal class CmiAuthenticodeTimestamperInfo
+    class CmiAuthenticodeTimestamperInfo
     {
-        private int m_error = 0;
-        private X509Chain m_timestamperChain = null;
-        private DateTime m_timestampTime;
-        private uint m_algHash = 0;
+        readonly int m_error = 0;
+        readonly X509Chain m_timestamperChain = null;
+        readonly DateTime m_timestampTime;
+        readonly uint m_algHash = 0;
 
-        private CmiAuthenticodeTimestamperInfo() { }
+        CmiAuthenticodeTimestamperInfo() { }
 
         internal CmiAuthenticodeTimestamperInfo(Win32.AXL_TIMESTAMPER_INFO timestamperInfo)
         {
             m_error = (int)timestamperInfo.dwError;
             m_algHash = timestamperInfo.algHash;
-            long dt = (((long)(uint)timestamperInfo.ftTimestamp.dwHighDateTime) << 32) | ((long)(uint)timestamperInfo.ftTimestamp.dwLowDateTime);
+            var dt = (((long)(uint)timestamperInfo.ftTimestamp.dwHighDateTime) << 32) | (uint)timestamperInfo.ftTimestamp.dwLowDateTime;
             m_timestampTime = DateTime.FromFileTime(dt);
             if (timestamperInfo.pChainContext != IntPtr.Zero)
             {

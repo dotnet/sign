@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using SignService.Utils;
@@ -81,8 +79,10 @@ namespace SignService
                 var error = makeappx.StandardError.ReadToEnd();
                 logger.LogInformation("MakeAppx Out {MakeAppxOutput}", output);
 
-                if(!string.IsNullOrWhiteSpace(error))
+                if (!string.IsNullOrWhiteSpace(error))
+                {
                     logger.LogInformation("MakeAppx Err {MakeAppxError}", error);
+                }
 
                 if (!makeappx.WaitForExit(30 * 1000))
                 {

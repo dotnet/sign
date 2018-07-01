@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,8 +20,8 @@ namespace SignService.SigningTools
         readonly string makeappxPath;
 
 
-        public SigningToolAggregate(IEnumerable<ICodeSignService> services, 
-                                    IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles, 
+        public SigningToolAggregate(IEnumerable<ICodeSignService> services,
+                                    IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles,
                                     ILogger<SigningToolAggregate> logger)
         {
             this.logger = logger;
@@ -64,7 +62,7 @@ namespace SignService.SigningTools
                 {
                     // Send the files from the archives through the aggregator to sign
                     await Submit(hashMode, name, description, descriptionUrl, allFiles, filter);
-                    
+
                     // After signing the contents, save the zip
                     // For NuPkg, this step removes the signature too, but that's ok as it'll get signed below
                     tempZips.ForEach(tz => tz.Save());
@@ -124,10 +122,11 @@ namespace SignService.SigningTools
                                     .Select(f => new { defaultCodeSignService, f })
                                     .GroupBy(a => a.defaultCodeSignService, k => k.f)
                                     .SingleOrDefault(); // one group here
-            
-            if(defaultFiles != null)
-                grouped.Add(defaultFiles);
 
+            if (defaultFiles != null)
+            {
+                grouped.Add(defaultFiles);
+            }
 
             await Task.WhenAll(grouped.Select(g => g.Key.Submit(hashMode, name, description, descriptionUrl, g.ToList(), filter)));
         }

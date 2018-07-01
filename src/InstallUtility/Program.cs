@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.ActiveDirectory.GraphClient;
+using Microsoft.Azure.ActiveDirectory.GraphClient.Extensions;
 using Microsoft.Azure.Management.Authorization;
 using Microsoft.Azure.Management.Authorization.Models;
 using Microsoft.Azure.Management.ResourceManager;
@@ -12,8 +14,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure.OData;
-using System.Text;
-using Microsoft.Azure.ActiveDirectory.GraphClient.Extensions;
 
 namespace InstallUtility
 {
@@ -24,8 +24,8 @@ namespace InstallUtility
         static AuthenticationResult authResult;
         static string graphResourceId;
         static string azureRmResourceId;
-        const string clientId = "1b730954-1685-4b74-9bfd-dac224a7b894";
-        static readonly Uri redirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
+        const string ClientId = "1b730954-1685-4b74-9bfd-dac224a7b894";
+        static readonly Uri RedirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
         static ActiveDirectoryClient graphClient;
         static string environment = string.Empty;
 
@@ -37,22 +37,22 @@ namespace InstallUtility
             configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
-            
+
             graphResourceId = configuration["AzureAd:GraphResourceId"];
             azureRmResourceId = configuration["AzureAd:AzureRmResourceId"];
             authContext = new AuthenticationContext(configuration["AzureAd:Instance"]);
 
             // Prompt here so we make sure we're in the right directory
-            var token = await authContext.AcquireTokenAsync(graphResourceId, clientId, redirectUri, new PlatformParameters(PromptBehavior.SelectAccount));
+            var token = await authContext.AcquireTokenAsync(graphResourceId, ClientId, RedirectUri, new PlatformParameters(PromptBehavior.SelectAccount));
             authResult = token;
 
-            if("f8cdef31-a31e-4b4a-93e4-5f571e91255a".Equals(token.TenantId, StringComparison.OrdinalIgnoreCase))
+            if ("f8cdef31-a31e-4b4a-93e4-5f571e91255a".Equals(token.TenantId, StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Microsoft Accounts's with the common endpoint are not supported. Update appsettings.json with your tenant-specific endpoint");
                 return;
             }
 
-            graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, clientId)).AccessToken);
+            graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, ClientId)).AccessToken);
 
             if (args.Length > 0)
             {
@@ -72,7 +72,7 @@ namespace InstallUtility
             {
                 a = await graphClient.Applications.Where(ia => ia.DisplayName.StartsWith(serverDisplayNamePrefix)).ExecuteAsync();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Guest users are not supported. You must be a member user.");
                 return;
@@ -103,7 +103,7 @@ namespace InstallUtility
 
                 Console.WriteLine("Created application");
             }
-            
+
             Console.WriteLine("Updating application....");
             var serverApp = await ConfigureApplication(applicationId);
             var clientApp = await EnsureClientAppExists(serverApp.application);
@@ -120,7 +120,7 @@ namespace InstallUtility
 
             // Need to create a resource group and grant the sign service application the Read permissions
             await CreateOrUpdateResourceGroup(serverApp.servicePrincipal);
-            
+
             // Print out relevant values
             PrintApplicationInfo(serverApp, password, clientApp);
 
@@ -132,7 +132,7 @@ namespace InstallUtility
         {
             // Get the admin role, 
             var role = serverApplication.AppRoles.First(r => r.Value == "admin_signservice");
-            
+
             var ara = new AppRoleAssignment
             {
                 PrincipalId = Guid.Parse(authResult.UserInfo.UniqueId),
@@ -162,11 +162,14 @@ namespace InstallUtility
             Console.Write("Resource Group Name (blank for default 'SignService-KeyVaults'): ");
             var name = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(name))
+            {
                 name = "SignService-KeyVaults";
+            }
+
             Console.WriteLine("Location (eastus, westus, etc): ");
             var location = Console.ReadLine();
 
-            var accessToken = await authContext.AcquireTokenSilentAsync(azureRmResourceId, clientId);
+            var accessToken = await authContext.AcquireTokenSilentAsync(azureRmResourceId, ClientId);
 
             var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken))
             {
@@ -213,10 +216,14 @@ namespace InstallUtility
             Console.WriteLine("__________________________");
             Console.WriteLine($"DisplayName:\t\t{server.application.DisplayName}");
             Console.WriteLine();
-            
+
             Console.WriteLine($"Audience:\t\t{server.application.IdentifierUris.First()}");
             Console.WriteLine($"ClientId:\t\t{server.application.AppId}");
-            if(password != null) Console.WriteLine($"ClientSecret:\t\t{password}");
+            if (password != null)
+            {
+                Console.WriteLine($"ClientSecret:\t\t{password}");
+            }
+
             Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
             Console.WriteLine("__________________________");
             Console.WriteLine();
@@ -226,7 +233,7 @@ namespace InstallUtility
             Console.WriteLine("__________________________");
             Console.WriteLine($"DisplayName:\t\t{client.application.DisplayName}");
             Console.WriteLine();
-            
+
             Console.WriteLine($"ClientId:\t\t{client.application.AppId}");
             Console.WriteLine($"TenantId:\t\t{authResult.TenantId}");
             Console.WriteLine($"Service ResourceId:\t{server.application.IdentifierUris.First()}");
@@ -244,8 +251,8 @@ namespace InstallUtility
 
                 var perms = await GetPermissionsToAddUpdate(new[]
                 {
-                (spid: server.servicePrincipal.ObjectId, permissions: serverData.permissions),
-                (spid: client.servicePrincipal.ObjectId, permissions: clientData.permissions)
+                (spid: server.servicePrincipal.ObjectId, serverData.permissions),
+                (spid: client.servicePrincipal.ObjectId, clientData.permissions)
             });
 
                 var roles = await GetAppRoleAssignmentsToAdd(new[]
@@ -256,7 +263,9 @@ namespace InstallUtility
 
                 // Nothing to do
                 if (perms.Count == 0 && roles.Count == 0)
+                {
                     return;
+                }
 
                 // Get the friendly text
                 var toConsent = serverData.permissions.Concat(clientData.permissions)
@@ -316,23 +325,23 @@ namespace InstallUtility
                     await sp.UpdateAsync();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("Do you do not appear to be a Global Admin. A global admin needs to run this utility or perform additional steps.");
                 Console.WriteLine("1. Press \"Grant Permissions\" on the Azure Portal for the two applications ");
                 Console.WriteLine("2. Add one or more users as a role on the sign service server application in the Enterprise Apps");
-                Console.WriteLine("3. On first run of the admin UI, click \"Register Extension attributes\" in the \"Adv Setup\" area" );
+                Console.WriteLine("3. On first run of the admin UI, click \"Register Extension attributes\" in the \"Adv Setup\" area");
             }
-            
+
         }
 
         static async Task<Dictionary<IServicePrincipal, List<AppRoleAssignment>>> GetAppRoleAssignmentsToAdd((IServicePrincipal principal, Dictionary<string, List<AppRole>> roles)[] inputs)
         {
             var output = new Dictionary<IServicePrincipal, List<AppRoleAssignment>>();
 
-            foreach (var input in inputs)
+            foreach (var (principal, roles) in inputs)
             {
-                foreach (var kvp in input.roles)
+                foreach (var kvp in roles)
                 {
                     var appid = kvp.Key;
                     var resourceSp = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).ExecuteSingleAsync();
@@ -341,20 +350,22 @@ namespace InstallUtility
                     // See if the assignment already exists
                     foreach (var role in kvp.Value)
                     {
-                        var assn = input.principal.AppRoleAssignments.CurrentPage.FirstOrDefault(ara => ara.Id == role.Id && ara.ResourceId == resourceSpid);
+                        var assn = principal.AppRoleAssignments.CurrentPage.FirstOrDefault(ara => ara.Id == role.Id && ara.ResourceId == resourceSpid);
                         if (assn != null)
+                        {
                             continue;
+                        }
 
-                        if (!output.TryGetValue(input.principal, out var list))
+                        if (!output.TryGetValue(principal, out var list))
                         {
                             list = new List<AppRoleAssignment>();
-                            output.Add(input.principal, list);
+                            output.Add(principal, list);
                         }
 
                         var a = new AppRoleAssignment
                         {
                             Id = role.Id,
-                            PrincipalId = new Guid(input.principal.ObjectId),
+                            PrincipalId = new Guid(principal.ObjectId),
                             ResourceId = resourceSpid,
                             PrincipalType = "ServicePrincipal"
                         };
@@ -509,7 +520,7 @@ namespace InstallUtility
 
             // Get the user_impersonation scope from the service
             var uis = serviceApplication.Oauth2Permissions.First(oa => oa.Value == "user_impersonation");
-            
+
             // Check to see if it has teh required resource access to the sign service
             var resource = app.RequiredResourceAccess.FirstOrDefault(rr => rr.ResourceAppId == serviceApplication.AppId);
             if (resource == null)
@@ -542,9 +553,9 @@ namespace InstallUtility
 
         static async Task<(IApplication application, IServicePrincipal servicePrincipal)> ConfigureApplication(Guid appObjId)
         {
-            
+
             var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
-            
+
             var app = await appFetcher.ExecuteAsync();
             var appExts = appFetcher.ExtensionProperties;
             var appsExtsList = await appExts.ExecuteAsync();
@@ -579,7 +590,7 @@ namespace InstallUtility
             }
 
             // Check for scopes and add if missing
-            var requiredResourceAccess = new[] 
+            var requiredResourceAccess = new[]
             {
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("311a71cc-e848-46a1-bdf8-97ff7156d8e6"), type: "Scope"),
                 (resource:"00000002-0000-0000-c000-000000000000", scope: new Guid("a42657d6-7f20-40e3-b6f0-cee03008a62a"), type: "Scope"),
@@ -669,20 +680,20 @@ namespace InstallUtility
                     }
                 }
             }
-            catch (Exception )
+            catch (Exception)
             {
                 // We'll get here if the user doesn't have permission to create extension attributes
                 Console.WriteLine("Warning: You do not have permission to create the required extension attributes, skipped.");
                 Console.WriteLine("A Global Admin must access the Admin UI, navigate to 'Adv Setup' and click on 'Register Extension Properties'");
             }
-            
+
 
             var serverSp = await EnsureServicePrincipalExists(app.AppId);
-            
+
             return (app, serverSp);
         }
 
-        async static Task<IServicePrincipal> EnsureServicePrincipalExists(string appid)
+        static async Task<IServicePrincipal> EnsureServicePrincipalExists(string appid)
         {
             // see if it exists already
             var sc = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).Expand(sp => sp.AppRoleAssignments).ExecuteAsync();
