@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -90,21 +91,28 @@ namespace SignClient
                             // Cannot use ADAL since there's no support for ROPC in .NET Core
                             var parameters = new Dictionary<string, string>
                             {
-                                {"resource", resourceId },
-                                {"client_id", clientId },
-                                {"grant_type", "password" },
-                                {"username", username.Value() },
-                                {"password", clientSecret.Value() },
+                                {"resource", resourceId},
+                                {"client_id", clientId},
+                                {"grant_type", "password"},
+                                {"username", username.Value()},
+                                {"password", clientSecret.Value()},
                             };
                             using (var adalClient = new HttpClient())
                             {
                                 var result = await adalClient.PostAsync($"{authority}/oauth2/token", new FormUrlEncodedContent(parameters));
 
                                 var res = await result.Content.ReadAsStringAsync();
-                                result.EnsureSuccessStatusCode();
-
+                                
                                 var jObj = JObject.Parse(res);
-                                var token = jObj["access_token"].Value<string>();
+
+                                if (!result.IsSuccessStatusCode)
+                                {
+                                    var desc = jObj["error_description"].Value<string>();
+                                    throw new AuthenticationException(desc);
+                                }
+
+                                var token = jObj["access_token"]
+                                    .Value<string>();
                                 return token;
                             }
                         }
@@ -145,6 +153,11 @@ namespace SignClient
                 {
                     await str.CopyToAsync(fs);
                 }
+            }
+            catch (AuthenticationException e)
+            {
+                signCommandLineApplication.Error.WriteLine(e.Message);
+                return EXIT_CODES.FAILED;
             }
             catch (Exception e)
             {
