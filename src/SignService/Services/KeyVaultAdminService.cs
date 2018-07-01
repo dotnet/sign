@@ -15,6 +15,7 @@ using SignService.Utils;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using SignService.Models;
 using Microsoft.Azure.Management.KeyVault.Models;
+using Microsoft.Rest;
 
 namespace SignService.Services
 {
@@ -59,7 +60,8 @@ namespace SignService.Services
 
             adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
             resourceGroup = adminConfig.Value.ResourceGroup;
-            kvManagmentClient = new KeyVaultManagementClient(new KeyVaultCredential(GetAppToken))
+
+            kvManagmentClient = new KeyVaultManagementClient(new AutoRestCredential<KeyVaultManagementClient>(GetAppToken))
             {
                 SubscriptionId = adminConfig.Value.SubscriptionId,
                 BaseUri = new Uri(adminConfig.Value.ArmInstance)
