@@ -16,9 +16,6 @@ variables:
   BuildConfiguration: Release
 
 steps:
-- task: DotNetCoreInstaller@0
-  inputs:
-    version: '2.1.300'
 
 - task: DotNetCoreCLI@2
   inputs:
@@ -36,7 +33,7 @@ steps:
     SignClientUser: $(SignClientUser)
     SignClientSecret: $(SignClientSecret)
     ArtifactDirectory: $(Build.ArtifactStagingDirectory)\Client
-  condition: eq(variables['system.pullrequest.isfork'], false)
+  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
 
 - task: PublishBuildArtifacts@1
   displayName: Publish SignClient Artifact
@@ -44,4 +41,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\Client
     artifactType: container
     artifactName: SignClient
-  condition: eq(variables['system.pullrequest.isfork'], false)
+  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))

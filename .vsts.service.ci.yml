@@ -15,28 +15,21 @@ variables:
   BuildConfiguration: Release
 
 steps:
-- task: BatchScript@1
+
+- task: DotNetCoreCLI@2
+  displayName: Copy sdk files locally before build
   inputs:
-    filename: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-    arguments: -no_logo
-    modifyEnvironment: true
-  displayName: Setup Environment Variables
+    projects: src/SignService/SignService.csproj
+    arguments: '-c $(BuildConfiguration) /t:PrebuildScript'
 
-- task: DotNetCoreInstaller@0
+- task: DotNetCoreCLI@2
+  displayName: Build and Publish
   inputs:
-    version: '2.1.300'
-
-- powershell: |
-    # Restore
-    msbuild /t:restore SignService.sln 
-
-    # Copy sdk files locally before build
-    msbuild src/SignService/SignService.csproj /t:PrebuildScript /p:Configuration=$(BuildConfiguration)
-
-    # Build service
-    msbuild src/SignService/SignService.csproj /p:Configuration=$(BuildConfiguration) /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactstagingdirectory)\website\" 
-
-  displayName: Build / Publish Service
+    command: publish
+    publishWebProjects: false
+    projects: src/SignService/SignService.csproj
+    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\'
+    zipAfterPublish: True
 
 - task: PublishBuildArtifacts@1
   displayName: Publish SignService Artifact
@@ -44,4 +37,4 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\website
     artifactType: container
     artifactName: SignService
-  condition: eq(variables['system.pullrequest.isfork'], false)
+  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
