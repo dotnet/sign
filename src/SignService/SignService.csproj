@@ -50,7 +50,7 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="2.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="1.1.19-g872c938b4e" />
+    <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="1.1.20-g952dff502d" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
     <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.4.1" />   
