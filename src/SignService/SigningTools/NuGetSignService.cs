@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using NuGetKeyVaultSignTool;
 using SignService.Services;
 using SignService.Utils;
+using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace SignService.SigningTools
 {
@@ -17,29 +18,22 @@ namespace SignService.SigningTools
         readonly IKeyVaultService keyVaultService;
         readonly ILogger<NuGetSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
-        readonly string signtoolPath;
         readonly string signToolName;
-
-        readonly ParallelOptions options = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 4
-        };
-
+        readonly SignCommand signCommand;
+        
         public NuGetSignService(IKeyVaultService keyVaultService,
-                                IHostingEnvironment hostingEnvironment,
                                 ILogger<NuGetSignService> logger,
                                 ITelemetryLogger telemetryLogger)
         {
             this.keyVaultService = keyVaultService;
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
-            signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\NuGetKeyVaultSignTool\\NuGetKeyVaultSignTool.exe");
-            signToolName = Path.GetFileName(signtoolPath);
+            signToolName = nameof(NuGetSignService);
+            signCommand = new SignCommand(logger);
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
-            // Explicitly put this on a thread because Parallel.ForEach blocks
-            await Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));
+            await SubmitInternal(hashMode, name, description, descriptionUrl, files);
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>
@@ -49,29 +43,32 @@ namespace SignService.SigningTools
         };
         public bool IsDefault { get; }
 
-        void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        async Task SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing NuGetKeyVaultSignTool job {0} with {1} files", name, files.Count());
 
-            var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
+            var keyVaultAccessToken = await keyVaultService.GetAccessTokenAsync();
 
-            var args = $@"-f -tr {keyVaultService.CertificateInfo.TimestampUrl} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
+            var args = new SignArgs
+            {
+                HashAlgorithm = HashAlgorithmName.SHA256,
+                TimestampUrl = keyVaultService.CertificateInfo.TimestampUrl,
+                PublicCertificate = await keyVaultService.GetCertificateAsync(),
+                Rsa = await keyVaultService.ToRSA()
+            };
 
-            Parallel.ForEach(files, options, (file, state) =>
+            var tasks = files.Select(file =>
             {
                 telemetryLogger.OnSignFile(file, signToolName);
-                var fileArgs = $@"sign ""{file}"" {args}";
-
-                if (!Sign(fileArgs))
-                {
-                    throw new Exception($"Could not sign {file}");
-                }
+                return Sign(file, args);
             });
+
+            await Task.WhenAll(tasks);
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
 
-        bool Sign(string args)
+        async Task<bool> Sign(string file, SignArgs args)
         {
             var retry = TimeSpan.FromSeconds(5);
             var attempt = 1;
@@ -80,10 +77,10 @@ namespace SignService.SigningTools
                 if (attempt > 1)
                 {
                     logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
-                    Thread.Sleep(retry);
+                    await Task.Delay(retry);
                 }
 
-                if (RunSignTool(args))
+                if (await RunSignTool(file, args))
                 {
                     logger.LogInformation($"Signed successfully");
                     return true;
@@ -97,76 +94,56 @@ namespace SignService.SigningTools
 
             logger.LogError($"Failed to sign. Attempts exceeded");
 
-            return false;
+            throw new Exception($"Could not sign {file}");
         }
 
-        bool RunSignTool(string args)
+        async Task<bool> RunSignTool(string file, SignArgs args)
         {
-            // Append a sha256 signature
-            using (var signtool = new Process
+            
+            var startTime = DateTimeOffset.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
+
+
+            logger.LogInformation("Signing using {fileName}", file);
+
+
+            var success = false;
+            try
             {
-                StartInfo =
-                {
-                    FileName = signtoolPath,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    Arguments = args
-                }
-            })
-            {
-                var startTime = DateTimeOffset.UtcNow;
-                var stopwatch = Stopwatch.StartNew();
-
-                // redact args for log
-                var redacted = args;
-                if (args.Contains("-kva"))
-                {
-                    redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
-                }
-
-                logger.LogInformation("Signing using {fileName}", signtool.StartInfo.FileName);
-                signtool.Start();
-
-                var output = signtool.StandardOutput.ReadToEnd();
-                var error = signtool.StandardError.ReadToEnd();
-                logger.LogInformation("Nupkg Out {NupkgOutput}", output);
-
-                if (!string.IsNullOrWhiteSpace(error))
-                {
-                    logger.LogInformation("Nupkg Err {NupkgError}", error);
-                }
-
-                if (!signtool.WaitForExit(30 * 1000))
-                {
-                    logger.LogError("Error: NuGetKeyVaultSignTool took too long to respond {exitCode}", signtool.ExitCode);
-                    try
-                    {
-                        signtool.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception("NuGetKeyVaultSignTool timed out and could not be killed", ex);
-                    }
-
-                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
-                    logger.LogError("Error: NuGetKeyVaultSignTool took too long to respond {exitCode}", signtool.ExitCode);
-                    throw new Exception($"NuGetKeyVaultSignTool took too long to respond");
-                }
-
-                telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
-
-                if (signtool.ExitCode == 0)
-                {
-                    return true;
-                }
-
-                logger.LogError("Error: Signtool returned {exitCode}", signtool.ExitCode);
-
-                return false;
+                 success = await signCommand.SignAsync(
+                               file, 
+                               file,
+                               args.TimestampUrl,
+                               args.HashAlgorithm,
+                               args.HashAlgorithm,
+                               true,
+                               args.PublicCertificate,
+                               args.Rsa
+                              );
             }
+            catch (Exception e)
+            {
+                logger.LogError(e, e.Message);
+            }
+            
+            telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, $"{file}, {args.HashAlgorithm} , {args.TimestampUrl}", success ? 0 : -1);
+
+            return success;
+        }
+
+#pragma warning disable IDE1006 // Naming Styles
+        class SignArgs
+        {
+            public X509Certificate2 PublicCertificate { get; set; }
+
+            public string TimestampUrl { get; set; }
+
+            public HashAlgorithmName HashAlgorithm { get; set; }
+
+            public RSA Rsa { get; set; }
+
 
         }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

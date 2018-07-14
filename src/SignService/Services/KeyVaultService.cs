@@ -24,7 +24,6 @@ namespace SignService.Services
         X509Certificate2 certificate;
         KeyIdentifier keyIdentifier;
         string validatedToken;
-        readonly CertificateInfo certificateInfo;
         readonly IOptionsSnapshot<ResourceIds> settings;
         readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
         readonly IUser user;
@@ -40,7 +39,7 @@ namespace SignService.Services
 
 
             // This must be here because we add it in the request validation
-            certificateInfo = new CertificateInfo
+            CertificateInfo = new CertificateInfo
             {
                 TimestampUrl = user.TimestampUrl,
                 KeyVaultUrl = user.KeyVaultUrl,
@@ -51,7 +50,7 @@ namespace SignService.Services
             this.user = user;
         }
 
-        public CertificateInfo CertificateInfo => certificateInfo;
+        public CertificateInfo CertificateInfo { get; }
 
         public async Task<string> GetAccessTokenAsync()
         {
@@ -79,7 +78,7 @@ namespace SignService.Services
         {
             if (certificate == null)
             {
-                var cert = await client.GetCertificateAsync(certificateInfo.KeyVaultUrl, certificateInfo.CertificateName).ConfigureAwait(false);
+                var cert = await client.GetCertificateAsync(CertificateInfo.KeyVaultUrl, CertificateInfo.CertificateName).ConfigureAwait(false);
                 certificate = new X509Certificate2(cert.Cer);
                 keyIdentifier = cert.KeyIdentifier;
             }

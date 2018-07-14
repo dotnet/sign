@@ -20,11 +20,6 @@ namespace SignService.SigningTools
         readonly ITelemetryLogger telemetryLogger;
         readonly string signToolName = nameof(VsixSignService);
 
-        readonly ParallelOptions options = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 4
-        };
-
         public VsixSignService(IKeyVaultService keyVaultService,
                                ILogger<VsixSignService> logger,
                                ITelemetryLogger telemetryLogger)
@@ -52,7 +47,7 @@ namespace SignService.SigningTools
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? HashAlgorithmName.SHA1 : HashAlgorithmName.SHA256;
 
-            var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
+            var keyVaultAccessToken = await keyVaultService.GetAccessTokenAsync();
 
             var config = new AzureKeyVaultSignConfigurationSet
             {
