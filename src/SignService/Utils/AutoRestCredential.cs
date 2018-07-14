@@ -64,6 +64,10 @@ namespace SignService.Utils
                 {
                     return await OnAuthenticate(challenge.AuthorizationServer, challenge.Resource, challenge.Scope).ConfigureAwait(false);
                 }
+                else
+                {
+                    return await OnAuthenticate(null, null, null).ConfigureAwait(false);
+                }
             }
 
             return null;

@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Azure.KeyVault;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using SignService.Utils;
 
 namespace SignService.Services
 {
@@ -35,9 +38,8 @@ namespace SignService.Services
                 return await GetAccessTokenAsync().ConfigureAwait(false);
             }
 
-            client = new KeyVaultClient(Authenticate, new HttpClient());
-
-
+            client = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(Authenticate));
+            
             // This must be here because we add it in the request validation
             CertificateInfo = new CertificateInfo
             {

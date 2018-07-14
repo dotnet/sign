@@ -23,7 +23,6 @@ namespace SignService.Utils
                 Name = "Sign File",
                 Properties =
                 {
-                    { "FullPath", file },
                     { "FileName", Path.GetFileName(file) },
                     { "Directory", Path.GetDirectoryName(file) },
                     { "ToolName", toolName }
