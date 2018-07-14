@@ -35,17 +35,17 @@ namespace SignService.SigningTools
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
-            // Explicitly put this on a thread because Parallel.ForEach blocks
-            await Task.Run(() => SubmitInternal(hashMode, name, description, descriptionUrl, files));
+            await SubmitInternal(hashMode, name, description, descriptionUrl, files);
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>
         {
             ".vsix"
         };
+
         public bool IsDefault { get; }
 
-        void SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        async Task SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing OpenVsixSignTool job {0} with {1} files", name, files.Count());
 
@@ -62,16 +62,14 @@ namespace SignService.SigningTools
                 AzureKeyVaultCertificateName = keyVaultService.CertificateInfo.CertificateName,
                 AzureKeyVaultUrl = keyVaultService.CertificateInfo.KeyVaultUrl
             };
-            
-            Parallel.ForEach(files, options, (file, state) =>
-                                             {
-                                                 telemetryLogger.OnSignFile(file, signToolName);
 
-                                                 if (!Sign(file, config, keyVaultService.CertificateInfo.TimestampUrl, alg).Wait(TimeSpan.FromSeconds(60)))
-                                                 {
-                                                     throw new Exception($"Could not sign {file}");
-                                                 }
-                                             });
+            var tasks = files.Select(file =>
+            {
+                telemetryLogger.OnSignFile(file, signToolName);
+                return Sign(file, config, keyVaultService.CertificateInfo.TimestampUrl, alg);
+            });
+
+            await Task.WhenAll(tasks);
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
@@ -102,7 +100,7 @@ namespace SignService.SigningTools
 
             logger.LogError($"Failed to sign. Attempts exceeded");
 
-            return false;
+            throw new Exception($"Could not sign {file}");
         }
 
         async Task<bool> RunSignTool(string file, AzureKeyVaultSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
