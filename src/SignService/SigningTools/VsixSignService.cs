@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenVsixSignTool.Core;
 using SignService.Services;
 using SignService.Utils;
 
@@ -17,8 +18,7 @@ namespace SignService.SigningTools
         readonly IKeyVaultService keyVaultService;
         readonly ILogger<VsixSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
-        readonly string signtoolPath;
-        readonly string signToolName;
+        readonly string signToolName = nameof(VsixSignService);
 
         readonly ParallelOptions options = new ParallelOptions
         {
@@ -26,15 +26,12 @@ namespace SignService.SigningTools
         };
 
         public VsixSignService(IKeyVaultService keyVaultService,
-                               IHostingEnvironment hostingEnvironment,
                                ILogger<VsixSignService> logger,
                                ITelemetryLogger telemetryLogger)
         {
             this.keyVaultService = keyVaultService;
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
-            signtoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\OpenVsixSignTool\\OpenVsixSignTool.exe");
-            signToolName = Path.GetFileName(signtoolPath);
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
@@ -53,19 +50,24 @@ namespace SignService.SigningTools
             logger.LogInformation("Signing OpenVsixSignTool job {0} with {1} files", name, files.Count());
 
             // Dual isn't supported, use sha256
-            var alg = hashMode == HashMode.Sha1 ? "sha1" : "sha256";
+            var alg = hashMode == HashMode.Sha1 ? HashAlgorithmName.SHA1 : HashAlgorithmName.SHA256;
 
             var keyVaultAccessToken = keyVaultService.GetAccessTokenAsync().Result;
 
-            var args = $@"sign --timestamp {keyVaultService.CertificateInfo.TimestampUrl} -ta {alg} -fd {alg} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
-
-
+            var config = new AzureKeyVaultSignConfigurationSet
+            {
+                FileDigestAlgorithm = alg,
+                PkcsDigestAlgorithm = alg,
+                AzureAccessToken = keyVaultAccessToken,
+                AzureKeyVaultCertificateName = keyVaultService.CertificateInfo.CertificateName,
+                AzureKeyVaultUrl = keyVaultService.CertificateInfo.KeyVaultUrl
+            };
+            
             Parallel.ForEach(files, options, (file, state) =>
                                              {
                                                  telemetryLogger.OnSignFile(file, signToolName);
-                                                 var fileArgs = $@"{args} ""{file}""";
 
-                                                 if (!Sign(fileArgs))
+                                                 if (!Sign(file, config, keyVaultService.CertificateInfo.TimestampUrl, alg).Wait(TimeSpan.FromSeconds(60)))
                                                  {
                                                      throw new Exception($"Could not sign {file}");
                                                  }
@@ -74,7 +76,7 @@ namespace SignService.SigningTools
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
 
-        bool Sign(string args)
+        async Task<bool> Sign(string file, AzureKeyVaultSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg) 
         {
             var retry = TimeSpan.FromSeconds(5);
             var attempt = 1;
@@ -83,10 +85,10 @@ namespace SignService.SigningTools
                 if (attempt > 1)
                 {
                     logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
-                    Thread.Sleep(retry);
+                    await Task.Delay(retry);
                 }
 
-                if (RunSignTool(args))
+                if (await RunSignTool(file, config, timestampUrl, alg))
                 {
                     logger.LogInformation($"Signed successfully");
                     return true;
@@ -103,71 +105,38 @@ namespace SignService.SigningTools
             return false;
         }
 
-        bool RunSignTool(string args)
+        async Task<bool> RunSignTool(string file, AzureKeyVaultSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
         {
             // Append a sha256 signature
-            using (var signtool = new Process
-            {
-                StartInfo =
-                {
-                    FileName = signtoolPath,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    Arguments = args
-                }
-            })
+            using (var package = OpcPackage.Open(file, OpcPackageFileMode.ReadWrite))
             {
                 var startTime = DateTimeOffset.UtcNow;
                 var stopwatch = Stopwatch.StartNew();
 
-                // redact args for log
-                var redacted = args;
-                if (args.Contains("-kva"))
+
+                logger.LogInformation("Signing {fileName}", file);
+
+
+                var signBuilder = package.CreateSignatureBuilder();
+                signBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
+
+                var signature = await signBuilder.SignAsync(config);
+
+                var failed = false;
+                if (timestampUrl != null)
                 {
-                    redacted = args.Substring(0, args.IndexOf("-kva")) + "-kva *****";
-                }
-
-                logger.LogInformation("Signing {fileName}", signtool.StartInfo.FileName);
-                signtool.Start();
-
-                var output = signtool.StandardOutput.ReadToEnd();
-                var error = signtool.StandardError.ReadToEnd();
-                logger.LogInformation("Vsix Out {VsixOutput}", output);
-
-                if (!string.IsNullOrWhiteSpace(error))
-                {
-                    logger.LogInformation("Vsix Err {VsixError}", error);
-                }
-
-                if (!signtool.WaitForExit(30 * 1000))
-                {
-                    logger.LogError("Error: OpenVsixSignTool took too long to respond {exitCode}", signtool.ExitCode);
-                    try
+                    var timestampBuilder = signature.CreateTimestampBuilder();
+                    var result = await timestampBuilder.SignAsync(new Uri(timestampUrl), alg);
+                    if (result == TimestampResult.Failed)
                     {
-                        signtool.Kill();
+                        failed = true;
+                        logger.LogError("Error timestamping VSIX");
                     }
-                    catch (Exception ex)
-                    {
-                        throw new Exception("OpenVsixSignTool timed out and could not be killed", ex);
-                    }
-
-                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
-                    logger.LogError("Error: OpenVsixSignTool took too long to respond {exitCode}", signtool.ExitCode);
-                    throw new Exception($"OpenVsixSignTool took too long to respond");
                 }
 
-                telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
+                telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, $"{file}, {alg} , {timestampUrl}", failed ? 1 : 0);
 
-                if (signtool.ExitCode == 0)
-                {
-                    return true;
-                }
-
-                logger.LogError("Error: Signtool returned {exitCode}", signtool.ExitCode);
-
-                return false;
+                return failed;
             }
 
         }
