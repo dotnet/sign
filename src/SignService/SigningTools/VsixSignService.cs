@@ -20,11 +20,6 @@ namespace SignService.SigningTools
         readonly ITelemetryLogger telemetryLogger;
         readonly string signToolName = nameof(VsixSignService);
 
-        readonly ParallelOptions options = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 4
-        };
-
         public VsixSignService(IKeyVaultService keyVaultService,
                                ILogger<VsixSignService> logger,
                                ITelemetryLogger telemetryLogger)
