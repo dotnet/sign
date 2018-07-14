@@ -136,7 +136,7 @@ namespace SignService.SigningTools
 
                 telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, $"{file}, {alg} , {timestampUrl}", failed ? 1 : 0);
 
-                return failed;
+                return !failed;
             }
 
         }
