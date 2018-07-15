@@ -34,7 +34,7 @@ namespace SignService
             this.keyVaultService = keyVaultService;
             this.telemetryLogger = telemetryLogger;
             keyVaultSignToolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\AzureSignTool\\AzureSignTool.exe");
-            signToolName = Path.GetFileName(keyVaultSignToolPath);
+            signToolName = nameof(AzureSignToolSignService);
         }
 
         public Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
@@ -100,7 +100,7 @@ namespace SignService
 
                 var args = $@"sign -ifl ""{fileList.FileName}"" -v -tr {keyVaultService.CertificateInfo.TimestampUrl} -fd sha256 -td sha256 {descArgs} -kvu {keyVaultService.CertificateInfo.KeyVaultUrl} -kvc {keyVaultService.CertificateInfo.CertificateName} -kva {keyVaultAccessToken}";
 
-                if (!Sign(args))
+                if (!Sign(null, args))
                 {
                     throw new Exception($"Could not append sign one of \n{string.Join("\n", files)}");
                 }
@@ -109,7 +109,7 @@ namespace SignService
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
 
-        bool Sign(string args)
+        bool Sign(string file, string args)
         {
             var retry = TimeSpan.FromSeconds(5);
             var attempt = 1;
@@ -121,7 +121,7 @@ namespace SignService
                     Thread.Sleep(retry);
                 }
 
-                if (RunSignTool(args))
+                if (RunSignTool(file, args))
                 {
                     return true;
                 }
@@ -147,7 +147,7 @@ namespace SignService
             }
         }
 
-        bool RunSignTool(string args)
+        bool RunSignTool(string file, string args)
         {
             // Append a sha256 signature
             using (var signtool = new Process
@@ -196,12 +196,12 @@ namespace SignService
                         throw new Exception("SignTool timed out and could not be killed", ex);
                     }
 
-                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
+                    telemetryLogger.TrackSignToolDependency(signToolName, file, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
                     logger.LogError("Error: Signtool took too long to respond {0}", signtool.ExitCode);
                     throw new Exception($"Sign tool took too long to respond with {redacted}");
                 }
 
-                telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
+                telemetryLogger.TrackSignToolDependency(signToolName, file, startTime, stopwatch.Elapsed, redacted, signtool.ExitCode);
 
                 if (signtool.ExitCode == 0)
                 {

@@ -44,7 +44,7 @@ namespace SignService.SigningTools
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
             magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
-            signToolName = Path.GetFileName(magetoolPath);
+            signToolName = nameof(MageSignService);
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             signToolAggregate = new Lazy<ISigningToolAggregate>(() => serviceProvider.GetService<ISigningToolAggregate>());
         }
@@ -277,10 +277,12 @@ namespace SignService.SigningTools
                     // Now add the signature 
                     ManifestSigner.SignFile(inputFile, hashMode, rsaPrivateKey, publicCertificate, timestampUrl);
 
-                    telemetryLogger.TrackDependency(signToolName, startTime, stopwatch.Elapsed, inputFile, signtool.ExitCode);
+                    telemetryLogger.TrackSignToolDependency(signToolName, inputFile, startTime, stopwatch.Elapsed, null, signtool.ExitCode);
 
                     return true;
                 }
+
+                telemetryLogger.TrackSignToolDependency(signToolName, inputFile, startTime, stopwatch.Elapsed, null, signtool.ExitCode);
 
                 logger.LogError("Error: Signtool returned {exitCode}", signtool.ExitCode);
 
