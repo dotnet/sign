@@ -46,9 +46,7 @@ namespace SignService.SigningTools
 
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? HashAlgorithmName.SHA1 : HashAlgorithmName.SHA256;
-
-            var keyVaultAccessToken = await keyVaultService.GetAccessTokenAsync();
-
+            
             var config = new RsaSignConfigurationSet
             {
                 FileDigestAlgorithm = alg,

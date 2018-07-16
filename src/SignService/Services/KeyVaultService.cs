@@ -16,47 +16,42 @@ namespace SignService.Services
 {
     public interface IKeyVaultService
     {
-        Task<string> GetAccessTokenAsync();
+        Task InitializeAccessTokenAsync(string incomingToken);
+        void InitializeCertificateInfo(string timestampUrl, string keyVaultUrl, string certificateName);
         Task<X509Certificate2> GetCertificateAsync();
         Task<RSA> ToRSA();
         CertificateInfo CertificateInfo { get; }
+        string AccessToken { get; }
     }
     public class KeyVaultService : IKeyVaultService
     {
         readonly KeyVaultClient client;
         X509Certificate2 certificate;
         KeyIdentifier keyIdentifier;
-        string validatedToken;
         readonly IOptionsSnapshot<ResourceIds> settings;
         readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
-        readonly IUser user;
+    
 
-        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, IUser user, ILogger<KeyVaultService> logger)
+        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, ILogger<KeyVaultService> logger)
         {
-            async Task<string> Authenticate(string authority, string resource, string scope)
+            Task<string> Authenticate(string authority, string resource, string scope)
             {
-                return await GetAccessTokenAsync().ConfigureAwait(false);
+                return Task.FromResult(AccessToken);
             }
 
             client = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(Authenticate));
-            
-            // This must be here because we add it in the request validation
-            CertificateInfo = new CertificateInfo
-            {
-                TimestampUrl = user.TimestampUrl,
-                KeyVaultUrl = user.KeyVaultUrl,
-                CertificateName = user.CertificateName
-            };
+
             this.settings = settings;
             this.aadOptions = aadOptions;
-            this.user = user;
         }
 
-        public CertificateInfo CertificateInfo { get; }
+        public CertificateInfo CertificateInfo { get; private set; }
+    
+        public string AccessToken { get; private set; }
 
-        public async Task<string> GetAccessTokenAsync()
+        public async Task InitializeAccessTokenAsync(string incomingToken)
         {
-            if (validatedToken == null)
+            if (AccessToken == null)
             {
                 var context = new AuthenticationContext($"{aadOptions.Value.AADInstance}{aadOptions.Value.TenantId}", null); // No token caching
                 var credential = new ClientCredential(aadOptions.Value.ClientId, aadOptions.Value.ClientSecret);
@@ -64,16 +59,15 @@ namespace SignService.Services
 
                 AuthenticationResult result = null;
 
-                result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(user.IncomingAccessToken));
+                result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(incomingToken));
 
                 if (result == null)
                 {
                     throw new InvalidOperationException("Authentication to Azure failed.");
                 }
-                validatedToken = result.AccessToken;
-            }
 
-            return validatedToken;
+                AccessToken = result.AccessToken;
+            }
         }
 
         public async Task<X509Certificate2> GetCertificateAsync()
@@ -92,6 +86,18 @@ namespace SignService.Services
             await GetCertificateAsync()
                 .ConfigureAwait(false);
             return client.ToRSA(keyIdentifier, certificate);
+        }
+
+        public void InitializeCertificateInfo(string timestampUrl, string keyVaultUrl, string certificateName)
+        {
+
+            // Lazy to store these after the ctor.
+            CertificateInfo = new CertificateInfo
+            {
+                TimestampUrl = timestampUrl,
+                KeyVaultUrl = keyVaultUrl,
+                CertificateName = certificateName
+            };
         }
     }
 }

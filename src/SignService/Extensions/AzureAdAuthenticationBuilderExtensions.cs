@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
 using SignService;
 using SignService.Models;
+using SignService.Services;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -85,7 +86,13 @@ namespace Microsoft.AspNetCore.Authentication
                     var credential = new ClientCredential(_azureOptions.ClientId, _azureOptions.ClientSecret);
 
                     var incomingToken = ((JwtSecurityToken)tokenValidatedContext.SecurityToken).RawData;
+
+                    // Prime the KV access token concurrently
+                    var kvService = contextAccessor.HttpContext.RequestServices.GetRequiredService<IKeyVaultService>();
+                    var kvTokenTask = kvService.InitializeAccessTokenAsync(incomingToken);
                     var result = await context.AcquireTokenAsync(graphResourceId, credential, new UserAssertion(incomingToken));
+
+                    
 
                     var url = $"{adminOptions.Value.GraphInstance}{_azureOptions.TenantId}/users/{oid}?api-version=1.6";
                     GraphUser user = null;
@@ -109,6 +116,10 @@ namespace Microsoft.AspNetCore.Authentication
                         identity.AddClaim(new Claim("timestampUrl", user.TimestampUrl));
                         identity.AddClaim(new Claim("access_token", incomingToken));
                     }
+
+                    // Wait for the KV task to finish
+                    await kvTokenTask.ConfigureAwait(false);
+                    kvService.InitializeCertificateInfo(user.TimestampUrl, user.KeyVaultUrl, user.KeyVaultCertificateName);
                 }
 
                 if (!passed)

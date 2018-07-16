@@ -46,9 +46,7 @@ namespace SignService.SigningTools
         async Task SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
         {
             logger.LogInformation("Signing NuGetKeyVaultSignTool job {0} with {1} files", name, files.Count());
-
-            var keyVaultAccessToken = await keyVaultService.GetAccessTokenAsync();
-
+            
             var args = new SignArgs
             {
                 HashAlgorithm = HashAlgorithmName.SHA256,
