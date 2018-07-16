@@ -49,27 +49,33 @@ namespace SignService.SigningTools
 
             var keyVaultAccessToken = await keyVaultService.GetAccessTokenAsync();
 
-            var config = new AzureKeyVaultSignConfigurationSet
+            var config = new RsaSignConfigurationSet
             {
                 FileDigestAlgorithm = alg,
                 PkcsDigestAlgorithm = alg,
-                AzureAccessToken = keyVaultAccessToken,
-                AzureKeyVaultCertificateName = keyVaultService.CertificateInfo.CertificateName,
-                AzureKeyVaultUrl = keyVaultService.CertificateInfo.KeyVaultUrl
+                SigningCertificate = await keyVaultService.GetCertificateAsync(),
+                Rsa = await keyVaultService.ToRSA()
             };
 
-            var tasks = files.Select(file =>
+            try
             {
-                telemetryLogger.OnSignFile(file, signToolName);
-                return Sign(file, config, keyVaultService.CertificateInfo.TimestampUrl, alg);
-            });
+                var tasks = files.Select(file =>
+                {
+                    telemetryLogger.OnSignFile(file, signToolName);
+                    return Sign(file, config, keyVaultService.CertificateInfo.TimestampUrl, alg);
+                });
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
+            }
+            finally
+            {
+                config.Rsa?.Dispose();
+            }
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
 
-        async Task<bool> Sign(string file, AzureKeyVaultSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg) 
+        async Task<bool> Sign(string file, RsaSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg) 
         {
             var retry = TimeSpan.FromSeconds(5);
             var attempt = 1;
@@ -98,7 +104,7 @@ namespace SignService.SigningTools
             throw new Exception($"Could not sign {file}");
         }
 
-        async Task<bool> RunSignTool(string file, AzureKeyVaultSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
+        async Task<bool> RunSignTool(string file, RsaSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
         {
             // Append a sha256 signature
             using (var package = OpcPackage.Open(file, OpcPackageFileMode.ReadWrite))
