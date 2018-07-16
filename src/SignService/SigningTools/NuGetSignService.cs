@@ -57,13 +57,20 @@ namespace SignService.SigningTools
                 Rsa = await keyVaultService.ToRSA()
             };
 
-            var tasks = files.Select(file =>
+            try
             {
-                telemetryLogger.OnSignFile(file, signToolName);
-                return Sign(file, args);
-            });
+                var tasks = files.Select(file =>
+                {
+                    telemetryLogger.OnSignFile(file, signToolName);
+                    return Sign(file, args);
+                });
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
+            }
+            finally
+            {
+                args.Rsa?.Dispose();
+            }
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
