@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using Wyam.Core.IO.Globbing;
 
 namespace SignService.Utils
 {
@@ -18,7 +21,7 @@ namespace SignService.Utils
         readonly string makeAppxPath;
         readonly string dataDirectory;
 
-        public AppxFile(string inputFileName, string publisher, ILogger logger, string makeAppxPath)
+        public AppxFile(string inputFileName, string publisher, ILogger logger, string makeAppxPath, string filter)
         {
             this.inputFileName = inputFileName;
             this.publisher = publisher;
@@ -30,6 +33,45 @@ namespace SignService.Utils
 
             Unpack();
             UpdateManifestPublisher();
+
+
+            var filesInDir = Directory.EnumerateFiles(dataDirectory, "*.*", SearchOption.AllDirectories);
+            FilesInDirectory = filesInDir.ToList();
+
+            // don't allow parent directory traversal
+            filter = filter.Replace(@"..\", "").Replace("../", "");
+
+            var globs = filter.Split('\n').Where(s => (!string.IsNullOrWhiteSpace(s)))
+                              .Where(s => (!s.StartsWith("!")))
+                              .ToList();
+
+            var antiglobs = filter.Split('\n').Where(s => (!string.IsNullOrWhiteSpace(s)))
+                                  .Where(s => (s.StartsWith("!")))
+                                  .Select(s => s.Substring(1))
+                                  .ToList();
+
+            if (globs.Count > 0)
+            {
+                var files = Globber.GetFiles(new DirectoryInfo(dataDirectory), globs);
+                FilteredFilesInDirectory = files.Select(f => f.FullName).ToList();
+            }
+
+            // If no filtered, default to all
+            if (FilteredFilesInDirectory == null)
+            {
+                FilteredFilesInDirectory = FilesInDirectory.ToList();
+            }
+
+            if (antiglobs.Count > 0)
+            {
+                var antifiles = Globber.GetFiles(new DirectoryInfo(dataDirectory), antiglobs)
+                                       .Select(f => f.FullName)
+                                       .ToList();
+
+                FilteredFilesInDirectory = FilteredFilesInDirectory.Except(antifiles).ToList();
+            }
+
+            FilesExceptFiltered = FilesInDirectory.Except(FilteredFilesInDirectory).ToList();
         }
 
         public void Save()
@@ -112,6 +154,9 @@ namespace SignService.Utils
             RunTool(args);
         }
 
+        public IList<string> FilteredFilesInDirectory { get; }
+        public IList<string> FilesInDirectory { get; }
+        public IList<string> FilesExceptFiltered { get; }
 
         public void Dispose()
         {

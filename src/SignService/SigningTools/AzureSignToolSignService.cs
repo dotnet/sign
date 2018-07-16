@@ -19,18 +19,15 @@ namespace SignService
     class AzureSignToolSignService : ICodeSignService
     {
         readonly ILogger<AzureSignToolSignService> logger;
-        readonly IAppxFileFactory appxFileFactory;
         readonly IKeyVaultService keyVaultService;
         readonly ITelemetryLogger telemetryLogger;
         readonly string signToolName;
 
         public AzureSignToolSignService(ILogger<AzureSignToolSignService> logger,
-                                            IAppxFileFactory appxFileFactory,
                                             IKeyVaultService keyVaultService,
                                             ITelemetryLogger telemetryLogger)
         {
             this.logger = logger;
-            this.appxFileFactory = appxFileFactory;
             this.keyVaultService = keyVaultService;
             this.telemetryLogger = telemetryLogger;
             signToolName = nameof(AzureSignToolSignService);
@@ -61,18 +58,10 @@ namespace SignService
                 {
                     telemetryLogger.OnSignFile(file, signToolName);
 
-                    // check to see if it's an appx and strip it first
-                    var ext = Path.GetExtension(file).ToLowerInvariant();
-                    if (".appx".Equals(ext, StringComparison.OrdinalIgnoreCase) || ".eappx".Equals(ext, StringComparison.OrdinalIgnoreCase))
-                    {
-                        StripAppx(file);
-                    }
-
                     if (!Sign(signer, file, description, descriptionUrl))
                     {
                         throw new Exception($"Could not append sign {file}");
                     }
-
                 });
             }
         }
@@ -105,16 +94,6 @@ namespace SignService
             logger.LogError($"Failed to sign. Attempts exceeded");
 
             return false;
-        }
-
-        void StripAppx(string appxFile)
-        {
-            // This will extract and resave the appx, stripping the signature
-            // and fixing the publisher
-            using (var appx = appxFileFactory.Create(appxFile))
-            {
-                appx.Save();
-            }
         }
 
         bool RunSignTool(AuthenticodeKeyVaultSigner signer, string file, string description, string descriptionUrl)

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using SignService.Utils;
 
 namespace SignService.SigningTools
 {
@@ -14,6 +15,7 @@ namespace SignService.SigningTools
 
     public class SigningToolAggregate : ISigningToolAggregate
     {
+        readonly IAppxFileFactory appxFileFactory;
         readonly ILogger<SigningToolAggregate> logger;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
@@ -21,9 +23,11 @@ namespace SignService.SigningTools
 
 
         public SigningToolAggregate(IEnumerable<ICodeSignService> services,
+                                    IAppxFileFactory appxFileFactory,
                                     IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles,
                                     ILogger<SigningToolAggregate> logger)
         {
+            this.appxFileFactory = appxFileFactory;
             this.logger = logger;
             makeappxPath = windowSdkFiles.Value.MakeAppxPath;
 
@@ -74,8 +78,42 @@ namespace SignService.SigningTools
                 tempZips.Clear();
             }
 
+            // See if there's any appx's in here, process them recursively first to sign the inner files
+            var appxs = (from file in files
+                         let ext = Path.GetExtension(file).ToLowerInvariant()
+                         where ext == ".appx" || ext == ".eappx"
+                         select file).ToList();
+
+
             // See if there's any appxbundles here, process them recursively first
             // expand the archives and sign recursively first
+            // This will also update the publisher information to get it ready for signing
+            var tempAppxs = new List<AppxFile>();
+            try
+            {
+                foreach (var appx in appxs)
+                {
+                    tempAppxs.Add(await appxFileFactory.Create(appx, filter));
+                }
+
+                // See if there's any files in the expanded zip that we need to sign
+                var allFiles = tempAppxs.SelectMany(tz => tz.FilteredFilesInDirectory).ToList();
+                if (allFiles.Count > 0)
+                {
+                    // Send the files from the archives through the aggregator to sign
+                    await Submit(hashMode, name, description, descriptionUrl, allFiles, filter);
+                }
+
+                // Save the appx with the updated publisher info
+                tempAppxs.ForEach(tz => tz.Save());
+            }
+            finally
+            {
+                tempAppxs.ForEach(tz => tz.Dispose());
+                tempAppxs.Clear();
+            }
+
+
 
             var bundles = (from file in files
                            let ext = Path.GetExtension(file).ToLowerInvariant()

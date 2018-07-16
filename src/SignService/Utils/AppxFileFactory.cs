@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SignService.Services;
 
@@ -6,7 +7,7 @@ namespace SignService.Utils
 {
     public interface IAppxFileFactory
     {
-        AppxFile Create(string inputFileName);
+        Task<AppxFile> Create(string inputFileName, string filter);
     }
 
     public class AppxFileFactory : IAppxFileFactory
@@ -23,15 +24,15 @@ namespace SignService.Utils
             makeappxPath = windowSdkFiles.Value.MakeAppxPath;
         }
 
-        public AppxFile Create(string inputFileName)
+        public async Task<AppxFile> Create(string inputFileName, string filter)
         {
             if (publisher == null) // don't care about this race
             {
-                var cert = keyVaultService.GetCertificateAsync().Result;
+                var cert = await keyVaultService.GetCertificateAsync();
                 publisher = cert.SubjectName.Name;
             }
 
-            return new AppxFile(inputFileName, publisher, logger, makeappxPath);
+            return new AppxFile(inputFileName, publisher, logger, makeappxPath, filter);
         }
     }
 }
