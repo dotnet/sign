@@ -46,9 +46,9 @@ namespace SignService.Utils
         }
 
         /// <summary>
-        /// Clones the current KeyVaultCredential object.
+        /// Clones the current AutoRestCredential object.
         /// </summary>
-        /// <returns>A new KeyVaultCredential instance using the same authentication callback as the current instance.</returns>
+        /// <returns>A new AutoRestCredential instance using the same authentication callback as the current instance.</returns>
         internal AutoRestCredential<T> Clone()
         {
             return new AutoRestCredential<T>(OnAuthenticate);

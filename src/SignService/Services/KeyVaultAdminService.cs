@@ -65,7 +65,7 @@ namespace SignService.Services
                 BaseUri = new Uri(adminConfig.Value.ArmInstance)
 
             };
-            kvClient = new KeyVaultClient(new KeyVaultCredential(GetAppTokenForKv));
+            kvClient = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(GetAppTokenForKv));
 
             this.azureAdOptions = azureAdOptions.Value;
             this.adminConfig = adminConfig.Value;
@@ -254,7 +254,7 @@ namespace SignService.Services
             vaultName = vaultName.Substring(0, 24);
 
             // Create uses an OBO so that this only works if the user has contributer+ access to the resource group
-            using (var client = new KeyVaultManagementClient(new KeyVaultCredential(GetOboToken)))
+            using (var client = new KeyVaultManagementClient(new AutoRestCredential<KeyVaultManagementClient>(GetOboToken)))
             {
                 client.SubscriptionId = adminConfig.SubscriptionId;
                 var vault = await client.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
