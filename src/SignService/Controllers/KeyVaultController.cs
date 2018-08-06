@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SignService.Models;
 using SignService.Services;
@@ -9,6 +10,8 @@ using SignService.Utils;
 
 namespace SignService.Controllers
 {
+    [Authorize(Roles = "admin_signservice")]
+    [RequireHttps]
     public class KeyVaultController : Controller
     {
         readonly IKeyVaultAdminService keyVaultAdminService;
