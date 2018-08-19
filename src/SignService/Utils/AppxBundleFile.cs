@@ -30,7 +30,8 @@ namespace SignService
 
             bundleVersion = GetBundleVersion();
 
-            var filesInDir = Directory.EnumerateFiles(dataDirectory, "*.appx", SearchOption.AllDirectories);
+            var filesInDir = Directory.EnumerateFiles(dataDirectory, "*.appx", SearchOption.AllDirectories)
+                                      .Concat(Directory.EnumerateFiles(dataDirectory, "*.msix", SearchOption.AllDirectories));
 
             FilteredFilesInDirectory = filesInDir.ToList();
         }

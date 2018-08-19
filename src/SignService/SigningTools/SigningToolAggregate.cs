@@ -48,7 +48,7 @@ namespace SignService.SigningTools
             // See if any of them are archives
             var archives = (from file in files
                             let ext = Path.GetExtension(file).ToLowerInvariant()
-                            where ext == ".zip" || ext == ".nupkg" || ext == ".snupkg" || ext == ".vsix" || ext == ".appxupload"
+                            where ext == ".zip" || ext == ".nupkg" || ext == ".snupkg" || ext == ".vsix" || ext == ".appxupload" || ext == ".msixupload"
                             select file).ToList();
 
             // expand the archives and sign recursively first
@@ -81,7 +81,7 @@ namespace SignService.SigningTools
             // See if there's any appx's in here, process them recursively first to sign the inner files
             var appxs = (from file in files
                          let ext = Path.GetExtension(file).ToLowerInvariant()
-                         where ext == ".appx" || ext == ".eappx"
+                         where ext == ".appx" || ext == ".eappx" || ext == ".msix" || ext == ".emsix"
                          select file).ToList();
 
 
@@ -117,7 +117,7 @@ namespace SignService.SigningTools
 
             var bundles = (from file in files
                            let ext = Path.GetExtension(file).ToLowerInvariant()
-                           where ext == ".appxbundle" || ext == ".eappxbundle"
+                           where ext == ".appxbundle" || ext == ".eappxbundle" || ext == ".msixbundle" || ext == ".emsixbundle"
                            select file).ToList();
 
             var tempBundles = new List<AppxBundleFile>();

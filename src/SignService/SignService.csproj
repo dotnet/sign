@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    
+
+    <WinSdk17733BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17733.0\x64\</WinSdk17733BinDir>
     <WinSdk17134BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17134.0\x64\</WinSdk17134BinDir>
     <WinSdk16299BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.16299.0\x64\</WinSdk16299BinDir>
     <WinSdk15063BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\x64\</WinSdk15063BinDir>
@@ -11,6 +12,7 @@
 
     <ProbingFile>makeappx.exe</ProbingFile>
     
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17733BinDir)$(ProbingFile)')">$(WinSdk17733BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk15063BinDir)$(ProbingFile)')">$(WinSdk15063BinDir)</WinSdkBinDir>
