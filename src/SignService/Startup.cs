@@ -174,7 +174,14 @@ namespace SignService
                 }
             }
 
-            options.MakeAppxPath = Path.Combine(contentPath, "tools\\SDK\\makeappx.exe");
+            var is64bit = IntPtr.Size == 8;
+
+            var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+            
+            options.MakeAppxPath = Path.Combine(basePath, "makeappx.exe");
+
+            // Set DllDirectory since we need these dll's to load first
+            Kernel32.SetDllDirectory($"{basePath}\\");
         }
 
         class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
