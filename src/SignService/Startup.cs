@@ -135,6 +135,20 @@ namespace SignService
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
 
+            var basePath = Path.Combine(env.ContentRootPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+
+            // Set DllDirectory since we need these dll's to load first
+            var success = Kernel32.SetDllDirectory($"{basePath}\\");
+            if (success)
+            {
+                
+                Kernel32.LoadLibraryEx($"{basePath}\\mssign32.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                Kernel32.LoadLibraryEx($"{basePath}\\wintrust.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                Kernel32.LoadLibraryEx($"{basePath}\\AppxPackaging.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                Kernel32.LoadLibraryEx($"{basePath}\\AppxSip.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                Kernel32.LoadLibraryEx($"{basePath}\\msisip.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+                Kernel32.LoadLibraryEx($"{basePath}\\opcservices.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+            }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -177,11 +191,7 @@ namespace SignService
             var is64bit = IntPtr.Size == 8;
 
             var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
-            
             options.MakeAppxPath = Path.Combine(basePath, "makeappx.exe");
-
-            // Set DllDirectory since we need these dll's to load first
-            Kernel32.SetDllDirectory($"{basePath}\\");
         }
 
         class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
