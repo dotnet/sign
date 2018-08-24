@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using AzureSign.Core;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using SignService.Services;
 using SignService.SigningTools;
@@ -22,6 +23,7 @@ namespace SignService
         readonly IKeyVaultService keyVaultService;
         readonly ITelemetryLogger telemetryLogger;
         readonly string signToolName;
+        readonly string manifestLocation;
 
         public AzureSignToolSignService(ILogger<AzureSignToolSignService> logger,
                                             IKeyVaultService keyVaultService,
@@ -107,8 +109,11 @@ namespace SignService
             var code = 0;
             try
             {
-                code = signer.SignFile(file, description, descriptionUrl, null);
-                success = code == 0;
+                using (var ctx = new Kernel32.ActivationContext(Startup.ManifestLocation))
+                {
+                    code = signer.SignFile(file, description, descriptionUrl, null);
+                    success = code == 0;
+                }
 
                 telemetryLogger.TrackSignToolDependency(signToolName, file, startTime, stopwatch.Elapsed, null, code);
             }

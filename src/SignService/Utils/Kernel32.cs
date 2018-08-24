@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace SignService.Utils
             LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400
         }
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+        [DllImport("Kernel32.dll", SetLastError = true, EntryPoint = "CreateActCtxW")]
         public static extern IntPtr CreateActCtx(ref ACTCTX pActCtx);
 
         [DllImport("Kernel32.dll", SetLastError = true)]
@@ -43,8 +44,8 @@ namespace SignService.Utils
             public int cbSize;
             public ActivationContextFlags dwFlags;
             public string lpSource;
-            public ushort wProcessorArchitecture;
-            public Int16 wLangId;
+            public UInt16 wProcessorArchitecture;
+            public UInt16 wLangId;
             public string lpAssemblyDirectory;
             public string lpResourceName;
             public string lpApplicationName;
@@ -69,10 +70,12 @@ namespace SignService.Utils
 
                 var ctx = new ACTCTX();
                 ctx.cbSize = Marshal.SizeOf(ctx);
-                ctx.dwFlags = ActivationContextFlags.ACTCTX_FLAG_APPLICATION_NAME_VALID |
-                              ActivationContextFlags.ACTCTX_FLAG_RESOURCE_NAME_VALID;
-                ctx.lpResourceName = "1";
+             //   ctx.dwFlags = ActivationContextFlags.ACTCTX_FLAG_APPLICATION_NAME_VALID | ActivationContextFlags.ACTCTX_FLAG_RESOURCE_NAME_VALID;
                 ctx.lpSource = assemblyName;
+                //ctx.lpApplicationName = "SignService";
+               // ctx.lpResourceName = "1";
+               //ctx.lpSource = Path.GetFileName(assemblyName);
+               //ctx.lpAssemblyDirectory = Path.GetDirectoryName(assemblyName);
 
 
                 actCtx = CreateActCtx(ref ctx);

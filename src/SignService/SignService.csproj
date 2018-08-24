@@ -29,26 +29,32 @@
     <SdkFile64 Include="$(WinSdkBinDir)x64\appxpackaging.dll" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\opcservices.dll" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)x64\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)x64\Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)x64\Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\makeappx.exe" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\makepri.exe" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\mssign32.dll" />
-    <SdkFile64 Include="$(WinSdkBinDir)x64\msisip.dll" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\wintrust.dll" />
     <SdkFile64 Include="$(WinSdkBinDir)x64\wintrust.dll.ini" />
+    <SdkFile64 Include="$(WinSdkBinDir)x64\SignTool.exe.manifest" />
 
 
     <SdkFile86 Include="$(WinSdkBinDir)x86\appxsip.dll" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\appxpackaging.dll" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\opcservices.dll" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
+    <SdkFile86 Include="$(WinSdkBinDir)x86\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
+    <SdkFile86 Include="$(WinSdkBinDir)x86\Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
+    <SdkFile86 Include="$(WinSdkBinDir)x86\Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\makeappx.exe" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\makepri.exe" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\mssign32.dll" />
-    <SdkFile86 Include="$(WinSdkBinDir)x86\msisip.dll" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\wintrust.dll" />
     <SdkFile86 Include="$(WinSdkBinDir)x86\wintrust.dll.ini" />
+    <SdkFile86 Include="$(WinSdkBinDir)x86\SignTool.exe.manifest" />
 
     <SdkFile86 Include="$(NetSdkBinDir)mage.exe" />
     

@@ -27,11 +27,30 @@ namespace SignService
     public class Startup
     {
         readonly IHostingEnvironment environment;
-
+        readonly string contentPath;
+        readonly Kernel32.ActivationContext activationContext;
+        public static string ManifestLocation { get; private set; }
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
             environment = env;
             Configuration = configuration;
+
+            contentPath = env.ContentRootPath;
+            // If we're running on Azure App Services, we have to invoke from the underlying
+            // location due to CSRSS/registration-free COM manifest issues
+
+            // running on azure
+            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("REGION_NAME")))
+            {
+                var home = Environment.GetEnvironmentVariable("HOME_EXPANDED");
+                if (!string.IsNullOrWhiteSpace(home))
+                {
+                    contentPath = $@"{home}\site\wwwroot";
+                }
+            }
+
+            var is64bit = IntPtr.Size == 8;
+            ManifestLocation = Path.Combine(contentPath, "tools", "SDK", is64bit ? "x64" : "x86", "SignTool.exe.manifest");
         }
 
         public IConfiguration Configuration { get; }
@@ -135,20 +154,12 @@ namespace SignService
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
 
-            var basePath = Path.Combine(env.ContentRootPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+            var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
 
-            // Set DllDirectory since we need these dll's to load first
-            var success = Kernel32.SetDllDirectory($"{basePath}\\");
-            if (success)
-            {
-                
-                Kernel32.LoadLibraryEx($"{basePath}\\mssign32.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-                Kernel32.LoadLibraryEx($"{basePath}\\wintrust.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-                Kernel32.LoadLibraryEx($"{basePath}\\AppxPackaging.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-                Kernel32.LoadLibraryEx($"{basePath}\\AppxSip.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-                Kernel32.LoadLibraryEx($"{basePath}\\msisip.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-                Kernel32.LoadLibraryEx($"{basePath}\\opcservices.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-            }
+            // Ensure our copy of mssign32 is loaded
+           
+            Kernel32.LoadLibraryEx($"{basePath}\\mssign32.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+            
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -173,23 +184,7 @@ namespace SignService
 
         void ConfigureWindowsSdkFiles(WindowsSdkFiles options)
         {
-            var contentPath = environment.ContentRootPath;
-
-            // If we're running on Azure App Services, we have to invoke from the underlying
-            // location due to CSRSS/registration-free COM manifest issues
-
-            // running on azure
-            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("REGION_NAME")))
-            {
-                var home = Environment.GetEnvironmentVariable("HOME_EXPANDED");
-                if (!string.IsNullOrWhiteSpace(home))
-                {
-                    contentPath = $@"{home}\site\wwwroot";
-                }
-            }
-
             var is64bit = IntPtr.Size == 8;
-
             var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
             options.MakeAppxPath = Path.Combine(basePath, "makeappx.exe");
         }
