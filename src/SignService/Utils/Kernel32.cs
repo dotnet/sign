@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -85,13 +86,13 @@ namespace SignService.Utils
                     if (!ActivateActCtx(actCtx, out cookie))
                     {
                         var err = Marshal.GetLastWin32Error();
-                        
+                        throw new Win32Exception(err);
                     }
                 }
                 else
                 {
                     var err = Marshal.GetLastWin32Error();
-
+                    throw new Win32Exception(err);
                 }
             }
 
@@ -102,6 +103,7 @@ namespace SignService.Utils
                     if (!DeactivateActCtx(0, cookie))
                     {
                         var err = Marshal.GetLastWin32Error();
+                        throw new Win32Exception(err);
                     }
 
                     cookie = IntPtr.Zero;
