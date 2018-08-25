@@ -47,6 +47,13 @@ namespace SignService
                     contentPath = $@"{home}\site\wwwroot";
                 }
             }
+
+            var is64bit = IntPtr.Size == 8;
+            var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+
+            // Ensure our copy of wintrust & mssign32 is loaded
+            Kernel32.LoadLibraryW($"{basePath}\\wintrust.dll");
+            Kernel32.LoadLibraryW($"{basePath}\\mssign32.dll");
         }
 
         public IConfiguration Configuration { get; }
@@ -149,12 +156,6 @@ namespace SignService
             var fxDir = is64bit ? "Framework64" : "Framework";
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
-
-            var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
-
-            // Ensure our copy of mssign32 is loaded
-            Kernel32.LoadLibraryW($"{basePath}\\wintrust.dll");
-            Kernel32.LoadLibraryW($"{basePath}\\mssign32.dll");
             
 
             app.UseHttpsRedirection();
