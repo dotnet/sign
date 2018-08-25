@@ -28,7 +28,6 @@ namespace SignService
     {
         readonly IHostingEnvironment environment;
         readonly string contentPath;
-        readonly Kernel32.ActivationContext activationContext;
         public static string ManifestLocation { get; private set; }
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
@@ -48,9 +47,6 @@ namespace SignService
                     contentPath = $@"{home}\site\wwwroot";
                 }
             }
-
-            var is64bit = IntPtr.Size == 8;
-            ManifestLocation = Path.Combine(contentPath, "tools", "SDK", is64bit ? "x64" : "x86", "SignTool.exe.manifest");
         }
 
         public IConfiguration Configuration { get; }
@@ -157,8 +153,8 @@ namespace SignService
             var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
 
             // Ensure our copy of mssign32 is loaded
-           
-            Kernel32.LoadLibraryEx($"{basePath}\\mssign32.dll", IntPtr.Zero, Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | Kernel32.LoadLibraryFlags.LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+            Kernel32.LoadLibraryW($"{basePath}\\wintrust.dll");
+            Kernel32.LoadLibraryW($"{basePath}\\mssign32.dll");
             
 
             app.UseHttpsRedirection();
