@@ -62,6 +62,7 @@ namespace InstallUtility
 
             var serverDisplayNamePrefix = $"{SignServerName}{environment} - ";
 
+            var user = (User)(await graphClient.Me.ExecuteAsync());
 
             Guid applicationId;
             string password = null;
@@ -97,7 +98,7 @@ namespace InstallUtility
                 var appName = $"{serverDisplayNamePrefix}{Guid.NewGuid()}";
                 Console.WriteLine($"Creating application '{appName}'");
                 // Create
-                var newApp = await CreateApplication(appName);
+                var newApp = await CreateApplication(appName, user);
                 applicationId = newApp.Item1;
                 password = newApp.Item2;
 
@@ -106,7 +107,7 @@ namespace InstallUtility
 
             Console.WriteLine("Updating application....");
             var serverApp = await ConfigureApplication(applicationId);
-            var clientApp = await EnsureClientAppExists(serverApp.application);
+            var clientApp = await EnsureClientAppExists(serverApp.application, user);
             Console.WriteLine("Update complete.");
 
             // If password is not null, we created the app, add the user admin role assignment
@@ -459,7 +460,7 @@ namespace InstallUtility
             return (permissions, roles);
         }
 
-        static async Task<(Guid, string)> CreateApplication(string appName)
+        static async Task<(Guid, string)> CreateApplication(string appName, User owner)
         {
             var randomBytes = new byte[32];
             using (var rnd = RandomNumberGenerator.Create())
@@ -491,14 +492,15 @@ namespace InstallUtility
                         Value = password,
                         EndDate = DateTime.UtcNow.AddYears(200)
                     }
-                }
+                },
+                Owners = new[] { owner }
             };
 
             await graphClient.Applications.AddApplicationAsync(application);
             return (Guid.Parse(application.ObjectId), password);
         }
 
-        static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication)
+        static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication, User owner)
         {
             // Display Name of the app. The app id is of the sign service it goes to
             var displayName = $"{SingClientName}{environment} - {serviceApplication.AppId}";
@@ -513,8 +515,10 @@ namespace InstallUtility
                     DisplayName = displayName,
                     ReplyUrls = { "urn:ietf:wg:oauth:2.0:oob" },
                     PublicClient = true,
-                    AvailableToOtherTenants = false
+                    AvailableToOtherTenants = false,
+                    Owners = new[] { owner }
                 };
+                
                 await graphClient.Applications.AddApplicationAsync(app);
             }
 
