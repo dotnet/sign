@@ -50,10 +50,18 @@ namespace SignService
 
             var is64bit = IntPtr.Size == 8;
             var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+            ManifestLocation = Path.Combine(contentPath, "tools", "SDK", is64bit ? "x64" : "x86", "SignTool.exe.manifest");
 
-            // Ensure our copy of wintrust & mssign32 is loaded
-            Kernel32.LoadLibraryW($"{basePath}\\wintrust.dll");
-            Kernel32.LoadLibraryW($"{basePath}\\mssign32.dll");
+            //
+            // Ensure we invoke wintrust!DllMain before we get too far.
+            // This will call wintrust!RegisterSipsFromIniFile and read in wintrust.dll.ini
+            // to swap out some local SIPs. Internally, wintrust will call LoadLibraryW
+            // on each DLL= entry, so we need to also adjust our DLL search path or we'll
+            // load unwanted system-provided copies.
+            //
+            Kernel32.SetDllDirectoryW(basePath);
+            Kernel32.LoadLibraryW($@"{basePath}\wintrust.dll");
+            Kernel32.LoadLibraryW($@"{basePath}\mssign32.dll");
         }
 
         public IConfiguration Configuration { get; }

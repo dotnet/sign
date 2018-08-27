@@ -106,8 +106,11 @@ namespace SignService
             var code = 0;
             try
             {
-                code = signer.SignFile(file, description, descriptionUrl, null);
-                success = code == 0;
+                using (var ctx = new Kernel32.ActivationContext(Startup.ManifestLocation))
+                {
+                    code = signer.SignFile(file, description, descriptionUrl, null);
+                    success = code == 0;
+                }
 
                 telemetryLogger.TrackSignToolDependency(signToolName, file, startTime, stopwatch.Elapsed, null, code);
             }
