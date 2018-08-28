@@ -20,7 +20,6 @@ namespace SignService
         readonly IKeyVaultService keyVaultService;
         readonly ITelemetryLogger telemetryLogger;
         readonly string signToolName;
-        readonly string manifestLocation;
 
         public AzureSignToolSignService(ILogger<AzureSignToolSignService> logger,
                                             IKeyVaultService keyVaultService,
