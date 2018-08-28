@@ -16,6 +16,9 @@ variables:
 
 steps:
 
+- powershell: scripts/Install-WindowsSdkISO.ps1 17738
+  displayName: Insider SDK
+
 - task: DotNetCoreCLI@2
   displayName: Copy sdk files locally before build
   inputs:
