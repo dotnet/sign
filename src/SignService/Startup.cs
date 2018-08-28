@@ -27,11 +27,41 @@ namespace SignService
     public class Startup
     {
         readonly IHostingEnvironment environment;
-
+        readonly string contentPath;
+        public static string ManifestLocation { get; private set; }
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
             environment = env;
             Configuration = configuration;
+
+            contentPath = env.ContentRootPath;
+            // If we're running on Azure App Services, we have to invoke from the underlying
+            // location due to CSRSS/registration-free COM manifest issues
+
+            // running on azure
+            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("REGION_NAME")))
+            {
+                var home = Environment.GetEnvironmentVariable("HOME_EXPANDED");
+                if (!string.IsNullOrWhiteSpace(home))
+                {
+                    contentPath = $@"{home}\site\wwwroot";
+                }
+            }
+
+            var is64bit = IntPtr.Size == 8;
+            var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+            ManifestLocation = Path.Combine(contentPath, "tools", "SDK", is64bit ? "x64" : "x86", "SignTool.exe.manifest");
+
+            //
+            // Ensure we invoke wintrust!DllMain before we get too far.
+            // This will call wintrust!RegisterSipsFromIniFile and read in wintrust.dll.ini
+            // to swap out some local SIPs. Internally, wintrust will call LoadLibraryW
+            // on each DLL= entry, so we need to also adjust our DLL search path or we'll
+            // load unwanted system-provided copies.
+            //
+            Kernel32.SetDllDirectoryW(basePath);
+            Kernel32.LoadLibraryW($@"{basePath}\wintrust.dll");
+            Kernel32.LoadLibraryW($@"{basePath}\mssign32.dll");
         }
 
         public IConfiguration Configuration { get; }
@@ -134,7 +164,7 @@ namespace SignService
             var fxDir = is64bit ? "Framework64" : "Framework";
             var netfxDir = $@"{windir}\Microsoft.NET\{fxDir}\v4.0.30319";
             AddEnvironmentPaths(new[] { netfxDir });
-
+            
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -159,22 +189,9 @@ namespace SignService
 
         void ConfigureWindowsSdkFiles(WindowsSdkFiles options)
         {
-            var contentPath = environment.ContentRootPath;
-
-            // If we're running on Azure App Services, we have to invoke from the underlying
-            // location due to CSRSS/registration-free COM manifest issues
-
-            // running on azure
-            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("REGION_NAME")))
-            {
-                var home = Environment.GetEnvironmentVariable("HOME_EXPANDED");
-                if (!string.IsNullOrWhiteSpace(home))
-                {
-                    contentPath = $@"{home}\site\wwwroot";
-                }
-            }
-
-            options.MakeAppxPath = Path.Combine(contentPath, "tools\\SDK\\makeappx.exe");
+            var is64bit = IntPtr.Size == 8;
+            var basePath = Path.Combine(contentPath, $"tools\\SDK\\{(is64bit ? "x64" : "x86")}");
+            options.MakeAppxPath = Path.Combine(basePath, "makeappx.exe");
         }
 
         class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
