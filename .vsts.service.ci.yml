@@ -11,6 +11,7 @@ trigger:
       - version.json
 
 queue: Hosted VS2017
+
 variables: 
   BuildConfiguration: Release
 
