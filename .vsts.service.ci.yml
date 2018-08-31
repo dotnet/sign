@@ -17,7 +17,7 @@ variables:
 
 steps:
 
-- powershell: scripts/Install-WindowsSdkISO.ps1 17733
+- powershell: scripts/Install-WindowsSdkISO.ps1 17744
   displayName: Insider SDK
 
 - task: DotNetCoreCLI@2
