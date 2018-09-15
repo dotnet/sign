@@ -7,10 +7,11 @@ trigger:
     include:
       - src/SignService/*
       - .editorconfig
-      - .vsts.service.ci.yml
+      - azure-pipelines.server.yml
       - version.json
 
-queue: Hosted VS2017
+pool:
+  vmImage: vs2017-win2016
 
 variables: 
   BuildConfiguration: Release
