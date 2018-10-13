@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ namespace InstallUtility
         static readonly Uri RedirectUri = new Uri("urn:ietf:wg:oauth:2.0:oob");
         static ActiveDirectoryClient graphClient;
         static string environment = string.Empty;
+        static string serviceRoot = string.Empty;
 
         const string SignServerName = "SignService Server";
         const string SingClientName = "SignClient App";
@@ -52,7 +54,8 @@ namespace InstallUtility
                 return;
             }
 
-            graphClient = new ActiveDirectoryClient(new Uri($"{graphResourceId}{token.TenantId}"), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, ClientId)).AccessToken);
+            serviceRoot = $"{graphResourceId}{token.TenantId}";
+            graphClient = new ActiveDirectoryClient(new Uri(serviceRoot), async () => (await authContext.AcquireTokenSilentAsync(graphResourceId, ClientId)).AccessToken);
 
             if (args.Length > 0)
             {
@@ -93,7 +96,7 @@ namespace InstallUtility
             else
             {
                 // Ensure the Key Vault SP exists, as it might not if a key vault hasn't been created yet
-                await EnsureServicePrincipalExists("cfa8b339-82a2-471a-a3c9-0fc0be7a4093");
+                await EnsureServicePrincipalExists("cfa8b339-82a2-471a-a3c9-0fc0be7a4093", null);
 
                 var appName = $"{serverDisplayNamePrefix}{Guid.NewGuid()}";
                 Console.WriteLine($"Creating application '{appName}'");
@@ -106,7 +109,7 @@ namespace InstallUtility
             }
 
             Console.WriteLine("Updating application....");
-            var serverApp = await ConfigureApplication(applicationId);
+            var serverApp = await ConfigureApplication(applicationId, user);
             var clientApp = await EnsureClientAppExists(serverApp.application, user);
             Console.WriteLine("Update complete.");
 
@@ -492,12 +495,40 @@ namespace InstallUtility
                         Value = password,
                         EndDate = DateTime.UtcNow.AddYears(200)
                     }
-                },
-                Owners = new[] { owner }
+                }
             };
 
             await graphClient.Applications.AddApplicationAsync(application);
+            await AddApplicationOwner(application, owner);
+
             return (Guid.Parse(application.ObjectId), password);
+        }
+
+        static async Task AddApplicationOwner(IApplication application, IUser owner)
+        {
+            await AddOwner("applications", application.ObjectId, owner);
+        }
+
+        static async Task AddServicePrincipalOwner(IServicePrincipal servicePrincipal, IUser owner)
+        {
+
+            await AddOwner("servicePrincipals", servicePrincipal.ObjectId, owner);
+        }
+
+        static async Task AddOwner(string type, string objectId, IUser owner)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Add("Authorization", authResult.CreateAuthorizationHeader());
+
+                var payload = $"{{\"url\":\"{serviceRoot}/directoryObjects/{owner.ObjectId}\"}}";
+                var stringContent = new StringContent(payload, Encoding.UTF8, "application/json");
+
+                var result = await httpClient.PostAsync($"{serviceRoot}/{type}/{objectId}/$links/owners?api-version=1.6", stringContent);
+                result.EnsureSuccessStatusCode();
+
+                var output = await result.Content.ReadAsStringAsync();
+            }
         }
 
         static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication, User owner)
@@ -518,8 +549,9 @@ namespace InstallUtility
                     AvailableToOtherTenants = false,
                     Owners = new[] { owner }
                 };
-                
+
                 await graphClient.Applications.AddApplicationAsync(app);
+                await AddApplicationOwner(app, owner);
             }
 
             // Get the user_impersonation scope from the service
@@ -550,12 +582,12 @@ namespace InstallUtility
 
             await app.UpdateAsync();
 
-            var clientSp = await EnsureServicePrincipalExists(app.AppId);
+            var clientSp = await EnsureServicePrincipalExists(app.AppId, owner);
 
             return (app, clientSp);
         }
 
-        static async Task<(IApplication application, IServicePrincipal servicePrincipal)> ConfigureApplication(Guid appObjId)
+        static async Task<(IApplication application, IServicePrincipal servicePrincipal)> ConfigureApplication(Guid appObjId, IUser owner)
         {
 
             var appFetcher = graphClient.Applications.GetByObjectId(appObjId.ToString());
@@ -692,12 +724,12 @@ namespace InstallUtility
             }
 
 
-            var serverSp = await EnsureServicePrincipalExists(app.AppId);
+            var serverSp = await EnsureServicePrincipalExists(app.AppId, owner);
 
             return (app, serverSp);
         }
 
-        static async Task<IServicePrincipal> EnsureServicePrincipalExists(string appid)
+        static async Task<IServicePrincipal> EnsureServicePrincipalExists(string appid, IUser owner)
         {
             // see if it exists already
             var sc = await graphClient.ServicePrincipals.Where(sp => sp.AppId == appid).Expand(sp => sp.AppRoleAssignments).ExecuteAsync();
@@ -713,6 +745,11 @@ namespace InstallUtility
                 };
 
                 await graphClient.ServicePrincipals.AddServicePrincipalAsync(s);
+
+                if (owner != null)
+                {
+                    await AddServicePrincipalOwner(s, owner);
+                }
             }
 
             return s;
