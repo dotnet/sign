@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.SourceLink.Vsts.Git" Version="1.0.0-beta-63127-02" PrivateAssets="All"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <SourceLinkVstsGitHost Include="dev.azure.com" />
+  </ItemGroup>
+
 </Project>
