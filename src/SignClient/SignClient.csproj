@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.8" />
-    <PackageReference Include="Refit" Version="4.6.16" />
+    <PackageReference Include="Refit" Version="4.6.48" />
   </ItemGroup>
 
 </Project>
