@@ -137,7 +137,12 @@ namespace SignClient
 
                 HttpResponseMessage response;
 
-                response = await client.SignFile(input, fileList.HasValue() ? new FileInfo(ExpandFilePath(fileList.Value())) : null, HashMode.Sha256, name.Value(), description.Value(), description.Value());
+                response = await client.SignFile(input,
+                                                 fileList.HasValue() ? new FileInfo(ExpandFilePath(fileList.Value())) : null,
+                                                 HashMode.Sha256,
+                                                 name.Value(),
+                                                 description.Value(),
+                                                 descriptionUrl.Value());
 
                 // Check response
 
