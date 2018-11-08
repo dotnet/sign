@@ -10,6 +10,18 @@ trigger:
       - azure-pipelines.server.yml
       - version.json
 
+pr:
+  branches:
+    include:
+      - master
+      - rel/*
+  paths:
+    include:
+      - src/SignService/*
+      - .editorconfig
+      - azure-pipelines.server.yml
+      - version.json
+
 pool:
   vmImage: vs2017-win2016
 
@@ -44,4 +56,3 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\website
     artifactType: container
     artifactName: SignService
-  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
