@@ -11,6 +11,19 @@ trigger:
       - version.json
       - scripts/*
 
+pr:
+  branches:
+    include:
+      - master
+      - rel/*
+  paths:
+    include:
+      - src/SignClient/*
+      - .editorconfig
+      - azure-pipelines.client.yml
+      - version.json
+      - scripts/*
+
 pool:
   vmImage: vs2017-win2016
 
@@ -35,7 +48,8 @@ steps:
     SignClientUser: $(SignClientUser)
     SignClientSecret: $(SignClientSecret)
     ArtifactDirectory: $(Build.ArtifactStagingDirectory)\Client
-  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+  condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
+
 
 - task: PublishBuildArtifacts@1
   displayName: Publish SignClient Artifact
@@ -43,4 +57,3 @@ steps:
     pathToPublish: $(Build.ArtifactStagingDirectory)\Client
     artifactType: container
     artifactName: SignClient
-  condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
