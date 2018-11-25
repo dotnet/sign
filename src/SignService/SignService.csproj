@@ -81,7 +81,7 @@
     <PackageReference Include="RSAKeyVaultProvider" Version="1.1.22" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="4.4.1" />
     <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.4.3" />   
-    <PackageReference Include="OpenVsixSignTool.Core" Version="0.1.11-ge02fa8e902" />   
+    <PackageReference Include="OpenVsixSignTool.Core" Version="0.3.2" />
     
   </ItemGroup>
 
