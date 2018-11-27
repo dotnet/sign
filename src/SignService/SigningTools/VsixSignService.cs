@@ -47,13 +47,13 @@ namespace SignService.SigningTools
             // Dual isn't supported, use sha256
             var alg = hashMode == HashMode.Sha1 ? HashAlgorithmName.SHA1 : HashAlgorithmName.SHA256;
             
-            var config = new RsaSignConfigurationSet
-            {
-                FileDigestAlgorithm = alg,
-                PkcsDigestAlgorithm = alg,
-                SigningCertificate = await keyVaultService.GetCertificateAsync(),
-                Rsa = await keyVaultService.ToRSA()
-            };
+            var config = new SignConfigurationSet
+            (
+                fileDigestAlgorithm: alg,
+                signatureDigestAlgorithm: alg,
+                publicCertificate: await keyVaultService.GetCertificateAsync(),
+                signingKey: await keyVaultService.ToRSA()
+            );
 
             try
             {
@@ -67,13 +67,13 @@ namespace SignService.SigningTools
             }
             finally
             {
-                config.Rsa?.Dispose();
+                config.SigningKey?.Dispose();
             }
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
 
-        async Task<bool> Sign(string file, RsaSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg) 
+        async Task<bool> Sign(string file, SignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
         {
             var retry = TimeSpan.FromSeconds(5);
             var attempt = 1;
@@ -102,7 +102,7 @@ namespace SignService.SigningTools
             throw new Exception($"Could not sign {file}");
         }
 
-        async Task<bool> RunSignTool(string file, RsaSignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
+        async Task<bool> RunSignTool(string file, SignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
         {
             // Append a sha256 signature
             using (var package = OpcPackage.Open(file, OpcPackageFileMode.ReadWrite))
@@ -117,7 +117,7 @@ namespace SignService.SigningTools
                 var signBuilder = package.CreateSignatureBuilder();
                 signBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
 
-                var signature = await signBuilder.SignAsync(config);
+                var signature = signBuilder.Sign(config);
 
                 var failed = false;
                 if (timestampUrl != null)
