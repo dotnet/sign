@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - master
+      - rel/*
+  paths:
+    include:
+      - src/SignService/*
+      - .editorconfig
+      - azure-pipelines.server.yml
+      - version.json
+
+pr:
+  branches:
+    include:
+      - master
+      - rel/*
+  paths:
+    include:
+      - src/SignService/*
+      - .editorconfig
+      - azure-pipelines.server.yml
+      - version.json
+
+pool:
+  vmImage: vs2017-win2016
+
+variables: 
+  BuildConfiguration: Release
+
+steps:
+
+- powershell: scripts/Install-WindowsSdkISO.ps1 17763
+  displayName: Insider SDK
+
+- task: DotNetCoreCLI@2
+  displayName: Copy sdk files locally before build
+  inputs:
+    command: custom
+    projects: src/SignService/SignService.csproj
+    custom: msbuild
+    arguments: '/p:Configuration=$(BuildConfiguration) /t:PrebuildScript'
+
+- task: DotNetCoreCLI@2
+  displayName: Build and Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: src/SignService/SignService.csproj
+    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\'
+    zipAfterPublish: True
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish SignService Artifact
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)\website
+    artifactType: container
+    artifactName: SignService
