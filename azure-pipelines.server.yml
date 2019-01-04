@@ -35,6 +35,10 @@ steps:
 - powershell: scripts/Install-WindowsSdkISO.ps1 17763
   displayName: Insider SDK
 
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '2.2.100'
+
 - task: DotNetCoreCLI@2
   displayName: Copy sdk files locally before build
   inputs:
