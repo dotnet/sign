@@ -95,7 +95,7 @@ A `B1` or higher instance works for this. The service keeps its runtime configur
    - `AzureAd--ClientId`
    - `AzureAd--ClientSecret`
    - `AzureAd--TenantId`
-6. In your website [configuration](https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure), add the URL to the Key Vault as a configuration option `ConfigurationKeyVaultUrl`. That's where the app will pull its configuration from.
+6. In your website [configuration](https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure), add the URL to the Key Vault as a configuration option `ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT`. That's where the app will pull its configuration from. Also set `ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED` to `true`.
 
 ## 4. Update `ReplyUrl`
 
@@ -109,11 +109,11 @@ There are many ways to push code to App Services. You can publish directly from 
 
 While generally discouraged for production scenarios, you can use VS to quickly publish to your App Service. Open the solution, right-click the "SignService" project and select `Publish...` and follow the prompts.
 
-### Visual Studio Team Services
+### Azure Pipelines
 
 The recommended way to build and publish this service is with Visual Studio Team Services. It's free for up to five users.
 
-Create a new build definition that points to your git clone. This lets you control updates by pulling from the source at your discretion. Use the YAML builds definition point it to the `.vsts.service.ci.yml` file to create a publish artifact.
+Create a new build definition that points to your git clone. This lets you control updates by pulling from the source at your discretion. Use the YAML builds definition point it to the `azure-pipelines.server.yml` file to create a publish artifact.
 
 Create a new Release Management definition and add an App Service task. You may need to create an Azure Service Endpoint if you don't have one for your subscription yet.
 
