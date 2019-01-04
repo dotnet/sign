@@ -1,6 +1,6 @@
 # Deployment
 
-This service must run on Windows Server 2016 due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Website (recommended) *[note: 2016 is being rolled out to app services through early/mid January]*.
+This service must run on Windows Server 2016+ due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Website (recommended) *[note: 2016 is being rolled out to app services through early/mid January]*.
 
 You will need an Azure AD tenant and an Azure subscription. For easiest deployment, it's easiest if you are a global admin on your AAD tenant, but you may opt to have a global admin consent to the applications separately as well. Admin consent is ultimately required, however. The Azure subscription must be tied to the Azure AD tenant you want to use. 
 
