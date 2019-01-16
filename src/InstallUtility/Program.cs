@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure.OData;
+using Newtonsoft.Json;
 
 namespace InstallUtility
 {
@@ -202,10 +203,10 @@ namespace InstallUtility
 
             var raps = await ac.RoleAssignments.ListForScopeAsync(rg.Id, new ODataQuery<RoleAssignmentFilter>(f => f.PrincipalId == spid));
 
-            if (raps.All(ra => ra.Properties.RoleDefinitionId != roleId))
+            if (raps.All(ra => ra.RoleDefinitionId != roleId))
             {
                 // none found, add one
-                var rap = new RoleAssignmentProperties
+                var rap = new RoleAssignmentCreateParameters
                 {
                     PrincipalId = spid,
                     RoleDefinitionId = roleId
@@ -424,7 +425,6 @@ namespace InstallUtility
                             output.Add(grant);
                             break;
                         }
-
                     }
                 }
             }
@@ -531,6 +531,28 @@ namespace InstallUtility
             }
         }
 
+        static async Task SetOptionalClaims(OptionalClaims claims, string objectId)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                httpClient.DefaultRequestHeaders.Add("Authorization", authResult.CreateAuthorizationHeader());
+
+                var jsonstring = JsonConvert.SerializeObject(claims);
+
+                var payload = $"{{\"optionalClaims\":{jsonstring}}}";
+
+                var msg = new HttpRequestMessage(new HttpMethod("PATCH"), $"{serviceRoot}/applications/{objectId}?api-version=1.6")
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
+                };
+
+                var result = await httpClient.SendAsync(msg);
+                result.EnsureSuccessStatusCode();
+
+                var output = await result.Content.ReadAsStringAsync();
+            }
+        }
+
         static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication, User owner)
         {
             // Display Name of the app. The app id is of the sign service it goes to
@@ -595,6 +617,8 @@ namespace InstallUtility
             var app = await appFetcher.ExecuteAsync();
             var appExts = appFetcher.ExtensionProperties;
             var appsExtsList = await appExts.ExecuteAsync();
+            
+
 
             /* We need to add a few things to the application entry. We leave the redirect URI to the portal for now,
              * though that should be https://host/signin-oidc
@@ -715,6 +739,20 @@ namespace InstallUtility
                         await appExts.AddExtensionPropertyAsync(prop);
                     }
                 }
+
+                // Set optional claims
+                var optionalClaims = new OptionalClaims
+                {
+                    accessToken = (from ep in extensionProperties
+                                   select new ClaimInformation
+                                   {
+                                       name = $"extension_{app.AppId.Replace("-", "")}_{ep.Name}",
+                                       source = "user",
+                                       essential = true
+                                   }).ToArray()
+                };
+
+                await SetOptionalClaims(optionalClaims, appObjId.ToString());
             }
             catch (Exception)
             {
@@ -722,7 +760,6 @@ namespace InstallUtility
                 Console.WriteLine("Warning: You do not have permission to create the required extension attributes, skipped.");
                 Console.WriteLine("A Global Admin must access the Admin UI, navigate to 'Adv Setup' and click on 'Register Extension Properties'");
             }
-
 
             var serverSp = await EnsureServicePrincipalExists(app.AppId, owner);
 

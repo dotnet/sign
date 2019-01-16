@@ -10,7 +10,6 @@ namespace SignService.Services
         string TimestampUrl { get; }
         string KeyVaultUrl { get; }
         string CertificateName { get; }
-        string IncomingAccessToken { get; }
     }
 
     class HttpContextUser : IUser
@@ -29,8 +28,6 @@ namespace SignService.Services
 
         public string KeyVaultUrl => currentUser.FindFirst("keyVaultUrl")?.Value;
 
-        public string CertificateName => currentUser.FindFirst("keyVaultCertificateName")?.Value;
-
-        public string IncomingAccessToken => currentUser.FindFirst("access_token")?.Value;
+        public string CertificateName => currentUser.FindFirst("keyVaultCertificateName")?.Value;        
     }
 }

@@ -4,8 +4,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SignService.Models;
 
 namespace SignService.Services
@@ -25,18 +26,18 @@ namespace SignService.Services
     public class UserAdminService : IUserAdminService
     {
         readonly AdminConfig configuration;
-        readonly AzureAdOptions azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly IApplicationConfiguration applicationConfiguration;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
 
-        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
+        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureADOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
         {
             this.configuration = configuration.Value;
-            this.azureAdOptions = azureAdOptions.Value;
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.applicationConfiguration = applicationConfiguration;
-            this.graphHttpService = graphHttpService;
-            extensionPrefix = $"extension_{azureAdOptions.Value.ClientId.Replace("-", "")}_";
+            this.graphHttpService = graphHttpService;            
+            extensionPrefix = $"extension_{this.azureAdOptions.ClientId.Replace("-", "")}_";
         }
 
         public async Task RegisterExtensionPropertiesAsync()
@@ -86,7 +87,6 @@ namespace SignService.Services
 
             var appExts = await graphHttpService.Get<ExtensionProperty>(uri).ConfigureAwait(false);
 
-
             foreach (var prop in extensionProperties)
             {
                 // Only add it if it doesn't exist already
@@ -98,6 +98,22 @@ namespace SignService.Services
                                                   .ConfigureAwait(false);
                 }
             }
+
+            var appId = azureAdOptions.ClientId.Replace("-", "");
+
+            // Set optional claims since we want these extension attributes to be included in the access token
+            var optionalClaims = new OptionalClaims
+            {
+                accessToken = (from ep in extensionProperties
+                               select new ClaimInformation
+                               {
+                                   name = $"extension_{appId}_{ep.Name}",
+                                   source = "user",
+                                   essential = true
+                               }).ToArray()
+            };
+
+            await SetOptionalClaims(optionalClaims, applicationConfiguration.ApplicationObjectId);
         }
 
         public async Task UnRegisterExtensionPropertiesAsync()
@@ -290,6 +306,16 @@ namespace SignService.Services
             }
         }
 
+        async Task SetOptionalClaims(OptionalClaims claims, string objectId)
+        {
+
+            var jsonstring = JsonConvert.SerializeObject(claims);
+
+            var payload = $"{{\"optionalClaims\":{jsonstring}}}";
+
+            await graphHttpService.Patch($"{configuration.GraphInstance}{azureAdOptions.TenantId}/applications/{objectId}?api-version=1.6", payload, true);            
+        }
+
         static string GetRandomPassword()
         {
             // From @vcsjones, thanks!
@@ -307,6 +333,18 @@ namespace SignService.Services
 
                 return builder.ToString();
             }
+        }
+
+        class OptionalClaims
+        {
+            public ClaimInformation[] accessToken { get; set; }
+        }
+
+        class ClaimInformation
+        {
+            public string name { get; set; }
+            public string source { get; set; }
+            public bool essential { get; set; }
         }
 
     }

@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +21,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
+using SignService.Authentication;
 using SignService.Services;
 using SignService.SigningTools;
 using SignService.Utils;
@@ -78,15 +84,29 @@ namespace SignService
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             // Add framework services.
-            services.AddAuthentication(sharedOptions =>
-                                       {
-                                           //  sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                                           //sharedOptions.DefaultAuthenticateScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                                           sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                                       })
-                    .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options))
-                    .AddAzureAd(options => Configuration.Bind("AzureAd", options))
-                    .AddCookie();
+            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
+                    .AddAzureAD(options => Configuration.Bind("AzureAd", options))
+                    .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
+
+            services.Configure<CookieAuthenticationOptions>(AzureADDefaults.CookieScheme, options => options.Events = new CookieAuthenticationEventsHandler());
+
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
+            {
+                options.TokenValidationParameters.RoleClaimType = "roles";
+                options.TokenValidationParameters.NameClaimType = "name";
+                options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                options.Scope.Add("offline_access");
+                options.Events = new OpenIdConnectEventsHandler();
+            });
+
+            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
+            {
+                options.Audience = Configuration["AzureAd:Audience"];
+                options.TokenValidationParameters.RoleClaimType = "roles";
+                options.TokenValidationParameters.NameClaimType = "name";
+                options.Events = new JwtBearerEventsHandler();
+            });
+
 
             services.AddSession();
 
