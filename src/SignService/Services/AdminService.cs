@@ -25,15 +25,13 @@ namespace SignService.Services
 
     public class UserAdminService : IUserAdminService
     {
-        readonly AdminConfig configuration;
         readonly AzureADOptions azureAdOptions;
         readonly IApplicationConfiguration applicationConfiguration;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
 
-        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureADOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
+        public UserAdminService(IOptionsSnapshot<AzureADOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
         {
-            this.configuration = configuration.Value;
             this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.applicationConfiguration = applicationConfiguration;
             this.graphHttpService = graphHttpService;            
@@ -313,7 +311,7 @@ namespace SignService.Services
 
             var payload = $"{{\"optionalClaims\":{jsonstring}}}";
 
-            await graphHttpService.Patch($"{configuration.GraphInstance}{azureAdOptions.TenantId}/applications/{objectId}?api-version=1.6", payload, true);            
+            await graphHttpService.Patch($"/applications/{objectId}?api-version=1.6", payload, true);            
         }
 
         static string GetRandomPassword()
