@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Azure.KeyVault;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -29,10 +26,10 @@ namespace SignService.Services
         X509Certificate2 certificate;
         KeyIdentifier keyIdentifier;
         readonly IOptionsSnapshot<ResourceIds> settings;
-        readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
+        readonly AzureADOptions aadOptions;
     
 
-        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, ILogger<KeyVaultService> logger)
+        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureADOptions> aadOptions, ILogger<KeyVaultService> logger)
         {
             Task<string> Authenticate(string authority, string resource, string scope)
             {
@@ -42,7 +39,7 @@ namespace SignService.Services
             client = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(Authenticate));
 
             this.settings = settings;
-            this.aadOptions = aadOptions;
+            this.aadOptions = aadOptions.Get(AzureADDefaults.AuthenticationScheme);
         }
 
         public CertificateInfo CertificateInfo { get; private set; }
@@ -53,8 +50,8 @@ namespace SignService.Services
         {
             if (AccessToken == null)
             {
-                var context = new AuthenticationContext($"{aadOptions.Value.AADInstance}{aadOptions.Value.TenantId}", null); // No token caching
-                var credential = new ClientCredential(aadOptions.Value.ClientId, aadOptions.Value.ClientSecret);
+                var context = new AuthenticationContext($"{aadOptions.Instance}{aadOptions.TenantId}", null); // No token caching
+                var credential = new ClientCredential(aadOptions.ClientId, aadOptions.ClientSecret);
 
 
                 AuthenticationResult result = null;

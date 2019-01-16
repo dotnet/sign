@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -16,21 +16,21 @@ namespace SignService.Services
 {
     public class GraphHttpService : IGraphHttpService
     {
-        readonly AzureAdOptions azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly AdminConfig adminConfig;
         readonly AuthenticationContext adalContext;
         static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
         readonly string graphResourceId;
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IUser user, IHttpContextAccessor contextAccessor)
+        public GraphHttpService(IOptionsSnapshot<AzureADOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IUser user, IHttpContextAccessor contextAccessor)
         {
-            this.azureAdOptions = azureAdOptions.Value;
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.adminConfig = adminConfig.Value;
             graphResourceId = resources.Value.GraphId;
 
             var userId = user.ObjectId;
 
-            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
+            adalContext = new AuthenticationContext($"{this.azureAdOptions.Instance}{this.azureAdOptions.TenantId}", new ADALSessionCache(userId, contextAccessor));
         }
 
         public async Task<List<T>> Get<T>(string url)

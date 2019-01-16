@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SignService.Models;
@@ -27,18 +26,18 @@ namespace SignService.Services
     public class UserAdminService : IUserAdminService
     {
         readonly AdminConfig configuration;
-        readonly AzureAdOptions azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly IApplicationConfiguration applicationConfiguration;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
 
-        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
+        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureADOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
         {
             this.configuration = configuration.Value;
-            this.azureAdOptions = azureAdOptions.Value;
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.applicationConfiguration = applicationConfiguration;
-            this.graphHttpService = graphHttpService;
-            extensionPrefix = $"extension_{azureAdOptions.Value.ClientId.Replace("-", "")}_";
+            this.graphHttpService = graphHttpService;            
+            extensionPrefix = $"extension_{this.azureAdOptions.ClientId.Replace("-", "")}_";
         }
 
         public async Task RegisterExtensionPropertiesAsync()

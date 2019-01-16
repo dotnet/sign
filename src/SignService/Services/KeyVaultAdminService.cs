@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
@@ -33,7 +33,7 @@ namespace SignService.Services
     {
         readonly AuthenticationContext adalContext;
         readonly string resourceGroup;
-        readonly AzureAdOptions azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly AdminConfig adminConfig;
         readonly Guid tenantId;
         readonly Guid clientId;
@@ -44,7 +44,7 @@ namespace SignService.Services
         readonly IApplicationConfiguration applicationConfiguration;
         readonly ResourceIds resources;
 
-        public KeyVaultAdminService(IOptionsSnapshot<AzureAdOptions> azureAdOptions,
+        public KeyVaultAdminService(IOptionsSnapshot<AzureADOptions> azureAdOptions,
                                     IOptionsSnapshot<AdminConfig> adminConfig,
                                     IOptionsSnapshot<ResourceIds> resources,
                                     IGraphHttpService graphHttpService,
@@ -54,9 +54,11 @@ namespace SignService.Services
         {
             userId = user.ObjectId;
             tenantId = Guid.Parse(user.TenantId);
-            clientId = Guid.Parse(azureAdOptions.Value.ClientId);
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
 
-            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
+            clientId = Guid.Parse(this.azureAdOptions.ClientId);
+
+            adalContext = new AuthenticationContext($"{this.azureAdOptions.Instance}{this.azureAdOptions.TenantId}", new ADALSessionCache(userId, contextAccessor));
             resourceGroup = adminConfig.Value.ResourceGroup;
 
             kvManagmentClient = new KeyVaultManagementClient(new AutoRestCredential<KeyVaultManagementClient>(GetAppToken))
@@ -67,7 +69,7 @@ namespace SignService.Services
             };
             kvClient = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(GetAppTokenForKv));
 
-            this.azureAdOptions = azureAdOptions.Value;
+            
             this.adminConfig = adminConfig.Value;
             this.graphHttpService = graphHttpService;
             this.applicationConfiguration = applicationConfiguration;
