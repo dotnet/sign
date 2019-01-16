@@ -6,6 +6,7 @@ trigger:
   paths:
     include:
       - src/SignService/*
+      - scripts/Install-WindowsSdkISO.ps1
       - .editorconfig
       - azure-pipelines.server.yml
       - version.json
@@ -18,6 +19,7 @@ pr:
   paths:
     include:
       - src/SignService/*
+      - scripts/Install-WindowsSdkISO.ps1
       - .editorconfig
       - azure-pipelines.server.yml
       - version.json

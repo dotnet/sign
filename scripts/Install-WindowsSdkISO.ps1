@@ -41,51 +41,115 @@ function Download-File
         $headers.Add("If-None-Match", [System.IO.File]::ReadAllText($etagFile))
     }
 
-    try
-    {
-        # Dramatically speeds up download performance
-        $ProgressPreference = 'SilentlyContinue'
-        $response = Invoke-WebRequest -Headers $headers -Uri $downloadUrl -PassThru -OutFile $downloadPath -UseBasicParsing
-    }
-    catch [System.Net.WebException]
-    {
-        $response = $_.Exception.Response
-    }
+        
+    #$response = Invoke-WebRequest -Headers $headers -Uri $downloadUrl -PassThru -OutFile $downloadPath -UseBasicParsing
 
-    if ($response.StatusCode -eq 200)
-    {
-        Unblock-File $downloadPath
-        [System.IO.File]::WriteAllText($etagFile, $response.Headers["ETag"])
+    # From https://stackoverflow.com/a/54102582
+    try {
+        $request = [System.Net.HttpWebRequest]::Create($downloadUrl)
+        $headers.GetEnumerator() | % { $request.Headers.Add($_.Key, $_.Value) }
 
-        $downloadDestTemp = $downloadPath;
+        #$request.set_Timeout(5000) # 5 second timeout
+        $response = $request.GetResponse()
+        $total_bytes = $response.ContentLength
+        $response_stream = $response.GetResponseStream()
 
-        # Delete and rename to final dest
-        if (Test-Path -PathType Container $downloadDest)
+        try {
+            # 256KB works better on my machine for 1GB and 10GB files
+            # See https://www.microsoft.com/en-us/research/wp-content/uploads/2004/12/tr-2004-136.pdf
+            # Cf. https://stackoverflow.com/a/3034155/10504393
+            $buffer = New-Object -TypeName byte[] -ArgumentList 256KB
+            $target_stream = [System.IO.File]::Create($downloadPath)
+
+            $timer = New-Object -TypeName timers.timer
+            $timer.Interval = 1000 # Update progress every second
+            $timer_event = Register-ObjectEvent -InputObject $timer -EventName Elapsed -Action {
+                $Global:update_progress = $true
+            }
+            $timer.Start()
+
+            do {
+                $count = $response_stream.Read($buffer, 0, $buffer.length)
+                $target_stream.Write($buffer, 0, $count)
+                $downloaded_bytes = $downloaded_bytes + $count
+
+                if ($Global:update_progress) {
+                    $percent = $downloaded_bytes / $total_bytes
+                    $status = @{
+                        completed  = "{0,6:p2} Completed" -f $percent
+                        downloaded = "{0:n0} MB of {1:n0} MB" -f ($downloaded_bytes / 1MB), ($total_bytes / 1MB)
+                        speed      = "{0,7:n0} KB/s" -f (($downloaded_bytes - $prev_downloaded_bytes) / 1KB)
+                        eta        = "eta {0:hh\:mm\:ss}" -f (New-TimeSpan -Seconds (($total_bytes - $downloaded_bytes) / ($downloaded_bytes - $prev_downloaded_bytes)))
+                    }
+                    $progress_args = @{
+                        Activity        = "Downloading $downloadUrl"
+                        Status          = "$($status.completed) ($($status.downloaded)) $($status.speed) $($status.eta)"
+                        PercentComplete = $percent * 100
+                    }
+                    Write-Progress @progress_args
+
+                    $prev_downloaded_bytes = $downloaded_bytes
+                    $Global:update_progress = $false
+                }
+            } while ($count -gt 0)
+        }
+        catch [System.Net.WebException]
         {
-            [System.IO.Directory]::Delete($downloadDest, $true)
+            $response = $_.Exception.Response
+        }        
+        finally
+        {
+            if ($timer) { $timer.Stop() }
+            if ($timer_event) { Unregister-Event -SubscriptionId $timer_event.Id }
+            if ($target_stream) { $target_stream.Dispose() }
+            # If file exists and $count is not zero or $null, than script was interrupted by user
+            if ((Test-Path $downloadPath) -and $count) { Remove-Item -Path $downloadPath }
+
+            
+            if ($response_stream) { $response_stream.Dispose() }
         }
 
-        Move-Item -Force $downloadDestTemp $downloadDest
-        Write-Host "Updated $downloadName"
-    }
-    elseif ($response.StatusCode -eq 304)
-    {
-        Write-Host "Done"
-    }
-    else
-    {
-        Write-Host
-        Write-Warning "Failed to fetch updated file from $downloadUrl"
-        if (!(Test-Path $downloadDest))
+        if ($response.StatusCode -eq 200)
         {
-            throw "$downloadName was not found at $downloadDest"
+            Unblock-File $downloadPath
+            [System.IO.File]::WriteAllText($etagFile, $response.Headers["ETag"])
+
+            $downloadDestTemp = $downloadPath;
+
+            # Delete and rename to final dest
+            if (Test-Path -PathType Container $downloadDest)
+            {
+                [System.IO.Directory]::Delete($downloadDest, $true)
+            }
+
+            Move-Item -Force $downloadDestTemp $downloadDest
+            Write-Host "Updated $downloadName"
+        }
+        elseif ($response.StatusCode -eq 304)
+        {
+            Write-Host "Done"
         }
         else
         {
-            Write-Warning "$downloadName may be out of date"
+            Write-Host
+            Write-Warning "Failed to fetch updated file from $downloadUrl"
+            if (!(Test-Path $downloadDest))
+            {
+                throw "$downloadName was not found at $downloadDest"
+            }
+            else
+            {
+                Write-Warning "$downloadName may be out of date"
+            }
         }
-    }
 
+
+    }
+    finally {
+            
+        if ($response) { $response.Dispose() }
+    }
+    
     return $downloadDest
 }
 
