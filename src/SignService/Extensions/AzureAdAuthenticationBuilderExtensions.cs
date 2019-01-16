@@ -90,20 +90,37 @@ namespace Microsoft.AspNetCore.Authentication
                     // Prime the KV access token concurrently
                     var kvService = contextAccessor.HttpContext.RequestServices.GetRequiredService<IKeyVaultService>();
                     var kvTokenTask = kvService.InitializeAccessTokenAsync(incomingToken);
-                    var result = await context.AcquireTokenAsync(graphResourceId, credential, new UserAssertion(incomingToken));
 
-                    
-
-                    var url = $"{adminOptions.Value.GraphInstance}{_azureOptions.TenantId}/users/{oid}?api-version=1.6";
+                    // see if we need to get tokens from the graph at all, might be in the claim if the manifest was updated
+                    var hasClaimsInToken = bool.TryParse(identity.Claims.FirstOrDefault(c => c.Type == "extn.signServiceConfigured")?.Value, out var signServiceConfigured);
                     GraphUser user = null;
-                    using (var client = new HttpClient())
+
+                    if (hasClaimsInToken) 
                     {
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        var resp = await client.GetAsync(url).ConfigureAwait(false);
-                        if (resp.IsSuccessStatusCode)
+                        user = new GraphUser
                         {
-                            user = JsonConvert.DeserializeObject<GraphUser>(await resp.Content.ReadAsStringAsync().ConfigureAwait(false));
+                            DisplayName = identity.Claims.FirstOrDefault(c => c.Type == "name")?.Value,
+                            SignServiceConfigured = signServiceConfigured,
+                            KeyVaultUrl = identity.Claims.FirstOrDefault(c => c.Type == "extn.keyVaultUrl")?.Value,
+                            KeyVaultCertificateName = identity.Claims.FirstOrDefault(c => c.Type == "extn.keyVaultCertificateName")?.Value,
+                            TimestampUrl = identity.Claims.FirstOrDefault(c => c.Type == "extn.timestampUrl")?.Value
+                        };
+                    }
+                    else // get them from the graph directly
+                    {
+                        var result = await context.AcquireTokenAsync(graphResourceId, credential, new UserAssertion(incomingToken));
+
+                        var url = $"{adminOptions.Value.GraphInstance}{_azureOptions.TenantId}/users/{oid}?api-version=1.6";
+
+                        using (var client = new HttpClient())
+                        {
+                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                            var resp = await client.GetAsync(url).ConfigureAwait(false);
+                            if (resp.IsSuccessStatusCode)
+                            {
+                                user = JsonConvert.DeserializeObject<GraphUser>(await resp.Content.ReadAsStringAsync().ConfigureAwait(false));
+                            }
                         }
                     }
 
