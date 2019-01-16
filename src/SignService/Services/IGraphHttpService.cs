@@ -10,6 +10,7 @@ namespace SignService.Services
         Task<T> GetValue<T>(string url);
         Task<TOutput> Post<TInput, TOutput>(string url, TInput item, bool accessAsUser = false);
         Task Patch<TInput>(string url, TInput item, bool accessAsUser = false);
+        Task Patch(string url, string contentBody, bool accessAsUser = false);
         Task Delete(string url, bool accessAsUser = false);
     }
 }

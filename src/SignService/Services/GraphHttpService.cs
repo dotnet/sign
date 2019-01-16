@@ -145,11 +145,16 @@ namespace SignService.Services
 
         public async Task Patch<TInput>(string url, TInput item, bool accessAsUser = false)
         {
+            var contentBody = JsonConvert.SerializeObject(item);
+
+            await Patch(url, contentBody, accessAsUser).ConfigureAwait(false);
+        }
+
+        public async Task Patch(string url, string contentBody, bool accessAsUser = false)
+        {
             using (var client = await CreateClient(accessAsUser)
                                     .ConfigureAwait(false))
             {
-                var contentBody = JsonConvert.SerializeObject(item);
-
                 var request = new HttpRequestMessage(PatchMethod, $"{azureAdOptions.TenantId}/{url}")
                 {
                     Content = new StringContent(contentBody, Encoding.UTF8, "application/json")
@@ -161,7 +166,7 @@ namespace SignService.Services
                 if (!response.IsSuccessStatusCode)
                 {
                     var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API to update user: \n" +
+                    throw new WebException("Error Calling the Graph API to update: \n" +
                                            JsonConvert.SerializeObject(formatted, Formatting.Indented));
                 }
             }
