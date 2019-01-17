@@ -38,6 +38,20 @@ Documentation is here:
 - [Deployment](docs/Deployment.md)
 - [Administration](docs/Administration.md)
 
+# Migrating to 1.1
+
+There is a new optimization in the 1.1 release that takes advantage of optional claims in the access token to improve per-request time from from the SignClient. To enable this, a global admin needs to do one of two things:
+
+- Run the `InstallUtillity` again. Use the same command line parameter (if you used one). It will find the existing application registration and prompt you to update. You don't need to recreate the resource groups.
+
+OR
+
+- Sign into the admin UI, and on the `Adv Setup` tab, select `Register Extension Attributes`. There isn't any indication currently, but you just need to select it once (clicking it again won't hurt). **Caution:** Do not click the `Unregister Extension Attributes` option.  
+
+You can verify it worked by going to the Azure AD Admin portal -> Application Registrations -> SignService - Server ... -> Manifest. In the manifest, you should see data in the `optionalClaims` property; if it's `null`, then the optimization is not enabled.
+
+The service will keep working without this optimization until 2.0, so while optional, it's recommended that it be enabled.
+
 ## Migrating to 1.0
 
 The latest 1.0 release runs on ASP.NET Core 2.1. If you have the service configured, there's
