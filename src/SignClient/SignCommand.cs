@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Security;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
-using Newtonsoft.Json.Linq;
 using Refit;
 
 namespace SignClient
@@ -90,23 +88,18 @@ namespace SignClient
                         if (username.HasValue())
                         {
                             // ROPC flow
-                            var pca = new PublicClientApplication(clientId, authority);
+                            var pca = new PublicClientApplication(clientId, authority);                            
+                            var secret = new NetworkCredential("", clientSecret.Value()).SecurePassword;                            
 
-                            var scope = $"{resourceId}/user_impersonation";
-
-                            var secret = new NetworkCredential("", clientSecret.Value()).SecurePassword;
-                            var tokenResult = await pca.AcquireTokenByUsernamePasswordAsync(new[] { scope }, username.Value(), secret);
-
+                            var tokenResult = await pca.AcquireTokenByUsernamePasswordAsync(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret);
                             return tokenResult.AccessToken;
                         }
                         else
                         {
                             // Client credential flow
-
                             var context = new ConfidentialClientApplication(clientId, authority, "urn:ietf:wg:oauth:2.0:oob", new ClientCredential(clientSecret.Value()), new TokenCache(), new TokenCache());
-
-                            var scope = $"{resourceId}/.default";
-                            var res = await context.AcquireTokenForClientAsync(new[] { scope });
+                            
+                            var res = await context.AcquireTokenForClientAsync(new[] { $"{resourceId}/.default" });
                             return res.AccessToken;
                         }
                     }
