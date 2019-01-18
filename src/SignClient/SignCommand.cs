@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Newtonsoft.Json.Linq;
+using Microsoft.Identity.Client;
 using Refit;
 
 namespace SignClient
@@ -88,39 +88,18 @@ namespace SignClient
                         if (username.HasValue())
                         {
                             // ROPC flow
-                            // Cannot use ADAL since there's no support for ROPC in .NET Core
-                            var parameters = new Dictionary<string, string>
-                            {
-                                {"resource", resourceId},
-                                {"client_id", clientId},
-                                {"grant_type", "password"},
-                                {"username", username.Value()},
-                                {"password", clientSecret.Value()},
-                            };
-                            using (var adalClient = new HttpClient())
-                            {
-                                var result = await adalClient.PostAsync($"{authority}/oauth2/token", new FormUrlEncodedContent(parameters));
+                            var pca = new PublicClientApplication(clientId, authority);                            
+                            var secret = new NetworkCredential("", clientSecret.Value()).SecurePassword;                            
 
-                                var res = await result.Content.ReadAsStringAsync();
-                                
-                                var jObj = JObject.Parse(res);
-
-                                if (!result.IsSuccessStatusCode)
-                                {
-                                    var desc = jObj["error_description"].Value<string>();
-                                    throw new AuthenticationException(desc);
-                                }
-
-                                var token = jObj["access_token"]
-                                    .Value<string>();
-                                return token;
-                            }
+                            var tokenResult = await pca.AcquireTokenByUsernamePasswordAsync(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret);
+                            return tokenResult.AccessToken;
                         }
                         else
                         {
                             // Client credential flow
-                            var context = new AuthenticationContext(authority);
-                            var res = await context.AcquireTokenAsync(resourceId, new ClientCredential(clientId, clientSecret.Value()));
+                            var context = new ConfidentialClientApplication(clientId, authority, "urn:ietf:wg:oauth:2.0:oob", new ClientCredential(clientSecret.Value()), new TokenCache(), new TokenCache());
+                            
+                            var res = await context.AcquireTokenForClientAsync(new[] { $"{resourceId}/.default" });
                             return res.AccessToken;
                         }
                     }
