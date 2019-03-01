@@ -25,19 +25,16 @@ pr:
       - version.json
 
 pool:
-  vmImage: vs2017-win2016
+  vmImage: windows-2019
 
 variables: 
   BuildConfiguration: Release
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 steps:
-
-- powershell: scripts/Install-WindowsSdkISO.ps1 17763
-  displayName: Insider SDK
-
 - task: DotNetCoreInstaller@0
   inputs:
-    version: '2.2.100'
+    version: '2.2.200'
 
 - task: DotNetCoreCLI@2
   displayName: Copy sdk files locally before build
