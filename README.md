@@ -1,7 +1,9 @@
 # Authenticode Signing Service and Client
 
+[<img align="right" src="https://xunit.github.io/images/dotnet-fdn-logo.png" width="100" />](https://www.dotnetfoundation.org/)
+
 This project aims to make it easier to integrate Authenticode signing into a CI process by providing a secured API
-for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD and Azure Key Vault's HSM for security.
+for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD and Azure Key Vault's HSM for security. It is part of the [.NET Foundation](https://www.dotnetfoundation.org/), and operates under their [code of conduct](https://www.dotnetfoundation.org/code-of-conduct). It is licensed under [MIT](https://opensource.org/licenses/MIT) (an OSI approved license).
 
 ## Architecture and Security
 
@@ -46,7 +48,7 @@ There is a new optimization in the 1.1 release that takes advantage of optional 
 
 OR
 
-- Sign into the admin UI, and on the `Adv Setup` tab, select `Register Extension Attributes`. There isn't any indication currently, but you just need to select it once (clicking it again won't hurt). **Caution:** Do not click the `Unregister Extension Attributes` option.  
+- Sign into the admin UI, and on the `Adv Setup` tab, select `Register Extension Attributes`. There isn't any indication currently, but you just need to select it once (clicking it again won't hurt). **Caution:** Do not click the `Unregister Extension Attributes` option.
 
 You can verify it worked by going to the Azure AD Admin portal -> Application Registrations -> SignService - Server ... -> Manifest. In the manifest, you should see data in the `optionalClaims` property; if it's `null`, then the optimization is not enabled.
 
@@ -115,7 +117,7 @@ if([string]::IsNullOrEmpty($env:SignClientSecret)){
 $appSettings = "$currentDirectory\appsettings.json"
 $nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
 
-dotnet tool install --tool-path "$currentDirectory" SignClient 
+dotnet tool install --tool-path "$currentDirectory" SignClient
 
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
@@ -136,15 +138,15 @@ usage: SignClient <command> [<args>]
     sign     Sign a file
 ```
 
-signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any 
-supported file types. It is strongly recommended to use the `filter` parameter to explicitly 
-list the files inside the archive that should be signed. Signing is recursive; it will sign 
-contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one. 
-After signing contents of the archive, the archive itself is signed if supported 
+signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any
+supported file types. It is strongly recommended to use the `filter` parameter to explicitly
+list the files inside the archive that should be signed. Signing is recursive; it will sign
+contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one.
+After signing contents of the archive, the archive itself is signed if supported
 (currently `VSIX`).
 
 ```
-usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] 
+usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>]
                   [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
 
     -c, --config <arg>            Path to config json file
@@ -177,10 +179,10 @@ You should also use the `filter` parameter with the file list to sign, something
 
 To get certificates into Key Vault, there are several options:
 
-1. Use the Admin UI to create a CSR and then merge the certificate. 
+1. Use the Admin UI to create a CSR and then merge the certificate.
 2. Upload a pfx file using the Portal, CLI, or PowerShell
 3. Use this GUI tool: https://github.com/elize1979/AzureKeyVaultExplorer. Before you can login, you'll need to go to the settings, put your tenant name in and change the login endpoint to `https://login.microsoftonline.com/common`. The tool makes it easy to upload and manage certificates in Key Vault.
 
 # Contributing
 
-I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/onovotny/SignService/issues) to discuss first. Security reviews are also much appreciated! 
+I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/onovotny/SignService/issues) to discuss first. Security reviews are also much appreciated!
