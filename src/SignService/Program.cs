@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 
 namespace SignService
 {
@@ -22,6 +24,11 @@ namespace SignService
                                                     builder.AddJsonFile(@"App_Data\appsettings.json", true, true);
 
                                                 }))
-                   .UseStartup<Startup>();
+                   .UseStartup<Startup>()
+                   .ConfigureLogging(logging =>
+                   {
+                       logging.AddApplicationInsights();
+                       logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
+                   });
     }
 }

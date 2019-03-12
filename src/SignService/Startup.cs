@@ -77,6 +77,7 @@ namespace SignService
         {
             // Configure SnapshotCollector from application settings
             services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+            services.AddApplicationInsightsTelemetry();
 
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
@@ -159,8 +160,6 @@ namespace SignService
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
-            loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
 
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new VersionTelemetry());
 
