@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
+    <WinSdk18362BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.18362.0\</WinSdk18362BinDir>
     <WinSdk17763BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17763.0\</WinSdk17763BinDir>
     <WinSdk17134BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17134.0\</WinSdk17134BinDir>
     <WinSdk16299BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.16299.0\</WinSdk16299BinDir>
@@ -12,6 +13,7 @@
 
     <ProbingFile>makeappx.exe</ProbingFile>
 
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk18362BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17763BinDir)x64\$(ProbingFile)')">$(WinSdk17763BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)x64\$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)x64\$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>
@@ -65,7 +67,7 @@
   <ItemGroup>
     <PackageReference Include="AzureSign.Core" Version="2.0.17" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.6.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.3" />
+    <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.4" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
@@ -78,8 +80,8 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.9.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="1.2.14" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="1.2.23" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.1.22" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="4.5.1" />
     <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.4.3" />   
