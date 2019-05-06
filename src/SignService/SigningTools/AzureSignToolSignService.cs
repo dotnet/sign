@@ -105,6 +105,7 @@ namespace SignService
             var code = 0;
             try
             {
+                logger.LogInformation("Signing using manifest {file}", Startup.ManifestLocation);
                 using (var ctx = new Kernel32.ActivationContext(Startup.ManifestLocation))
                 {
                     code = signer.SignFile(file, description, descriptionUrl, null);
