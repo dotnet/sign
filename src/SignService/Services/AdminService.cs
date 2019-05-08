@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace SignService.Services
         {
             this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.applicationConfiguration = applicationConfiguration;
-            this.graphHttpService = graphHttpService;            
+            this.graphHttpService = graphHttpService;
             extensionPrefix = $"extension_{this.azureAdOptions.ClientId.Replace("-", "")}_";
         }
 
@@ -311,26 +312,50 @@ namespace SignService.Services
 
             var payload = $"{{\"optionalClaims\":{jsonstring}}}";
 
-            await graphHttpService.Patch($"/applications/{objectId}?api-version=1.6", payload, true);            
+            await graphHttpService.Patch($"/applications/{objectId}?api-version=1.6", payload, true);
         }
 
         static string GetRandomPassword()
         {
-            // From @vcsjones, thanks!
             const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:,.?/~();";
             const int PASSWORD_LENGTH = 16; // AAD has a max of 16 char passwords
-            var builder = new StringBuilder();
-            using (var rng = RandomNumberGenerator.Create())
+            Span<char> builder = stackalloc char[PASSWORD_LENGTH];
+            for (var i = 0; i < PASSWORD_LENGTH; i++)
             {
-                var data = new byte[PASSWORD_LENGTH];
-                rng.GetBytes(data);
-                for (var i = 0; i < data.Length; i++)
-                {
-                    builder.Append(ALLOWED_CHARS[data[i] % ALLOWED_CHARS.Length]);
-                }
-
-                return builder.ToString();
+                builder[i] = ALLOWED_CHARS[RandomInt32(0, ALLOWED_CHARS.Length)];
             }
+
+            return new string(builder);
+        }
+
+        //TODO: replace with RandomNumberGenerator.GetInt32 when on .NET Core 3
+        static int RandomInt32(int fromInclusive, int toExclusive)
+        {
+            uint range = (uint)toExclusive - (uint)fromInclusive - 1;
+
+            if (range == 0)
+            {
+                return fromInclusive;
+            }
+
+            uint mask = range;
+            mask |= mask >> 1;
+            mask |= mask >> 2;
+            mask |= mask >> 4;
+            mask |= mask >> 8;
+            mask |= mask >> 16;
+
+            Span<uint> resultSpan = stackalloc uint[1];
+            uint result;
+
+            do
+            {
+                RandomNumberGenerator.Fill(MemoryMarshal.AsBytes(resultSpan));
+                result = mask & resultSpan[0];
+            }
+            while (result > range);
+
+            return (int)result + fromInclusive;
         }
 
         class OptionalClaims
