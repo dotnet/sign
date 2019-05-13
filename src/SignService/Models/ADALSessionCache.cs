@@ -40,7 +40,8 @@ namespace SignService.Models
         {
             sessionLock.EnterReadLock();
             //this.Deserialize((byte[])HttpContext.Current.Session[CacheId]);
-            Deserialize(httpContext.HttpContext.Session.Get(cacheId));
+            DeserializeAdalV3(httpContext.HttpContext.Session.Get(cacheId));
+            
             sessionLock.ExitReadLock();
         }
 
@@ -52,7 +53,7 @@ namespace SignService.Models
             HasStateChanged = false;
 
             // Reflect changes in the persistent store
-            httpContext.HttpContext.Session.Set(cacheId, this.Serialize());
+            httpContext.HttpContext.Session.Set(cacheId, this.SerializeAdalV3());
             sessionLock.ExitWriteLock();
         }
 
