@@ -71,7 +71,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.2.2" />    
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.2.5" />    
     <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4" />    
     <PackageReference Include="Microsoft.Azure.ActiveDirectory.GraphClient" Version="2.1.1" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.3" />    
