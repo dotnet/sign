@@ -78,7 +78,7 @@
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager" Version="2.0.0-preview" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.4" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.9.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.10.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="1.2.23" />
