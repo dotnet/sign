@@ -83,7 +83,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="1.2.23" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.1.22" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.0.5" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.1.0" />
     <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.4.3" />   
     <PackageReference Include="OpenVsixSignTool.Core" Version="0.3.2" />
     
