@@ -33,7 +33,7 @@ namespace SignService.SigningTools
         };
 
         public MageSignService(IOptionsMonitor<AzureADOptions> aadOptions,
-                               IHostingEnvironment hostingEnvironment,
+                               IWebHostEnvironment hostingEnvironment,
                                IKeyVaultService keyVaultService,
                                IServiceProvider serviceProvider,
                                ILogger<MageSignService> logger,

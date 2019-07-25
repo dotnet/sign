@@ -13,12 +13,15 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -32,10 +35,10 @@ namespace SignService
 {
     public class Startup
     {
-        readonly IHostingEnvironment environment;
+        readonly IWebHostEnvironment environment;
         readonly string contentPath;
         public static string ManifestLocation { get; private set; }
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             environment = env;
             Configuration = configuration;
@@ -140,13 +143,19 @@ namespace SignService
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
-            services.AddMvc()
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1); ;
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
-                              IHostingEnvironment env,
+                              IWebHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               IServiceProvider serviceProvider,
                               IApplicationConfiguration applicationConfiguration)
@@ -189,14 +198,18 @@ namespace SignService
             app.UseStaticFiles();
             app.UseSession();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
-                       {
-                           routes.MapRoute(
-                               name: "default",
-                               template: "{controller=Home}/{action=Index}/{id?}");
-                       });
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
         }
 
         static void AddEnvironmentPaths(IEnumerable<string> paths)
