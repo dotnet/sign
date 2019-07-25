@@ -318,7 +318,7 @@ namespace SignService.Services
         static string GetRandomPassword()
         {
             const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:,.?/~();";
-            const int PASSWORD_LENGTH = 16; // AAD has a max of 16 char passwords
+            const int PASSWORD_LENGTH = 64; // AAD has a max of 256 char passwords
             Span<char> builder = stackalloc char[PASSWORD_LENGTH];
             for (var i = 0; i < PASSWORD_LENGTH; i++)
             {
