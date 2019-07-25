@@ -8,18 +8,13 @@
     <WinSdk17763BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17763.0\</WinSdk17763BinDir>
     <WinSdk17134BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17134.0\</WinSdk17134BinDir>
     <WinSdk16299BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.16299.0\</WinSdk16299BinDir>
-    <WinSdk15063BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.15063.0\</WinSdk15063BinDir>
-    <WinSdk14393BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.14393.0\</WinSdk14393BinDir>
 
     <ProbingFile>makeappx.exe</ProbingFile>
 
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk18362BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17763BinDir)x64\$(ProbingFile)')">$(WinSdk17763BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)x64\$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
-    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)x64\$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>
-    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk15063BinDir)x64\$(ProbingFile)')">$(WinSdk15063BinDir)</WinSdkBinDir>
-    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk14393BinDir)x64\$(ProbingFile)')">$(WinSdk14393BinDir)</WinSdkBinDir>
-    
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)x64\$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>    
     
     <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools\</NetSdkBinDir>
   </PropertyGroup>
