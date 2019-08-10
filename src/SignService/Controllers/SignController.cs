@@ -24,7 +24,8 @@ namespace SignService.Controllers
         }
 
         [HttpPost]
-        [DisableRequestSizeLimit]
+        [RequestFormLimits(MultipartBodyLengthLimit = 4294967295)]
+        [RequestSizeLimit(4294967295)]
         public async Task<IActionResult> SignFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
         {
             if (source == null)
