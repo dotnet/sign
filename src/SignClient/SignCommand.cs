@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -91,11 +92,11 @@ namespace SignClient
                             var pca = PublicClientApplicationBuilder.Create(clientId)
                                                                     .WithAuthority(authority)
                                                                     .Build();
-                            
+
                             var secret = new NetworkCredential("", clientSecret.Value()).SecurePassword;
 
                             var tokenResult = await pca.AcquireTokenByUsernamePassword(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret).ExecuteAsync();
-                            
+
                             return tokenResult.AccessToken;
                         }
                         else
@@ -111,7 +112,9 @@ namespace SignClient
                     }
                 };
 
+
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
+                client.Client.Timeout = Timeout.InfiniteTimeSpan;
 
                 // Prepare input/output file
                 var input = new FileInfo(ExpandFilePath(inputFile.Value()));
