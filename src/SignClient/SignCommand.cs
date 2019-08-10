@@ -141,7 +141,8 @@ namespace SignClient
 
                 using (var fs = output.OpenWrite())
                 {
-                    await str.CopyToAsync(fs);
+                    // Use sync stream copy to workaround issue with large files and https streams
+                    str.CopyTo(fs);
                 }
             }
             catch (AuthenticationException e)
