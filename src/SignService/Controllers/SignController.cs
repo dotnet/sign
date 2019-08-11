@@ -49,7 +49,7 @@ namespace SignService.Controllers
                 }
 
                 return;
-            }
+            }            
 
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
@@ -68,6 +68,8 @@ namespace SignService.Controllers
                 // Keep the input extenstion as it has significance.
                 inputFileName = Path.ChangeExtension(inputFileName, ext);
             }
+
+            logger.LogInformation("SignFile called for {source}. Using {inputFileName} locally.", source.FileName, inputFileName);
 
             if (source.Length > 0)
             {
