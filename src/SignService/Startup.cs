@@ -243,8 +243,6 @@ namespace SignService
 
         class UserTelemetry : TelemetryInitializerBase
         {
-            readonly IHttpContextAccessor httpContextAccessor;
-
             public UserTelemetry(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
             {                
             }
