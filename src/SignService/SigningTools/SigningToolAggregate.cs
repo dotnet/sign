@@ -44,7 +44,23 @@ namespace SignService.SigningTools
         }
 
 
-        public bool IsFileExtensionRegistered(string extension) => codeSignServices.ContainsKey(extension);
+        public bool IsFileExtensionRegistered(string extension)
+        {
+            if (codeSignServices.ContainsKey(extension))
+                return true;
+
+            switch (extension)
+            {
+                // archives
+                case ".zip":
+                case ".appxupload":
+                case ".msixupload":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        
 
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
