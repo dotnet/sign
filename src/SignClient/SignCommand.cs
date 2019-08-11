@@ -114,7 +114,7 @@ namespace SignClient
 
 
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
-                client.Client.Timeout = Timeout.InfiniteTimeSpan;
+                client.Client.Timeout = Timeout.InfiniteTimeSpan; // TODO: Make configurable on command line
 
                 // Prepare input/output file
                 var input = new FileInfo(ExpandFilePath(inputFile.Value()));
