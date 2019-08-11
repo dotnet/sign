@@ -54,7 +54,7 @@ namespace SignService.Controllers
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             Directory.CreateDirectory(dataDir);
-            Response.OnCompleted((o) => CleanUpTempDirectory(o), dataDir);
+            Response.OnCompleted((state) => DirectoryUtility.SafeDeleteAsync((string)state), dataDir);
 
             // this might have two files, one containing the file list
             // The first will be the package and the second is the filter
@@ -106,12 +106,6 @@ namespace SignService.Controllers
                 Response.ContentLength = fs.Length;
                 // Output the signed file
                 await fs.CopyToAsync(Response.Body);
-            }
-
-            Task CleanUpTempDirectory(object state)
-            {
-                DirectoryUtility.SafeDelete((string)state);
-                return Task.CompletedTask;
             }
         }
 
