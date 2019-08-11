@@ -62,8 +62,8 @@ namespace SignService.Controllers
             // Use a random filename rather than trusting source.FileName as it could be anything
             var inputFileName = Path.Combine(dataDir, Path.GetRandomFileName());
             // However check its extension as it might be important (e.g. zip, bundle, etc)
-            var ext = Path.GetExtension(source.FileName).ToLowerInvariant();
-            if (IsExtensionImportant(ext))
+            var ext = Path.GetExtension(source.FileName)?.ToLowerInvariant();
+            if (codeSignAggregate.IsFileExtensionRegistered(ext))
             {
                 // Keep the input extenstion as it has significance.
                 inputFileName = Path.ChangeExtension(inputFileName, ext);
@@ -106,33 +106,6 @@ namespace SignService.Controllers
                 Response.ContentLength = fs.Length;
                 // Output the signed file
                 await fs.CopyToAsync(Response.Body);
-            }
-        }
-
-        static bool IsExtensionImportant(string extension)
-        {
-            switch (extension)
-            {
-                // archives
-                case ".zip":
-                case ".nupkg":
-                case ".snupkg":
-                case ".vsix":
-                case ".appxupload":
-                case ".msixupload":
-                // appxs
-                case ".appx":
-                case ".eappx":
-                case ".msix":
-                case ".emsix":
-                // bundles
-                case ".appxbundle":
-                case ".eappxbundle":
-                case ".msixbundle":
-                case ".emsixbundle":
-                    return true;
-                default:
-                    return false;
             }
         }
     }
