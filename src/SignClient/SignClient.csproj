@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
-    <RollForward>Major</RollForward>
+    <!--<RollForward>Major</RollForward>-->
     <Description>Client-side tools for Sign Service</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

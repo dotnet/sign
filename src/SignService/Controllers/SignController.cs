@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using SignService.SigningTools;
 using SignService.Utils;
@@ -25,7 +26,8 @@ namespace SignService.Controllers
 
         [HttpPost]
         [RequestFormLimits(MultipartBodyLengthLimit = 4294967295)]
-        [RequestSizeLimit(4294967295)]
+        [RequestSizeLimit(4294967295)]       
+        
         public async Task<IActionResult> SignFile(IFormFile source, IFormFile filelist, HashMode hashMode, string name, string description, string descriptionUrl)
         {
             if (source == null)
@@ -40,7 +42,6 @@ namespace SignService.Controllers
                 return BadRequest(ModelState);
             }
 
-
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(dataDir);
 
@@ -48,6 +49,7 @@ namespace SignService.Controllers
             // The first will be the package and the second is the filter
 
             var inputFileName = Path.Combine(dataDir, source.FileName);
+            var sendingResponse = false;
             try
             {
                 if (source.Length > 0)
@@ -69,26 +71,25 @@ namespace SignService.Controllers
                 }
 
                 // This will block until it's done
-                await codeSignAggregate.Submit(hashMode, name, description, descriptionUrl, new[] { inputFileName }, filter);
+                await codeSignAggregate.Submit(hashMode, name, description, descriptionUrl, new[] { inputFileName }, filter);            
 
-                var fi = new FileInfo(inputFileName);
-                byte[] buffer;
-                using (var ms = new MemoryStream(new byte[fi.Length]))
+                Response.OnCompleted(() =>
                 {
-                    using (var fs = fi.OpenRead())
-                    {
-                        await fs.CopyToAsync(ms);
-                    }
+                    DirectoryUtility.SafeDelete(dataDir);
+                    return Task.CompletedTask;
+                });
 
-                    buffer = ms.ToArray();
-                }
-
+                sendingResponse = true;
                 // Send it back with the original file name
-                return File(buffer, "application/octet-stream", source.FileName);
+                return PhysicalFile(inputFileName, "application/octet-stream", source.FileName);
             }
             finally
             {
-                DirectoryUtility.SafeDelete(dataDir);
+                // There was some other error, make sure to clean up
+                if(!sendingResponse)
+                {
+                    DirectoryUtility.SafeDelete(dataDir);
+                }                
             }
         }
     }
