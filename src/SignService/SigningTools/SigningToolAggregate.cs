@@ -11,6 +11,8 @@ namespace SignService.SigningTools
     public interface ISigningToolAggregate
     {
         Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter);
+
+        bool IsFileExtensionRegistered(string extension);
     }
 
     public class SigningToolAggregate : ISigningToolAggregate
@@ -42,6 +44,7 @@ namespace SignService.SigningTools
         }
 
 
+        public bool IsFileExtensionRegistered(string extension) => codeSignServices.ContainsKey(extension);
 
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
