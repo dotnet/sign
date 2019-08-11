@@ -54,64 +54,64 @@ namespace SignService.Controllers
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             Directory.CreateDirectory(dataDir);
-            try
+            Response.OnCompleted((o) => CleanUpTempDirectory(o), dataDir);
+
+            // this might have two files, one containing the file list
+            // The first will be the package and the second is the filter
+
+            // Use a random filename rather than trusting source.FileName as it could be anything
+            var inputFileName = Path.Combine(dataDir, Path.GetRandomFileName());
+            // However check its extension as it might be important (e.g. zip, bundle, etc)
+            var ext = Path.GetExtension(source.FileName).ToLowerInvariant();
+            if (IsExtensionImportant(ext))
             {
-                // this might have two files, one containing the file list
-                // The first will be the package and the second is the filter
+                // Keep the input extenstion as it has significance.
+                inputFileName = Path.ChangeExtension(inputFileName, ext);
+            }
 
-                // Use a random filename rather than trusting source.FileName as it could be anything
-                var inputFileName = Path.Combine(dataDir, Path.GetRandomFileName());
-                // However check its extension as it might be important (e.g. zip, bundle, etc)
-                var ext = Path.GetExtension(source.FileName).ToLowerInvariant();
-                if (IsExtensionImportant(ext))
+            if (source.Length > 0)
+            {
+                using (var fs = new FileStream(inputFileName, FileMode.Create))
                 {
-                    // Keep the input extenstion as it has significance.
-                    inputFileName = Path.ChangeExtension(inputFileName, ext);
-                }
-
-                if (source.Length > 0)
-                {
-                    using (var fs = new FileStream(inputFileName, FileMode.Create))
-                    {
-                        await source.CopyToAsync(fs);
-                    }
-                }
-
-                var filter = string.Empty;
-                if (filelist != null)
-                {
-                    using (var sr = new StreamReader(filelist.OpenReadStream()))
-                    {
-                        filter = await sr.ReadToEndAsync();
-                        filter = filter.Replace("\r\n", "\n").Trim();
-                    }
-                }
-
-                // This will block until it's done
-                await codeSignAggregate.Submit(hashMode, name, description, descriptionUrl, new[] { inputFileName }, filter);
-
-                // Send it back with the original file name, if it had one
-                if (!string.IsNullOrEmpty(source.FileName))
-                {
-                    var contentDisposition = new ContentDispositionHeaderValue("attachment");
-                    contentDisposition.SetHttpFileName(source.FileName);
-                    Response.Headers[HeaderNames.ContentDisposition] = contentDisposition.ToString();
-                }
-
-                Response.ContentType = "application/octet-stream";
-
-                using (var fs = new FileStream(inputFileName, FileMode.Open))
-                {
-                    Response.StatusCode = StatusCodes.Status200OK;
-                    Response.ContentLength = fs.Length;
-                    // Output the signed file
-                    await fs.CopyToAsync(Response.Body);
+                    await source.CopyToAsync(fs);
                 }
             }
-            finally
-            { 
-                // Clean up the temp directory
-                DirectoryUtility.SafeDelete(dataDir);
+
+            var filter = string.Empty;
+            if (filelist != null)
+            {
+                using (var sr = new StreamReader(filelist.OpenReadStream()))
+                {
+                    filter = await sr.ReadToEndAsync();
+                    filter = filter.Replace("\r\n", "\n").Trim();
+                }
+            }
+
+            // This will block until it's done
+            await codeSignAggregate.Submit(hashMode, name, description, descriptionUrl, new[] { inputFileName }, filter);
+
+            // Send it back with the original file name, if it had one
+            if (!string.IsNullOrEmpty(source.FileName))
+            {
+                var contentDisposition = new ContentDispositionHeaderValue("attachment");
+                contentDisposition.SetHttpFileName(source.FileName);
+                Response.Headers[HeaderNames.ContentDisposition] = contentDisposition.ToString();
+            }
+
+            Response.ContentType = "application/octet-stream";
+
+            using (var fs = new FileStream(inputFileName, FileMode.Open, FileAccess.Read, FileShare.None, bufferSize: 1, FileOptions.SequentialScan | FileOptions.DeleteOnClose))
+            {
+                Response.StatusCode = StatusCodes.Status200OK;
+                Response.ContentLength = fs.Length;
+                // Output the signed file
+                await fs.CopyToAsync(Response.Body);
+            }
+
+            Task CleanUpTempDirectory(object state)
+            {
+                DirectoryUtility.SafeDelete((string)state);
+                return Task.CompletedTask;
             }
         }
 
