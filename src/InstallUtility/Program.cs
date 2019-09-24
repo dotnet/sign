@@ -176,7 +176,7 @@ namespace InstallUtility
 
             var accessToken = await authContext.AcquireTokenSilentAsync(azureRmResourceId, ClientId);
 
-            var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken))
+            using var rgc = new ResourceManagementClient(new TokenCredentials(accessToken.AccessToken))
             {
                 SubscriptionId = subscriptionId,
                 BaseUri = new Uri(configuration["AzureRM:Instance"])
@@ -184,7 +184,7 @@ namespace InstallUtility
             var rg = new ResourceGroup(location, name: name);
             rg = await rgc.ResourceGroups.CreateOrUpdateAsync(name, rg);
 
-            var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken))
+            using var ac = new AuthorizationManagementClient(new TokenCredentials(accessToken.AccessToken))
             {
                 SubscriptionId = subscriptionId,
                 BaseUri = new Uri(configuration["AzureRM:Instance"])
@@ -517,40 +517,36 @@ namespace InstallUtility
 
         static async Task AddOwner(string type, string objectId, IUser owner)
         {
-            using (var httpClient = new HttpClient())
-            {
-                httpClient.DefaultRequestHeaders.Add("Authorization", authResult.CreateAuthorizationHeader());
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Authorization", authResult.CreateAuthorizationHeader());
 
-                var payload = $"{{\"url\":\"{serviceRoot}/directoryObjects/{owner.ObjectId}\"}}";
-                var stringContent = new StringContent(payload, Encoding.UTF8, "application/json");
+            var payload = $"{{\"url\":\"{serviceRoot}/directoryObjects/{owner.ObjectId}\"}}";
+            var stringContent = new StringContent(payload, Encoding.UTF8, "application/json");
 
-                var result = await httpClient.PostAsync($"{serviceRoot}/{type}/{objectId}/$links/owners?api-version=1.6", stringContent);
-                result.EnsureSuccessStatusCode();
+            var result = await httpClient.PostAsync($"{serviceRoot}/{type}/{objectId}/$links/owners?api-version=1.6", stringContent);
+            result.EnsureSuccessStatusCode();
 
-                var output = await result.Content.ReadAsStringAsync();
-            }
+            var output = await result.Content.ReadAsStringAsync();
         }
 
         static async Task SetOptionalClaims(OptionalClaims claims, string objectId)
         {
-            using (var httpClient = new HttpClient())
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("Authorization", authResult.CreateAuthorizationHeader());
+
+            var jsonstring = JsonConvert.SerializeObject(claims);
+
+            var payload = $"{{\"optionalClaims\":{jsonstring}}}";
+
+            var msg = new HttpRequestMessage(new HttpMethod("PATCH"), $"{serviceRoot}/applications/{objectId}?api-version=1.6")
             {
-                httpClient.DefaultRequestHeaders.Add("Authorization", authResult.CreateAuthorizationHeader());
+                Content = new StringContent(payload, Encoding.UTF8, "application/json")
+            };
 
-                var jsonstring = JsonConvert.SerializeObject(claims);
+            var result = await httpClient.SendAsync(msg);
+            result.EnsureSuccessStatusCode();
 
-                var payload = $"{{\"optionalClaims\":{jsonstring}}}";
-
-                var msg = new HttpRequestMessage(new HttpMethod("PATCH"), $"{serviceRoot}/applications/{objectId}?api-version=1.6")
-                {
-                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
-                };
-
-                var result = await httpClient.SendAsync(msg);
-                result.EnsureSuccessStatusCode();
-
-                var output = await result.Content.ReadAsStringAsync();
-            }
+            var output = await result.Content.ReadAsStringAsync();
         }
 
         static async Task<(IApplication application, IServicePrincipal servicePrincipal)> EnsureClientAppExists(IApplication serviceApplication, User owner)

@@ -6,22 +6,34 @@ using Microsoft.ApplicationInsights;
 
 namespace SignService.Utils
 {
-    public static class DirectoryUtility
+    public interface IDirectoryUtility
     {
-        static readonly TelemetryClient tc = new TelemetryClient();
+        void DeleteDirectory(string fullPath);
+        void SafeDelete(string path);
+        Task SafeDeleteAsync(string path);
+    }
 
-        public static void SafeDelete(string path)
+    class DirectoryUtility : IDirectoryUtility
+    {        
+        readonly TelemetryClient telemetryClient;
+
+        public DirectoryUtility(TelemetryClient telemetryClient)
+        {
+            this.telemetryClient = telemetryClient;
+        }
+
+        public void SafeDelete(string path)
         {
             PerformSafeAction(() => DeleteDirectory(path));
         }
 
-        public static Task SafeDeleteAsync(string path)
+        public Task SafeDeleteAsync(string path)
         {
             return PerformSafeActionAsync((dir) => DeleteDirectoryAsync(dir), path);
         }
 
         // Deletes an empty folder from disk and the project
-        static void DeleteDirectory(string fullPath)
+        public void DeleteDirectory(string fullPath)
         {
             if (!Directory.Exists(fullPath))
             {
@@ -61,7 +73,7 @@ namespace SignService.Utils
                 return Task.FromException(ex);
             }
 
-            async Task WaitForDeletion(string path)
+            static async Task WaitForDeletion(string path)
             {
                 // The directory is not guaranteed to be gone since there could be
                 // other open handles. Wait, up to half a second, until the directory is gone.
@@ -72,7 +84,7 @@ namespace SignService.Utils
             }
         }
 
-        static void PerformSafeAction(Action action)
+        void PerformSafeAction(Action action)
         {
             try
             {
@@ -80,11 +92,11 @@ namespace SignService.Utils
             }
             catch (Exception e)
             {
-                tc.TrackException(e);
+                telemetryClient.TrackException(e);
             }
         }
 
-        static async Task PerformSafeActionAsync<TState>(Func<TState, Task> action, TState state)
+        async Task PerformSafeActionAsync<TState>(Func<TState, Task> action, TState state)
         {
             try
             {
@@ -92,7 +104,7 @@ namespace SignService.Utils
             }
             catch (Exception e)
             {
-                tc.TrackException(e);
+                telemetryClient.TrackException(e);
             }
         }
 

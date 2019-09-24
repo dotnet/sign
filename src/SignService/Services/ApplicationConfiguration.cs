@@ -70,7 +70,7 @@ namespace SignService.Services
 
 
             var armAccessToken = await authContext.AcquireTokenAsync(resourceIds.Value.AzureRM, clientCredentials);
-            var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))
+            using var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))
             {
                 SubscriptionId = adminConfig.Value.SubscriptionId,
                 BaseUri = new Uri(adminConfig.Value.ArmInstance)

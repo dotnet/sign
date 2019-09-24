@@ -20,11 +20,16 @@ using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 // From: https://github.com/Microsoft/referencesource/blob/7de0d30c7c5ef56ab60fee41fcdb50005d24979a/inc/mansign.cs
 
-#pragma warning disable IDE0016 
-#pragma warning disable IDE0017 
-#pragma warning disable IDE0018 
+#pragma warning disable IDE0003
+#pragma warning disable IDE0016
+#pragma warning disable IDE0017
+#pragma warning disable IDE0018
 #pragma warning disable IDE0019
 #pragma warning disable IDE0029
+#pragma warning disable IDE0032
+#pragma warning disable IDE0049
+#pragma warning disable IDE0051
+#pragma warning disable IDE1006 // Naming Styles
 namespace System.Deployment.Internal.CodeSigning
 {
 
@@ -93,6 +98,8 @@ namespace System.Deployment.Internal.CodeSigning
         // signatures to expire. Normally this OID will be used in conjunction with
         // szOID_PKIX_KP_CODE_SIGNING to indicate new time stamp semantics should be
         // used. Support for this OID was added in WXP.
+
+
         internal const string szOID_KP_LIFETIME_SIGNING = "1.3.6.1.4.1.311.10.3.13";
         internal const string szOID_RSA_signingTime = "1.2.840.113549.1.9.5";
 
@@ -243,7 +250,7 @@ namespace System.Deployment.Internal.CodeSigning
 
     class SignedCmiManifest
     {
-        XmlDocument m_manifestDom = null;
+        readonly XmlDocument m_manifestDom = null;
         CmiStrongNameSignerInfo m_strongNameSignerInfo = null;
         CmiAuthenticodeSignerInfo m_authenticodeSignerInfo = null;
 
@@ -933,16 +940,14 @@ namespace System.Deployment.Internal.CodeSigning
             {
                 var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(manifestDom);
-                using (var sha1 = new SHA1CryptoServiceProvider())
+                using var sha1 = new SHA1CryptoServiceProvider();
+                var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
+                if (hash == null)
                 {
-                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
-                    if (hash == null)
-                    {
-                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                    }
-
-                    return hash;
+                    throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                 }
+
+                return hash;
             }
             else
             {
@@ -964,16 +969,14 @@ namespace System.Deployment.Internal.CodeSigning
 
                 var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(normalizedDom);
-                using (var sha1 = new SHA1CryptoServiceProvider())
+                using var sha1 = new SHA1CryptoServiceProvider();
+                var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
+                if (hash == null)
                 {
-                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
-                    if (hash == null)
-                    {
-                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                    }
-
-                    return hash;
+                    throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                 }
+
+                return hash;
 #if (true) // 
             }
 #endif
@@ -1635,8 +1638,13 @@ namespace System.Deployment.Internal.CodeSigning
         }
     }
 }
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE0003
+#pragma warning restore IDE0032
+#pragma warning restore IDE0049
 #pragma warning restore IDE0016
 #pragma warning restore IDE0017
 #pragma warning restore IDE0018
 #pragma warning restore IDE0019
 #pragma warning restore IDE0029
+#pragma warning restore IDE0051

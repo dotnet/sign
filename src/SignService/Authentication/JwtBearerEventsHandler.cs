@@ -21,8 +21,6 @@ namespace SignService.Authentication
 {
     public class JwtBearerEventsHandler : JwtBearerEvents
     {
-        private readonly TelemetryClient telemetryClient = new TelemetryClient();
-
         public override async Task TokenValidated(TokenValidatedContext context)
         {
             var contextAccessor = context.HttpContext.RequestServices.GetRequiredService<IHttpContextAccessor>();
@@ -71,15 +69,13 @@ namespace SignService.Authentication
 
                     var url = $"{adminOptions.GraphInstance}{azureOptions.TenantId}/users/{oid}?api-version=1.6";
 
-                    using (var client = new HttpClient())
+                    using var client = new HttpClient();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    var resp = await client.GetAsync(url).ConfigureAwait(false);
+                    if (resp.IsSuccessStatusCode)
                     {
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        var resp = await client.GetAsync(url).ConfigureAwait(false);
-                        if (resp.IsSuccessStatusCode)
-                        {
-                            user = JsonConvert.DeserializeObject<GraphUser>(await resp.Content.ReadAsStringAsync().ConfigureAwait(false));
-                        }
+                        user = JsonConvert.DeserializeObject<GraphUser>(await resp.Content.ReadAsStringAsync().ConfigureAwait(false));
                     }
                 }
 
@@ -102,8 +98,6 @@ namespace SignService.Authentication
                 // If we get here, it's an unknown value
                 context.Fail("User is not configured");
             }
-
-            telemetryClient.Context.User.AuthenticatedUserId = upn;
         }
     }
 }

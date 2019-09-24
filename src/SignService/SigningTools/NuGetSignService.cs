@@ -33,7 +33,7 @@ namespace SignService.SigningTools
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
-            await SubmitInternal(hashMode, name, description, descriptionUrl, files);
+            await SubmitInternal(name, files);
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>
@@ -43,7 +43,7 @@ namespace SignService.SigningTools
         };
         public bool IsDefault { get; }
 
-        async Task SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        async Task SubmitInternal(string name, IList<string> files)
         {
             logger.LogInformation("Signing NuGetKeyVaultSignTool job {0} with {1} files", name, files.Count());
             

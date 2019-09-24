@@ -16,12 +16,15 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -36,10 +39,10 @@ namespace SignService
 {
     public class Startup
     {
-        readonly IHostingEnvironment environment;
+        readonly IWebHostEnvironment environment;
         readonly string contentPath;
         public static string ManifestLocation { get; private set; }
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             environment = env;
             Configuration = configuration;
@@ -85,6 +88,8 @@ namespace SignService
 
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+            services.AddSingleton<ITelemetryInitializer, VersionTelemetry>();
+            services.AddSingleton<ITelemetryInitializer, UserTelemetry>();
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -122,6 +127,7 @@ namespace SignService
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
             services.AddSingleton<IApplicationConfiguration, ApplicationConfiguration>();
+            services.AddSingleton<IDirectoryUtility, DirectoryUtility>();
 
             // Add in our User wrapper
             services.AddScoped<IUser, HttpContextUser>();
@@ -144,16 +150,19 @@ namespace SignService
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
-            services.AddMvc()
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1); ;
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
-                              IHostingEnvironment env,
-                              ILoggerFactory loggerFactory,
-                              IServiceProvider serviceProvider,
-                              IHttpContextAccessor httpContextAccessor,
+                              IWebHostEnvironment env,
                               IApplicationConfiguration applicationConfiguration)
         {
             if (env.IsDevelopment())
@@ -165,9 +174,6 @@ namespace SignService
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new VersionTelemetry());
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new UserTelemetry(httpContextAccessor));
 
             // Retreive application specific config from Azure AD
             applicationConfiguration.InitializeAsync().Wait();
@@ -195,14 +201,18 @@ namespace SignService
             app.UseStaticFiles();
             app.UseSession();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
-                       {
-                           routes.MapRoute(
-                               name: "default",
-                               template: "{controller=Home}/{action=Index}/{id?}");
-                       });
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
         }
 
         static void AddEnvironmentPaths(IEnumerable<string> paths)
@@ -221,14 +231,14 @@ namespace SignService
 
         class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
         {
-            readonly IServiceProvider _serviceProvider;
+            readonly IServiceProvider serviceProvider;
 
             public SnapshotCollectorTelemetryProcessorFactory(IServiceProvider serviceProvider) =>
-                _serviceProvider = serviceProvider;
+                this.serviceProvider = serviceProvider;
 
             public ITelemetryProcessor Create(ITelemetryProcessor next)
             {
-                var snapshotConfigurationOptions = _serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
+                var snapshotConfigurationOptions = serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
                 return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
             }
         }
@@ -255,6 +265,11 @@ namespace SignService
                 var identity =  httpContext.User.Identity;
                 if (!identity.IsAuthenticated)
                     return;
+
+
+                var upn = ((ClaimsIdentity)identity).FindFirst("upn")?.Value;
+                if (upn != null)
+                    telemetry.Context.User.AuthenticatedUserId = upn;
 
                 var userId = ((ClaimsIdentity)identity).FindFirst("oid")?.Value;
 

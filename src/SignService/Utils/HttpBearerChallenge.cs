@@ -36,7 +36,7 @@ namespace SignService.Utils
             return true;
         }
 
-        Dictionary<string, string> _parameters = null;
+        readonly Dictionary<string, string> parameters = null;
 
         /// <summary>
         /// Parses an HTTP WWW-Authentication Bearer challenge from a server.
@@ -50,7 +50,7 @@ namespace SignService.Utils
             SourceAuthority = authority;
             SourceUri = requestUri;
 
-            _parameters = new Dictionary<string, string>();
+            parameters = new Dictionary<string, string>();
 
             // Split the trimmed challenge into a set of name=value strings that
             // are comma separated. The value fields are expected to be within
@@ -72,20 +72,20 @@ namespace SignService.Utils
 
                         if (!string.IsNullOrEmpty(key))
                         {
-                            _parameters[key] = value;
+                            parameters[key] = value;
                         }
                     }
                 }
             }
 
             // Minimum set of parameters
-            if (_parameters.Count < 1)
+            if (parameters.Count < 1)
             {
                 throw new ArgumentException("Invalid challenge parameters", "challenge");
             }
 
             // Must specify authorization or authorization_uri
-            if (!_parameters.ContainsKey(Authorization) && !_parameters.ContainsKey(AuthorizationUri))
+            if (!parameters.ContainsKey(Authorization) && !parameters.ContainsKey(AuthorizationUri))
             {
                 throw new ArgumentException("Invalid challenge parameters", "challenge");
             }
@@ -103,7 +103,7 @@ namespace SignService.Utils
         /// <returns>True when the key is found, false when it is not</returns>
         public bool TryGetValue(string key, out string value)
         {
-            return _parameters.TryGetValue(key, out value);
+            return parameters.TryGetValue(key, out value);
         }
 
         /// <summary>
@@ -114,14 +114,12 @@ namespace SignService.Utils
         {
             get
             {
-                var value = string.Empty;
-
-                if (_parameters.TryGetValue("authorization_uri", out value))
+                if (parameters.TryGetValue("authorization_uri", out var value))
                 {
                     return value;
                 }
 
-                if (_parameters.TryGetValue("authorization", out value))
+                if (parameters.TryGetValue("authorization", out value))
                 {
                     return value;
                 }
@@ -138,9 +136,7 @@ namespace SignService.Utils
         {
             get
             {
-                var value = string.Empty;
-
-                if (_parameters.TryGetValue("resource", out value))
+                if (parameters.TryGetValue("resource", out var value))
                 {
                     return value;
                 }
@@ -156,9 +152,7 @@ namespace SignService.Utils
         {
             get
             {
-                var value = string.Empty;
-
-                if (_parameters.TryGetValue("scope", out value))
+                if (parameters.TryGetValue("scope", out var value))
                 {
                     return value;
                 }

@@ -26,6 +26,7 @@ namespace SignService.Services
         X509Certificate2 certificate;
         KeyIdentifier keyIdentifier;
         readonly IOptionsSnapshot<ResourceIds> settings;
+        readonly ILogger<KeyVaultService> logger;
         readonly AzureADOptions aadOptions;
     
 
@@ -39,6 +40,7 @@ namespace SignService.Services
             client = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(Authenticate));
 
             this.settings = settings;
+            this.logger = logger;
             this.aadOptions = aadOptions.Get(AzureADDefaults.AuthenticationScheme);
         }
 
@@ -52,14 +54,10 @@ namespace SignService.Services
             {
                 var context = new AuthenticationContext($"{aadOptions.Instance}{aadOptions.TenantId}", null); // No token caching
                 var credential = new ClientCredential(aadOptions.ClientId, aadOptions.ClientSecret);
-
-
-                AuthenticationResult result = null;
-
-                result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(incomingToken));
-
+                var result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(incomingToken));
                 if (result == null)
                 {
+                    logger.LogError("Failed to authenticate to Key Vault on-behalf-of user");
                     throw new InvalidOperationException("Authentication to Azure failed.");
                 }
 

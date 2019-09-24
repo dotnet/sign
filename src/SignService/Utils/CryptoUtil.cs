@@ -11,29 +11,27 @@ namespace SignService.Utils
         {
             // the data we expect is base64-encoded string data that starts with either
             // a PKCS7 or CERTIFICATE header 
-            using (var sr = new StreamReader(new MemoryStream(data)))
+            using var sr = new StreamReader(new MemoryStream(data));
+            // Read the first line to detect which type of data we're dealing with
+
+            var firstLine = sr.ReadLine();
+
+            X509Certificate2 cert = null;
+
+            if (firstLine.Contains("PKCS7"))
             {
-                // Read the first line to detect which type of data we're dealing with
-
-                var firstLine = sr.ReadLine();
-
-                X509Certificate2 cert = null;
-
-                if (firstLine.Contains("PKCS7"))
-                {
-                    cert = CertificateFromPkcs7Data(data);
-                }
-                else if (firstLine.Contains("CERTIFICATE"))
-                {
-                    cert = CertificateFromCerData(data);
-                }
-                else
-                {
-                    throw new ArgumentException("File does not have either a PKCS7 or CERTIFICATE header", nameof(data));
-                }
-
-                return new X509Certificate2Collection(cert);
+                cert = CertificateFromPkcs7Data(data);
             }
+            else if (firstLine.Contains("CERTIFICATE"))
+            {
+                cert = CertificateFromCerData(data);
+            }
+            else
+            {
+                throw new ArgumentException("File does not have either a PKCS7 or CERTIFICATE header", nameof(data));
+            }
+
+            return new X509Certificate2Collection(cert);
         }
 
         static X509Certificate2 CertificateFromCerData(byte[] data)
@@ -63,18 +61,16 @@ namespace SignService.Utils
             X509Certificate2 bestCertificate = null;
             using (var store = Pkcs7CertificateStore.Create(data))
             {
-                using (var chain = new X509Chain())
+                using var chain = new X509Chain();
+                chain.ChainPolicy.ExtraStore.AddRange(store.Certificates);
+                chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
+                foreach (var cert in store.Certificates)
                 {
-                    chain.ChainPolicy.ExtraStore.AddRange(store.Certificates);
-                    chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllFlags;
-                    foreach (var cert in store.Certificates)
+                    chain.Build(cert);
+                    if (chain.ChainElements.Count > depth)
                     {
-                        chain.Build(cert);
-                        if (chain.ChainElements.Count > depth)
-                        {
-                            bestCertificate = cert;
-                            depth = chain.ChainElements.Count;
-                        }
+                        bestCertificate = cert;
+                        depth = chain.ChainElements.Count;
                     }
                 }
             }

@@ -18,11 +18,13 @@ namespace SignService.Controllers
     {
         readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger logger;
+        readonly IDirectoryUtility directoryUtility;
 
-        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
+        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger, IDirectoryUtility directoryUtility)
         {
             this.codeSignAggregate = codeSignAggregate;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
         }
 
         [HttpPost]
@@ -54,7 +56,7 @@ namespace SignService.Controllers
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             Directory.CreateDirectory(dataDir);
-            Response.OnCompleted((state) => DirectoryUtility.SafeDeleteAsync((string)state), dataDir);
+            Response.OnCompleted((state) => directoryUtility.SafeDeleteAsync((string)state), dataDir);
 
             // this might have two files, one containing the file list
             // The first will be the package and the second is the filter
@@ -73,20 +75,16 @@ namespace SignService.Controllers
 
             if (source.Length > 0)
             {
-                using (var fs = new FileStream(inputFileName, FileMode.Create))
-                {
-                    await source.CopyToAsync(fs);
-                }
+                using var fs = new FileStream(inputFileName, FileMode.Create);
+                await source.CopyToAsync(fs);
             }
 
             var filter = string.Empty;
             if (filelist != null)
             {
-                using (var sr = new StreamReader(filelist.OpenReadStream()))
-                {
-                    filter = await sr.ReadToEndAsync();
-                    filter = filter.Replace("\r\n", "\n").Trim();
-                }
+                using var sr = new StreamReader(filelist.OpenReadStream());
+                filter = await sr.ReadToEndAsync();
+                filter = filter.Replace("\r\n", "\n").Trim();
             }
 
             // This will block until it's done

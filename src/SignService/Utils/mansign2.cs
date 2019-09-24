@@ -26,6 +26,12 @@ using Microsoft.Win32;
 #pragma warning disable IDE0018 
 #pragma warning disable IDE0019
 #pragma warning disable IDE0029
+#pragma warning disable IDE0032
+#pragma warning disable IDE0049
+#pragma warning disable IDE0060
+#pragma warning disable IDE0003
+#pragma warning disable IDE0051
+#pragma warning disable IDE1006 // Naming Styles
 
 namespace System.Deployment.Internal.CodeSigning
 {
@@ -118,7 +124,7 @@ namespace System.Deployment.Internal.CodeSigning
 
     class SignedCmiManifest2
     {
-        XmlDocument m_manifestDom = null;
+        readonly XmlDocument m_manifestDom = null;
         CmiStrongNameSignerInfo m_strongNameSignerInfo = null;
         CmiAuthenticodeSignerInfo m_authenticodeSignerInfo = null;
         readonly bool m_useSha256;
@@ -216,7 +222,7 @@ namespace System.Deployment.Internal.CodeSigning
                 signedXml.SignedInfo.SignatureMethod = Sha256SignatureMethodUri;
             }
 
-            AsymmetricAlgorithm key = null;
+            AsymmetricAlgorithm key;
             var dsigValid = signedXml.CheckSignatureReturningKey(out key);
             m_strongNameSignerInfo.PublicKey = key;
             if (!dsigValid)
@@ -1268,11 +1274,9 @@ namespace System.Deployment.Internal.CodeSigning
             }
             else
             {
-                using (var rsaCsp = new RSACryptoServiceProvider())
-                {
-                    rsaCsp.ImportParameters(((RSA)snKey).ExportParameters(false));
-                    cspPublicKeyBlob = rsaCsp.ExportCspBlob(false);
-                }
+                using var rsaCsp = new RSACryptoServiceProvider();
+                rsaCsp.ImportParameters(((RSA)snKey).ExportParameters(false));
+                cspPublicKeyBlob = rsaCsp.ExportCspBlob(false);
             }
 
             // Now compute the public key token.
@@ -1330,29 +1334,25 @@ namespace System.Deployment.Internal.CodeSigning
 
                 if (useSha256)
                 {
-                    using (var sha2 = new SHA256CryptoServiceProvider())
+                    using var sha2 = new SHA256CryptoServiceProvider();
+                    var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
+                    if (hash == null)
                     {
-                        var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
-                        if (hash == null)
-                        {
-                            throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                        }
-
-                        return hash;
+                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                     }
+
+                    return hash;
                 }
                 else
                 {
-                    using (var sha1 = new SHA1CryptoServiceProvider())
+                    using var sha1 = new SHA1CryptoServiceProvider();
+                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
+                    if (hash == null)
                     {
-                        var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
-                        if (hash == null)
-                        {
-                            throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                        }
-
-                        return hash;
+                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                     }
+
+                    return hash;
                 }
             }
             else
@@ -1378,29 +1378,25 @@ namespace System.Deployment.Internal.CodeSigning
 
                 if (useSha256)
                 {
-                    using (var sha2 = new SHA256CryptoServiceProvider())
+                    using var sha2 = new SHA256CryptoServiceProvider();
+                    var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
+                    if (hash == null)
                     {
-                        var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
-                        if (hash == null)
-                        {
-                            throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                        }
-
-                        return hash;
+                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                     }
+
+                    return hash;
                 }
                 else
                 {
-                    using (var sha1 = new SHA1CryptoServiceProvider())
+                    using var sha1 = new SHA1CryptoServiceProvider();
+                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
+                    if (hash == null)
                     {
-                        var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
-                        if (hash == null)
-                        {
-                            throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                        }
-
-                        return hash;
+                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                     }
+
+                    return hash;
                 }
 
 #if (true) // 
@@ -1853,8 +1849,14 @@ namespace System.Deployment.Internal.CodeSigning
     }
 
 }
+#pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE0032
+#pragma warning restore IDE0049
 #pragma warning restore IDE0016
 #pragma warning restore IDE0017
 #pragma warning restore IDE0018
 #pragma warning restore IDE0019
 #pragma warning restore IDE0029
+#pragma warning restore IDE0003
+#pragma warning restore IDE0051
+#pragma warning restore IDE0060

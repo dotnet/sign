@@ -256,13 +256,13 @@ namespace SignService.Services
             vaultName = vaultName.Substring(0, 24);
 
             // Create uses an OBO so that this only works if the user has contributer+ access to the resource group
-            using (var client = new KeyVaultManagementClient(new AutoRestCredential<KeyVaultManagementClient>(GetOboToken)))
+            using var client = new KeyVaultManagementClient(new AutoRestCredential<KeyVaultManagementClient>(GetOboToken))
             {
-                client.SubscriptionId = adminConfig.SubscriptionId;
-                var vault = await client.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
+                SubscriptionId = adminConfig.SubscriptionId
+            };
+            var vault = await client.Vaults.CreateOrUpdateAsync(resourceGroup, vaultName, parameters).ConfigureAwait(false);
 
-                return ToVaultModel(vault);
-            }
+            return ToVaultModel(vault);
         }
 
         public async Task<List<CertificateModel>> GetCertificatesInVaultAsync(string vaultUri)
@@ -361,8 +361,8 @@ namespace SignService.Services
         public async Task<CertificateOperation> CancelCsrAsync(string vaultName, string certificateName)
         {
             var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
-            var op = await kvClient.UpdateCertificateOperationAsync(vault.VaultUri, certificateName, true).ConfigureAwait(false);
-            op = await kvClient.DeleteCertificateOperationAsync(vault.VaultUri, certificateName).ConfigureAwait(false);
+            _ = await kvClient.UpdateCertificateOperationAsync(vault.VaultUri, certificateName, true).ConfigureAwait(false);
+            var op = await kvClient.DeleteCertificateOperationAsync(vault.VaultUri, certificateName).ConfigureAwait(false);
             return op;
         }
 

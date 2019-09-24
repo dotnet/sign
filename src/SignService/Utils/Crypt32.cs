@@ -6,6 +6,7 @@ using System.Text;
 
 namespace SignService.Utils
 {
+#pragma warning disable IDE1006 // Naming Styles
     public static class Crypt32
     {
         /// <summary>
@@ -20,7 +21,7 @@ namespace SignService.Utils
             var flags = isRequest ? CryptBinaryToStringFlags.CRYPT_STRING_BASE64REQUESTHEADER : CryptBinaryToStringFlags.CRYPT_STRING_BASE64HEADER;
             if (forDisplay)
             {
-                flags = flags | CryptBinaryToStringFlags.CRYPT_STRING_NOCR;
+                flags |= CryptBinaryToStringFlags.CRYPT_STRING_NOCR;
             }
 
             uint size = 0;
@@ -142,7 +143,7 @@ namespace SignService.Utils
     public sealed class Pkcs7CertificateStore : IDisposable
     {
         IntPtr _handle;
-        X509Store _store;
+        readonly X509Store _store;
         Crypt32.CRYPTOAPI_BLOB _blob;
 
         Pkcs7CertificateStore(IntPtr handle, Crypt32.CRYPTOAPI_BLOB blob)
@@ -211,5 +212,5 @@ namespace SignService.Utils
             Marshal.FreeHGlobal(_blob.pbData);
         }
     }
-
+#pragma warning restore IDE1006 // Naming Styles
 }

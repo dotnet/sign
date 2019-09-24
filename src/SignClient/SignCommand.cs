@@ -142,10 +142,8 @@ namespace SignClient
 
                 var str = await response.Content.ReadAsStreamAsync();
 
-                using (var fs = output.OpenWrite())
-                {
-                    await str.CopyToAsync(fs).ConfigureAwait(false);
-                }
+                using var fs = output.OpenWrite();
+                await str.CopyToAsync(fs).ConfigureAwait(false);
             }
             catch (AuthenticationException e)
             {

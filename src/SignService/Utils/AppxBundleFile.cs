@@ -13,14 +13,16 @@ namespace SignService
     {
         readonly string inputFileName;
         readonly ILogger logger;
+        readonly IDirectoryUtility directoryUtility;
         readonly string makeAppxPath;
         readonly string dataDirectory;
         readonly string bundleVersion;
 
-        public AppxBundleFile(string inputFileName, ILogger logger, string makeAppxPath)
+        public AppxBundleFile(string inputFileName, ILogger logger, IDirectoryUtility directoryUtility, string makeAppxPath)
         {
             this.inputFileName = inputFileName;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
             this.makeAppxPath = makeAppxPath;
             dataDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(dataDirectory);
@@ -50,18 +52,16 @@ namespace SignService
         string GetBundleVersion()
         {
             var fileName = Path.Combine(dataDirectory, "AppxMetadata", "AppxBundleManifest.xml");
-            using (var fs = File.OpenRead(fileName))
-            {
-                var manifest = XDocument.Load(fs, LoadOptions.PreserveWhitespace);
-                XNamespace ns = "http://schemas.microsoft.com/appx/2013/bundle";
+            using var fs = File.OpenRead(fileName);
+            var manifest = XDocument.Load(fs, LoadOptions.PreserveWhitespace);
+            XNamespace ns = "http://schemas.microsoft.com/appx/2013/bundle";
 
-                return manifest.Root?.Element(ns + "Identity")?.Attribute("Version")?.Value;
-            }
+            return manifest.Root?.Element(ns + "Identity")?.Attribute("Version")?.Value;
         }
 
         void RunTool(string args)
         {
-            using (var makeappx = new Process
+            using var makeappx = new Process
             {
                 StartInfo =
                 {
@@ -72,35 +72,33 @@ namespace SignService
                     RedirectStandardOutput = true,
                     Arguments = args
                 }
-            })
+            };
+            logger.LogInformation($"Running Makeappx with parameters: '{args}'");
+            makeappx.Start();
+            var output = makeappx.StandardOutput.ReadToEnd();
+            var error = makeappx.StandardError.ReadToEnd();
+            logger.LogInformation("MakeAppx Out {MakeAppxOutput}", output);
+
+            if (!string.IsNullOrWhiteSpace(error))
             {
-                logger.LogInformation($"Running Makeappx with parameters: '{args}'");
-                makeappx.Start();
-                var output = makeappx.StandardOutput.ReadToEnd();
-                var error = makeappx.StandardError.ReadToEnd();
-                logger.LogInformation("MakeAppx Out {MakeAppxOutput}", output);
+                logger.LogInformation("MakeAppx Err {MakeAppxError}", error);
+            }
 
-                if (!string.IsNullOrWhiteSpace(error))
+            if (!makeappx.WaitForExit(30 * 1000))
+            {
+                logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
+
+                try
                 {
-                    logger.LogInformation("MakeAppx Err {MakeAppxError}", error);
+                    makeappx.Kill();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Makeappx timed out and could not be killed", ex);
                 }
 
-                if (!makeappx.WaitForExit(30 * 1000))
-                {
-                    logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
-
-                    try
-                    {
-                        makeappx.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception("Makeappx timed out and could not be killed", ex);
-                    }
-
-                    logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
-                    throw new Exception($"Makeappx took too long to respond with {makeappx.StartInfo.Arguments}");
-                }
+                logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
+                throw new Exception($"Makeappx took too long to respond with {makeappx.StartInfo.Arguments}");
             }
         }
 
@@ -114,7 +112,7 @@ namespace SignService
 
         public void Dispose()
         {
-            DirectoryUtility.SafeDelete(dataDirectory);
+            directoryUtility.SafeDelete(dataDirectory);
         }
 
     }

@@ -15,7 +15,12 @@ namespace SignService.Utils
 
     public class TelemetryLogger : ITelemetryLogger
     {
-        readonly TelemetryClient telemetryClient = new TelemetryClient();
+        public TelemetryLogger(TelemetryClient telemetryClient)
+        {
+            this.telemetryClient = telemetryClient;
+        }
+
+        readonly TelemetryClient telemetryClient;
         static readonly int StartIndexOfTemp = Path.GetTempPath().LastIndexOf(Path.DirectorySeparatorChar) + 1;
 
         public void OnSignFile(string file, string toolName)
