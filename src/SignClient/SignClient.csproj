@@ -4,9 +4,11 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
-    <!--<RollForward>Major</RollForward>-->
-    <Description>Client-side tools for Sign Service</Description>
+    <RollForward>Major</RollForward>
+    <Description>Client-side tools for the .NET Foundation Sign Service</Description>
+    <Copyright>© 2006-2019 .NET Foundation and Contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/dotnet/SignService</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
