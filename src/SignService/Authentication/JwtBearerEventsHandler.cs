@@ -21,8 +21,6 @@ namespace SignService.Authentication
 {
     public class JwtBearerEventsHandler : JwtBearerEvents
     {
-        private readonly TelemetryClient telemetryClient = new TelemetryClient();
-
         public override async Task TokenValidated(TokenValidatedContext context)
         {
             var contextAccessor = context.HttpContext.RequestServices.GetRequiredService<IHttpContextAccessor>();
@@ -102,8 +100,6 @@ namespace SignService.Authentication
                 // If we get here, it's an unknown value
                 context.Fail("User is not configured");
             }
-
-            telemetryClient.Context.User.AuthenticatedUserId = upn;
         }
     }
 }

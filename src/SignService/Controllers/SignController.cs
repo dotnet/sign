@@ -18,11 +18,13 @@ namespace SignService.Controllers
     {
         readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger logger;
+        readonly IDirectoryUtility directoryUtility;
 
-        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger)
+        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger, IDirectoryUtility directoryUtility)
         {
             this.codeSignAggregate = codeSignAggregate;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
         }
 
         [HttpPost]
@@ -54,7 +56,7 @@ namespace SignService.Controllers
             var dataDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             Directory.CreateDirectory(dataDir);
-            Response.OnCompleted((state) => DirectoryUtility.SafeDeleteAsync((string)state), dataDir);
+            Response.OnCompleted((state) => directoryUtility.SafeDeleteAsync((string)state), dataDir);
 
             // this might have two files, one containing the file list
             // The first will be the package and the second is the filter

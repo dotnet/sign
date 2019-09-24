@@ -18,14 +18,16 @@ namespace SignService.Utils
         readonly string inputFileName;
         readonly string publisher;
         readonly ILogger logger;
+        readonly IDirectoryUtility directoryUtility;
         readonly string makeAppxPath;
         readonly string dataDirectory;
 
-        public AppxFile(string inputFileName, string publisher, ILogger logger, string makeAppxPath, string filter)
+        public AppxFile(string inputFileName, string publisher, ILogger logger, IDirectoryUtility directoryUtility, string makeAppxPath, string filter)
         {
             this.inputFileName = inputFileName;
             this.publisher = publisher;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
             this.makeAppxPath = makeAppxPath;
 
             dataDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -160,7 +162,7 @@ namespace SignService.Utils
 
         public void Dispose()
         {
-            DirectoryUtility.SafeDelete(dataDirectory);
+            directoryUtility.SafeDelete(dataDirectory);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace SignService.Utils
     /// </summary>
     public class AutoRestCredential<T> : ServiceClientCredentials where T : ServiceClient<T>
     {
-        ServiceClient<T> _client;
+        ServiceClient<T> client;
 
         /// <summary>
         /// The authentication callback
@@ -103,7 +103,7 @@ namespace SignService.Utils
             base.InitializeServiceClient(client);
 
             var tClient = client as T;
-            _client = tClient ?? throw new ArgumentException($"Credential is only for use with the {typeof(T).Name} service client.");
+            this.client = tClient ?? throw new ArgumentException($"Credential is only for use with the {typeof(T).Name} service client.");
         }
 
         public override async Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -124,7 +124,7 @@ namespace SignService.Utils
 
                 // if this credential is tied to a specific TClient reuse it's HttpClient to send the 
                 // initial unauthed request to get the challange, otherwise create a new HttpClient
-                var client = _client?.HttpClient ?? new HttpClient();
+                var client = this.client?.HttpClient ?? new HttpClient();
 
                 using (var r = new HttpRequestMessage(request.Method, request.RequestUri))
                 {

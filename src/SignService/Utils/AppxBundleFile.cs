@@ -13,14 +13,16 @@ namespace SignService
     {
         readonly string inputFileName;
         readonly ILogger logger;
+        readonly IDirectoryUtility directoryUtility;
         readonly string makeAppxPath;
         readonly string dataDirectory;
         readonly string bundleVersion;
 
-        public AppxBundleFile(string inputFileName, ILogger logger, string makeAppxPath)
+        public AppxBundleFile(string inputFileName, ILogger logger, IDirectoryUtility directoryUtility, string makeAppxPath)
         {
             this.inputFileName = inputFileName;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
             this.makeAppxPath = makeAppxPath;
             dataDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(dataDirectory);
@@ -114,7 +116,7 @@ namespace SignService
 
         public void Dispose()
         {
-            DirectoryUtility.SafeDelete(dataDirectory);
+            directoryUtility.SafeDelete(dataDirectory);
         }
 
     }

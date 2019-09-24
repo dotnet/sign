@@ -4,7 +4,7 @@ namespace System.Security.Cryptography.Xml
 {
     public abstract class RSAPKCS1SignatureDescription : SignatureDescription
     {
-        static MethodInfo CryptoHelpersCreateFromName;
+        static readonly MethodInfo CryptoHelpersCreateFromName;
 
         static RSAPKCS1SignatureDescription()
         {

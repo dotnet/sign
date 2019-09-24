@@ -19,6 +19,7 @@ namespace SignService.SigningTools
     {
         readonly IAppxFileFactory appxFileFactory;
         readonly ILogger<SigningToolAggregate> logger;
+        readonly IDirectoryUtility directoryUtility;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
         readonly string makeappxPath;
@@ -27,10 +28,12 @@ namespace SignService.SigningTools
         public SigningToolAggregate(IEnumerable<ICodeSignService> services,
                                     IAppxFileFactory appxFileFactory,
                                     IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles,
-                                    ILogger<SigningToolAggregate> logger)
+                                    ILogger<SigningToolAggregate> logger,
+                                    IDirectoryUtility directoryUtility)
         {
             this.appxFileFactory = appxFileFactory;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
             makeappxPath = windowSdkFiles.Value.MakeAppxPath;
 
             // pe files
@@ -76,7 +79,7 @@ namespace SignService.SigningTools
             {
                 foreach (var archive in archives)
                 {
-                    tempZips.Add(new TemporaryZipFile(archive, filter, logger));
+                    tempZips.Add(new TemporaryZipFile(archive, filter, logger, directoryUtility));
                 }
 
                 // See if there's any files in the expanded zip that we need to sign
@@ -144,7 +147,7 @@ namespace SignService.SigningTools
             {
                 foreach (var bundle in bundles)
                 {
-                    tempBundles.Add(new AppxBundleFile(bundle, logger, makeappxPath));
+                    tempBundles.Add(new AppxBundleFile(bundle, logger, directoryUtility, makeappxPath));
                 }
 
                 // See if there's any files in the expanded zip that we need to sign

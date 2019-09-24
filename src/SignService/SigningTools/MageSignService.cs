@@ -24,6 +24,7 @@ namespace SignService.SigningTools
         readonly IKeyVaultService keyVaultService;
         readonly ILogger<MageSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
+        readonly IDirectoryUtility directoryUtility;
         readonly string magetoolPath;
         readonly string signToolName;
         readonly Lazy<ISigningToolAggregate> signToolAggregate;
@@ -37,12 +38,14 @@ namespace SignService.SigningTools
                                IKeyVaultService keyVaultService,
                                IServiceProvider serviceProvider,
                                ILogger<MageSignService> logger,
-                               ITelemetryLogger telemetryLogger)
+                               ITelemetryLogger telemetryLogger,
+                               IDirectoryUtility directoryUtility)
         {
             this.aadOptions = aadOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.keyVaultService = keyVaultService;
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
+            this.directoryUtility = directoryUtility;
             magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
             signToolName = nameof(MageSignService);
             // Need to delay this as it'd create a dependency loop if directly in the ctor
@@ -90,7 +93,7 @@ namespace SignService.SigningTools
                     // Then the nested clickonce/vsto file
                     // finally the top-level clickonce/vsto file
 
-                    using (var zip = new TemporaryZipFile(file, filter, logger))
+                    using (var zip = new TemporaryZipFile(file, filter, logger, directoryUtility))
                     {
                         // Look for the data files first - these are .deploy files
                         // we need to rename them, sign, then restore the name

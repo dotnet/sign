@@ -26,6 +26,7 @@ using Microsoft.Win32;
 #pragma warning disable IDE0018 
 #pragma warning disable IDE0019
 #pragma warning disable IDE0029
+#pragma warning disable IDE1006 // Naming Styles
 
 namespace System.Deployment.Internal.CodeSigning
 {
@@ -118,7 +119,7 @@ namespace System.Deployment.Internal.CodeSigning
 
     class SignedCmiManifest2
     {
-        XmlDocument m_manifestDom = null;
+        readonly XmlDocument m_manifestDom = null;
         CmiStrongNameSignerInfo m_strongNameSignerInfo = null;
         CmiAuthenticodeSignerInfo m_authenticodeSignerInfo = null;
         readonly bool m_useSha256;
@@ -1853,6 +1854,7 @@ namespace System.Deployment.Internal.CodeSigning
     }
 
 }
+#pragma warning restore IDE1006 // Naming Styles
 #pragma warning restore IDE0016
 #pragma warning restore IDE0017
 #pragma warning restore IDE0018

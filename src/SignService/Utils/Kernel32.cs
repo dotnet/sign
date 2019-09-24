@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace SignService.Utils
 {
+#pragma warning disable IDE1006 // Naming Styles
     static class Kernel32
     {
         [DllImport("kernel32.dll", SetLastError = true, PreserveSig = true)]
@@ -52,9 +53,9 @@ namespace SignService.Utils
 
         public class ActivationContext : IDisposable
         {
-            IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
-            IntPtr _activationContext = new IntPtr(-1);
-            IntPtr _activationContextCookie;
+            readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
+            IntPtr activationContext = new IntPtr(-1);
+            IntPtr activationContextCookie;
 
             public ActivationContext(string assemblyName)
             {
@@ -64,10 +65,10 @@ namespace SignService.Utils
                     lpSource = assemblyName
                 };
 
-                _activationContext = CreateActCtxW(ref requestedActivationContext);
-                if (_activationContext != INVALID_HANDLE_VALUE)
+                activationContext = CreateActCtxW(ref requestedActivationContext);
+                if (activationContext != INVALID_HANDLE_VALUE)
                 {
-                    if (!ActivateActCtx(_activationContext, out _activationContextCookie))
+                    if (!ActivateActCtx(activationContext, out activationContextCookie))
                     {
                         throw new Win32Exception(Marshal.GetLastWin32Error());
                     }
@@ -80,21 +81,22 @@ namespace SignService.Utils
 
             public void Dispose()
             {
-                if (_activationContextCookie != IntPtr.Zero)
+                if (activationContextCookie != IntPtr.Zero)
                 {
-                    if (!DeactivateActCtx(dwFlags: 0, _activationContextCookie))
+                    if (!DeactivateActCtx(dwFlags: 0, activationContextCookie))
                     {
                         throw new Win32Exception(Marshal.GetLastWin32Error());
                     }
-                    _activationContextCookie = IntPtr.Zero;
+                    activationContextCookie = IntPtr.Zero;
                 }
 
-                if (_activationContext != INVALID_HANDLE_VALUE)
+                if (activationContext != INVALID_HANDLE_VALUE)
                 {
-                    ReleaseActCtx(_activationContext);
-                    _activationContext = INVALID_HANDLE_VALUE;
+                    ReleaseActCtx(activationContext);
+                    activationContext = INVALID_HANDLE_VALUE;
                 }
             }
         }
     }
+#pragma warning restore IDE1006 // Naming Styles
 }

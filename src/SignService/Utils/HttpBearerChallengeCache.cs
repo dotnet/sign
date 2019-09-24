@@ -9,7 +9,7 @@ namespace SignService.Utils
     /// </summary>
     public sealed class HttpBearerChallengeCache
     {
-        static readonly HttpBearerChallengeCache _instance = new HttpBearerChallengeCache();
+        static readonly HttpBearerChallengeCache Instance = new HttpBearerChallengeCache();
 
         /// <summary>
         /// Gets the singleton instance of <see cref="HttpBearerChallengeCache"/> 
@@ -17,16 +17,16 @@ namespace SignService.Utils
         /// <returns>Instance of this class</returns>
         public static HttpBearerChallengeCache GetInstance()
         {
-            return _instance;
+            return Instance;
         }
 
-        Dictionary<string, HttpBearerChallenge> _cache = null;
-        readonly object _cacheLock = null;
+        readonly Dictionary<string, HttpBearerChallenge> cache = null;
+        readonly object cacheLock = null;
 
         HttpBearerChallengeCache()
         {
-            _cache = new Dictionary<string, HttpBearerChallenge>();
-            _cacheLock = new object();
+            cache = new Dictionary<string, HttpBearerChallenge>();
+            cacheLock = new object();
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace SignService.Utils
 
             HttpBearerChallenge value = null;
 
-            lock (_cacheLock)
+            lock (cacheLock)
             {
-                _cache.TryGetValue(url.FullAuthority(), out value);
+                cache.TryGetValue(url.FullAuthority(), out value);
             }
 
             return value;
@@ -62,9 +62,9 @@ namespace SignService.Utils
                 throw new ArgumentNullException("url");
             }
 
-            lock (_cacheLock)
+            lock (cacheLock)
             {
-                _cache.Remove(url.FullAuthority());
+                cache.Remove(url.FullAuthority());
             }
         }
 
@@ -90,9 +90,9 @@ namespace SignService.Utils
                 throw new ArgumentException("Source URL and Challenge URL do not match");
             }
 
-            lock (_cacheLock)
+            lock (cacheLock)
             {
-                _cache[url.FullAuthority()] = value;
+                cache[url.FullAuthority()] = value;
             }
         }
 
@@ -101,9 +101,9 @@ namespace SignService.Utils
         /// </summary>
         public void Clear()
         {
-            lock (_cacheLock)
+            lock (cacheLock)
             {
-                _cache.Clear();
+                cache.Clear();
             }
         }
     }

@@ -13,12 +13,14 @@ namespace SignService
     {
         readonly string inputFileName;
         readonly ILogger logger;
+        readonly IDirectoryUtility directoryUtility;
         readonly string dataDirectory;
 
-        public TemporaryZipFile(string inputFileName, string filter, ILogger logger)
+        public TemporaryZipFile(string inputFileName, string filter, ILogger logger, IDirectoryUtility directoryUtility)
         {
             this.inputFileName = inputFileName;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
             dataDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(dataDirectory);
 
@@ -80,7 +82,7 @@ namespace SignService
 
         public void Dispose()
         {
-            DirectoryUtility.SafeDelete(dataDirectory);
+            directoryUtility.SafeDelete(dataDirectory);
         }
 
     }

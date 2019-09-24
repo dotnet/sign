@@ -88,6 +88,8 @@ namespace SignService
 
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+            services.AddSingleton<ITelemetryInitializer, VersionTelemetry>();
+            services.AddSingleton<ITelemetryInitializer, UserTelemetry>();
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -125,6 +127,7 @@ namespace SignService
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
             services.AddSingleton<IApplicationConfiguration, ApplicationConfiguration>();
+            services.AddSingleton<IDirectoryUtility, DirectoryUtility>();
 
             // Add in our User wrapper
             services.AddScoped<IUser, HttpContextUser>();
@@ -174,9 +177,6 @@ namespace SignService
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new VersionTelemetry());
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new UserTelemetry(httpContextAccessor));
 
             // Retreive application specific config from Azure AD
             applicationConfiguration.InitializeAsync().Wait();
@@ -234,14 +234,14 @@ namespace SignService
 
         class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
         {
-            readonly IServiceProvider _serviceProvider;
+            readonly IServiceProvider serviceProvider;
 
             public SnapshotCollectorTelemetryProcessorFactory(IServiceProvider serviceProvider) =>
-                _serviceProvider = serviceProvider;
+                this.serviceProvider = serviceProvider;
 
             public ITelemetryProcessor Create(ITelemetryProcessor next)
             {
-                var snapshotConfigurationOptions = _serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
+                var snapshotConfigurationOptions = serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
                 return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
             }
         }
@@ -268,6 +268,11 @@ namespace SignService
                 var identity =  httpContext.User.Identity;
                 if (!identity.IsAuthenticated)
                     return;
+
+
+                var upn = ((ClaimsIdentity)identity).FindFirst("upn")?.Value;
+                if (upn != null)
+                    telemetry.Context.User.AuthenticatedUserId = upn;
 
                 var userId = ((ClaimsIdentity)identity).FindFirst("oid")?.Value;
 

@@ -14,13 +14,18 @@ namespace SignService.Utils
     {
         readonly ILogger<AppxFileFactory> logger;
         readonly IKeyVaultService keyVaultService;
+        readonly IDirectoryUtility directoryUtility;
         string publisher;
         readonly string makeappxPath;
 
-        public AppxFileFactory(ILogger<AppxFileFactory> logger, IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles, IKeyVaultService keyVaultService)
+        public AppxFileFactory(ILogger<AppxFileFactory> logger,
+                               IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles,
+                               IKeyVaultService keyVaultService,
+                               IDirectoryUtility directoryUtility)
         {
             this.logger = logger;
             this.keyVaultService = keyVaultService;
+            this.directoryUtility = directoryUtility;
             makeappxPath = windowSdkFiles.Value.MakeAppxPath;
         }
 
@@ -32,7 +37,7 @@ namespace SignService.Utils
                 publisher = cert.SubjectName.Name;
             }
 
-            return new AppxFile(inputFileName, publisher, logger, makeappxPath, filter);
+            return new AppxFile(inputFileName, publisher, logger, directoryUtility, makeappxPath, filter);
         }
     }
 }
