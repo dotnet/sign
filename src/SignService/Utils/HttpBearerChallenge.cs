@@ -114,9 +114,7 @@ namespace SignService.Utils
         {
             get
             {
-                var value = string.Empty;
-
-                if (parameters.TryGetValue("authorization_uri", out value))
+                if (parameters.TryGetValue("authorization_uri", out var value))
                 {
                     return value;
                 }
@@ -138,9 +136,7 @@ namespace SignService.Utils
         {
             get
             {
-                var value = string.Empty;
-
-                if (parameters.TryGetValue("resource", out value))
+                if (parameters.TryGetValue("resource", out var value))
                 {
                     return value;
                 }
@@ -156,9 +152,7 @@ namespace SignService.Utils
         {
             get
             {
-                var value = string.Empty;
-
-                if (parameters.TryGetValue("scope", out value))
+                if (parameters.TryGetValue("scope", out var value))
                 {
                     return value;
                 }

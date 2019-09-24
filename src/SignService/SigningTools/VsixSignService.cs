@@ -30,7 +30,7 @@ namespace SignService.SigningTools
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
-            await SubmitInternal(hashMode, name, description, descriptionUrl, files);
+            await SubmitInternal(hashMode, name, files);
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>
@@ -40,7 +40,7 @@ namespace SignService.SigningTools
 
         public bool IsDefault { get; }
 
-        async Task SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        async Task SubmitInternal(HashMode hashMode, string name, IList<string> files)
         {
             logger.LogInformation("Signing OpenVsixSignTool job {0} with {1} files", name, files.Count());
 
@@ -105,36 +105,34 @@ namespace SignService.SigningTools
         async Task<bool> RunSignTool(string file, SignConfigurationSet config, string timestampUrl, HashAlgorithmName alg)
         {
             // Append a sha256 signature
-            using (var package = OpcPackage.Open(file, OpcPackageFileMode.ReadWrite))
+            using var package = OpcPackage.Open(file, OpcPackageFileMode.ReadWrite);
+            var startTime = DateTimeOffset.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
+
+
+            logger.LogInformation("Signing {fileName}", file);
+
+
+            var signBuilder = package.CreateSignatureBuilder();
+            signBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
+
+            var signature = signBuilder.Sign(config);
+
+            var failed = false;
+            if (timestampUrl != null)
             {
-                var startTime = DateTimeOffset.UtcNow;
-                var stopwatch = Stopwatch.StartNew();
-
-
-                logger.LogInformation("Signing {fileName}", file);
-
-
-                var signBuilder = package.CreateSignatureBuilder();
-                signBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
-
-                var signature = signBuilder.Sign(config);
-
-                var failed = false;
-                if (timestampUrl != null)
+                var timestampBuilder = signature.CreateTimestampBuilder();
+                var result = await timestampBuilder.SignAsync(new Uri(timestampUrl), alg);
+                if (result == TimestampResult.Failed)
                 {
-                    var timestampBuilder = signature.CreateTimestampBuilder();
-                    var result = await timestampBuilder.SignAsync(new Uri(timestampUrl), alg);
-                    if (result == TimestampResult.Failed)
-                    {
-                        failed = true;
-                        logger.LogError("Error timestamping VSIX");
-                    }
+                    failed = true;
+                    logger.LogError("Error timestamping VSIX");
                 }
-
-                telemetryLogger.TrackSignToolDependency(signToolName, file, startTime, stopwatch.Elapsed, null, failed ? 1 : 0);
-
-                return !failed;
             }
+
+            telemetryLogger.TrackSignToolDependency(signToolName, file, startTime, stopwatch.Elapsed, null, failed ? 1 : 0);
+
+            return !failed;
 
         }
     }

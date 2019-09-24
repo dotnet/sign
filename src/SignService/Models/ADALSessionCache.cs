@@ -29,10 +29,9 @@ namespace SignService.Models
         }
         public string ReadUserStateValue()
         {
-            var state = string.Empty;
             sessionLock.EnterReadLock();
             //this.Deserialize((byte[])HttpContext.Current.Session[CacheId]);
-            state = httpContext.HttpContext.Session.GetString(cacheId + "_state");
+            var state = httpContext.HttpContext.Session.GetString(cacheId + "_state");
             sessionLock.ExitReadLock();
             return state;
         }
@@ -53,7 +52,7 @@ namespace SignService.Models
             HasStateChanged = false;
 
             // Reflect changes in the persistent store
-            httpContext.HttpContext.Session.Set(cacheId, this.SerializeAdalV3());
+            httpContext.HttpContext.Session.Set(cacheId, SerializeAdalV3());
             sessionLock.ExitWriteLock();
         }
 

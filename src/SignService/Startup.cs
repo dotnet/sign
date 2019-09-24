@@ -163,9 +163,6 @@ namespace SignService
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
                               IWebHostEnvironment env,
-                              ILoggerFactory loggerFactory,
-                              IServiceProvider serviceProvider,
-                              IHttpContextAccessor httpContextAccessor,
                               IApplicationConfiguration applicationConfiguration)
         {
             if (env.IsDevelopment())

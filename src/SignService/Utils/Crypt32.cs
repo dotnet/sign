@@ -21,7 +21,7 @@ namespace SignService.Utils
             var flags = isRequest ? CryptBinaryToStringFlags.CRYPT_STRING_BASE64REQUESTHEADER : CryptBinaryToStringFlags.CRYPT_STRING_BASE64HEADER;
             if (forDisplay)
             {
-                flags = flags | CryptBinaryToStringFlags.CRYPT_STRING_NOCR;
+                flags |= CryptBinaryToStringFlags.CRYPT_STRING_NOCR;
             }
 
             uint size = 0;

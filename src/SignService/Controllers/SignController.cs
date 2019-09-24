@@ -75,20 +75,16 @@ namespace SignService.Controllers
 
             if (source.Length > 0)
             {
-                using (var fs = new FileStream(inputFileName, FileMode.Create))
-                {
-                    await source.CopyToAsync(fs);
-                }
+                using var fs = new FileStream(inputFileName, FileMode.Create);
+                await source.CopyToAsync(fs);
             }
 
             var filter = string.Empty;
             if (filelist != null)
             {
-                using (var sr = new StreamReader(filelist.OpenReadStream()))
-                {
-                    filter = await sr.ReadToEndAsync();
-                    filter = filter.Replace("\r\n", "\n").Trim();
-                }
+                using var sr = new StreamReader(filelist.OpenReadStream());
+                filter = await sr.ReadToEndAsync();
+                filter = filter.Replace("\r\n", "\n").Trim();
             }
 
             // This will block until it's done

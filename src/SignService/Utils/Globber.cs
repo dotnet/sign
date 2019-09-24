@@ -162,7 +162,7 @@ namespace Wyam.Core.IO.Globbing
                     }
 
                     // Remove duplicated path separators (can happen when there's an empty expansion like "baz/{foo,}/bar")
-                    if (t.Length > 0 && t[0] == '/' && prefix[prefix.Length - 1] == '/')
+                    if (t.Length > 0 && t[0] == '/' && prefix[^1] == '/')
                     {
                         t = t.Substring(1);
                     }

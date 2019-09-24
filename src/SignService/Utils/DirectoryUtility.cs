@@ -73,7 +73,7 @@ namespace SignService.Utils
                 return Task.FromException(ex);
             }
 
-            async Task WaitForDeletion(string path)
+            static async Task WaitForDeletion(string path)
             {
                 // The directory is not guaranteed to be gone since there could be
                 // other open handles. Wait, up to half a second, until the directory is gone.

@@ -124,7 +124,9 @@ namespace SignService.Utils
 
                 // if this credential is tied to a specific TClient reuse it's HttpClient to send the 
                 // initial unauthed request to get the challange, otherwise create a new HttpClient
+#pragma warning disable IDE0067 // Dispose objects before losing scope
                 var client = this.client?.HttpClient ?? new HttpClient();
+#pragma warning restore IDE0067 // Dispose objects before losing scope
 
                 using (var r = new HttpRequestMessage(request.Method, request.RequestUri))
                 {

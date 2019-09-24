@@ -107,7 +107,7 @@ namespace SignService.Utils
 
         void RunTool(string args)
         {
-            using (var makeappx = new Process
+            using var makeappx = new Process
             {
                 StartInfo =
                 {
@@ -118,35 +118,33 @@ namespace SignService.Utils
                     RedirectStandardOutput = true,
                     Arguments = args
                 }
-            })
+            };
+            logger.LogInformation($"Running Makeappx with parameters: '{args}'");
+            makeappx.Start();
+            var output = makeappx.StandardOutput.ReadToEnd();
+            var error = makeappx.StandardError.ReadToEnd();
+            logger.LogInformation("MakeAppx Out {MakeAppxOutput}", output);
+
+            if (!string.IsNullOrWhiteSpace(error))
             {
-                logger.LogInformation($"Running Makeappx with parameters: '{args}'");
-                makeappx.Start();
-                var output = makeappx.StandardOutput.ReadToEnd();
-                var error = makeappx.StandardError.ReadToEnd();
-                logger.LogInformation("MakeAppx Out {MakeAppxOutput}", output);
+                logger.LogInformation("MakeAppx Err {MakeAppxError}", error);
+            }
 
-                if (!string.IsNullOrWhiteSpace(error))
+            if (!makeappx.WaitForExit(30 * 1000))
+            {
+                logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
+
+                try
                 {
-                    logger.LogInformation("MakeAppx Err {MakeAppxError}", error);
+                    makeappx.Kill();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Makeappx timed out and could not be killed", ex);
                 }
 
-                if (!makeappx.WaitForExit(30 * 1000))
-                {
-                    logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
-
-                    try
-                    {
-                        makeappx.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception("Makeappx timed out and could not be killed", ex);
-                    }
-
-                    logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
-                    throw new Exception($"Makeappx took too long to respond with {makeappx.StartInfo.Arguments}");
-                }
+                logger.LogError("Error: Makeappx took too long to respond {0}", makeappx.ExitCode);
+                throw new Exception($"Makeappx took too long to respond with {makeappx.StartInfo.Arguments}");
             }
         }
 
