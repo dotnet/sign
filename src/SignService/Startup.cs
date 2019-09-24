@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore;
+using Microsoft.ApplicationInsights.AspNetCore.TelemetryInitializers;
 using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.AspNetCore.Authentication;
@@ -26,6 +29,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using SignService.Authentication;
 using SignService.Services;
 using SignService.SigningTools;
@@ -158,6 +162,7 @@ namespace SignService
                               IWebHostEnvironment env,
                               ILoggerFactory loggerFactory,
                               IServiceProvider serviceProvider,
+                              IHttpContextAccessor httpContextAccessor,
                               IApplicationConfiguration applicationConfiguration)
         {
             if (env.IsDevelopment())
@@ -171,6 +176,7 @@ namespace SignService
             }
 
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new VersionTelemetry());
+            TelemetryConfiguration.Active.TelemetryInitializers.Add(new UserTelemetry(httpContextAccessor));
 
             // Retreive application specific config from Azure AD
             applicationConfiguration.InitializeAsync().Wait();
@@ -248,6 +254,30 @@ namespace SignService
             }
         }
 
+        class UserTelemetry : TelemetryInitializerBase
+        {
+            public UserTelemetry(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+            {                
+            }
+
+            protected override void OnInitializeTelemetry(HttpContext httpContext, RequestTelemetry requestTelemetry, ITelemetry telemetry)
+            {
+                if (httpContext.RequestServices == null)
+                    return;
+
+                var identity =  httpContext.User.Identity;
+                if (!identity.IsAuthenticated)
+                    return;
+
+                var userId = ((ClaimsIdentity)identity).FindFirst("oid")?.Value;
+
+                if (userId == null)
+                    return;
+
+                telemetry.Context.User.Id = userId;
+                telemetry.Context.User.AccountId = userId;
+            }
+        }
 
     }
 }

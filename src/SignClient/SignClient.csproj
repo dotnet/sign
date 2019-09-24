@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
-    <RollForward>Major</RollForward>
+    <!--<RollForward>Major</RollForward>-->
     <Description>Client-side tools for Sign Service</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
@@ -14,7 +14,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.2.1" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.3.1" />
     <PackageReference Include="Refit" Version="4.7.9" />
   </ItemGroup>
 

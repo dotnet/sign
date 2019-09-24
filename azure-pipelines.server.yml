@@ -32,9 +32,10 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 steps:
-- task: DotNetCoreInstaller@0
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 3.0.x'
   inputs:
-    version: '3.0.100-preview7-012821'
+    version: 3.0.x
 
 - task: DotNetCoreCLI@2
   displayName: Copy sdk files locally before build
