@@ -51,7 +51,7 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/SignService/SignService.csproj
-    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\'
+    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\ -r win10-x64'
     zipAfterPublish: True
 
 - task: PublishBuildArtifacts@1

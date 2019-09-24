@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
 
     <WinSdk18362BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.18362.0\</WinSdk18362BinDir>
     <WinSdk17763BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17763.0\</WinSdk17763BinDir>
