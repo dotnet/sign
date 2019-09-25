@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Extensions.Options;
@@ -322,40 +320,10 @@ namespace SignService.Services
             Span<char> builder = stackalloc char[PASSWORD_LENGTH];
             for (var i = 0; i < PASSWORD_LENGTH; i++)
             {
-                builder[i] = ALLOWED_CHARS[RandomInt32(0, ALLOWED_CHARS.Length)];
+                builder[i] = ALLOWED_CHARS[RandomNumberGenerator.GetInt32(0, ALLOWED_CHARS.Length)];
             }
 
             return new string(builder);
-        }
-
-        //TODO: replace with RandomNumberGenerator.GetInt32 when on .NET Core 3
-        static int RandomInt32(int fromInclusive, int toExclusive)
-        {
-            uint range = (uint)toExclusive - (uint)fromInclusive - 1;
-
-            if (range == 0)
-            {
-                return fromInclusive;
-            }
-
-            uint mask = range;
-            mask |= mask >> 1;
-            mask |= mask >> 2;
-            mask |= mask >> 4;
-            mask |= mask >> 8;
-            mask |= mask >> 16;
-
-            Span<uint> resultSpan = stackalloc uint[1];
-            uint result;
-
-            do
-            {
-                RandomNumberGenerator.Fill(MemoryMarshal.AsBytes(resultSpan));
-                result = mask & resultSpan[0];
-            }
-            while (result > range);
-
-            return (int)result + fromInclusive;
         }
 
         class OptionalClaims
