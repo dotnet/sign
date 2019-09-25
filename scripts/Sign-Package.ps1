@@ -19,7 +19,7 @@ $nupgks = ls $Env:ArtifactDirectory\*.nupkg | Select -ExpandProperty FullName
 foreach ($nupkg in $nupgks){
 	Write-Host "Submitting $nupkg for signing"
 
-	& "$currentDirectory\SignClient" 'sign' -c $appSettings -i $nupkg -f $fileList -r $Env:SignClientUser -s $Env:SignClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/onovotny/SignService' 
+	& "$currentDirectory\SignClient" 'sign' -c $appSettings -i $nupkg -f $fileList -r $Env:SignClientUser -s $Env:SignClientSecret -n 'SignClient' -d 'SignClient' -u 'https://github.com/dotnet/SignService' 
   if ($LASTEXITCODE -ne 0) {
     exit 1
   }
