@@ -18,6 +18,7 @@ namespace SignService.SigningTools
         readonly IKeyVaultService keyVaultService;
         readonly ILogger<VsixSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
+        readonly IFileNameService fileNameService;
         readonly string signToolName = nameof(VsixSignService);
 
         public VsixSignService(IKeyVaultService keyVaultService,

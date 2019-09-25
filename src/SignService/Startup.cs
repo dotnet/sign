@@ -125,7 +125,7 @@ namespace SignService
             services.Configure<WindowsSdkFiles>(ConfigureWindowsSdkFiles);
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
+            services.AddScoped<ITelemetryLogger, TelemetryLogger>();
             services.AddSingleton<IApplicationConfiguration, ApplicationConfiguration>();
             services.AddSingleton<IDirectoryUtility, DirectoryUtility>();
 
@@ -149,6 +149,8 @@ namespace SignService
             services.AddScoped<ICodeSignService, NuGetSignService>();
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
+
+            services.AddScoped<IFileNameService, FileNameService>();
 
             services.AddControllersWithViews(options =>
             {

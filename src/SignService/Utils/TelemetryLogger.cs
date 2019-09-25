@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using SignService.Services;
 
 namespace SignService.Utils
 {
@@ -15,24 +16,29 @@ namespace SignService.Utils
 
     public class TelemetryLogger : ITelemetryLogger
     {
-        public TelemetryLogger(TelemetryClient telemetryClient)
+        public TelemetryLogger(TelemetryClient telemetryClient, IFileNameService fileNameService)
         {
             this.telemetryClient = telemetryClient;
+            this.fileNameService = fileNameService;
         }
 
         readonly TelemetryClient telemetryClient;
+        readonly IFileNameService fileNameService;
         static readonly int StartIndexOfTemp = Path.GetTempPath().LastIndexOf(Path.DirectorySeparatorChar) + 1;
 
         public void OnSignFile(string file, string toolName)
         {
+            var originalFileName = fileNameService.GetFileName(file);
+
             var evt = new EventTelemetry
             {
                 Name = "Sign File",
                 Properties =
                 {
-                    { "FullName", GetRelativeDirectoryUnderTemp(file) },
-                    { "FileName", Path.GetFileName(file) },
-                    { "ToolName", toolName }
+                    { "FullName", GetRelativeDirectoryUnderTemp(originalFileName) },
+                    { "FileName", Path.GetFileName(originalFileName) },
+                    { "ToolName", toolName },
+                    { "LocalFileName", Path.GetFileName(file) }
                 }
             };
 
@@ -41,17 +47,19 @@ namespace SignService.Utils
 
         public void TrackSignToolDependency(string signTool, string fileName, DateTimeOffset startTime, TimeSpan duration, string redactedArgs, int resultCode)
         {
-            var file = GetRelativeDirectoryUnderTemp(fileName);
+            var originalFileName = fileNameService.GetFileName(fileName);
+
+            var file = GetRelativeDirectoryUnderTemp(originalFileName);
 
             var depTelemetry = new DependencyTelemetry
             {
                 Name = $"SIGN {file}",
-                Type = signTool,
+                Type = "Sign Tool",
                 Data = redactedArgs ?? file,
                 ResultCode = resultCode.ToString(CultureInfo.InvariantCulture),
                 Timestamp = startTime,
-                Target = file,
-                Duration = duration,
+                Target = signTool,
+                Duration = duration,                
                 Success = resultCode == 0
             };
 
