@@ -46,12 +46,12 @@ namespace SignService.Utils
             var depTelemetry = new DependencyTelemetry
             {
                 Name = $"SIGN {file}",
-                Type = signTool,
+                Type = "Sign Tool",
                 Data = redactedArgs ?? file,
                 ResultCode = resultCode.ToString(CultureInfo.InvariantCulture),
                 Timestamp = startTime,
-                Target = file,
-                Duration = duration,
+                Target = signTool,
+                Duration = duration,                
                 Success = resultCode == 0
             };
 
