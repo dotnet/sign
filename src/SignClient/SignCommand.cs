@@ -142,7 +142,8 @@ namespace SignClient
 
                 var str = await response.Content.ReadAsStreamAsync();
 
-                using var fs = output.OpenWrite();
+                // If we're replacing the file, make sure to the existing one first
+                using var fs = new FileStream(output.FullName, FileMode.Create);
                 await str.CopyToAsync(fs).ConfigureAwait(false);
             }
             catch (AuthenticationException e)
