@@ -25,7 +25,6 @@ namespace SignService.SigningTools
         readonly ILogger<MageSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
         readonly IDirectoryUtility directoryUtility;
-        readonly IFileNameService fileNameService;
         readonly string magetoolPath;
         readonly string signToolName;
         readonly Lazy<ISigningToolAggregate> signToolAggregate;
