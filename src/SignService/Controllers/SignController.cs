@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using SignService.Services;
 using SignService.SigningTools;
 using SignService.Utils;
 
@@ -19,12 +20,17 @@ namespace SignService.Controllers
         readonly ISigningToolAggregate codeSignAggregate;
         readonly ILogger logger;
         readonly IDirectoryUtility directoryUtility;
+        readonly IFileNameService fileNameService;
 
-        public SignController(ISigningToolAggregate codeSignAggregate, ILogger<SignController> logger, IDirectoryUtility directoryUtility)
+        public SignController(ISigningToolAggregate codeSignAggregate,
+                              ILogger<SignController> logger,
+                              IDirectoryUtility directoryUtility,
+                              IFileNameService fileNameService)
         {
             this.codeSignAggregate = codeSignAggregate;
             this.logger = logger;
             this.directoryUtility = directoryUtility;
+            this.fileNameService = fileNameService;
         }
 
         [HttpPost]
@@ -70,6 +76,8 @@ namespace SignService.Controllers
                 // Keep the input extenstion as it has significance.
                 inputFileName = Path.ChangeExtension(inputFileName, ext);
             }
+
+            fileNameService.RegisterFileName(source.FileName, inputFileName);
 
             logger.LogInformation("SignFile called for {source}. Using {inputFileName} locally.", source.FileName, inputFileName);
 

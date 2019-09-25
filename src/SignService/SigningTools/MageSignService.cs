@@ -25,6 +25,7 @@ namespace SignService.SigningTools
         readonly ILogger<MageSignService> logger;
         readonly ITelemetryLogger telemetryLogger;
         readonly IDirectoryUtility directoryUtility;
+        readonly IFileNameService fileNameService;
         readonly string magetoolPath;
         readonly string signToolName;
         readonly Lazy<ISigningToolAggregate> signToolAggregate;
@@ -46,6 +47,7 @@ namespace SignService.SigningTools
             this.logger = logger;
             this.telemetryLogger = telemetryLogger;
             this.directoryUtility = directoryUtility;
+
             magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
             signToolName = nameof(MageSignService);
             // Need to delay this as it'd create a dependency loop if directly in the ctor
@@ -87,12 +89,12 @@ namespace SignService.SigningTools
             Parallel.ForEach(files, options, (file, state) =>
             {
 
-                    // We need to be explicit about the order these files are signed in. The data files must be signed first
-                    // Then the .manifest file
-                    // Then the nested clickonce/vsto file
-                    // finally the top-level clickonce/vsto file
+                // We need to be explicit about the order these files are signed in. The data files must be signed first
+                // Then the .manifest file
+                // Then the nested clickonce/vsto file
+                // finally the top-level clickonce/vsto file
 
-                    using var zip = new TemporaryZipFile(file, filter, logger, directoryUtility);
+                using var zip = new TemporaryZipFile(file, filter, logger, directoryUtility);
                 // Look for the data files first - these are .deploy files
                 // we need to rename them, sign, then restore the name
 
@@ -110,31 +112,31 @@ namespace SignService.SigningTools
 
                 var filesToSign = contentFiles.ToList(); // copy it since we may add setup.exe
 
-                    var setupExe = zip.FilteredFilesInDirectory.Where(f => ".exe".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
+                var setupExe = zip.FilteredFilesInDirectory.Where(f => ".exe".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
                 filesToSign.AddRange(setupExe);
 
-                    // Safe to call Wait here because we're in a Parallel.ForEach()
-                    // sign the inner files
-                    signToolAggregate.Value.Submit(hashMode, name, description, descriptionUrl, filesToSign, filter).Wait();
+                // Safe to call Wait here because we're in a Parallel.ForEach()
+                // sign the inner files
+                signToolAggregate.Value.Submit(hashMode, name, description, descriptionUrl, filesToSign, filter).Wait();
 
-                    // rename the rest of the deploy files since signing the manifest will need them
-                    var deployFiles = zip.FilesExceptFiltered.Where(f => ".deploy".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                // rename the rest of the deploy files since signing the manifest will need them
+                var deployFiles = zip.FilesExceptFiltered.Where(f => ".deploy".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
                                                                  .ToList();
 
                 foreach (var dfile in deployFiles)
                 {
-                        // Rename to file without extension
-                        var dest = dfile.Replace(".deploy", "");
+                    // Rename to file without extension
+                    var dest = dfile.Replace(".deploy", "");
                     File.Move(dfile, dest);
                     contentFiles.Add(dest);
                 }
 
-                    // at this point contentFiles has all deploy files renamed
+                // at this point contentFiles has all deploy files renamed
 
-                    // Inner files are now signed
-                    // now look for the manifest file and sign that
+                // Inner files are now signed
+                // now look for the manifest file and sign that
 
-                    var manifestFile = zip.FilteredFilesInDirectory.Single(f => ".manifest".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
+                var manifestFile = zip.FilteredFilesInDirectory.Single(f => ".manifest".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
 
                 var fileArgs = $@"-update ""{manifestFile}"" {args}";
 
@@ -144,8 +146,8 @@ namespace SignService.SigningTools
                     throw new Exception($"Could not sign {manifestFile}");
                 }
 
-                    // Read the publisher name from the manifest for use below
-                    var manifestDoc = XDocument.Load(manifestFile);
+                // Read the publisher name from the manifest for use below
+                var manifestDoc = XDocument.Load(manifestFile);
                 var ns = manifestDoc.Root.GetDefaultNamespace();
                 var publisherEle = manifestDoc.Root.Element(ns + "publisherIdentity");
                 var pubName = publisherEle.Attribute("name").Value;
@@ -159,15 +161,15 @@ namespace SignService.SigningTools
                         publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
                 }
 
-                    // Now sign the inner vsto/clickonce file
-                    // Order by desending length to put the inner one first
-                    var clickOnceFilesToSign = zip.FilteredFilesInDirectory
-                                                                      .Where(f => ".vsto".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase) ||
-                                                                                  ".application".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
-                                                                      .Select(f => new { file = f, f.Length })
-                                                                      .OrderByDescending(f => f.Length)
-                                                                      .Select(f => f.file)
-                                                                      .ToList();
+                // Now sign the inner vsto/clickonce file
+                // Order by desending length to put the inner one first
+                var clickOnceFilesToSign = zip.FilteredFilesInDirectory
+                                                .Where(f => ".vsto".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase) ||
+                                                            ".application".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
+                                                .Select(f => new { file = f, f.Length })
+                                                .OrderByDescending(f => f.Length)
+                                                .Select(f => f.file)
+                                                .ToList();
 
                 foreach (var f in clickOnceFilesToSign)
                 {
@@ -184,8 +186,8 @@ namespace SignService.SigningTools
                     }
                 }
 
-                    // restore the deploy files
-                    foreach (var dfile in contentFiles)
+                // restore the deploy files
+                foreach (var dfile in contentFiles)
                 {
                     File.Move(dfile, $"{dfile}.deploy");
                 }
