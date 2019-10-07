@@ -97,7 +97,7 @@ You'll need to create an `appsettings.json` similar to the following:
 }
 ```
 
-Then, somewhere in your build, you'll need to call the client tool. I use VSTS and call the following
+Then, somewhere in your build, you'll need to call the client tool. I use Azure Pipelines and call the following
 script to sign my files.
 
 
@@ -115,21 +115,13 @@ if([string]::IsNullOrEmpty($env:SignClientSecret)){
 # Setup Variables we need to pass into the sign client tool
 
 $appSettings = "$currentDirectory\appsettings.json"
-$nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
-
 dotnet tool install --tool-path "$currentDirectory" SignClient
 
-foreach ($nupkg in $nupgks){
-	Write-Host "Submitting $nupkg for signing"
-
-	& "$currentDirectory\SignClient" 'sign' -c $appSettings -i $nupkg -r $env:SignClientUser -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf'
-    if ($LASTEXITCODE -ne 0) {
-      exit 1
-    }
-	Write-Host "Finished signing $nupkg"
+& "$currentDirectory\SignClient" 'sign' -c $appSettings -b $Env:\ArtifactDirectory -i **/*.nupkg -r $env:SignClientUser -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf'
+if ($LASTEXITCODE -ne 0) {
+    exit 1
 }
 
-Write-Host "Sign-package complete"
 ```
 
 The parameters to the signing client are as follows:
@@ -148,11 +140,12 @@ After signing contents of the archive, the archive itself is signed if supported
 (currently `VSIX`).
 
 ```
-usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>]
-                  [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
+usage: SignClient sign [-c <arg>] [-i <arg>] [-b <arg>] [-o <arg>]
+                  [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>] [-m <arg>]
 
     -c, --config <arg>            Path to config json file
     -i, --input <arg>             Path to input file
+    -b  --baseDirectory <arg>     Base directory for files to override the working directory
     -o, --output <arg>            Path to output file. May be same
                                   as input to overwrite
     -f, --filter <arg>            Path to file containing paths of
@@ -161,6 +154,7 @@ usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>]
     -n, --name <arg>              Name of project for tracking
     -d, --description <arg>       Description
     -u, --descriptionUrl <arg>    Description Url
+    -m, --maxConcurrency <arg>    Maximum concurrency (default is 4)
 ```
 
 ## ClickOnce

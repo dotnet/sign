@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
 using Refit;
+using Wyam.Core.IO.Globbing;
 
 namespace SignClient
 {
@@ -29,17 +31,19 @@ namespace SignClient
             this.signCommandLineApplication = signCommandLineApplication;
         }
 
-        public async Task<int> SignAsync
+        public int Sign
         (
             CommandOption configFile,
             CommandOption inputFile,
+            CommandOption baseDirectory,
             CommandOption outputFile,
             CommandOption fileList,
             CommandOption clientSecret,
             CommandOption username,
             CommandOption name,
             CommandOption description,
-            CommandOption descriptionUrl
+            CommandOption descriptionUrl,
+            CommandOption maxConcurrency
         )
         {
             try
@@ -63,11 +67,49 @@ namespace SignClient
                     return EXIT_CODES.INVALID_OPTIONS;
                 }
 
-                if (!outputFile.HasValue())
+                if(!maxConcurrency.HasValue())
                 {
-                    // use input as the output value
-                    outputFile.Values.Add(inputFile.Value());
+                    maxConcurrency.Values.Add("4"); // default to 4
                 }
+
+                if(baseDirectory.HasValue())
+                {
+                    // Make sure this is rooted
+                    if(!Path.IsPathRooted(baseDirectory.Value()))
+                    {
+                        signCommandLineApplication.Error.WriteLine("--directory parameter must be rooted if specified");
+                        return EXIT_CODES.INVALID_OPTIONS;
+                    }
+                }
+
+                if(!baseDirectory.HasValue())
+                {
+                    baseDirectory.Values.Add(Environment.CurrentDirectory);
+                }
+
+                List<FileInfo> inputFiles;
+                // If we're going to glob, we can't be fully rooted currently (fix me later)
+
+                if(inputFile.Value().Contains('*'))
+                {
+                    if(Path.IsPathRooted(inputFile.Value()))
+                    {
+                        signCommandLineApplication.Error.WriteLine("--input parameter cannot be rooted when using a glob. Use a path relative to the working directory");
+                        return EXIT_CODES.INVALID_OPTIONS;
+                    }
+
+                    inputFiles = Globber.GetFiles(new DirectoryInfo(baseDirectory.Value()), inputFile.Value())
+                                        .ToList();
+                }
+                else
+                {
+                    inputFiles = new List<FileInfo>
+                    {
+                        new FileInfo(ExpandFilePath(inputFile.Value()))
+                    };
+                }
+
+                                          
 
                 var builder = new ConfigurationBuilder()
                               .AddJsonFile(ExpandFilePath(configFile.Value()))
@@ -116,35 +158,78 @@ namespace SignClient
                 var client = RestService.For<ISignService>(configuration["SignClient:Service:Url"], settings);
                 client.Client.Timeout = Timeout.InfiniteTimeSpan; // TODO: Make configurable on command line
 
-                // Prepare input/output file
-                var input = new FileInfo(ExpandFilePath(inputFile.Value()));
-                var output = new FileInfo(ExpandFilePath(outputFile.Value()));
-                Directory.CreateDirectory(output.DirectoryName);
-
-                // Do action
-
-                HttpResponseMessage response;
-
-                response = await client.SignFile(input,
-                                                 fileList.HasValue() ? new FileInfo(ExpandFilePath(fileList.Value())) : null,
-                                                 HashMode.Sha256,
-                                                 name.Value(),
-                                                 description.Value(),
-                                                 descriptionUrl.Value());
-
-                // Check response
-
-                if (!response.IsSuccessStatusCode)
+                // var max concurrency
+                if(!int.TryParse(maxConcurrency.Value(), out var maxC) || maxC < 1)
                 {
-                    Console.Error.WriteLine($"Server returned non Ok response: {(int)response.StatusCode} {response.ReasonPhrase}");
-                    return -1;
+                    signCommandLineApplication.Error.WriteLine("--maxConcurrency parameter is not valid");
+                    return EXIT_CODES.INVALID_OPTIONS;
                 }
 
-                var str = await response.Content.ReadAsStreamAsync();
+                Parallel.ForEach(inputFiles,new ParallelOptions { MaxDegreeOfParallelism = maxC } , input =>
+                {
+                    FileInfo output;
 
-                // If we're replacing the file, make sure to the existing one first
-                using var fs = new FileStream(output.FullName, FileMode.Create);
-                await str.CopyToAsync(fs).ConfigureAwait(false);
+                    // Special case if there's only one input file and the output has a value, treat it as a file
+                    if(inputFiles.Count == 1 && outputFile.HasValue())
+                    {                        
+                        output = new FileInfo(ExpandFilePath(outputFile.Value()));
+                    }
+                    else
+                    {
+                        // if the output is speciied, treat it as a directory, if not, overwrite the current file
+                        if(!outputFile.HasValue())
+                        {
+                            output = new FileInfo(input.FullName);
+                        }
+                        else
+                        {
+                            var relative = Path.GetRelativePath(baseDirectory.Value(), input.FullName);
+
+                            var basePath = Path.IsPathRooted(outputFile.Value()) ?
+                                           outputFile.Value() :
+                                           $"{baseDirectory.Value()}{Path.DirectorySeparatorChar}{outputFile.Value()}";
+
+                            var fullOutput = Path.Combine(basePath, relative);
+
+                            output = new FileInfo(fullOutput);
+                        }
+                    }
+
+                    // Ensure the output directory exists
+                    Directory.CreateDirectory(output.DirectoryName);
+
+                    // Do action
+
+                    HttpResponseMessage response;
+
+                    signCommandLineApplication.Out.WriteLine($"Submitting '{input.FullName}' for signing.");
+
+                    response = client.SignFile(input,
+                                                fileList.HasValue() ? new FileInfo(ExpandFilePath(fileList.Value())) : null,
+                                                HashMode.Sha256,
+                                                name.Value(),
+                                                description.Value(),
+                                                descriptionUrl.Value()).Result;
+
+                    // Check response
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        signCommandLineApplication.Error.WriteLine($"Error signing '{input.FullName}'");
+                        signCommandLineApplication.Error.WriteLine($"Server returned non Ok response: {(int)response.StatusCode} {response.ReasonPhrase}");
+                        response.EnsureSuccessStatusCode(); // force the throw to break out of the loop
+                    }
+
+                    var str = response.Content.ReadAsStreamAsync().Result;
+
+                    // If we're replacing the file, make sure to the existing one first
+                    using var fs = new FileStream(output.FullName, FileMode.Create);
+                    str.CopyTo(fs);
+
+                    signCommandLineApplication.Out.WriteLine($"Successfully signed '{input.FullName}'");
+                });
+
+                
             }
             catch (AuthenticationException e)
             {
@@ -158,15 +243,17 @@ namespace SignClient
             }
 
             return EXIT_CODES.SUCCESS;
+
+            string ExpandFilePath(string file)
+            {
+                if (!Path.IsPathRooted(file))
+                {
+                    return $"{baseDirectory.Value()}{Path.DirectorySeparatorChar}{file}";
+                }
+                return file;
+            }
         }
 
-        static string ExpandFilePath(string file)
-        {
-            if (!Path.IsPathRooted(file))
-            {
-                return $"{Environment.CurrentDirectory}{Path.DirectorySeparatorChar}{file}";
-            }
-            return file;
-        }
+    
     }
 }
