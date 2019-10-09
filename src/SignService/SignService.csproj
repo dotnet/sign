@@ -17,7 +17,7 @@
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)x64\$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)x64\$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>    
     
-    <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.7 Tools\</NetSdkBinDir>
+    <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\</NetSdkBinDir>
   </PropertyGroup>
 
   <ItemGroup>
