@@ -141,16 +141,17 @@ After signing contents of the archive, the archive itself is signed if supported
 
 ```
 usage: SignClient sign [-c <arg>] [-i <arg>] [-b <arg>] [-o <arg>]
-                  [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>] [-m <arg>]
+                  [-f <arg>] [-s <arg>] [-r <arg>] [-n <arg>] [-d <arg>] [-u <arg>] [-m <arg>]
 
     -c, --config <arg>            Path to config json file
     -i, --input <arg>             Path to input file
     -b  --baseDirectory <arg>     Base directory for files to override the working directory
     -o, --output <arg>            Path to output file. May be same
                                   as input to overwrite
-    -f, --filter <arg>            Path to file containing paths of
+    -f, --filelist <arg>          Path to file containing paths of
                                   files to sign within an archive
     -s, --secret <arg>            Client Secret
+    -r  --user <arg>              Username
     -n, --name <arg>              Name of project for tracking
     -d, --description <arg>       Description
     -u, --descriptionUrl <arg>    Description Url
