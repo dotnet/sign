@@ -226,7 +226,7 @@ namespace SignClient
                     using var fs = new FileStream(output.FullName, FileMode.Create);
                     str.CopyTo(fs);
 
-                    signCommandLineApplication.Out.WriteLine($"Successfully signed '{input.FullName}'");
+                    signCommandLineApplication.Out.WriteLine($"Successfully signed '{output.FullName}'");
                 });
 
                 
