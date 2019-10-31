@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -169,6 +170,8 @@ namespace SignClient
                 {
                     FileInfo output;
 
+                    var sw = Stopwatch.StartNew();
+
                     // Special case if there's only one input file and the output has a value, treat it as a file
                     if(inputFiles.Count == 1 && outputFile.HasValue())
                     {                        
@@ -226,7 +229,7 @@ namespace SignClient
                     using var fs = new FileStream(output.FullName, FileMode.Create);
                     str.CopyTo(fs);
 
-                    signCommandLineApplication.Out.WriteLine($"Successfully signed '{output.FullName}'");
+                    signCommandLineApplication.Out.WriteLine($"Successfully signed '{output.FullName}' in {sw.ElapsedMilliseconds} ms");
                 });
 
                 
