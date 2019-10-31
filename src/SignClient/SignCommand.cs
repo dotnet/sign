@@ -91,7 +91,9 @@ namespace SignClient
                 List<FileInfo> inputFiles;
                 // If we're going to glob, we can't be fully rooted currently (fix me later)
 
-                if(inputFile.Value().Contains('*'))
+                var isGlob = inputFile.Value().Contains('*');
+
+                if (isGlob)
                 {
                     if(Path.IsPathRooted(inputFile.Value()))
                     {
@@ -174,12 +176,21 @@ namespace SignClient
 
                     // Special case if there's only one input file and the output has a value, treat it as a file
                     if(inputFiles.Count == 1 && outputFile.HasValue())
-                    {                        
-                        output = new FileInfo(ExpandFilePath(outputFile.Value()));
+                    {
+                        // See if it has a file extension and if not, treat as a directory and use the input file name
+                        var outFileValue = outputFile.Value();
+                        if(Path.HasExtension(outFileValue))
+                        {
+                            output = new FileInfo(ExpandFilePath(outputFile.Value()));
+                        }
+                        else
+                        {
+                            output = new FileInfo(Path.Combine(ExpandFilePath(outFileValue), inputFiles[0].Name));
+                        }                        
                     }
                     else
                     {
-                        // if the output is speciied, treat it as a directory, if not, overwrite the current file
+                        // if the output is specified, treat it as a directory, if not, overwrite the current file
                         if(!outputFile.HasValue())
                         {
                             output = new FileInfo(input.FullName);
