@@ -95,5 +95,9 @@
       <AbsolutePath>\\App_Data</AbsolutePath>
     </MsDeploySkipRules>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
   
 </Project>
