@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.7.0" />
-    <PackageReference Include="Refit" Version="5.0.15" />
+    <PackageReference Include="Refit" Version="5.0.23" />
   </ItemGroup>
 
 </Project>
