@@ -15,8 +15,8 @@
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk18362BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17763BinDir)x64\$(ProbingFile)')">$(WinSdk17763BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)x64\$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
-    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)x64\$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>    
-    
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk16299BinDir)x64\$(ProbingFile)')">$(WinSdk16299BinDir)</WinSdkBinDir>
+
     <NetSdkBinDir Condition="'$(NetSdkBinDir)' == ''">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\</NetSdkBinDir>
   </PropertyGroup>
 
@@ -54,7 +54,7 @@
     <SdkFile86 Include="$(WinSdkBinDir)x86\SignTool.exe.manifest" />
 
     <SdkFile86 Include="$(NetSdkBinDir)mage.exe" />
-    
+
     <None Update="wwwroot\**\*;Views;Areas\**\Views;tools\**\*">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -65,11 +65,11 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.12.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.5" />
     <PackageReference Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="3.1.0" />    
-    <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4" />    
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4" />
     <PackageReference Include="Microsoft.Azure.ActiveDirectory.GraphClient" Version="2.1.1" NoWarn="NU1701" />
-    <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.4" />    
+    <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.4" />
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager" Version="2.4.0-preview" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.12.0" />
@@ -77,15 +77,15 @@
     <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="2.0.24" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.1.57" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.5" />
-    <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.4.3" />   
+    <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="2.4.3" />
     <PackageReference Include="OpenVsixSignTool.Core" Version="0.3.2" />
-    
+
   </ItemGroup>
 
   <Target Name="PrebuildScript" BeforeTargets="CoreBuild">
     <Copy Condition="'$(WinSdkBinDir)' != ''" SourceFiles="@(SdkFile64)" DestinationFolder="tools\SDK\x64" SkipUnchangedFiles="true" />
     <Copy Condition="'$(WinSdkBinDir)' != ''" SourceFiles="@(SdkFile86)" DestinationFolder="tools\SDK\x86" SkipUnchangedFiles="true" />
-    
+
     <Error Condition="'$(WinSdkBinDir)' == ''" Text="No supported WinSDK could be found!" />
   </Target>
 
@@ -95,5 +95,5 @@
       <AbsolutePath>\\App_Data</AbsolutePath>
     </MsDeploySkipRules>
   </ItemGroup>
-  
+
 </Project>
