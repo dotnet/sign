@@ -72,7 +72,7 @@
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.4" />    
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager" Version="2.4.0-preview" />
     <PackageReference Include="Microsoft.Data.Services.Client" Version="5.8.4" />
-    <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.12.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.12.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="2.0.26" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.1.57" />
