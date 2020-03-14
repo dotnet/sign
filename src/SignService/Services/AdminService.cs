@@ -326,6 +326,7 @@ namespace SignService.Services
             return new string(builder);
         }
 
+#pragma warning disable IDE1006 // Naming Styles
         class OptionalClaims
         {
             public ClaimInformation[] accessToken { get; set; }
@@ -337,6 +338,6 @@ namespace SignService.Services
             public string source { get; set; }
             public bool essential { get; set; }
         }
-
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

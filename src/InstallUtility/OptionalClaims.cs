@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable IDE1006 // Naming Styles
+
 namespace InstallUtility
 {
     public class OptionalClaims
@@ -17,5 +19,4 @@ namespace InstallUtility
         public string source { get; set; }
         public bool essential { get; set; }
     }
-
 }
