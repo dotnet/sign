@@ -25,6 +25,7 @@ namespace SignClient
             public const int SUCCESS = 0;
             public const int INVALID_OPTIONS = 1;
             public const int FAILED = 2;
+            public const int NO_INPUTS_FOUND = 3;
         }
 
         public SignCommand(CommandLineApplication signCommandLineApplication)
@@ -166,6 +167,12 @@ namespace SignClient
                 {
                     signCommandLineApplication.Error.WriteLine("--maxConcurrency parameter is not valid");
                     return EXIT_CODES.INVALID_OPTIONS;
+                }
+
+                if (inputFiles.Count == 0)
+                {
+                    signCommandLineApplication.Error.WriteLine("No inputs found to sign.");
+                    return EXIT_CODES.NO_INPUTS_FOUND;
                 }
 
                 Parallel.ForEach(inputFiles,new ParallelOptions { MaxDegreeOfParallelism = maxC } , input =>
