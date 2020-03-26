@@ -100,28 +100,28 @@ You'll need to create an `appsettings.json` similar to the following:
 Then, somewhere in your build, you'll need to call the client tool. I use Azure Pipelines and call the following
 script to sign my files.
 
+azure-pipelines.yml:
 
-Sign-Package.ps1:
-
-```powershell
-$currentDirectory = split-path $MyInvocation.MyCommand.Definition
-
-# See if we have the ClientSecret available
-if([string]::IsNullOrEmpty($env:SignClientSecret)){
-	Write-Host "Client Secret not found, not signing packages"
-	return;
-}
-
-# Setup Variables we need to pass into the sign client tool
-
-$appSettings = "$currentDirectory\appsettings.json"
-dotnet tool install --tool-path "$currentDirectory" SignClient
-
-& "$currentDirectory\SignClient" 'sign' -c $appSettings -b $Env:\ArtifactDirectory -i **/*.nupkg -r $env:SignClientUser -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf'
-if ($LASTEXITCODE -ne 0) {
-    exit 1
-}
-
+```yaml
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install --tool-path . SignClient
+    displayName: Install SignTool tool
+    
+  - pwsh: |
+      .\SignClient "Sign" `
+      --baseDirectory "$(Pipeline.Workspace)\ToSign" `
+      --input "**/*.{appxbundle,appinstaller,zip,nupkg}" `
+      --config "$(Pipeline.Workspace)\SigningScripts\appsettings.json" `
+      --filelist "$(Pipeline.Workspace)\SigningScripts\filelist.txt" `
+      --user "$(SignClientUser)" `
+      --secret "$(SignClientSecret)" `
+      --name "NuGet Package Explorer" `
+      --description "NuGet Package Explorer" `
+      --descriptionUrl "https://github.com/NuGetPackageExplorer/NuGetPackageExplorer"
+    displayName: Authenticode Sign artifacts
 ```
 
 The parameters to the signing client are as follows:
