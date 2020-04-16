@@ -160,16 +160,6 @@
         },
         {
           "apiVersion": "2015-08-01",
-          "name": "Microsoft.ApplicationInsights.AzureWebSites",
-          "type": "siteextensions",
-          "dependsOn": [
-            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
-          ],
-          "properties": {
-          }
-        },
-        {
-          "apiVersion": "2015-08-01",
           "name": "Microsoft.AspNetCore.AzureAppServices.SiteExtension",
           "type": "siteextensions",
           "dependsOn": [
