@@ -5,6 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
 
+    <WinSdk19041BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.19041.0\</WinSdk19041BinDir>
     <WinSdk18362BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.18362.0\</WinSdk18362BinDir>
     <WinSdk17763BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17763.0\</WinSdk17763BinDir>
     <WinSdk17134BinDir>$(MSBuildProgramFiles32)\Windows Kits\10\bin\10.0.17134.0\</WinSdk17134BinDir>
@@ -12,6 +13,7 @@
 
     <ProbingFile>makeappx.exe</ProbingFile>
 
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk19041BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk18362BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17763BinDir)x64\$(ProbingFile)')">$(WinSdk17763BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)x64\$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
