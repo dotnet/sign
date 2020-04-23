@@ -1,7 +1,0 @@
-﻿{
-  "ProviderId": "Microsoft.Azure.KeyVault",
-  "Version": "15.7.0.0",
-  "GettingStartedDocument": {
-    "Uri": "https://go.microsoft.com/fwlink/?linkid=869667"
-  }
-}
