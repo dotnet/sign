@@ -78,7 +78,7 @@ namespace SignService.Controllers
                 var user = res.Item1;
 
                 // create the associated key vault if the vault isn't set
-                if (user.KeyVaultUrl != null)
+                if (user.KeyVaultUrl == null)
                 {
                     var vault = await keyVaultAdminService.CreateVaultForUserAsync(user.ObjectId.Value.ToString(), user.UserPrincipalName, user.DisplayName);
 

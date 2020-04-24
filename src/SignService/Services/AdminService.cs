@@ -165,7 +165,7 @@ namespace SignService.Services
 
             if (configured)
             {
-                if (keyVaultUrl != null)
+                if (keyVaultUrl == null)
                 {
                     throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
                 }
@@ -257,7 +257,7 @@ namespace SignService.Services
             if (configured == true)
             {
                 // validate the args are present
-                if (keyVaultUrl != null)
+                if (keyVaultUrl == null)
                 {
                     throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
                 }
