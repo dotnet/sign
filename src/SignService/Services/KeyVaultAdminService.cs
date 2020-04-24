@@ -25,7 +25,7 @@ namespace SignService.Services
         Task<VaultModel> GetVaultAsync(string vaultName);
         Task<List<VaultModel>> ListKeyVaultsAsync();
         Task<List<CertificateModel>> GetCertificatesInVaultAsync(Uri vaultUri);
-        Task<CertificateOperation> CancelCsrAsync(string vaultName, string certificateName);
+        Task<DeleteCertificateOperation> CancelCsrAsync(string vaultName, string certificateName);
         Task<KeyVaultCertificateWithPolicy> MergeCertificate(string vaultName, string certificateName, byte[] certData);
         Task<CertificateOperation> GetCertificateOperation(Uri vaultUrl, string certificateName);
         Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName);
@@ -286,19 +286,11 @@ namespace SignService.Services
         }
 
         public async Task<CertificateOperation> GetCertificateOperation(Uri vaultUrl, string certificateName)
-        {
-            //try
-            //{
-                var client = new CertificateClient(vaultUrl, appTokenCredential);
-                var op = await client.GetCertificateOperationAsync(certificateName).ConfigureAwait(false);
+        {            
+            var client = new CertificateClient(vaultUrl, appTokenCredential);
+            var op = await client.GetCertificateOperationAsync(certificateName).ConfigureAwait(false);
 
-                return op;
-
-            //}// May not be any pending operations
-            //catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
-            //{
-            //    return null;
-            //}
+            return op;
         }
 
         public async Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName)
@@ -316,18 +308,14 @@ namespace SignService.Services
             return op;
         }
 
-        public async Task<CertificateOperation> CancelCsrAsync(string vaultName, string certificateName)
+        public async Task<DeleteCertificateOperation> CancelCsrAsync(string vaultName, string certificateName)
         {
             var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
 
             var client = new CertificateClient(vault.VaultUri, appTokenCredential);
-            var op = await client.GetCertificateOperationAsync(certificateName).ConfigureAwait(false);
-            await op.CancelAsync();
 
-            //_ = await kvClient.UpdateCertificateOperationAsync(vault.VaultUri, certificateName, true).ConfigureAwait(false);
+            var op  = await client.StartDeleteCertificateAsync(certificateName);            
 
-
-            var dCert = (await client.GetDeletedCertificateAsync(certificateName).ConfigureAwait(false)).Value;
             return op;
         }
 
@@ -363,7 +351,5 @@ namespace SignService.Services
 
             return model;
         }
-
-
     }
 }
