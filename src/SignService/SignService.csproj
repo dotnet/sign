@@ -13,7 +13,7 @@
 
     <ProbingFile>makeappx.exe</ProbingFile>
 
-    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk19041BinDir)</WinSdkBinDir>
+    <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk19041BinDir)x64\$(ProbingFile)')">$(WinSdk19041BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk18362BinDir)x64\$(ProbingFile)')">$(WinSdk18362BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17763BinDir)x64\$(ProbingFile)')">$(WinSdk17763BinDir)</WinSdkBinDir>
     <WinSdkBinDir Condition="'$(WinSdkBinDir)' == '' and Exists('$(WinSdk17134BinDir)x64\$(ProbingFile)')">$(WinSdk17134BinDir)</WinSdkBinDir>
