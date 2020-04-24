@@ -7,7 +7,7 @@ using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
 
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-using Microsoft.Azure.KeyVault;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -21,7 +21,7 @@ namespace SignService.Services
     public interface IKeyVaultService
     {
         Task InitializeAccessTokenAsync(string incomingToken);
-        void InitializeCertificateInfo(string timestampUrl, string keyVaultUrl, string certificateName);
+        void InitializeCertificateInfo(string timestampUrl, Uri keyVaultUrl, string certificateName);
         Task<X509Certificate2> GetCertificateAsync();
         Task<RSA> ToRSA();
         CertificateInfo CertificateInfo { get; }
@@ -83,7 +83,7 @@ namespace SignService.Services
             return RSAFactory.Create(tokenCredential, keyIdentifier, certificate);
         }
 
-        public void InitializeCertificateInfo(string timestampUrl, string keyVaultUrl, string certificateName)
+        public void InitializeCertificateInfo(string timestampUrl, Uri keyVaultUrl, string certificateName)
         {
 
             // Lazy to store these after the ctor.
@@ -94,7 +94,7 @@ namespace SignService.Services
                 CertificateName = certificateName
             };
 
-            client = new CertificateClient(new Uri(keyVaultUrl), tokenCredential);
+            client = new CertificateClient(keyVaultUrl, tokenCredential);
         }
     }
 }

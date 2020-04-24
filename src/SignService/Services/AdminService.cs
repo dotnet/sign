@@ -12,8 +12,8 @@ namespace SignService.Services
 {
     public interface IUserAdminService
     {
-        Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
-        Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
+        Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl);
+        Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl);
         Task<IEnumerable<GraphUser>> GetUsersAsync(string displayName);
         Task<GraphUser> GetUserByObjectIdAsync(Guid objectId);
         Task<string> UpdatePasswordAsync(Guid objectId);
@@ -148,7 +148,7 @@ namespace SignService.Services
         }
 
 
-        public async Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
+        public async Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl)
         {
             var uri = $"/users?api-version=1.6";
 
@@ -165,7 +165,7 @@ namespace SignService.Services
 
             if (configured)
             {
-                if (string.IsNullOrWhiteSpace(keyVaultUrl))
+                if (keyVaultUrl != null)
                 {
                     throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
                 }
@@ -194,7 +194,7 @@ namespace SignService.Services
                 DisplayName = displayName,
                 UserPrincipalName = username,
                 UserType = "Guest", // we create this account as a guest to limit overall privs in the directory (enumeration of users, etc)
-                KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
+                KeyVaultUrl = keyVaultUrl,
                 KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
                 TimestampUrl = string.IsNullOrWhiteSpace(timestampUrl) ? null : timestampUrl,
                 SignServiceConfigured = configured,
@@ -244,7 +244,7 @@ namespace SignService.Services
             }
         }
 
-        public async Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
+        public async Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl)
         {
             var uri = $"/users/{objectId}?api-version=1.6";
 
@@ -257,7 +257,7 @@ namespace SignService.Services
             if (configured == true)
             {
                 // validate the args are present
-                if (string.IsNullOrWhiteSpace(keyVaultUrl))
+                if (keyVaultUrl != null)
                 {
                     throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
                 }
@@ -278,7 +278,7 @@ namespace SignService.Services
                 ObjectId = objectId,
                 DisplayName = displayName,
                 SignServiceConfigured = configured,
-                KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
+                KeyVaultUrl = keyVaultUrl,
                 KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
                 TimestampUrl = string.IsNullOrWhiteSpace(timestampUrl) ? null : timestampUrl
             };

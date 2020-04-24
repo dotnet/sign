@@ -46,17 +46,17 @@ namespace SignService.Controllers
         {
             if (createModel.Configured)
             {
-                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl))
+                if (createModel.KeyVaultUrl == null)
                 {
                     ModelState.TryAddModelError(nameof(createModel.KeyVaultUrl), $"{nameof(createModel.KeyVaultUrl)} is required when Configured");
                 }
 
-                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl))
+                if (string.IsNullOrWhiteSpace(createModel.TimestampUrl))
                 {
                     ModelState.TryAddModelError(nameof(createModel.TimestampUrl), $"{nameof(createModel.TimestampUrl)} is required when Configured");
                 }
 
-                if (string.IsNullOrWhiteSpace(createModel.KeyVaultUrl))
+                if (string.IsNullOrWhiteSpace(createModel.CertificateName))
                 {
                     ModelState.TryAddModelError(nameof(createModel.CertificateName), $"{nameof(createModel.CertificateName)} is required when Configured");
                 }
@@ -78,7 +78,7 @@ namespace SignService.Controllers
                 var user = res.Item1;
 
                 // create the associated key vault if the vault isn't set
-                if (string.IsNullOrWhiteSpace(user.KeyVaultUrl))
+                if (user.KeyVaultUrl != null)
                 {
                     var vault = await keyVaultAdminService.CreateVaultForUserAsync(user.ObjectId.Value.ToString(), user.UserPrincipalName, user.DisplayName);
 
@@ -116,10 +116,9 @@ namespace SignService.Controllers
 
             // See if we have a key vault
             string vaultName = null;
-            if (!string.IsNullOrWhiteSpace(user.KeyVaultUrl))
+            if (user.KeyVaultUrl != null)
             {
-                var uri = new Uri(user.KeyVaultUrl);
-                vaultName = uri.Host.Substring(0, uri.Host.IndexOf("."));
+                vaultName = user.KeyVaultUrl.Host.Substring(0, user.KeyVaultUrl.Host.IndexOf("."));
             }
             var model = new UserDetailsModel
             {
@@ -134,7 +133,7 @@ namespace SignService.Controllers
             var user = await adminService.GetUserByObjectIdAsync(id);
 
             List<CertificateModel> certs = null;
-            if (!string.IsNullOrWhiteSpace(user.KeyVaultUrl))
+            if (user.KeyVaultUrl != null)
             {
                 certs = await keyVaultAdminService.GetCertificatesInVaultAsync(user.KeyVaultUrl);
             }
@@ -165,17 +164,17 @@ namespace SignService.Controllers
         {
             if (model.Configured)
             {
-                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl))
+                if (model.KeyVaultUrl == null)
                 {
                     ModelState.TryAddModelError(nameof(model.KeyVaultUrl), $"{nameof(model.KeyVaultUrl)} is required when Configured");
                 }
 
-                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl))
+                if (string.IsNullOrWhiteSpace(model.TimestampUrl))
                 {
                     ModelState.TryAddModelError(nameof(model.TimestampUrl), $"{nameof(model.TimestampUrl)} is required when Configured");
                 }
 
-                if (string.IsNullOrWhiteSpace(model.KeyVaultUrl))
+                if (string.IsNullOrWhiteSpace(model.CertificateName))
                 {
                     ModelState.TryAddModelError(nameof(model.CertificateName), $"{nameof(model.CertificateName)} is required when Configured");
                 }
@@ -191,7 +190,7 @@ namespace SignService.Controllers
                 await adminService.UpdateUserAsync(id,
                                                    model.DisplayName?.Trim(),
                                                    model.Configured,
-                                                   model.KeyVaultUrl?.Trim(),
+                                                   model.KeyVaultUrl,
                                                    model.CertificateName?.Trim(),
                                                    model.TimestampUrl?.Trim());
 

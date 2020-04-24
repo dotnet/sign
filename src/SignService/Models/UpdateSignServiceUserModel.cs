@@ -13,7 +13,7 @@ namespace SignService.Models
         public string DisplayName { get; set; }
         public string Username { get; set; }
         public bool Configured { get; set; }
-        public string KeyVaultUrl { get; set; }
+        public Uri KeyVaultUrl { get; set; }
         public string CertificateName { get; set; }
         public string TimestampUrl { get; set; }
 

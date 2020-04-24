@@ -90,9 +90,9 @@ namespace SignService.Controllers
             var op = await keyVaultAdminService.GetCertificateOperation(vault.VaultUri, certificateName);
 
             string str = null;
-            if (op.Csr?.Length > 0)
+            if (op.Properties.Csr?.Length > 0)
             {
-                str = Crypt32.CryptBinaryToString(op.Csr, true, true);
+                str = Crypt32.CryptBinaryToString(op.Properties.Csr, true, true);
             }
             var model = new UpdateCertificateRequestModel
             {

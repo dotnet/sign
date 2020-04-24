@@ -58,7 +58,7 @@ namespace SignService.Authentication
                     {
                         DisplayName = identity.Claims.FirstOrDefault(c => c.Type == "name")?.Value,
                         SignServiceConfigured = signServiceConfigured,
-                        KeyVaultUrl = identity.Claims.FirstOrDefault(c => c.Type == "extn.keyVaultUrl")?.Value,
+                        KeyVaultUrl = new Uri(identity.Claims.FirstOrDefault(c => c.Type == "extn.keyVaultUrl")?.Value),
                         KeyVaultCertificateName = identity.Claims.FirstOrDefault(c => c.Type == "extn.keyVaultCertificateName")?.Value,
                         TimestampUrl = identity.Claims.FirstOrDefault(c => c.Type == "extn.timestampUrl")?.Value
                     };
@@ -83,7 +83,7 @@ namespace SignService.Authentication
                 {
                     passed = true;
 
-                    identity.AddClaim(new Claim("keyVaultUrl", user.KeyVaultUrl));
+                    identity.AddClaim(new Claim("keyVaultUrl", user.KeyVaultUrl.ToString()));
                     identity.AddClaim(new Claim("keyVaultCertificateName", user.KeyVaultCertificateName));
                     identity.AddClaim(new Claim("timestampUrl", user.TimestampUrl));
                 }

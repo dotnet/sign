@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+
+using Azure.Identity;
+
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +21,11 @@ namespace SignService
 
         public static IWebHostBuilder BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                    .ConfigureAppConfiguration((context, config) =>
+                    {
+                        var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT"));
+                        config.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());
+                    })
                     .ConfigureAppConfiguration((builder =>
                                                 {
                                                     // Support optional App_Data location

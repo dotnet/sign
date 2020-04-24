@@ -1,5 +1,9 @@
-﻿using System.Diagnostics;
-using Microsoft.Azure.KeyVault.Models;
+﻿using System;
+using System.Diagnostics;
+
+using Azure.Security.KeyVault.Certificates;
+
+
 
 namespace SignService.Models
 {
@@ -7,9 +11,9 @@ namespace SignService.Models
     public class CertificateModel
     {
         public string Name { get; set; }
-        public string CertificateIdentifier { get; set; }
+        public Uri CertificateIdentifier { get; set; }
         public string Thumbprint { get; set; }
-        public CertificateAttributes Attributes { get; set; }
+        public CertificateProperties Attributes { get; set; }
         public CertificateOperation Operation { get; set; }
     }
 }
