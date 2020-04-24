@@ -56,9 +56,6 @@ steps:
     arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\ -r win10-x64'
     zipAfterPublish: True
 
-- task: PublishBuildArtifacts@1
+- publish: $(Build.ArtifactStagingDirectory)\website
   displayName: Publish SignService Artifact
-  inputs:
-    pathToPublish: $(Build.ArtifactStagingDirectory)\website
-    artifactType: container
-    artifactName: SignService
+  artifact: SignService

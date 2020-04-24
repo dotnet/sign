@@ -24,43 +24,74 @@ pr:
       - version.json
       - scripts/*
 
-pool:
-  vmImage: windows-2019
-
 variables: 
   BuildConfiguration: Release
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   TreatWarningsAsErrors: true
   NUGET_PACKAGES: $(Agent.TempDirectory)/.nuget/packages
 
-steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 3.1.x'
-  inputs:
-    version: 3.1.x
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: windows-latest
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: pack
-    packagesToPack: src/SignClient/SignClient.csproj
-    packDirectory: $(Build.ArtifactStagingDirectory)\Client
-    configuration: $(BuildConfiguration)
-  displayName: Build Client
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        version: 3.1.x
 
-- task: PowerShell@2
-  displayName: Authenticode Sign Client artifacts
-  inputs:
-    filePath: scripts/Sign-Package.ps1
-  env:
-    SignClientUser: $(SignClientUser)
-    SignClientSecret: $(SignClientSecret)
-    ArtifactDirectory: $(Build.ArtifactStagingDirectory)\Client
-  condition: and(succeeded(), not(eq(variables['build.reason'], 'PullRequest')), not(eq(variables['SignClientSecret'], '')), not(eq(variables['SignClientUser'], '')))
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: pack
+        packagesToPack: src/SignClient/SignClient.csproj
+        packDirectory: $(Build.ArtifactStagingDirectory)\Client
+        configuration: $(BuildConfiguration)
+      displayName: Build Client
 
+    - publish: $(Build.ArtifactStagingDirectory)\Client
+      displayName: Publish build packages
+      artifact: BuildPackages
 
-- task: PublishBuildArtifacts@1
-  displayName: Publish SignClient Artifact
-  inputs:
-    pathToPublish: $(Build.ArtifactStagingDirectory)\Client
-    artifactType: container
-    artifactName: SignClient
+    - publish: scripts
+      displayName: Publish signing config
+      artifact: config      
+
+- stage: CodeSign
+  condition: and(succeeded('Build'), not(eq(variables['build.reason'], 'PullRequest')))
+  jobs:
+  - deployment: CodeSign
+    displayName: Code Signing
+    pool:
+      vmImage: windows-latest    
+    environment: Code Sign - CI
+    variables:
+    - group: Sign Client Credentials
+    strategy:
+      runOnce:
+        deploy:
+          steps: 
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: custom
+              custom: tool
+              arguments: install --tool-path . SignClient
+            displayName: Install SignTool tool
+
+          - pwsh: |
+              .\SignClient "Sign" `
+              --baseDirectory "$(Pipeline.Workspace)\BuildPackages" `
+              --input "**/*.nupkg" `
+              --config "$(Pipeline.Workspace)\config\appsettings.json" `
+              --filelist "$(Pipeline.Workspace)\config\filelist.txt" `
+              --user "$(SignClientUser)" `
+              --secret "$(SignClientSecret)" `
+              --name "SignClient" `
+              --description "SignClient" `
+              --descriptionUrl "https://github.com/dotnet/SignService"
+            displayName: Sign packages
+              
+          - publish: $(Pipeline.Workspace)/BuildPackages
+            displayName: Publish Signed Packages
+            artifact: SignClient
