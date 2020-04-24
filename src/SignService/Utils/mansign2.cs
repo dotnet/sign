@@ -18,12 +18,13 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Win32;
 
-#pragma warning disable IDE0016 
-#pragma warning disable IDE0017 
-#pragma warning disable IDE0018 
+using RSAKeyVaultProvider;
+
+#pragma warning disable IDE0016
+#pragma warning disable IDE0017
+#pragma warning disable IDE0018
 #pragma warning disable IDE0019
 #pragma warning disable IDE0029
 #pragma warning disable IDE0032

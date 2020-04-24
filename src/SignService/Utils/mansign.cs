@@ -15,7 +15,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
-using Microsoft.Azure.KeyVault;
+
+using RSAKeyVaultProvider;
+
 using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 // From: https://github.com/Microsoft/referencesource/blob/7de0d30c7c5ef56ab60fee41fcdb50005d24979a/inc/mansign.cs
