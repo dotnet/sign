@@ -75,7 +75,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.13.1" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="2.0.41" />
+    <PackageReference Include="NuGetKeyVaultSignTool.Core" Version="3.0.4" />
     <PackageReference Include="RSAKeyVaultProvider" Version="1.1.57" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.7" />
     <PackageReference Include="Microsoft.Azure.Management.KeyVault" Version="3.0.0" />   
