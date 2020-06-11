@@ -342,7 +342,7 @@ namespace SignService.Services
             string username = null;
             var model = new VaultModel
             {
-                VaultUri = new Uri(vault.Properties.VaultUri),
+                VaultUri = new Uri(vault.Properties.VaultUri.TrimEnd('/')),
                 DisplayName = vault.Tags?.TryGetValue("displayName", out dname) == true ? dname : null,
                 Username = vault.Tags?.TryGetValue("userName", out username) == true ? username : null,
                 Name = vault.Name,
