@@ -47,7 +47,7 @@ namespace SignService.SigningTools
             this.telemetryLogger = telemetryLogger;
             this.directoryUtility = directoryUtility;
 
-            magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\mage.exe");
+            magetoolPath = Path.Combine(hostingEnvironment.ContentRootPath, "tools\\SDK\\x86\\mage.exe");
             signToolName = nameof(MageSignService);
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             signToolAggregate = new Lazy<ISigningToolAggregate>(() => serviceProvider.GetService<ISigningToolAggregate>());
