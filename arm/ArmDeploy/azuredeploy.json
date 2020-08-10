@@ -163,8 +163,7 @@
           "name": "Microsoft.AspNetCore.AzureAppServices.SiteExtension",
           "type": "siteextensions",
           "dependsOn": [
-            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]",
-            "[resourceId('Microsoft.Web/Sites/siteextensions', parameters('webSiteName'), 'Microsoft.ApplicationInsights.AzureWebSites')]"
+            "[resourceId('Microsoft.Web/Sites', parameters('webSiteName'))]"
           ],
           "properties": {
           }
