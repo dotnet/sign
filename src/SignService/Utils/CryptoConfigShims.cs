@@ -4,16 +4,6 @@ namespace System.Security.Cryptography.Xml
 {
     public abstract class RSAPKCS1SignatureDescription : SignatureDescription
     {
-        static readonly MethodInfo CryptoHelpersCreateFromName;
-
-        static RSAPKCS1SignatureDescription()
-        {
-            // Get the CryptoHelpers impl
-            var helperType = Type.GetType("System.Security.Cryptography.Xml.CryptoHelpers, System.Security.Cryptography.Xml");
-
-            CryptoHelpersCreateFromName = helperType.GetTypeInfo().GetDeclaredMethod("CreateFromName");
-        }
-
         public RSAPKCS1SignatureDescription(string hashAlgorithmName)
         {
             KeyAlgorithm = typeof(RSA).AssemblyQualifiedName;
@@ -24,7 +14,7 @@ namespace System.Security.Cryptography.Xml
 
         public sealed override AsymmetricSignatureDeformatter CreateDeformatter(AsymmetricAlgorithm key)
         {
-            var item = (AsymmetricSignatureDeformatter)CryptoHelpersCreateFromName.Invoke(null, new object[] { DeformatterAlgorithm });
+            var item = (AsymmetricSignatureDeformatter)CryptoConfig.CreateFromName(DeformatterAlgorithm);
             item.SetKey(key);
             item.SetHashAlgorithm(DigestAlgorithm);
             return item;
@@ -32,7 +22,7 @@ namespace System.Security.Cryptography.Xml
 
         public sealed override AsymmetricSignatureFormatter CreateFormatter(AsymmetricAlgorithm key)
         {
-            var item = (AsymmetricSignatureFormatter)CryptoHelpersCreateFromName.Invoke(null, new object[] { FormatterAlgorithm });
+            var item = (AsymmetricSignatureFormatter)CryptoConfig.CreateFromName(FormatterAlgorithm);
             item.SetKey(key);
             item.SetHashAlgorithm(DigestAlgorithm);
             return item;
