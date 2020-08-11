@@ -32,7 +32,7 @@ Note: Only global admins can reset passwords if they need to be changed; any use
 
 ## 1. Clone Repo
 
-`git clone https://github.com/onovotny/SignService`
+`git clone https://github.com/dotnet/SignService`
 
 ## 2. Build & Run `InstallUtility`
 
