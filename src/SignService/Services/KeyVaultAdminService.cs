@@ -288,9 +288,16 @@ namespace SignService.Services
         public async Task<CertificateOperation> GetCertificateOperation(Uri vaultUrl, string certificateName)
         {            
             var client = new CertificateClient(vaultUrl, appTokenCredential);
-            var op = await client.GetCertificateOperationAsync(certificateName).ConfigureAwait(false);
 
-            return op;
+            try
+            {
+                var op = await client.GetCertificateOperationAsync(certificateName).ConfigureAwait(false);
+                return op;
+            }
+            catch (Azure.RequestFailedException e) when (e.Status == 404) // some older certs may be missing ops
+            {
+                return null;
+            }            
         }
 
         public async Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName)

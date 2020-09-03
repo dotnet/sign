@@ -98,7 +98,7 @@
                 @Html.DisplayFor(modelItem => item.Operation.Properties.Status)
             </th>
             <th>
-                @if (item.Operation.Properties?.Status == "inProgress")
+                @if (item.Operation?.Properties?.Status == "inProgress")
                 {
                     @Html.ActionLink("View", "CertificateRequest", new
                     {
