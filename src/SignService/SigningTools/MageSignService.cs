@@ -207,6 +207,7 @@ namespace SignService.SigningTools
                 {
                     logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
                     Thread.Sleep(retry);
+                    retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
                 }
 
                 if (RunSignTool(args, inputFile, hashMode, rsaPrivateKey, publicCertificate, timestampUrl))
@@ -216,8 +217,6 @@ namespace SignService.SigningTools
                 }
 
                 attempt++;
-
-                retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
 
             } while (attempt <= 3);
 
