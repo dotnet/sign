@@ -83,6 +83,7 @@ namespace SignService.SigningTools
                 {
                     logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
                     await Task.Delay(retry);
+                    retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
                 }
 
                 if (await RunSignTool(file, config, timestampUrl, alg))
@@ -92,8 +93,6 @@ namespace SignService.SigningTools
                 }
 
                 attempt++;
-
-                retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
 
             } while (attempt <= 3);
 
