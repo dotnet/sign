@@ -1,6 +1,6 @@
 # Authenticode Signing Service and Client
 
-[<img align="right" src="https://xunit.github.io/images/dotnet-fdn-logo.png" width="100" />](https://www.dotnetfoundation.org/)
+[<img align="right" src="https://xunit.net/images/dotnet-fdn-logo.png" width="100" />](https://www.dotnetfoundation.org/)
 
 This project aims to make it easier to integrate Authenticode signing into a CI process by providing a secured API
 for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD and Azure Key Vault's HSM for security. It is part of the [.NET Foundation](https://www.dotnetfoundation.org/), and operates under their [code of conduct](https://www.dotnetfoundation.org/code-of-conduct). It is licensed under [MIT](https://opensource.org/licenses/MIT) (an OSI approved license).
@@ -182,4 +182,4 @@ To get certificates into Key Vault, there are several options:
 
 # Contributing
 
-I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/onovotny/SignService/issues) to discuss first. Security reviews are also much appreciated!
+I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/dotnet/SignService/issues) to discuss first. Security reviews are also much appreciated!
