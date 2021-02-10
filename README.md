@@ -178,7 +178,7 @@ To get certificates into Key Vault, there are several options:
 
 1. Use the Admin UI to create a CSR and then merge the certificate.
 2. Upload a pfx file using the Portal, CLI, or PowerShell
-3. Use this GUI tool: https://github.com/elize1979/AzureKeyVaultExplorer. Before you can login, you'll need to go to the settings, put your tenant name in and change the login endpoint to `https://login.microsoftonline.com/common`. The tool makes it easy to upload and manage certificates in Key Vault.
+3. Use this GUI tool: https://github.com/microsoft/AzureKeyVaultExplorer. Before you can login, you'll need to go to the settings, put your tenant name in and change the login endpoint to `https://login.microsoftonline.com/common`. The tool makes it easy to upload and manage certificates in Key Vault.
 
 # Contributing
 
