@@ -246,7 +246,7 @@ namespace SignService.Services
 
             // for the vault name, we get up to 24 characters, so use the following:
             // upn up to the @ then a dash then fill with a guid truncated
-            var vaultName = $"{upn.Substring(0, upn.IndexOf('@'))}-{Guid.NewGuid().ToString("N")}";
+            var vaultName = $"{upn.Substring(0, upn.IndexOf('@'))}-{Guid.NewGuid():N}";
 
             // Truncate to 24 chars
             vaultName = vaultName.Substring(0, 24);
