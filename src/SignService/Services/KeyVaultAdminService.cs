@@ -305,7 +305,7 @@ namespace SignService.Services
             var policy = new CertificatePolicy("Unknown", $"CN={displayName}")
             {
                 KeyType = CertificateKeyType.RsaHsm,
-                KeySize = 2048
+                KeySize = 4092
             };
 
             var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
