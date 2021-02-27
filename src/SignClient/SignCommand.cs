@@ -121,41 +121,51 @@ namespace SignClient
 
                 var configuration = builder.Build();
 
+
+                Func<Task<string>> getAccessToken;
+
+
+                var authority = $"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}";
+
+                var clientId = configuration["SignClient:AzureAd:ClientId"];
+                var resourceId = configuration["SignClient:Service:ResourceId"];
+
+                // See if we have a Username option
+                if (username.HasValue())
+                {
+                    // ROPC flow
+                    var pca = PublicClientApplicationBuilder.Create(clientId)
+                                                            .WithAuthority(authority)
+                                                            .Build();
+
+                    var secret = new NetworkCredential("", clientSecret.Value()).SecurePassword;
+
+                    getAccessToken = async () =>
+                    {
+                        var tokenResult = await pca.AcquireTokenByUsernamePassword(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret).ExecuteAsync();
+
+                        return tokenResult.AccessToken;
+                    };
+                }
+                else
+                {
+                    var context = ConfidentialClientApplicationBuilder.Create(clientId)
+                                                                      .WithAuthority(authority)
+                                                                      .WithClientSecret(clientSecret.Value())
+                                                                      .Build();
+
+                    getAccessToken = async () =>
+                    {
+                        // Client credential flow
+                        var res = await context.AcquireTokenForClient(new[] { $"{resourceId}/.default" }).ExecuteAsync();
+                        return res.AccessToken;
+                    };                    
+                }
+
                 // Setup Refit
                 var settings = new RefitSettings
                 {
-                    AuthorizationHeaderValueGetter = async () =>
-                    {
-                        var authority = $"{configuration["SignClient:AzureAd:AADInstance"]}{configuration["SignClient:AzureAd:TenantId"]}";
-
-                        var clientId = configuration["SignClient:AzureAd:ClientId"];
-                        var resourceId = configuration["SignClient:Service:ResourceId"];
-
-                        // See if we have a Username option
-                        if (username.HasValue())
-                        {
-                            // ROPC flow
-                            var pca = PublicClientApplicationBuilder.Create(clientId)
-                                                                    .WithAuthority(authority)
-                                                                    .Build();
-
-                            var secret = new NetworkCredential("", clientSecret.Value()).SecurePassword;
-
-                            var tokenResult = await pca.AcquireTokenByUsernamePassword(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret).ExecuteAsync();
-
-                            return tokenResult.AccessToken;
-                        }
-                        else
-                        {
-                            var context = ConfidentialClientApplicationBuilder.Create(clientId)
-                                                                              .WithAuthority(authority)
-                                                                              .WithClientSecret(clientSecret.Value())
-                                                                              .Build();
-                            // Client credential flow
-                            var res = await context.AcquireTokenForClient(new[] { $"{resourceId}/.default" }).ExecuteAsync();
-                            return res.AccessToken;
-                        }
-                    }
+                    AuthorizationHeaderValueGetter = getAccessToken
                 };
 
 
