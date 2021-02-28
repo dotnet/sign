@@ -45,7 +45,8 @@ namespace SignClient
             CommandOption name,
             CommandOption description,
             CommandOption descriptionUrl,
-            CommandOption maxConcurrency
+            CommandOption maxConcurrency,
+            CommandOption loggingLevel
         )
         {
             try
@@ -89,6 +90,28 @@ namespace SignClient
                     baseDirectory.Values.Add(Environment.CurrentDirectory);
                 }
 
+                var logLevel = LogLevel.Warning;
+
+                if (loggingLevel.HasValue())
+                {
+                    if (!Enum.TryParse(typeof(LogLevel), loggingLevel.Value(), ignoreCase: true, out var logLevelObj))
+                    {
+                        signCommandLineApplication.Error.WriteLine("--logLevel parameter invalid. Valid options are: error, warning, info, verbose");
+                        return EXIT_CODES.INVALID_OPTIONS;
+                    }
+
+                    logLevel = (LogLevel)logLevelObj;
+                }
+
+                void Log(string facility, LogLevel level, string message)
+                {
+                    if (level <= logLevel)
+                    {
+                        var writer = level == LogLevel.Error ? signCommandLineApplication.Error : signCommandLineApplication.Out;
+                        writer.WriteLine($"[{facility}][{level}] {message}");
+                    }
+                }
+
                 List<FileInfo> inputFiles;
                 // If we're going to glob, we can't be fully rooted currently (fix me later)
 
@@ -130,11 +153,14 @@ namespace SignClient
                 var clientId = configuration["SignClient:AzureAd:ClientId"];
                 var resourceId = configuration["SignClient:Service:ResourceId"];
 
+                var logMsal = new LogCallback((LogLevel level, string message, bool containsPii) => Log("MSAL", level, message));
+
                 // See if we have a Username option
                 if (username.HasValue())
                 {
                     // ROPC flow
                     var pca = PublicClientApplicationBuilder.Create(clientId)
+                                                            .WithLogging(logMsal, logLevel, enablePiiLogging: false, enableDefaultPlatformLogging: true)
                                                             .WithAuthority(authority)
                                                             .Build();
 
@@ -142,7 +168,11 @@ namespace SignClient
 
                     getAccessToken = async () =>
                     {
+                        Log("RESTCLIENT", LogLevel.Info, "Obtaining access token for PublicClientApplication.");
+
                         var tokenResult = await pca.AcquireTokenByUsernamePassword(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret).ExecuteAsync();
+
+                        Log("RESTCLIENT", LogLevel.Info, $"Obtained access token for PublicClientApplication. Correlation ID = {tokenResult.CorrelationId}; Expires on = {tokenResult.ExpiresOn}.");
 
                         return tokenResult.AccessToken;
                     };
@@ -150,15 +180,20 @@ namespace SignClient
                 else
                 {
                     var context = ConfidentialClientApplicationBuilder.Create(clientId)
+                                                                      .WithLogging(logMsal, logLevel, enablePiiLogging: false, enableDefaultPlatformLogging: true)
                                                                       .WithAuthority(authority)
                                                                       .WithClientSecret(clientSecret.Value())
                                                                       .Build();
 
                     getAccessToken = async () =>
                     {
-                        // Client credential flow
-                        var res = await context.AcquireTokenForClient(new[] { $"{resourceId}/.default" }).ExecuteAsync();
-                        return res.AccessToken;
+                        Log("RESTCLIENT", LogLevel.Info, "Obtaining access token for ConfidentialClientApplication.");
+
+                        var tokenResult = await context.AcquireTokenForClient(new[] { $"{resourceId}/.default" }).ExecuteAsync();
+
+                        Log("RESTCLIENT", LogLevel.Info, $"Obtained access token for PublicClientApplication. Correlation ID = {tokenResult.CorrelationId}; Expires on = {tokenResult.ExpiresOn}.");
+
+                        return tokenResult.AccessToken;
                     };                    
                 }
 
@@ -284,7 +319,5 @@ namespace SignClient
                 return file;
             }
         }
-
-    
     }
 }

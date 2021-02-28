@@ -24,11 +24,12 @@ namespace SignClient
                 var description = cfg.Option("-d | --description", "Description", CommandOptionType.SingleValue);
                 var descUrl     = cfg.Option("-u | --descriptionUrl", "Description Url", CommandOptionType.SingleValue);
                 var maxConcurrency = cfg.Option("-m | --maxConcurrency", "Maximum concurrency (default is 4)", CommandOptionType.SingleValue);
+                var loggingLevel = cfg.Option("-l | --logLevel", "Logging level (default is warn)", CommandOptionType.SingleValue);
                 
                 cfg.OnExecute(() =>
                 {
                     var sign = new SignCommand(application);
-                    return sign.Sign(configFile, inputFile, baseDirectory, outputFile, fileList, secret, user, name, description, descUrl, maxConcurrency);
+                    return sign.Sign(configFile, inputFile, baseDirectory, outputFile, fileList, secret, user, name, description, descUrl, maxConcurrency, loggingLevel);
                 });
             });
 
