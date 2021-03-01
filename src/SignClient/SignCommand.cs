@@ -170,7 +170,24 @@ namespace SignClient
                     {
                         Log("RESTCLIENT", LogLevel.Info, "Obtaining access token for PublicClientApplication.");
 
-                        var tokenResult = await pca.AcquireTokenByUsernamePassword(new[] { $"{resourceId}/user_impersonation" }, username.Value(), secret).ExecuteAsync();
+                        var accounts = await pca.GetAccountsAsync().ConfigureAwait(false);
+                        var first = accounts.FirstOrDefault();
+
+                        var scopes = new[] { $"{resourceId}/user_impersonation" };
+
+                        if (first != null)
+                        {
+                            try
+                            {
+                                var result = await pca.AcquireTokenSilent(scopes, first).ExecuteAsync().ConfigureAwait(false);
+
+                                Log("RESTCLIENT", LogLevel.Info, $"Obtained access token from cache for PublicClientApplication. Correlation ID = {result.CorrelationId}; Expires on = {result.ExpiresOn}.");
+                                return result.AccessToken;
+                            }
+                            catch(MsalUiRequiredException) { } // eat it as we'll try to get via password next
+                        }
+
+                        var tokenResult = await pca.AcquireTokenByUsernamePassword(scopes, username.Value(), secret).ExecuteAsync();
 
                         Log("RESTCLIENT", LogLevel.Info, $"Obtained access token for PublicClientApplication. Correlation ID = {tokenResult.CorrelationId}; Expires on = {tokenResult.ExpiresOn}.");
 
@@ -189,9 +206,25 @@ namespace SignClient
                     {
                         Log("RESTCLIENT", LogLevel.Info, "Obtaining access token for ConfidentialClientApplication.");
 
-                        var tokenResult = await context.AcquireTokenForClient(new[] { $"{resourceId}/.default" }).ExecuteAsync();
+                        var accounts = await context.GetAccountsAsync().ConfigureAwait(false);
+                        var first = accounts.FirstOrDefault();
+                        var scopes = new[] { $"{resourceId}/.default" };
 
-                        Log("RESTCLIENT", LogLevel.Info, $"Obtained access token for PublicClientApplication. Correlation ID = {tokenResult.CorrelationId}; Expires on = {tokenResult.ExpiresOn}.");
+                        if (first != null)
+                        {
+                            try
+                            {
+                                var result = await context.AcquireTokenSilent(scopes, first).ExecuteAsync().ConfigureAwait(false);
+
+                                Log("RESTCLIENT", LogLevel.Info, $"Obtained access token from cache for ConfidentialClientApplication. Correlation ID = {result.CorrelationId}; Expires on = {result.ExpiresOn}.");
+                                return result.AccessToken;
+                            }
+                            catch (MsalUiRequiredException) { } // eat it as we'll try to get via password next
+                        }                        
+
+                        var tokenResult = await context.AcquireTokenForClient(scopes).ExecuteAsync();
+
+                        Log("RESTCLIENT", LogLevel.Info, $"Obtained access token for ConfidentialClientApplication. Correlation ID = {tokenResult.CorrelationId}; Expires on = {tokenResult.ExpiresOn}.");
 
                         return tokenResult.AccessToken;
                     };                    
