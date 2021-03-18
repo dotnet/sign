@@ -170,7 +170,6 @@ namespace SignService
             }
             else
             {
-                app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
 
