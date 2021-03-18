@@ -70,6 +70,12 @@ namespace SignClient
                     return EXIT_CODES.INVALID_OPTIONS;
                 }
 
+                if (!clientSecret.HasValue())
+                {
+                    signCommandLineApplication.Error.WriteLine("--secret parameter is required");
+                    return EXIT_CODES.INVALID_OPTIONS;
+                }
+
                 if(!maxConcurrency.HasValue())
                 {
                     maxConcurrency.Values.Add("4"); // default to 4
