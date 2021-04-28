@@ -116,8 +116,8 @@ azure-pipelines.yml:
       --input "**/*.{appxbundle,appinstaller,zip,nupkg}" `
       --config "$(Pipeline.Workspace)\SigningScripts\appsettings.json" `
       --filelist "$(Pipeline.Workspace)\SigningScripts\filelist.txt" `
-      --user "$(SignClientUser)" `
-      --secret "$(SignClientSecret)" `
+      --user '$(SignClientUser)' `
+      --secret '$(SignClientSecret)' `
       --name "NuGet Package Explorer" `
       --description "NuGet Package Explorer" `
       --descriptionUrl "https://github.com/NuGetPackageExplorer/NuGetPackageExplorer"
