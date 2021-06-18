@@ -308,6 +308,9 @@ namespace SignService.Services
                 KeySize = 4096
             };
 
+            policy.KeyUsage.Add(CertificateKeyUsage.DigitalSignature);
+            policy.EnhancedKeyUsage.Add("1.3.6.1.5.5.7.3.3"); // Code Signing
+
             var vault = await GetVaultAsync(vaultName).ConfigureAwait(false);
 
             var client = new CertificateClient(vault.VaultUri, appTokenCredential);
