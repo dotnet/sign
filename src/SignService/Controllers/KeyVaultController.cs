@@ -78,7 +78,7 @@ namespace SignService.Controllers
         {
             try
             {
-                var csr = await keyVaultAdminService.CreateCsrAsync(model.VaultName, model.CertificateName, model.CertificateName);
+                var csr = await keyVaultAdminService.CreateCsrAsync(model.VaultName, model.CertificateId, model.CommonName);
 
                 return RedirectToAction(nameof(Details), new { id = model.VaultName });
             }
