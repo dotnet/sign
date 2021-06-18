@@ -28,7 +28,7 @@ namespace SignService.Services
         Task<DeleteCertificateOperation> CancelCsrAsync(string vaultName, string certificateName);
         Task<KeyVaultCertificateWithPolicy> MergeCertificate(string vaultName, string certificateName, byte[] certData);
         Task<CertificateOperation> GetCertificateOperation(Uri vaultUrl, string certificateName);
-        Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName);
+        Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string commonName);
     }
 
     public class KeyVaultAdminService : IKeyVaultAdminService
@@ -300,9 +300,9 @@ namespace SignService.Services
             }            
         }
 
-        public async Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string displayName)
+        public async Task<CertificateOperation> CreateCsrAsync(string vaultName, string certificateName, string commonName)
         {
-            var policy = new CertificatePolicy("Unknown", $"CN={displayName}")
+            var policy = new CertificatePolicy("Unknown", $"CN={commonName}")
             {
                 KeyType = CertificateKeyType.RsaHsm,
                 KeySize = 4096

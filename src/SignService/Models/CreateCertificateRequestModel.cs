@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+
+using Microsoft.AspNetCore.Mvc;
 
 namespace SignService.Models
 {
@@ -6,6 +8,10 @@ namespace SignService.Models
     {
         [HiddenInput]
         public string VaultName { get; set; }
-        public string CertificateName { get; set; }
+
+        [DisplayName("Certificate Id in the Key Vault")]
+        public string CertificateId { get; set; }
+
+        public string CommonName { get; set; }
     }
 }
