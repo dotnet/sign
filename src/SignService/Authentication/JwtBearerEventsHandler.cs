@@ -66,7 +66,7 @@ namespace SignService.Authentication
                 else // get them from the graph directly
                 {
                     //var result = await authContext.AcquireTokenAsync(settings.GraphId, credential, new UserAssertion(incomingToken));
-                    var result = await tokenAquisition.GetAuthenticationResultForUserAsync(new[] { settings.GraphId }).ConfigureAwait(false);
+                    var result = await tokenAquisition.GetAuthenticationResultForUserAsync(new[] { settings.GraphUserId }).ConfigureAwait(false);
 
                     var url = $"{adminOptions.GraphInstance}{azureOptions.TenantId}/users/{oid}?api-version=1.6";
 

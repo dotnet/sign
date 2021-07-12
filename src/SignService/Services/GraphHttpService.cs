@@ -23,14 +23,16 @@ namespace SignService.Services
         //readonly AuthenticationContext adalContext;
         readonly ITokenAcquisition tokenAcquisition;
         static readonly HttpMethod PatchMethod = new("PATCH");
-        readonly string graphResourceId;
+        readonly string graphUserResourceId;
+        readonly string graphAppResourceId;
 
         public GraphHttpService(IOptionsSnapshot<MicrosoftIdentityOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IUser user, ITokenAcquisition tokenAcquisition, IHttpContextAccessor contextAccessor)
         {
             this.azureAdOptions = azureAdOptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
             this.adminConfig = adminConfig.Value;
             this.tokenAcquisition = tokenAcquisition;
-            graphResourceId = resources.Value.GraphId;
+            graphAppResourceId = resources.Value.GraphAppId;
+            graphUserResourceId = resources.Value.GraphUserId;
 
             var userId = user.ObjectId;
 
@@ -167,12 +169,12 @@ namespace SignService.Services
             if (accessAsUser)
             {
                 //result = await adalContext.AcquireTokenSilentAsync(graphResourceId, azureAdOptions.ClientId).ConfigureAwait(false);
-                result = await tokenAcquisition.GetAuthenticationResultForUserAsync(new[] { graphResourceId }).ConfigureAwait(false);
+                result = await tokenAcquisition.GetAuthenticationResultForUserAsync(new[] { graphUserResourceId }).ConfigureAwait(false);
             }
             else
             {
                 //result = await adalContext.AcquireTokenAsync(graphResourceId, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
-                result = await tokenAcquisition.GetAuthenticationResultForAppAsync(graphResourceId).ConfigureAwait(false);
+                result = await tokenAcquisition.GetAuthenticationResultForAppAsync(graphAppResourceId).ConfigureAwait(false);
             }
 
             var client = new HttpClient();

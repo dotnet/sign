@@ -88,7 +88,7 @@ namespace SignService.Services
         {
             //var result = await adalContext.AcquireTokenAsync(resources.AzureRM, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret)).ConfigureAwait(false);
 
-            var token = await tokenAcquisition.GetAccessTokenForAppAsync(resources.AzureRM).ConfigureAwait(false);
+            var token = await tokenAcquisition.GetAccessTokenForAppAsync(resources.AzureRMAppId).ConfigureAwait(false);
             return token;
             //return result.AccessToken;
         }
@@ -97,9 +97,9 @@ namespace SignService.Services
         {
             //   var result = await adalContext.AcquireTokenSilentAsync(resources.AzureRM, new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret), UserIdentifier.AnyUser).ConfigureAwait(false);
 
-            // return result.AccessToken;
+            // return result.AccessToken;            
 
-            var token = await tokenAcquisition.GetAccessTokenForUserAsync(new[] { resources.AzureRM }).ConfigureAwait(false);
+            var token = await tokenAcquisition.GetAccessTokenForUserAsync(new[] { resources.AzureRMUserId }).ConfigureAwait(false);
             return token;
         }
 

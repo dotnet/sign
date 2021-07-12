@@ -4,6 +4,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
+
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.AspNetCore.TelemetryInitializers;
@@ -92,8 +94,10 @@ namespace SignService
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             // Add framework services.
-            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-              .AddMicrosoftIdentityWebApp(Configuration)
+            var b = services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+              .AddMicrosoftIdentityWebApp(Configuration);
+
+            b
                   .EnableTokenAcquisitionToCallDownstreamApi(new[] { "https://graph.windows.net/.default" })
                      // .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
                       .AddInMemoryTokenCaches();
@@ -109,15 +113,12 @@ namespace SignService
             //        .AddAzureAD(options => Configuration.Bind("AzureAd", options))
             //        .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
 
-            //services.Configure<CookieAuthenticationOptions>(AzureADDefaults.CookieScheme, options => options.Events = new CookieAuthenticationEventsHandler());
+            services.Configure<CookieAuthenticationOptions>(OpenIdConnectDefaults.AuthenticationScheme, options => options.Events = new CookieAuthenticationEventsHandler());
 
             services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
                 options.TokenValidationParameters.RoleClaimType = "roles";
                 options.TokenValidationParameters.NameClaimType = "name";
-                //options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
-                options.Scope.Add("offline_access");
-                //options.Events = new OpenIdConnectEventsHandler();
             });
 
             services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -125,9 +126,10 @@ namespace SignService
                 options.Audience = Configuration["AzureAd:Audience"];
                 options.TokenValidationParameters.RoleClaimType = "roles";
                 options.TokenValidationParameters.NameClaimType = "name";
-                options.Events = new JwtBearerEventsHandler();
-            });
 
+                // TODO: This has to be hooked up differently
+                options.Events = new JwtBearerEventsHandler(); 
+            });
 
             services.AddSession();
 
@@ -138,7 +140,6 @@ namespace SignService
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<ITelemetryLogger, TelemetryLogger>();
             services.AddSingleton<IApplicationConfiguration, ApplicationConfiguration>();
-            //services.AddScoped<IApplicationConfiguration, ApplicationConfiguration>();
             services.AddSingleton<IDirectoryUtility, DirectoryUtility>();
 
             // Add in our User wrapper

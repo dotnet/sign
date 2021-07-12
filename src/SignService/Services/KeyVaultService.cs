@@ -57,7 +57,7 @@ namespace SignService.Services
             //  var context = new AuthenticationContext($"{aadOptions.Instance}{aadOptions.TenantId}", null); // No token caching
             //var credential = new ClientCredential(aadOptions.ClientId, aadOptions.ClientSecret);
             //  var result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(incomingToken));
-            var result = await tokenAcquisition.GetAuthenticationResultForUserAsync(new[] { settings.Value.VaultId }).ConfigureAwait(false);            
+            var result = await tokenAcquisition.GetAuthenticationResultForUserAsync(new[] { settings.Value.VaultUserId }).ConfigureAwait(false);            
             if (result == null)
             {
                 logger.LogError("Failed to authenticate to Key Vault on-behalf-of user");

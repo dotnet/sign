@@ -62,7 +62,7 @@ namespace SignService.Services
                                                             //var result = await authContext.AcquireTokenAsync(resourceIds.Value.GraphId, clientCredentials);
                                                             //  var result = await tokenAcquisition.GetAuthenticationResultForAppAsync(resourceIds.Value.GraphId);
 
-                                                            var result = await conf.AcquireTokenForClient(new[] { resourceIds.Value.GraphId }).ExecuteAsync().ConfigureAwait(false);
+                                                            var result = await conf.AcquireTokenForClient(new[] { resourceIds.Value.GraphAppId }).ExecuteAsync().ConfigureAwait(false);
                                                             return result.AccessToken;
                                                         });
 
@@ -84,7 +84,7 @@ namespace SignService.Services
 
 
             //var armAccessToken = await authContext.AcquireTokenAsync(resourceIds.Value.AzureRM, clientCredentials);
-            var armAccessToken = await conf.AcquireTokenForClient(new[] { resourceIds.Value.AzureRM } ).ExecuteAsync().ConfigureAwait(false);
+            var armAccessToken = await conf.AcquireTokenForClient(new[] { resourceIds.Value.AzureRMAppId } ).ExecuteAsync().ConfigureAwait(false);
             //var armAccessToken = await tokenAcquisition.GetAuthenticationResultForAppAsync(resourceIds.Value.AzureRM).ConfigureAwait(false);
             using var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))
             {
