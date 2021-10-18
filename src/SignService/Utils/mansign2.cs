@@ -71,8 +71,10 @@ namespace System.Deployment.Internal.CodeSigning
             CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription),
                                Sha256SignatureMethodUri);
 
+#pragma warning disable SYSLIB0021
             CryptoConfig.AddAlgorithm(typeof(System.Security.Cryptography.SHA256Managed),
                                Sha256DigestMethod);
+#pragma warning restore SYSLIB0021
         }
     }
 
@@ -334,7 +336,7 @@ namespace System.Deployment.Internal.CodeSigning
 
                 if (useSha256)
                 {
-                    using var sha2 = new SHA256CryptoServiceProvider();
+                    using var sha2 = SHA256.Create();
                     var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
                     if (hash == null)
                     {
@@ -345,7 +347,7 @@ namespace System.Deployment.Internal.CodeSigning
                 }
                 else
                 {
-                    using var sha1 = new SHA1CryptoServiceProvider();
+                    using var sha1 = SHA1.Create();
                     var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
                     if (hash == null)
                     {
@@ -378,7 +380,7 @@ namespace System.Deployment.Internal.CodeSigning
 
                 if (useSha256)
                 {
-                    using var sha2 = new SHA256CryptoServiceProvider();
+                    using var sha2 = SHA256.Create();
                     var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
                     if (hash == null)
                     {
@@ -389,7 +391,7 @@ namespace System.Deployment.Internal.CodeSigning
                 }
                 else
                 {
-                    using var sha1 = new SHA1CryptoServiceProvider();
+                    using var sha1 = SHA1.Create();
                     var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
                     if (hash == null)
                     {
