@@ -211,8 +211,10 @@ namespace SignClient
                     getAccessToken = async () =>
                     {
                         Log("RESTCLIENT", LogLevel.Info, "Obtaining access token for ConfidentialClientApplication.");
-                        
+
+#pragma warning disable 0618
                         var accounts = await context.GetAccountsAsync().ConfigureAwait(false);
+#pragma warning restore 0618
                         var first = accounts.FirstOrDefault();
                         var scopes = new[] { $"{resourceId}/.default" };
 
