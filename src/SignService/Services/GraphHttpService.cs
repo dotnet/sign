@@ -20,7 +20,6 @@ namespace SignService.Services
     {
         readonly MicrosoftIdentityOptions azureAdOptions;
         readonly AdminConfig adminConfig;
-        //readonly AuthenticationContext adalContext;
         readonly ITokenAcquisition tokenAcquisition;
         static readonly HttpMethod PatchMethod = new("PATCH");
         readonly string graphUserResourceId;
@@ -35,8 +34,6 @@ namespace SignService.Services
             graphUserResourceId = resources.Value.GraphUserId;
 
             var userId = user.ObjectId;
-
-           // adalContext = new AuthenticationContext($"{this.azureAdOptions.Instance}{this.azureAdOptions.TenantId}", new ADALSessionCache(userId, contextAccessor));
         }
 
         public async Task<List<T>> Get<T>(string url)
