@@ -409,7 +409,7 @@ namespace System.Deployment.Internal.CodeSigning
             {
                 var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(manifestDom);
-                using var sha1 = new SHA1CryptoServiceProvider();
+                using var sha1 = SHA1.Create();
                 var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
                 if (hash == null)
                 {
@@ -438,7 +438,7 @@ namespace System.Deployment.Internal.CodeSigning
 
                 var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(normalizedDom);
-                using var sha1 = new SHA1CryptoServiceProvider();
+                using var sha1 = SHA1.Create();
                 var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
                 if (hash == null)
                 {
