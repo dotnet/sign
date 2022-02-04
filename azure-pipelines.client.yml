@@ -40,7 +40,6 @@ stages:
     - task: UseDotNet@2
       inputs:
         version: 6.x
-        includePreviewVersions: true
 
     - task: DotNetCoreCLI@2
       inputs:
