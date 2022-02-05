@@ -142,7 +142,7 @@ namespace SignService.SigningTools
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException("Could not file the .manifest file in the submitted files. Exactly one .manifest file is supposed to be included in the payload to be signed", ex);
+                    throw new InvalidOperationException("Could not find the .manifest file in the submitted files. Exactly one .manifest file is supposed to be included in the payload to be signed", ex);
                 }
 
                 var fileArgs = $@"-update ""{manifestFile}"" {args}";
