@@ -135,7 +135,15 @@ namespace SignService.SigningTools
                 // Inner files are now signed
                 // now look for the manifest file and sign that
 
-                var manifestFile = zip.FilteredFilesInDirectory.Single(f => ".manifest".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
+                string manifestFile;
+                try
+                {
+                    manifestFile = zip.FilesInDirectory.Single(f => ".manifest".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Could not file the .manifest file in the submitted files. Exactly one .manifest file is supposed to be included in the payload to be signed", ex);
+                }
 
                 var fileArgs = $@"-update ""{manifestFile}"" {args}";
 
