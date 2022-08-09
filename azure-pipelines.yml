@@ -52,9 +52,21 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/SignService/SignService.csproj
-    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\ -r win10-x64'
+    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\ -r win10-x86'
     zipAfterPublish: True
 
 - publish: $(Build.ArtifactStagingDirectory)\website
   displayName: Publish SignService Artifact
   artifact: SignService
+
+- task: AzureRmWebAppDeployment@4
+  displayName: Deploy  SignService
+  inputs:
+    appType: webApp
+    ConnectionType: AzureRM
+    ConnectedServiceName: 'Speedy-geek AzureRm'
+    ResourceGroupName: 'SignService_website'
+    WebAppName: 'speedygeeksign'
+    Package: '$(Build.ArtifactStagingDirectory)\website\SignService.zip'
+    AppSettings: '-ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED true -ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT https://speedygeeksignkvo4oya.vault.azure.net/'
+    ConfigurationSettings: '-use32BitWorkerProcess true'
