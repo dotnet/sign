@@ -60,7 +60,8 @@ steps:
   artifact: SignService
 
 - task: AzureRmWebAppDeployment@4
-  displayName: Deploy  SignService
+  displayName: Deploy SignService
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'),eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   inputs:
     appType: webApp
     ConnectionType: AzureRM
