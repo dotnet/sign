@@ -1,11 +1,12 @@
 trigger:
   branches:
     include:
-      - master
+      - main
       - rel/*
   paths:
     include:
       - src/SignService/*
+      - scripts/Install-WindowsSdkISO.ps1
       - .editorconfig
       - azure-pipelines.server.yml
       - version.json
@@ -13,25 +14,29 @@ trigger:
 pr:
   branches:
     include:
-      - master
+      - main
       - rel/*
   paths:
     include:
       - src/SignService/*
+      - scripts/Install-WindowsSdkISO.ps1
       - .editorconfig
       - azure-pipelines.server.yml
       - version.json
 
 pool:
-  vmImage: vs2017-win2016
+  vmImage: windows-2022
 
 variables: 
   BuildConfiguration: Release
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  TreatWarningsAsErrors: true
 
 steps:
-
-- powershell: scripts/Install-WindowsSdkISO.ps1 17763
-  displayName: Insider SDK
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 6.x'
+  inputs:
+    version: 6.x
 
 - task: DotNetCoreCLI@2
   displayName: Copy sdk files locally before build
@@ -47,12 +52,9 @@ steps:
     command: publish
     publishWebProjects: false
     projects: src/SignService/SignService.csproj
-    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\'
+    arguments: '-c $(BuildConfiguration) --output $(build.artifactstagingdirectory)\website\ -r win10-x64'
     zipAfterPublish: True
 
-- task: PublishBuildArtifacts@1
+- publish: $(Build.ArtifactStagingDirectory)\website
   displayName: Publish SignService Artifact
-  inputs:
-    pathToPublish: $(Build.ArtifactStagingDirectory)\website
-    artifactType: container
-    artifactName: SignService
+  artifact: SignService
