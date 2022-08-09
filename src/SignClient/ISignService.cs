@@ -11,6 +11,8 @@ namespace SignClient
         [Multipart]
         [Post("/sign?hashMode={hashMode}&name={name}&description={description}&descriptionUrl={descriptionUrl}")]
         Task<HttpResponseMessage> SignFile(FileInfo source, FileInfo filelist, HashMode hashMode, string name, string description, string descriptionUrl);
+
+        HttpClient Client { get; }
     }
 
     public enum HashMode

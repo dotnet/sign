@@ -1,15 +1,19 @@
 ﻿using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Azure.KeyVault;
-using Microsoft.CodeAnalysis.CSharp;
+
+using Azure.Core;
+using Azure.Security.KeyVault.Certificates;
+
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+
+using RSAKeyVaultProvider;
+
 using SignService.Utils;
 
 namespace SignService.Services
@@ -17,32 +21,28 @@ namespace SignService.Services
     public interface IKeyVaultService
     {
         Task InitializeAccessTokenAsync(string incomingToken);
-        void InitializeCertificateInfo(string timestampUrl, string keyVaultUrl, string certificateName);
+        void InitializeCertificateInfo(string timestampUrl, Uri keyVaultUrl, string certificateName);
         Task<X509Certificate2> GetCertificateAsync();
         Task<RSA> ToRSA();
         CertificateInfo CertificateInfo { get; }
-        string AccessToken { get; }
     }
     public class KeyVaultService : IKeyVaultService
     {
-        readonly KeyVaultClient client;
+        CertificateClient client;
+        TokenCredential tokenCredential;
+
         X509Certificate2 certificate;
-        KeyIdentifier keyIdentifier;
+        Uri keyIdentifier;
         readonly IOptionsSnapshot<ResourceIds> settings;
-        readonly IOptionsSnapshot<AzureAdOptions> aadOptions;
+        readonly ILogger<KeyVaultService> logger;
+        readonly AzureADOptions aadOptions;
     
 
-        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureAdOptions> aadOptions, ILogger<KeyVaultService> logger)
+        public KeyVaultService(IOptionsSnapshot<ResourceIds> settings, IOptionsSnapshot<AzureADOptions> aadOptions, ILogger<KeyVaultService> logger)
         {
-            Task<string> Authenticate(string authority, string resource, string scope)
-            {
-                return Task.FromResult(AccessToken);
-            }
-
-            client = new KeyVaultClient(new AutoRestCredential<KeyVaultClient>(Authenticate));
-
-            this.settings = settings;
-            this.aadOptions = aadOptions;
+           this.settings = settings;
+            this.logger = logger;
+            this.aadOptions = aadOptions.Get(AzureADDefaults.AuthenticationScheme);
         }
 
         public CertificateInfo CertificateInfo { get; private set; }
@@ -51,32 +51,26 @@ namespace SignService.Services
 
         public async Task InitializeAccessTokenAsync(string incomingToken)
         {
-            if (AccessToken == null)
+            
+            var context = new AuthenticationContext($"{aadOptions.Instance}{aadOptions.TenantId}", null); // No token caching
+            var credential = new ClientCredential(aadOptions.ClientId, aadOptions.ClientSecret);
+            var result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(incomingToken));
+            if (result == null)
             {
-                var context = new AuthenticationContext($"{aadOptions.Value.AADInstance}{aadOptions.Value.TenantId}", null); // No token caching
-                var credential = new ClientCredential(aadOptions.Value.ClientId, aadOptions.Value.ClientSecret);
-
-
-                AuthenticationResult result = null;
-
-                result = await context.AcquireTokenAsync(settings.Value.VaultId, credential, new UserAssertion(incomingToken));
-
-                if (result == null)
-                {
-                    throw new InvalidOperationException("Authentication to Azure failed.");
-                }
-
-                AccessToken = result.AccessToken;
+                logger.LogError("Failed to authenticate to Key Vault on-behalf-of user");
+                throw new InvalidOperationException("Authentication to Azure failed.");
             }
+
+            tokenCredential = new AccessTokenCredential(result.AccessToken, result.ExpiresOn);            
         }
 
         public async Task<X509Certificate2> GetCertificateAsync()
         {
             if (certificate == null)
             {
-                var cert = await client.GetCertificateAsync(CertificateInfo.KeyVaultUrl, CertificateInfo.CertificateName).ConfigureAwait(false);
+                var cert = (await client.GetCertificateAsync(CertificateInfo.CertificateName).ConfigureAwait(false)).Value;
                 certificate = new X509Certificate2(cert.Cer);
-                keyIdentifier = cert.KeyIdentifier;
+                keyIdentifier = cert.KeyId;
             }
             return certificate;
         }
@@ -85,10 +79,11 @@ namespace SignService.Services
         {
             await GetCertificateAsync()
                 .ConfigureAwait(false);
-            return client.ToRSA(keyIdentifier, certificate);
+
+            return RSAFactory.Create(tokenCredential, keyIdentifier, certificate);
         }
 
-        public void InitializeCertificateInfo(string timestampUrl, string keyVaultUrl, string certificateName)
+        public void InitializeCertificateInfo(string timestampUrl, Uri keyVaultUrl, string certificateName)
         {
 
             // Lazy to store these after the ctor.
@@ -98,6 +93,8 @@ namespace SignService.Services
                 KeyVaultUrl = keyVaultUrl,
                 CertificateName = certificateName
             };
+
+            client = new CertificateClient(keyVaultUrl, tokenCredential);
         }
     }
 }

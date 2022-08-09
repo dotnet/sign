@@ -53,12 +53,6 @@ namespace Wyam.Core.IO.Globbing
                     .Replace("\\!", "!") // Unescape negation
                     .Replace("\\", "/"); // Normalize slashes
 
-                // No support for absolute paths
-                if (System.IO.Path.IsPathRooted(finalPattern))
-                {
-                    throw new ArgumentException($"Rooted globbing patterns are not supported ({expandedPattern})", nameof(patterns));
-                }
-
                 // Add exclude or include pattern to matcher
                 if (isExclude)
                 {
@@ -162,7 +156,7 @@ namespace Wyam.Core.IO.Globbing
                     }
 
                     // Remove duplicated path separators (can happen when there's an empty expansion like "baz/{foo,}/bar")
-                    if (t.Length > 0 && t[0] == '/' && prefix[^1] == '/')
+                    if (t.Length > 0 && t[0] == '/' && prefix[prefix.Length - 1] == '/')
                     {
                         t = t.Substring(1);
                     }

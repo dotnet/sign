@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SignService.Models;
@@ -15,10 +18,12 @@ namespace SignService.Controllers
     public class KeyVaultController : Controller
     {
         readonly IKeyVaultAdminService keyVaultAdminService;
+        readonly TelemetryClient telemetryClient;
 
-        public KeyVaultController(IKeyVaultAdminService keyVaultAdminService)
+        public KeyVaultController(IKeyVaultAdminService keyVaultAdminService, TelemetryClient telemetryClient)
         {
             this.keyVaultAdminService = keyVaultAdminService;
+            this.telemetryClient = telemetryClient;
         }
         // GET: KeyVault
         public async Task<IActionResult> Index()
@@ -73,7 +78,7 @@ namespace SignService.Controllers
         {
             try
             {
-                var csr = await keyVaultAdminService.CreateCsrAsync(model.VaultName, model.CertificateName, model.CertificateName);
+                var csr = await keyVaultAdminService.CreateCsrAsync(model.VaultName, model.CertificateId, model.CommonName);
 
                 return RedirectToAction(nameof(Details), new { id = model.VaultName });
             }
@@ -90,9 +95,9 @@ namespace SignService.Controllers
             var op = await keyVaultAdminService.GetCertificateOperation(vault.VaultUri, certificateName);
 
             string str = null;
-            if (op.Csr?.Length > 0)
+            if (op.Properties.Csr?.Length > 0)
             {
-                str = Crypt32.CryptBinaryToString(op.Csr, true, true);
+                str = Crypt32.CryptBinaryToString(op.Properties.Csr, true, true);
             }
             var model = new UpdateCertificateRequestModel
             {
@@ -128,6 +133,13 @@ namespace SignService.Controllers
             }
             catch (Exception e)
             {
+                var exdata = new Dictionary<string, string>
+                {
+                    { "ValueName", model.VaultName },
+                    { "CertificateName", model.CertificateName }
+                };
+                telemetryClient.TrackException(e, exdata);
+
                 ModelState.AddModelError("", e.Message);
                 return View(nameof(CertificateRequest), model);
             }

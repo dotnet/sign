@@ -47,21 +47,19 @@ namespace SignService
             logger.LogInformation("Signing SignTool job {0} with {1} files", name, files.Count());
             
             var certificate = keyVaultService.GetCertificateAsync().Result;
-            using (var rsa = keyVaultService.ToRSA().Result)
-            using (var signer = new AuthenticodeKeyVaultSigner(rsa, certificate, HashAlgorithmName.SHA256, new TimeStampConfiguration(keyVaultService.CertificateInfo.TimestampUrl, HashAlgorithmName.SHA256, TimeStampType.RFC3161)))
+            using var rsa = keyVaultService.ToRSA().Result;
+            using var signer = new AuthenticodeKeyVaultSigner(rsa, certificate, HashAlgorithmName.SHA256, new TimeStampConfiguration(keyVaultService.CertificateInfo.TimestampUrl, HashAlgorithmName.SHA256, TimeStampType.RFC3161));
+            // loop through all of the files here, looking for appx/eappx
+            // mark each as being signed and strip appx
+            Parallel.ForEach(files, (file, state) =>
             {
-                // loop through all of the files here, looking for appx/eappx
-                // mark each as being signed and strip appx
-                Parallel.ForEach(files, (file, state) =>
-                {
-                    telemetryLogger.OnSignFile(file, signToolName);
+                telemetryLogger.OnSignFile(file, signToolName);
 
-                    if (!Sign(signer, file, description, descriptionUrl))
-                    {
-                        throw new Exception($"Could not append sign {file}");
-                    }
-                });
-            }
+                if (!Sign(signer, file, description, descriptionUrl))
+                {
+                    throw new Exception($"Could not append sign {file}");
+                }
+            });
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
@@ -76,6 +74,7 @@ namespace SignService
                 {
                     logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
                     Thread.Sleep(retry);
+                    retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
                 }
 
                 if (RunSignTool(signer, file, description, descriptionUrl))
@@ -84,8 +83,6 @@ namespace SignService
                 }
 
                 attempt++;
-
-                retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
 
             } while (attempt <= 3);
 

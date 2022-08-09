@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -16,154 +16,144 @@ namespace SignService.Services
 {
     public class GraphHttpService : IGraphHttpService
     {
-        readonly AzureAdOptions azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly AdminConfig adminConfig;
         readonly AuthenticationContext adalContext;
-        static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
+        static readonly HttpMethod PatchMethod = new("PATCH");
         readonly string graphResourceId;
 
-        public GraphHttpService(IOptionsSnapshot<AzureAdOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IUser user, IHttpContextAccessor contextAccessor)
+        public GraphHttpService(IOptionsSnapshot<AzureADOptions> azureAdOptions, IOptionsSnapshot<AdminConfig> adminConfig, IOptionsSnapshot<ResourceIds> resources, IUser user, IHttpContextAccessor contextAccessor)
         {
-            this.azureAdOptions = azureAdOptions.Value;
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.adminConfig = adminConfig.Value;
             graphResourceId = resources.Value.GraphId;
 
             var userId = user.ObjectId;
 
-            adalContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", new ADALSessionCache(userId, contextAccessor));
+            adalContext = new AuthenticationContext($"{this.azureAdOptions.Instance}{this.azureAdOptions.TenantId}", new ADALSessionCache(userId, contextAccessor));
         }
 
         public async Task<List<T>> Get<T>(string url)
         {
-            using (var client = await CreateClient()
-                                    .ConfigureAwait(false))
+            using var client = await CreateClient()
+                                    .ConfigureAwait(false);
+            var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
+
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
             {
-
-                var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API get: \n" +
-                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
-                }
-
-                var result = JsonConvert.DeserializeObject<ODataCollection<T>>(responseContent);
-                return result.Value;
+                var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                throw new WebException("Error Calling the Graph API get: \n" +
+                                       JsonConvert.SerializeObject(formatted, Formatting.Indented));
             }
+
+            var result = JsonConvert.DeserializeObject<ODataCollection<T>>(responseContent);
+            return result.Value;
         }
 
         public async Task<T> GetScalar<T>(string url)
         {
-            using (var client = await CreateClient()
-                                    .ConfigureAwait(false))
+            using var client = await CreateClient()
+                                    .ConfigureAwait(false);
+            var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
+
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
             {
-
-                var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API get: \n" +
-                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
-                }
-
-                var result = JsonConvert.DeserializeObject<T>(responseContent);
-                return result;
+                var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                throw new WebException("Error Calling the Graph API get: \n" +
+                                       JsonConvert.SerializeObject(formatted, Formatting.Indented));
             }
+
+            var result = JsonConvert.DeserializeObject<T>(responseContent);
+            return result;
         }
 
         public async Task<T> GetValue<T>(string url)
         {
-            using (var client = await CreateClient()
-                                    .ConfigureAwait(false))
+            using var client = await CreateClient()
+                                    .ConfigureAwait(false);
+            var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
+
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
             {
-
-                var response = await client.GetAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API get: \n" +
-                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
-                }
-
-                var result = JsonConvert.DeserializeObject<ODataScalar<T>>(responseContent);
-                return result.Value;
+                var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                throw new WebException("Error Calling the Graph API get: \n" +
+                                       JsonConvert.SerializeObject(formatted, Formatting.Indented));
             }
+
+            var result = JsonConvert.DeserializeObject<ODataScalar<T>>(responseContent);
+            return result.Value;
         }
 
         public async Task Delete(string url, bool accessAsUser = false)
         {
-            using (var client = await CreateClient(accessAsUser)
-                                    .ConfigureAwait(false))
+            using var client = await CreateClient(accessAsUser)
+                                    .ConfigureAwait(false);
+            var response = await client.DeleteAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
+
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await client.DeleteAsync($"{azureAdOptions.TenantId}/{url}").ConfigureAwait(false);
-
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API to delete: \n" +
-                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
-                }
+                var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                throw new WebException("Error Calling the Graph API to delete: \n" +
+                                       JsonConvert.SerializeObject(formatted, Formatting.Indented));
             }
         }
 
         public async Task<TOutput> Post<TInput, TOutput>(string url, TInput item, bool accessAsUser = false)
         {
-            using (var client = await CreateClient(accessAsUser)
-                                    .ConfigureAwait(false))
+            using var client = await CreateClient(accessAsUser)
+                                    .ConfigureAwait(false);
+            var skipNulls = new JsonSerializerSettings
             {
-                var skipNulls = new JsonSerializerSettings
-                {
-                    NullValueHandling = NullValueHandling.Ignore
-                };
-                var request = new StringContent(JsonConvert.SerializeObject(item, skipNulls), Encoding.UTF8, "application/json");
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var request = new StringContent(JsonConvert.SerializeObject(item, skipNulls), Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync($"{azureAdOptions.TenantId}/{url}", request).ConfigureAwait(false);
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var response = await client.PostAsync($"{azureAdOptions.TenantId}/{url}", request).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API to update: \n" +
-                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
-                }
-
-                return JsonConvert.DeserializeObject<TOutput>(responseContent);
+            if (!response.IsSuccessStatusCode)
+            {
+                var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                throw new WebException("Error Calling the Graph API to update: \n" +
+                                       JsonConvert.SerializeObject(formatted, Formatting.Indented));
             }
+
+            return JsonConvert.DeserializeObject<TOutput>(responseContent);
         }
 
 
         public async Task Patch<TInput>(string url, TInput item, bool accessAsUser = false)
         {
-            using (var client = await CreateClient(accessAsUser)
-                                    .ConfigureAwait(false))
+            var contentBody = JsonConvert.SerializeObject(item);
+
+            await Patch(url, contentBody, accessAsUser).ConfigureAwait(false);
+        }
+
+        public async Task Patch(string url, string contentBody, bool accessAsUser = false)
+        {
+            using var client = await CreateClient(accessAsUser)
+                                    .ConfigureAwait(false);
+            var request = new HttpRequestMessage(PatchMethod, $"{azureAdOptions.TenantId}/{url}")
             {
-                var contentBody = JsonConvert.SerializeObject(item);
+                Content = new StringContent(contentBody, Encoding.UTF8, "application/json")
+            };
 
-                var request = new HttpRequestMessage(PatchMethod, $"{azureAdOptions.TenantId}/{url}")
-                {
-                    Content = new StringContent(contentBody, Encoding.UTF8, "application/json")
-                };
+            var response = await client.SendAsync(request).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                var response = await client.SendAsync(request).ConfigureAwait(false);
-                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
-                    throw new WebException("Error Calling the Graph API to update user: \n" +
-                                           JsonConvert.SerializeObject(formatted, Formatting.Indented));
-                }
+            if (!response.IsSuccessStatusCode)
+            {
+                var formatted = JsonConvert.DeserializeObject<ODataErrorWrapper>(responseContent);
+                throw new WebException("Error Calling the Graph API to update: \n" +
+                                       JsonConvert.SerializeObject(formatted, Formatting.Indented));
             }
         }
 

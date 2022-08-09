@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace SignService.Models
 {
@@ -10,7 +11,7 @@ namespace SignService.Models
         [Required(AllowEmptyStrings = false, ErrorMessage = "Username is required")]
         public string Username { get; set; }
         public bool Configured { get; set; }
-        public string KeyVaultUrl { get; set; }
+        public Uri KeyVaultUrl { get; set; }
         public string CertificateName { get; set; }
         public string TimestampUrl { get; set; }
     }

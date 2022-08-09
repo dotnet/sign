@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SignService.Models;
 
 namespace SignService.Services
 {
     public interface IUserAdminService
     {
-        Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
-        Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl);
+        Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl);
+        Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl);
         Task<IEnumerable<GraphUser>> GetUsersAsync(string displayName);
         Task<GraphUser> GetUserByObjectIdAsync(Guid objectId);
         Task<string> UpdatePasswordAsync(Guid objectId);
@@ -24,19 +24,17 @@ namespace SignService.Services
 
     public class UserAdminService : IUserAdminService
     {
-        readonly AdminConfig configuration;
-        readonly AzureAdOptions azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly IApplicationConfiguration applicationConfiguration;
         readonly IGraphHttpService graphHttpService;
         readonly string extensionPrefix;
 
-        public UserAdminService(IOptionsSnapshot<AdminConfig> configuration, IOptionsSnapshot<AzureAdOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
+        public UserAdminService(IOptionsSnapshot<AzureADOptions> azureAdOptions, IApplicationConfiguration applicationConfiguration, IGraphHttpService graphHttpService)
         {
-            this.configuration = configuration.Value;
-            this.azureAdOptions = azureAdOptions.Value;
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.applicationConfiguration = applicationConfiguration;
             this.graphHttpService = graphHttpService;
-            extensionPrefix = $"extension_{azureAdOptions.Value.ClientId.Replace("-", "")}_";
+            extensionPrefix = $"extension_{this.azureAdOptions.ClientId.Replace("-", "")}_";
         }
 
         public async Task RegisterExtensionPropertiesAsync()
@@ -86,7 +84,6 @@ namespace SignService.Services
 
             var appExts = await graphHttpService.Get<ExtensionProperty>(uri).ConfigureAwait(false);
 
-
             foreach (var prop in extensionProperties)
             {
                 // Only add it if it doesn't exist already
@@ -98,6 +95,22 @@ namespace SignService.Services
                                                   .ConfigureAwait(false);
                 }
             }
+
+            var appId = azureAdOptions.ClientId.Replace("-", "");
+
+            // Set optional claims since we want these extension attributes to be included in the access token
+            var optionalClaims = new OptionalClaims
+            {
+                accessToken = (from ep in extensionProperties
+                               select new ClaimInformation
+                               {
+                                   name = $"extension_{appId}_{ep.Name}",
+                                   source = "user",
+                                   essential = true
+                               }).ToArray()
+            };
+
+            await SetOptionalClaims(optionalClaims, applicationConfiguration.ApplicationObjectId);
         }
 
         public async Task UnRegisterExtensionPropertiesAsync()
@@ -135,7 +148,7 @@ namespace SignService.Services
         }
 
 
-        public async Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
+        public async Task<(GraphUser, string)> CreateUserAsync(string displayName, string username, bool configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl)
         {
             var uri = $"/users?api-version=1.6";
 
@@ -152,7 +165,7 @@ namespace SignService.Services
 
             if (configured)
             {
-                if (string.IsNullOrWhiteSpace(keyVaultUrl))
+                if (keyVaultUrl == null)
                 {
                     throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
                 }
@@ -181,7 +194,7 @@ namespace SignService.Services
                 DisplayName = displayName,
                 UserPrincipalName = username,
                 UserType = "Guest", // we create this account as a guest to limit overall privs in the directory (enumeration of users, etc)
-                KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
+                KeyVaultUrl = keyVaultUrl,
                 KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
                 TimestampUrl = string.IsNullOrWhiteSpace(timestampUrl) ? null : timestampUrl,
                 SignServiceConfigured = configured,
@@ -231,7 +244,7 @@ namespace SignService.Services
             }
         }
 
-        public async Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, string keyVaultUrl, string keyVaultCertName, string timestampUrl)
+        public async Task UpdateUserAsync(Guid objectId, string displayName, bool? configured, Uri keyVaultUrl, string keyVaultCertName, string timestampUrl)
         {
             var uri = $"/users/{objectId}?api-version=1.6";
 
@@ -244,7 +257,7 @@ namespace SignService.Services
             if (configured == true)
             {
                 // validate the args are present
-                if (string.IsNullOrWhiteSpace(keyVaultUrl))
+                if (keyVaultUrl == null)
                 {
                     throw new ArgumentException("Argument cannot be blank when configured is true", nameof(keyVaultUrl));
                 }
@@ -265,7 +278,7 @@ namespace SignService.Services
                 ObjectId = objectId,
                 DisplayName = displayName,
                 SignServiceConfigured = configured,
-                KeyVaultUrl = string.IsNullOrWhiteSpace(keyVaultUrl) ? null : keyVaultUrl,
+                KeyVaultUrl = keyVaultUrl,
                 KeyVaultCertificateName = string.IsNullOrWhiteSpace(keyVaultCertName) ? null : keyVaultCertName,
                 TimestampUrl = string.IsNullOrWhiteSpace(timestampUrl) ? null : timestampUrl
             };
@@ -290,24 +303,41 @@ namespace SignService.Services
             }
         }
 
-        static string GetRandomPassword()
+        async Task SetOptionalClaims(OptionalClaims claims, string objectId)
         {
-            // From @vcsjones, thanks!
-            const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:,.?/~();";
-            const int PASSWORD_LENGTH = 16; // AAD has a max of 16 char passwords
-            var builder = new StringBuilder();
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                var data = new byte[PASSWORD_LENGTH];
-                rng.GetBytes(data);
-                for (var i = 0; i < data.Length; i++)
-                {
-                    builder.Append(ALLOWED_CHARS[data[i] % ALLOWED_CHARS.Length]);
-                }
 
-                return builder.ToString();
-            }
+            var jsonstring = JsonConvert.SerializeObject(claims);
+
+            var payload = $"{{\"optionalClaims\":{jsonstring}}}";
+
+            await graphHttpService.Patch($"/applications/{objectId}?api-version=1.6", payload, true);
         }
 
+        static string GetRandomPassword()
+        {
+            const string ALLOWED_CHARS = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*-_!+=[]{}|\:,.?/~();";
+            const int PASSWORD_LENGTH = 64; // AAD has a max of 256 char passwords
+            Span<char> builder = stackalloc char[PASSWORD_LENGTH];
+            for (var i = 0; i < PASSWORD_LENGTH; i++)
+            {
+                builder[i] = ALLOWED_CHARS[RandomNumberGenerator.GetInt32(0, ALLOWED_CHARS.Length)];
+            }
+
+            return new string(builder);
+        }
+
+#pragma warning disable IDE1006 // Naming Styles
+        class OptionalClaims
+        {
+            public ClaimInformation[] accessToken { get; set; }
+        }
+
+        class ClaimInformation
+        {
+            public string name { get; set; }
+            public string source { get; set; }
+            public bool essential { get; set; }
+        }
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

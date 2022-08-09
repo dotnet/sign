@@ -33,7 +33,7 @@ namespace SignService.SigningTools
         }
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
-            await SubmitInternal(hashMode, name, description, descriptionUrl, files);
+            await SubmitInternal(name, files);
         }
 
         public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new List<string>
@@ -43,7 +43,7 @@ namespace SignService.SigningTools
         };
         public bool IsDefault { get; }
 
-        async Task SubmitInternal(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files)
+        async Task SubmitInternal(string name, IList<string> files)
         {
             logger.LogInformation("Signing NuGetKeyVaultSignTool job {0} with {1} files", name, files.Count());
             
@@ -83,6 +83,7 @@ namespace SignService.SigningTools
                 {
                     logger.LogInformation($"Performing attempt #{attempt} of 3 attempts after {retry.TotalSeconds}s");
                     await Task.Delay(retry);
+                    retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
                 }
 
                 if (await RunSignTool(file, args))
@@ -92,8 +93,6 @@ namespace SignService.SigningTools
                 }
 
                 attempt++;
-
-                retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
 
             } while (attempt <= 3);
 
@@ -119,6 +118,9 @@ namespace SignService.SigningTools
                                file, 
                                file,
                                args.TimestampUrl,
+                               null,
+                               null,
+                               NuGet.Packaging.Signing.SignatureType.Author,
                                args.HashAlgorithm,
                                args.HashAlgorithm,
                                true,

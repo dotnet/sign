@@ -45,7 +45,7 @@ namespace SignService.SigningTools
                     manifest = XDocument.Load(fs, LoadOptions.PreserveWhitespace);
                     XNamespace ns = "http://schemas.microsoft.com/appx/appinstaller/2017/2";
 
-                    var idElement = manifest.Root?.Element(ns + "MainBundle");
+                    var idElement = manifest.Root?.Element(ns + "MainBundle") ?? manifest.Root?.Element(ns + "MainPackage"); // look for appxbundle tag, if not found check for appx tag
                     idElement?.SetAttributeValue("Publisher", publisher);
                 }
 

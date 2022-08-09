@@ -11,12 +11,15 @@ namespace SignService.SigningTools
     public interface ISigningToolAggregate
     {
         Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter);
+
+        bool IsFileExtensionRegistered(string extension);
     }
 
     public class SigningToolAggregate : ISigningToolAggregate
     {
         readonly IAppxFileFactory appxFileFactory;
         readonly ILogger<SigningToolAggregate> logger;
+        readonly IDirectoryUtility directoryUtility;
         readonly ICodeSignService defaultCodeSignService;
         readonly IDictionary<string, ICodeSignService> codeSignServices;
         readonly string makeappxPath;
@@ -25,10 +28,12 @@ namespace SignService.SigningTools
         public SigningToolAggregate(IEnumerable<ICodeSignService> services,
                                     IAppxFileFactory appxFileFactory,
                                     IOptionsSnapshot<WindowsSdkFiles> windowSdkFiles,
-                                    ILogger<SigningToolAggregate> logger)
+                                    ILogger<SigningToolAggregate> logger,
+                                    IDirectoryUtility directoryUtility)
         {
             this.appxFileFactory = appxFileFactory;
             this.logger = logger;
+            this.directoryUtility = directoryUtility;
             makeappxPath = windowSdkFiles.Value.MakeAppxPath;
 
             // pe files
@@ -42,6 +47,23 @@ namespace SignService.SigningTools
         }
 
 
+        public bool IsFileExtensionRegistered(string extension)
+        {
+            if (codeSignServices.ContainsKey(extension))
+                return true;
+
+            switch (extension)
+            {
+                // archives
+                case ".zip":
+                case ".appxupload":
+                case ".msixupload":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        
 
         public async Task Submit(HashMode hashMode, string name, string description, string descriptionUrl, IList<string> files, string filter)
         {
@@ -57,7 +79,7 @@ namespace SignService.SigningTools
             {
                 foreach (var archive in archives)
                 {
-                    tempZips.Add(new TemporaryZipFile(archive, filter, logger));
+                    tempZips.Add(new TemporaryZipFile(archive, filter, logger, directoryUtility));
                 }
 
                 // See if there's any files in the expanded zip that we need to sign
@@ -125,7 +147,7 @@ namespace SignService.SigningTools
             {
                 foreach (var bundle in bundles)
                 {
-                    tempBundles.Add(new AppxBundleFile(bundle, logger, makeappxPath));
+                    tempBundles.Add(new AppxBundleFile(bundle, logger, directoryUtility, makeappxPath));
                 }
 
                 // See if there's any files in the expanded zip that we need to sign

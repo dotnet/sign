@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Azure.ActiveDirectory.GraphClient;
 using Microsoft.Azure.Management.ResourceManager;
 using Microsoft.Extensions.Logging;
@@ -23,14 +23,14 @@ namespace SignService.Services
 
     class ApplicationConfiguration : IApplicationConfiguration
     {
-        readonly IOptions<AzureAdOptions> azureAdOptions;
+        readonly AzureADOptions azureAdOptions;
         readonly IOptions<ResourceIds> resourceIds;
         readonly IOptions<AdminConfig> adminConfig;
         readonly ILogger<ApplicationConfiguration> logger;
 
-        public ApplicationConfiguration(IOptions<AzureAdOptions> azureAdOptions, IOptions<ResourceIds> resourceIds, IOptions<AdminConfig> adminConfig, ILogger<ApplicationConfiguration> logger)
+        public ApplicationConfiguration(IOptionsMonitor<AzureADOptions> azureAdOptions, IOptions<ResourceIds> resourceIds, IOptions<AdminConfig> adminConfig, ILogger<ApplicationConfiguration> logger)
         {
-            this.azureAdOptions = azureAdOptions;
+            this.azureAdOptions = azureAdOptions.Get(AzureADDefaults.AuthenticationScheme);
             this.resourceIds = resourceIds;
             this.adminConfig = adminConfig;
             this.logger = logger;
@@ -40,12 +40,12 @@ namespace SignService.Services
         {
             logger.LogDebug("Retrieving application configuration data");
 
-            var authContext = new AuthenticationContext($"{azureAdOptions.Value.AADInstance}{azureAdOptions.Value.TenantId}", null);
-            var clientCredentials = new ClientCredential(azureAdOptions.Value.ClientId, azureAdOptions.Value.ClientSecret);
+            var authContext = new AuthenticationContext($"{azureAdOptions.Instance}{azureAdOptions.TenantId}", null);
+            var clientCredentials = new ClientCredential(azureAdOptions.ClientId, azureAdOptions.ClientSecret);
 
 
             // Use Graph to populate the Application Object Id and the Primary Domain
-            var graphClient = new ActiveDirectoryClient(new Uri($"{adminConfig.Value.GraphInstance}{azureAdOptions.Value.TenantId}"),
+            var graphClient = new ActiveDirectoryClient(new Uri($"{adminConfig.Value.GraphInstance}{azureAdOptions.TenantId}"),
                                                         async () =>
                                                         {
                                                             var result = await authContext.AcquireTokenAsync(resourceIds.Value.GraphId, clientCredentials);
@@ -60,7 +60,7 @@ namespace SignService.Services
             PrimaryDomain = domains.First(d => d.@default == true).Name;
             logger.LogInformation("Found Primary Domain {PrimaryDomain}", PrimaryDomain);
 
-            var clientId = azureAdOptions.Value.ClientId;
+            var clientId = azureAdOptions.ClientId;
             var app = await graphClient.Applications.Where(a => a.AppId == clientId).ExecuteSingleAsync();
 
 
@@ -70,7 +70,7 @@ namespace SignService.Services
 
 
             var armAccessToken = await authContext.AcquireTokenAsync(resourceIds.Value.AzureRM, clientCredentials);
-            var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))
+            using var rgc = new ResourceManagementClient(new TokenCredentials(armAccessToken.AccessToken))
             {
                 SubscriptionId = adminConfig.Value.SubscriptionId,
                 BaseUri = new Uri(adminConfig.Value.ArmInstance)

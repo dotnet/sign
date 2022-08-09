@@ -3,21 +3,31 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore;
+using Microsoft.ApplicationInsights.AspNetCore.TelemetryInitializers;
 using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json;
+using SignService.Authentication;
 using SignService.Services;
 using SignService.SigningTools;
 using SignService.Utils;
@@ -26,10 +36,10 @@ namespace SignService
 {
     public class Startup
     {
-        readonly IHostingEnvironment environment;
+        readonly IWebHostEnvironment environment;
         readonly string contentPath;
         public static string ManifestLocation { get; private set; }
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             environment = env;
             Configuration = configuration;
@@ -71,22 +81,39 @@ namespace SignService
         {
             // Configure SnapshotCollector from application settings
             services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+            services.AddApplicationInsightsTelemetry();
 
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+            services.AddSingleton<ITelemetryInitializer, VersionTelemetry>();
+            services.AddSingleton<ITelemetryInitializer, UserTelemetry>();
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             // Add framework services.
-            services.AddAuthentication(sharedOptions =>
-                                       {
-                                           //  sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                                           //sharedOptions.DefaultAuthenticateScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                                           sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                                       })
-                    .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options))
-                    .AddAzureAd(options => Configuration.Bind("AzureAd", options))
-                    .AddCookie();
+            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
+                    .AddAzureAD(options => Configuration.Bind("AzureAd", options))
+                    .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
+
+            services.Configure<CookieAuthenticationOptions>(AzureADDefaults.CookieScheme, options => options.Events = new CookieAuthenticationEventsHandler());
+
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
+            {
+                options.TokenValidationParameters.RoleClaimType = "roles";
+                options.TokenValidationParameters.NameClaimType = "name";
+                options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                options.Scope.Add("offline_access");
+                options.Events = new OpenIdConnectEventsHandler();
+            });
+
+            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
+            {
+                options.Audience = Configuration["AzureAd:Audience"];
+                options.TokenValidationParameters.RoleClaimType = "roles";
+                options.TokenValidationParameters.NameClaimType = "name";
+                options.Events = new JwtBearerEventsHandler();
+            });
+
 
             services.AddSession();
 
@@ -95,8 +122,9 @@ namespace SignService
             services.Configure<WindowsSdkFiles>(ConfigureWindowsSdkFiles);
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<ITelemetryLogger, TelemetryLogger>();
+            services.AddScoped<ITelemetryLogger, TelemetryLogger>();
             services.AddSingleton<IApplicationConfiguration, ApplicationConfiguration>();
+            services.AddSingleton<IDirectoryUtility, DirectoryUtility>();
 
             // Add in our User wrapper
             services.AddScoped<IUser, HttpContextUser>();
@@ -119,15 +147,21 @@ namespace SignService
 
             services.AddScoped<ISigningToolAggregate, SigningToolAggregate>();
 
-            services.AddMvc()
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1); ;
+            services.AddScoped<IFileNameService, FileNameService>();
+
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app,
-                              IHostingEnvironment env,
-                              ILoggerFactory loggerFactory,
-                              IServiceProvider serviceProvider,
+                              IWebHostEnvironment env,
                               IApplicationConfiguration applicationConfiguration)
         {
             if (env.IsDevelopment())
@@ -136,13 +170,8 @@ namespace SignService
             }
             else
             {
-                app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
-            loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Information);
-
-            TelemetryConfiguration.Active.TelemetryInitializers.Add(new VersionTelemetry());
 
             // Retreive application specific config from Azure AD
             applicationConfiguration.InitializeAsync().Wait();
@@ -170,14 +199,18 @@ namespace SignService
             app.UseStaticFiles();
             app.UseSession();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
-                       {
-                           routes.MapRoute(
-                               name: "default",
-                               template: "{controller=Home}/{action=Index}/{id?}");
-                       });
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
         }
 
         static void AddEnvironmentPaths(IEnumerable<string> paths)
@@ -196,14 +229,14 @@ namespace SignService
 
         class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
         {
-            readonly IServiceProvider _serviceProvider;
+            readonly IServiceProvider serviceProvider;
 
             public SnapshotCollectorTelemetryProcessorFactory(IServiceProvider serviceProvider) =>
-                _serviceProvider = serviceProvider;
+                this.serviceProvider = serviceProvider;
 
             public ITelemetryProcessor Create(ITelemetryProcessor next)
             {
-                var snapshotConfigurationOptions = _serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
+                var snapshotConfigurationOptions = serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
                 return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
             }
         }
@@ -216,6 +249,35 @@ namespace SignService
             }
         }
 
+        class UserTelemetry : TelemetryInitializerBase
+        {
+            public UserTelemetry(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+            {                
+            }
+
+            protected override void OnInitializeTelemetry(HttpContext httpContext, RequestTelemetry requestTelemetry, ITelemetry telemetry)
+            {
+                if (httpContext.RequestServices == null)
+                    return;
+
+                var identity =  httpContext.User.Identity;
+                if (!identity.IsAuthenticated)
+                    return;
+
+
+                var upn = ((ClaimsIdentity)identity).FindFirst("upn")?.Value;
+                if (upn != null)
+                    telemetry.Context.User.AuthenticatedUserId = upn;
+
+                var userId = ((ClaimsIdentity)identity).FindFirst("oid")?.Value;
+
+                if (userId == null)
+                    return;
+
+                telemetry.Context.User.Id = userId;
+                telemetry.Context.User.AccountId = userId;
+            }
+        }
 
     }
 }

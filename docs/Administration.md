@@ -15,7 +15,7 @@ By default, the user who runs the `InstallUtility` is granted access to the Admi
 
 TODO: Insert screenshot here.
 
-## Creating a Sign Service User Account
+## Creating a Sign Service User Account and Key Vault
 
 The Sign Service requires user accounts to be used as service accounts. This is due to a current limitation of Azure AD that doesn't allow a Service Principal to Service Principal On-Behalf-Of flow. That flow is part of the defense-in-depth, preventing the signing service from having direct access to the signing functions on its own. The service can only access the signing method on-behalf-of the user at the time of request.
 
@@ -49,3 +49,20 @@ After your CA completes the request, and in the case of an EV certificate, may r
 Now, you can go back to the Users area, click `Edit` on the User. The `KeyVaultUrl` will be filled in automatically. There will be a drop-down showing the certificates. Select the one you want, ensure the `TimestampUrl` has a value, check the `Configured` box and hit Save.
 
 The sign client can now be used with the configured user credentials.
+
+## Creating a Sign Service User Account for an Existing Key Vault
+
+To provide access to a certificate in an existing Key Vault, create a new user [as described above](#creating-a-sign-service-user-account-and-key-vault) but check the `Configured` box, fill in `KeyVaultUrl` and `CertificateName` referencing your existing Key Vault and certificate, and fill in `TimestampUrl` with the RFC 3161 timestamp server you need to use.
+
+The Sign Service cannot automatically set up the appropriate permissions for a pre-existing Key Vault, so the following will also need to be configured in the Azure Portal for your existing Key Vault:
+
+- In the `Access control (AIM)` blade, add a role assignment for your `SignService Server` application (as created by `InstallUtility`) with the `Reader` role.
+- In the `Access policies` blade, add an access policy as follows:
+
+| Field | Value |
+| ----- | ----- |
+| Key permissions | `Get` and `Sign` |
+| Secret permissions | None required |
+| Certificate permissions | `Get` |
+| Select principal | The User Principal Name specified when the user was created in the Admin UI |
+| Authorized application | The `SignService Server` application created by `InstallUtility` |

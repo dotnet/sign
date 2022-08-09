@@ -1,6 +1,6 @@
 # Deployment
 
-This service must run on Windows Server 2016 due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Website (recommended) *[note: 2016 is being rolled out to app services through early/mid January]*.
+This service must run on Windows Server 2016+ due to dependencies on new APIs for signing. It may be deployed to either a Virtual Machine or it can use an Azure Website (recommended).
 
 You will need an Azure AD tenant and an Azure subscription. For easiest deployment, it's easiest if you are a global admin on your AAD tenant, but you may opt to have a global admin consent to the applications separately as well. Admin consent is ultimately required, however. The Azure subscription must be tied to the Azure AD tenant you want to use. 
 
@@ -32,7 +32,7 @@ Note: Only global admins can reset passwords if they need to be changed; any use
 
 ## 1. Clone Repo
 
-`git clone https://github.com/onovotny/SignService`
+`git clone https://github.com/dotnet/SignService`
 
 ## 2. Build & Run `InstallUtility`
 
@@ -95,7 +95,7 @@ A `B1` or higher instance works for this. The service keeps its runtime configur
    - `AzureAd--ClientId`
    - `AzureAd--ClientSecret`
    - `AzureAd--TenantId`
-6. In your website [configuration](https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure), add the URL to the Key Vault as a configuration option `ConfigurationKeyVaultUrl`. That's where the app will pull its configuration from.
+6. In your website [configuration](https://docs.microsoft.com/en-us/azure/app-service/web-sites-configure), add the URL to the Key Vault as a configuration option `ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT`. That's where the app will pull its configuration from. Also set `ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED` to `true`.
 
 ## 4. Update `ReplyUrl`
 
@@ -103,17 +103,17 @@ In the Azure Portal, navigate to your `SignService Server` application, and add 
 
 ## 5. Build and publish
 
-There are many ways to push code to App Services. You can publish directly from Visual Studio, you can use Visual Studio Team Services to setup a CI/CD pipeline, or you can do it with another set of tools.
+There are many ways to push code to App Services. You can publish directly from Visual Studio, you can use Azure Pipelines to setup a CI/CD pipeline, or you can do it with another set of tools.
 
 ### Visual Studio Publish
 
 While generally discouraged for production scenarios, you can use VS to quickly publish to your App Service. Open the solution, right-click the "SignService" project and select `Publish...` and follow the prompts.
 
-### Visual Studio Team Services
+### Azure Pipelines
 
-The recommended way to build and publish this service is with Visual Studio Team Services. It's free for up to five users.
+The recommended way to build and publish this service is with Azure Pipelines. It's free for up to five users.
 
-Create a new build definition that points to your git clone. This lets you control updates by pulling from the source at your discretion. Use the YAML builds definition point it to the `.vsts.service.ci.yml` file to create a publish artifact.
+Create a new build definition that points to your git clone. This lets you control updates by pulling from the source at your discretion. Use the YAML builds definition point it to the `azure-pipelines.server.yml` file to create a publish artifact.
 
 Create a new Release Management definition and add an App Service task. You may need to create an Azure Service Endpoint if you don't have one for your subscription yet.
 

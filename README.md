@@ -1,7 +1,9 @@
 # Authenticode Signing Service and Client
 
+[<img align="right" src="https://xunit.net/images/dotnet-fdn-logo.png" width="100" />](https://www.dotnetfoundation.org/)
+
 This project aims to make it easier to integrate Authenticode signing into a CI process by providing a secured API
-for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD and Azure Key Vault's HSM for security.
+for submitting artifacts to be signed by a code signing cert held on the server. It uses Azure AD and Azure Key Vault's HSM for security. It is part of the [.NET Foundation](https://www.dotnetfoundation.org/), and operates under their [code of conduct](https://www.dotnetfoundation.org/code-of-conduct). It is licensed under [MIT](https://opensource.org/licenses/MIT) (an OSI approved license).
 
 ## Architecture and Security
 
@@ -29,7 +31,7 @@ The service currently supports either individual files, or a zip archive that co
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.appx`, `.appxbundle`, `.msix`, `.msixbundle`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and Any PE file (via [AzureSignTool](https://github.com/vcsjones/AzureSignTool))
 - `.vsix` via [OpenOpcSignTool](https://github.com/vcsjones/OpenOpcSignTool)
 - ClickOnce `.application` and `.vsto` (via `Mage`). Special instructions below.
-- `.nupkg` via [NuGetKeyVaultSignTool](https://github.com/onovotny/NuGetKeyVaultSignTool)
+- `.nupkg` via [NuGetKeyVaultSignTool](https://github.com/novotnyllc/NuGetKeyVaultSignTool)
 
 ## Installation and Administration
 
@@ -37,6 +39,20 @@ Documentation is here:
 
 - [Deployment](docs/Deployment.md)
 - [Administration](docs/Administration.md)
+
+# Migrating to 1.1
+
+There is a new optimization in the 1.1 release that takes advantage of optional claims in the access token to improve per-request time from from the SignClient. To enable this, a global admin needs to do one of two things:
+
+- Run the `InstallUtillity` again. Use the same command line parameter (if you used one). It will find the existing application registration and prompt you to update. You don't need to recreate the resource groups.
+
+OR
+
+- Sign into the admin UI, and on the `Adv Setup` tab, select `Register Extension Attributes`. There isn't any indication currently, but you just need to select it once (clicking it again won't hurt). **Caution:** Do not click the `Unregister Extension Attributes` option.
+
+You can verify it worked by going to the Azure AD Admin portal -> Application Registrations -> SignService - Server ... -> Manifest. In the manifest, you should see data in the `optionalClaims` property; if it's `null`, then the optimization is not enabled.
+
+The service will keep working without this optimization until 2.0, so while optional, it's recommended that it be enabled.
 
 ## Migrating to 1.0
 
@@ -81,37 +97,31 @@ You'll need to create an `appsettings.json` similar to the following:
 }
 ```
 
-Then, somewhere in your build, you'll need to call the client tool. I use VSTS and call the following
+Then, somewhere in your build, you'll need to call the client tool. I use Azure Pipelines and call the following
 script to sign my files.
 
+azure-pipelines.yml:
 
-Sign-Package.ps1:
-
-```powershell
-$currentDirectory = split-path $MyInvocation.MyCommand.Definition
-
-# See if we have the ClientSecret available
-if([string]::IsNullOrEmpty($env:SignClientSecret)){
-	Write-Host "Client Secret not found, not signing packages"
-	return;
-}
-
-# Setup Variables we need to pass into the sign client tool
-
-$appSettings = "$currentDirectory\appsettings.json"
-$nupgks = ls $currentDirectory\..\*.nupkg | Select -ExpandProperty FullName
-
-dotnet tool install --tool-path "$currentDirectory" SignClient 
-
-foreach ($nupkg in $nupgks){
-	Write-Host "Submitting $nupkg for signing"
-
-	& "$currentDirectory\SignClient" 'sign' -c $appSettings -i $nupkg -r $env:SignClientUser -s $env:SignClientSecret -n 'Zeroconf' -d 'Zeroconf' -u 'https://github.com/onovotny/zeroconf'
-
-	Write-Host "Finished signing $nupkg"
-}
-
-Write-Host "Sign-package complete"
+```yaml
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install --tool-path . SignClient
+    displayName: Install SignTool tool
+    
+  - pwsh: |
+      .\SignClient "Sign" `
+      --baseDirectory "$(Pipeline.Workspace)\ToSign" `
+      --input "**/*.{appxbundle,appinstaller,zip,nupkg}" `
+      --config "$(Pipeline.Workspace)\SigningScripts\appsettings.json" `
+      --filelist "$(Pipeline.Workspace)\SigningScripts\filelist.txt" `
+      --user '$(SignClientUser)' `
+      --secret '$(SignClientSecret)' `
+      --name "NuGet Package Explorer" `
+      --description "NuGet Package Explorer" `
+      --descriptionUrl "https://github.com/NuGetPackageExplorer/NuGetPackageExplorer"
+    displayName: Authenticode Sign artifacts
 ```
 
 The parameters to the signing client are as follows:
@@ -122,27 +132,30 @@ usage: SignClient <command> [<args>]
     sign     Sign a file
 ```
 
-signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any 
-supported file types. It is strongly recommended to use the `filter` parameter to explicitly 
-list the files inside the archive that should be signed. Signing is recursive; it will sign 
-contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one. 
-After signing contents of the archive, the archive itself is signed if supported 
+signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any
+supported file types. It is strongly recommended to use the `filter` parameter to explicitly
+list the files inside the archive that should be signed. Signing is recursive; it will sign
+contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one.
+After signing contents of the archive, the archive itself is signed if supported
 (currently `VSIX`).
 
 ```
-usage: SignClient sign [-c <arg>] [-i <arg>] [-o <arg>] 
-                  [-f <arg>] [-s <arg>] [-n <arg>] [-d <arg>] [-u <arg>]
+usage: SignClient sign [-c <arg>] [-i <arg>] [-b <arg>] [-o <arg>]
+                  [-f <arg>] [-s <arg>] [-r <arg>] [-n <arg>] [-d <arg>] [-u <arg>] [-m <arg>]
 
     -c, --config <arg>            Path to config json file
     -i, --input <arg>             Path to input file
+    -b  --baseDirectory <arg>     Base directory for files to override the working directory
     -o, --output <arg>            Path to output file. May be same
                                   as input to overwrite
-    -f, --filter <arg>            Path to file containing paths of
+    -f, --filelist <arg>          Path to file containing paths of
                                   files to sign within an archive
     -s, --secret <arg>            Client Secret
+    -r  --user <arg>              Username
     -n, --name <arg>              Name of project for tracking
     -d, --description <arg>       Description
     -u, --descriptionUrl <arg>    Description Url
+    -m, --maxConcurrency <arg>    Maximum concurrency (default is 4)
 ```
 
 ## ClickOnce
@@ -163,10 +176,10 @@ You should also use the `filter` parameter with the file list to sign, something
 
 To get certificates into Key Vault, there are several options:
 
-1. Use the Admin UI to create a CSR and then merge the certificate. 
+1. Use the Admin UI to create a CSR and then merge the certificate.
 2. Upload a pfx file using the Portal, CLI, or PowerShell
-3. Use this GUI tool: https://github.com/elize1979/AzureKeyVaultExplorer. Before you can login, you'll need to go to the settings, put your tenant name in and change the login endpoint to `https://login.microsoftonline.com/common`. The tool makes it easy to upload and manage certificates in Key Vault.
+3. Use this GUI tool: https://github.com/microsoft/AzureKeyVaultExplorer. Before you can login, you'll need to go to the settings, put your tenant name in and change the login endpoint to `https://login.microsoftonline.com/common`. The tool makes it easy to upload and manage certificates in Key Vault.
 
 # Contributing
 
-I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/onovotny/SignService/issues) to discuss first. Security reviews are also much appreciated! 
+I'm very much open to any collaboration and contributions to this tool to enable additional scenarios. Pull requests are welcome, though please open an [issue](https://github.com/dotnet/SignService/issues) to discuss first. Security reviews are also much appreciated!

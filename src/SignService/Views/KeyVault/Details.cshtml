@@ -57,17 +57,17 @@
             @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.NotBefore)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Expires)
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.ExpiresOn)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Enabled)
         
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.Created)
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Attributes.UpdatedOn)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.CertificateModels[0].Operation.Status)
+            @Html.DisplayNameFor(model => model.CertificateModels[0].Operation.Properties.Status)
         </th>
         <th></th>
     </tr>
@@ -86,19 +86,19 @@
                 @Html.DisplayFor(modelItem => item.Attributes.NotBefore)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Attributes.Expires)
+                @Html.DisplayFor(modelItem => item.Attributes.ExpiresOn)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Attributes.Enabled)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Attributes.Updated)
+                @Html.DisplayFor(modelItem => item.Attributes.UpdatedOn)
             </td>
             <th>
-                @Html.DisplayFor(modelItem => item.Operation.Status)
+                @Html.DisplayFor(modelItem => item.Operation.Properties.Status)
             </th>
             <th>
-                @if (item.Operation?.Status == "inProgress")
+                @if (item.Operation?.Properties?.Status == "inProgress")
                 {
                     @Html.ActionLink("View", "CertificateRequest", new
                     {

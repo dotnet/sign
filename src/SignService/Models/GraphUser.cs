@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using SignService.Utils;
@@ -85,7 +85,7 @@ namespace SignService.Models
         /// <summary>
         ///     Url to the Key Vault: e.g., https://the-vault.vault.azure.net/
         /// </summary>
-        public string KeyVaultUrl { get; set; }
+        public Uri KeyVaultUrl { get; set; }
 
         /// <summary>
         ///     Timestamping URL: e.g., http://timestamp.digicert.com
