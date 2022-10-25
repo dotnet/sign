@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <FileSignInfo Include="Core.dll" CertificateName="Microsoft400" />
+  </ItemGroup>
+</Project>
