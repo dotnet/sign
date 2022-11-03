@@ -106,7 +106,7 @@ namespace Sign.Core
             // This will also update the publisher information to get it ready for signing
             try
             {
-                foreach (FileInfo? appx in appxs)
+                foreach (FileInfo appx in appxs)
                 {
                     IContainer container = _containerProvider.GetContainer(appx)!;
 

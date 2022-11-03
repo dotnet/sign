@@ -35,6 +35,9 @@ namespace Sign.Cli
         {
             Command codeCommand = new("code", "Sign binaries and containers.");
 
+            FileDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
+            TimestampDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
+
             codeCommand.AddOption(NameOption);
             codeCommand.AddOption(DescriptionOption);
             codeCommand.AddOption(DescriptionUrlOption);
@@ -184,6 +187,19 @@ namespace Sign.Cli
                 if (inputFiles.Count == 0)
                 {
                     context.Console.Error.WriteLine("No inputs found to sign.");
+                    context.ExitCode = ExitCode.NoInputsFound;
+                    return;
+                }
+
+                if (inputFiles.Any(file => !file.Exists))
+                {
+                    context.Console.Error.WriteLine("Some files do not exist.  Try using a different --base-directory or a fully qualified file path.");
+                    
+                    foreach (FileInfo file in inputFiles.Where(file => !file.Exists))
+                    {
+                        context.Console.Error.WriteLine($"    {file.FullName}");
+                    }
+
                     context.ExitCode = ExitCode.NoInputsFound;
                     return;
                 }
