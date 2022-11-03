@@ -16,6 +16,17 @@
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <Deterministic>true</Deterministic>
+    <Features>strict</Features>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Some dependencies are not strong name signed. -->
+    <NoWarn>CS8002</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
     <!--
       Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
