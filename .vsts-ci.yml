@@ -1,6 +1,6 @@
 variables:
   - name: _TeamName
-    value: NuGet
+    value: DotNetCore
 
 trigger:
   batch: true
@@ -117,7 +117,7 @@ stages:
         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
         -TsaBugAreaPath $(_TsaBugAreaPath)
         -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "cli-lab"
-        -TsaCodebaseName "cli-lab"
+        -TsaRepositoryName "sign"
+        -TsaCodebaseName "sign"
         -TsaPublish $True
         -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
