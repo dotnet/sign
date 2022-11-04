@@ -5,11 +5,6 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyName>Sign.Core.Test</AssemblyName>
-    <RootNamespace>Sign.Core.Test</RootNamespace>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.1.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

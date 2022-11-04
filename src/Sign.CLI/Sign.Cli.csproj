@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.25231-preview" ExcludeAssets="all" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
@@ -18,7 +19,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <WinSdkBinDir Condition=" '$(WinSdkBinDir)' == '' ">$(MSBuildThisFileDirectory)..\..\packages\microsoft.windows.sdk.buildtools\10.0.25231-preview\bin\10.0.25231.0</WinSdkBinDir>
+    <WinSdkBinDir Condition=" '$(WinSdkBinDir)' == '' ">$(NuGetPackageRoot)microsoft.windows.sdk.buildtools\10.0.25231-preview\bin\10.0.25231.0</WinSdkBinDir>
     <NetSdkBinDir Condition=" '$(NetSdkBinDir)' == '' ">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools</NetSdkBinDir>
   </PropertyGroup>
 

@@ -23,6 +23,7 @@ namespace Sign.Core
 
             services.AddLogging(builder =>
             {
+                builder.AddConsole();
                 builder.SetMinimumLevel(logLevel);
             });
 
@@ -39,6 +40,7 @@ namespace Sign.Core
 
             services.AddLogging(builder =>
             {
+                builder.AddConsole();
                 builder.SetMinimumLevel(logLevel);
             });
 
