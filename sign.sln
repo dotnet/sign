@@ -11,12 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.vsts-ci.yml = .vsts-ci.yml
-		CODE-OF-CONDUCT.md = CODE-OF-CONDUCT.md
-		src\Directory.build.props = src\Directory.build.props
-		Directory.Build.targets = Directory.Build.targets
-		LICENSE.txt = LICENSE.txt
-		README.md = README.md
-		SECURITY.md = SECURITY.md
+		global.json = global.json
+		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Core", "src\Sign.Core\Sign.Core.csproj", "{8781DB2C-CF89-456D-BE9D-D7EF8333F5EC}"

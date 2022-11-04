@@ -1,5 +1,10 @@
 <Project>
   <ItemGroup>
-    <FileSignInfo Include="Sign.Core.dll" CertificateName="Microsoft400" />
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSign Include="$(ArtifactsBinDir)/Sign.CLI/$(Configuration)/**/sign.exe" />
+    <ItemsToSign Include="$(ArtifactsBinDir)/Sign.CLI/$(Configuration)/**/Sign.Core.dll" />
+
+    <FileSignInfo Include="sign.exe" CertificateName="Microsoft402" />
+    <FileSignInfo Include="Sign.Core.dll" CertificateName="Microsoft402" />
   </ItemGroup>
 </Project>
