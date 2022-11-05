@@ -65,8 +65,8 @@ There is an impending deadline in December 2022 when the Azure Active Directory 
 **Non-Goals**
 
 - Strong Name signing won't be in v1; guidance is to use an snk not based on a cert. If easy, perhaps can revisit.
-- MicroBuild/ESRP out of scope for v1. Primary audience is end users that have a certificate and "basic" signing needs.
-- Containers of any kind
+- Support for Microsoft internal builds and signing services.
+- Containers, including Notary v2 support.
 - Extensibility. v1 will support different signing providers.
 - Support for platforms other than Windows x64. Future work will be required to support ARM64 and non-Windows hosts. Support for certain file types may be limited due to platform support.
 - Offline distribution.
