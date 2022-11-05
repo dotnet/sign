@@ -52,7 +52,7 @@ While some of this could be done via an MSBuild task, a CLI tool is preferable t
 
 ### Roadmap
 
-There is an impending deadline in December 2022 when the Azure Active Directory Graph v1 endpoints sunset. The scope of the preview release will be limited to the existing funtionality currently in the service. The remaining functionality will be delivered for the release.
+The scope of the preview release will be limited to the existing funtionality currently in the service. The remaining functionality in this spec will be delivered for the initial release. The .NET Foundation has a dependency on this tool being delivered by the end of 2022.
 
 #### Preview
 
