@@ -79,6 +79,7 @@ The scope of the preview release will be limited to the existing funtionality cu
 - Offline distribution for core plus backend provider
 - Three providers: Certificate Store, Azure Key Vault, Azure Code Signing
 - Support for additional formats: [.HLKX](https://github.com/dotnet/sign/issues/422), [VBA](https://github.com/dotnet/sign/issues/364)
+- Verification of signatures
 
 
 ### Inputs
