@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <AssemblyName>sign</AssemblyName>
+    <IsShipping>true</IsShipping>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Sign.Cli</RootNamespace>
   </PropertyGroup>
 
