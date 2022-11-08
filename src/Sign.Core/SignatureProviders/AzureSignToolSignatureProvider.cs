@@ -67,7 +67,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            _logger.LogInformation("Signing SignTool job {name} with {count} files", options.Name, files.Count());
+            _logger.LogInformation("Signing SignTool job with {count} files", files.Count());
 
             TimeStampConfiguration timestampConfiguration;
 

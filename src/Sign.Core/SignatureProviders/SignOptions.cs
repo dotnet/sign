@@ -5,7 +5,7 @@ namespace Sign.Core
 {
     internal sealed class SignOptions
     {
-        internal string? Name { get; }
+        internal string? PublisherName { get; }
         internal string? Description { get; }
         internal Uri? DescriptionUrl { get; }
         internal Matcher? Matcher { get; }
@@ -15,7 +15,7 @@ namespace Sign.Core
         internal Uri? TimestampService { get; }
 
         internal SignOptions(
-            string? name,
+            string? publisherName,
             string? description,
             Uri? descriptionUrl,
             HashAlgorithmName fileHashAlgorithm,
@@ -24,7 +24,7 @@ namespace Sign.Core
             Matcher? matcher,
             Matcher? antiMatcher)
         {
-            Name = name;
+            PublisherName = publisherName;
             Description = description;
             DescriptionUrl = descriptionUrl;
             FileHashAlgorithm = fileHashAlgorithm;
@@ -35,7 +35,7 @@ namespace Sign.Core
         }
 
         internal SignOptions(HashAlgorithmName fileHashAlgorithm)
-            : this(name: null, description: null, descriptionUrl: null, fileHashAlgorithm,
+            : this(publisherName: null, description: null, descriptionUrl: null, fileHashAlgorithm,
                   HashAlgorithmName.SHA256, timestampService: null, matcher: null, antiMatcher: null)
         {
         }

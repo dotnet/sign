@@ -13,8 +13,8 @@ namespace Sign.Cli
         internal Option<HashAlgorithmName> FileDigestOption { get; } = new(new[] { "-fd", "--file-digest" }, ParseHashAlgorithmName, description: "Digest algorithm to hash the file with. Allowed values are sha256, sha384, and sha512.");
         internal Option<string?> FileListOption = new(new[] { "-fl", "--file-list" }, "Path to file containing paths of files to sign within an archive.");
         internal Option<int> MaxConcurrencyOption { get; } = new(new[] { "-m", "--max-concurrency" }, ParseMaxConcurrencyOption, description: "Maximum concurrency (default is 4)");
-        internal Option<string> NameOption { get; } = new(new[] { "-n", "--name" }, "Name of project for tracking.");
         internal Option<string?> OutputOption { get; } = new(new[] { "-o", "--output" }, "Output file or directory. If omitted, overwrites input file.");
+        internal Option<string?> PublisherNameOption { get; } = new(new[] { "-pn", "--publisher-name" }, "Publisher name (ClickOnce).");
         internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(new[] { "-td", "--timestamp-digest" }, ParseHashAlgorithmName, description: "Used with the -t switch to request a digest algorithm used by the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.");
         internal Option<Uri> TimestampUrlOption { get; } = new(new[] { "-t", "--timestamp-url" }, "RFC 3161 timestamp server URL. If this option is not specified, the signed file will not be timestamped.");
         internal Option<LogLevel> VerbosityOption { get; } = new(new[] { "-v", "--verbosity" }, () => LogLevel.Warning, "Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].");
@@ -24,7 +24,6 @@ namespace Sign.Cli
         {
             DescriptionOption.IsRequired = true;
             DescriptionUrlOption.IsRequired = true;
-            NameOption.IsRequired = true;
 
             MaxConcurrencyOption.SetDefaultValue(4);
             FileDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
@@ -34,11 +33,11 @@ namespace Sign.Cli
             // Global options are available on the adding command and all subcommands.
             // Order here is significant as it represents the order in which options are
             // displayed in help.
-            AddGlobalOption(NameOption);
             AddGlobalOption(DescriptionOption);
             AddGlobalOption(DescriptionUrlOption);
             AddGlobalOption(BaseDirectoryOption);
             AddGlobalOption(OutputOption);
+            AddGlobalOption(PublisherNameOption);
             AddGlobalOption(FileListOption);
             AddGlobalOption(FileDigestOption);
             AddGlobalOption(TimestampUrlOption);

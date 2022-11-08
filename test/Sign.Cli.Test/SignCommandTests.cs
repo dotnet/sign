@@ -36,8 +36,8 @@ namespace Sign.Cli.Test
         [Fact]
         public void Command_WhenRequiredArgumentIsMissing_HasError()
         {
-            string command = "code azure-key-vault --name a --description b --description-url https://description.test "
-                + "-kvu https://keyvault.test -kvc c -kvm";
+            string command = "code azure-key-vault --description a --description-url https://description.test "
+                + "-kvu https://keyvault.test -kvc b -kvm";
             ParseResult result = _parser.Parse(command);
 
             Assert.NotEmpty(result.Errors);
@@ -46,8 +46,8 @@ namespace Sign.Cli.Test
         [Fact]
         public void Command_WhenRequiredArgumentsArePresent_HasNoError()
         {
-            string command = "code azure-key-vault --name a --description b --description-url https://description.test "
-                + "-kvu https://keyvault.test -kvc c -kvm d";
+            string command = "code azure-key-vault --description a --description-url https://description.test "
+                + "-kvu https://keyvault.test -kvc b -kvm c";
             ParseResult result = _parser.Parse(command);
 
             Assert.Empty(result.Errors);

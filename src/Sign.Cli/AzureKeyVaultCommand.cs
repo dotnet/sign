@@ -49,7 +49,7 @@ namespace Sign.Cli
             this.SetHandler(async (InvocationContext context) =>
             {
                 DirectoryInfo baseDirectory = context.ParseResult.GetValueForOption(_codeCommand.BaseDirectoryOption)!;
-                string? name = context.ParseResult.GetValueForOption(_codeCommand.NameOption);
+                string? publisherName = context.ParseResult.GetValueForOption(_codeCommand.PublisherNameOption);
                 string? description = context.ParseResult.GetValueForOption(_codeCommand.DescriptionOption);
                 Uri? descriptionUrl = context.ParseResult.GetValueForOption(_codeCommand.DescriptionUrlOption);
                 string? fileListFilePath = context.ParseResult.GetValueForOption(_codeCommand.FileListOption);
@@ -192,7 +192,7 @@ namespace Sign.Cli
                     output,
                     fileList,
                     baseDirectory,
-                    name,
+                    publisherName,
                     description,
                     descriptionUrl,
                     timestampUrl,

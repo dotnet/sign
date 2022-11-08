@@ -10,7 +10,7 @@ namespace Sign.Core
             string? outputFile,
             FileInfo? fileList,
             DirectoryInfo baseDirectory,
-            string? name,
+            string? publisherName,
             string? description,
             Uri? descriptionUrl,
             Uri? timestampUrl,

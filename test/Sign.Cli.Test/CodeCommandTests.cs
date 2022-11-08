@@ -79,18 +79,6 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void NameOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.NameOption.Arity);
-        }
-
-        [Fact]
-        public void NameOption_Always_IsRequired()
-        {
-            Assert.True(_command.NameOption.IsRequired);
-        }
-
-        [Fact]
         public void OutputOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.OutputOption.Arity);
@@ -100,6 +88,18 @@ namespace Sign.Cli.Test
         public void OutputOption_Always_IsNotRequired()
         {
             Assert.False(_command.OutputOption.IsRequired);
+        }
+
+        [Fact]
+        public void PublisherNameOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.PublisherNameOption.Arity);
+        }
+
+        [Fact]
+        public void PublisherNameOption_Always_IsNotRequired()
+        {
+            Assert.False(_command.PublisherNameOption.IsRequired);
         }
 
         [Fact]
