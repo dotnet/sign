@@ -47,24 +47,14 @@ stages:
             Release:
               _BuildConfig: Release
         steps:
-        - ${{ if ne(variables['System.TeamProject'], 'internal') }}:
-          - script: eng\common\CIBuild.cmd
-              -configuration $(_BuildConfig)
-              -prepareMachine
-              $(_InternalBuildArgs)
-            name: Build
-            displayName: Build and run tests
-            condition: succeeded()
+        - script: eng\common\CIBuild.cmd
+            -configuration $(_BuildConfig)
+            -prepareMachine
+          name: Build
+          displayName: Build and run tests
+          condition: succeeded()
 
         - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-          - script: eng\common\CIBuild.cmd
-              -configuration $(_BuildConfig)
-              -prepareMachine
-              $(_InternalBuildArgs)
-            name: Build
-            displayName: Build and run tests
-            condition: succeeded()
-
           - task: PublishTestResults@2
             displayName: 'Publish Unit Test Results'
             inputs:
