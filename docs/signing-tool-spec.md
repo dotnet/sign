@@ -42,7 +42,7 @@ With several different code signing tools required, each with its own command li
 
 ## Plan
 
-Create a modern signing tool to replace the existing tools. The tool will handle all of our first party signing formats, orchestrate signing files in the right order, and have extensibility to support multiple signing providers. As our customers use a variety of clouds and HSMs, the extensibility will enable us to meet customers needs wherever they store their certificates.
+Create a modern signing tool to eventually replace the existing tools. The tool will handle all of our first party signing formats, orchestrate signing files in the right order, and have extensibility to support multiple signing providers. As our customers use a variety of clouds and HSMs, the extensibility will enable us to meet customers needs wherever they store their certificates.
 
 While some of this could be done via an MSBuild task, a CLI tool is preferable to MSBuild tasks for a couple reasons:
 
