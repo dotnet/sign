@@ -24,7 +24,7 @@ There are a few challenges around code signing:
 
 ### Local Certificates
 
-Today the code signing tooling in the Windows and .NET SDK uses PFX (public/private certificate key pair files or the local certificate store for obtaining certificates. There risks to this approach:
+Today the code signing tooling in the Windows and .NET SDK uses PFX (public/private certificate key pair files or the local certificate store for obtaining certificates). There risks to this approach:
 
 - PFX files are targets in data breaches; their passwords can be cracked
 - Certificates in a local store can be used by any app/malware
@@ -48,7 +48,7 @@ While some of this could be done via an MSBuild task, a CLI tool is preferable t
 
 - **Performance:** During a build, many binary artifacts are created that need to be signed. A multi-targeted NuGet package may contain several `.dll` files. An application will likely contain more than one file that needs to be signed. It's much more efficient to pass them all to a signing tool where parallelism is possible than to sign during the inner-loop.
 - **Security:** Code signing is a sensitive operation that requires credentials/secrets. We do not want secrets to be in the MSBuild pipeline as that makes any logs contain those secrets. Ideally, a CI pipeline should contain a separate stage for code signing to ensure that credentials are never unintentionally exposed to a build stage.
-- **Platform:** Authenticode is currently limted to Windows. Thus, while it's possible to sign a NuGet or VSIX cross-platform, the DLL's inside can't be signed unless running on Windows. With the NuGet packages being developer-only artifacts--they're not shipped with the apps--it's critical that the DLL's inside are also signed. Builds for binaries may run on any platform, but as signing is a discreet step in most CI pipelines, it's possible to use a Windows agent for this task.
+- **Platform:** Authenticode is currently limited to Windows. Thus, while it's possible to sign a NuGet or VSIX cross-platform, the DLL's inside can't be signed unless running on Windows. With the NuGet packages being developer-only artifacts--they're not shipped with the apps--it's critical that the DLL's inside are also signed. Builds for binaries may run on any platform, but as signing is a discreet step in most CI pipelines, it's possible to use a Windows agent for this task.
 
 ### Roadmap
 
