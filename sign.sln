@@ -23,6 +23,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Core.Test", "test\Sign
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Cli", "src\Sign.CLI\Sign.Cli.csproj", "{A54EAFBE-AB23-48F7-86C5-C91ACEEDF509}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sign.Cli.Test", "test\Sign.Cli.Test\Sign.Cli.Test.csproj", "{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{A54EAFBE-AB23-48F7-86C5-C91ACEEDF509}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A54EAFBE-AB23-48F7-86C5-C91ACEEDF509}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A54EAFBE-AB23-48F7-86C5-C91ACEEDF509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -49,6 +55,7 @@ Global
 		{8781DB2C-CF89-456D-BE9D-D7EF8333F5EC} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{67DCC7B7-C98D-452E-AE69-1F3E81833D34} = {780818DD-6B52-47C8-AC54-71448DF822BD}
 		{A54EAFBE-AB23-48F7-86C5-C91ACEEDF509} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
+		{3C6FC0EB-F5B9-430C-B420-4DEC6B390768} = {780818DD-6B52-47C8-AC54-71448DF822BD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7AA1043F-37A2-404F-8EC3-34C747C1CEB7}

@@ -7,8 +7,11 @@ namespace Sign.Core
     {
         private readonly IServiceProvider _serviceProvider;
 
-        private ServiceProvider(IServiceProvider serviceProvider)
+        // Dependency injection requires a public constructor.
+        public ServiceProvider(IServiceProvider serviceProvider)
         {
+            ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
+
             _serviceProvider = serviceProvider;
         }
 
@@ -64,6 +67,7 @@ namespace Sign.Core
             services.AddSingleton<IMakeAppxCli, MakeAppxCli>();
             services.AddSingleton<INuGetSignTool, NuGetSignTool>();
             services.AddSingleton<IOpenVsixSignTool, OpenVsixSignTool>();
+            services.AddSingleton<ISigner, Signer>();
 
             return new ServiceProvider(services.BuildServiceProvider());
         }
