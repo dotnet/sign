@@ -6,6 +6,15 @@ namespace Sign.Core.Test
     public class ServiceProviderTests
     {
         [Fact]
+        public void Constructor_WhenServiceProviderIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new ServiceProvider(serviceProvider: null!));
+
+            Assert.Equal("serviceProvider", exception.ParamName);
+        }
+
+        [Fact]
         public void CreateDefault_Always_RegistersRequiredServices()
         {
             ServiceProvider serviceProvider = ServiceProvider.CreateDefault();
@@ -34,6 +43,7 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<IMakeAppxCli>());
             Assert.NotNull(serviceProvider.GetRequiredService<INuGetSignTool>());
             Assert.NotNull(serviceProvider.GetRequiredService<IOpenVsixSignTool>());
+            Assert.NotNull(serviceProvider.GetRequiredService<ISigner>());
         }
     }
 }

@@ -56,12 +56,12 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            Logger.LogInformation("Signing Mage job {name} with {count} files", options.Name, files.Count());
+            Logger.LogInformation("Signing Mage job with {count} files", files.Count());
 
             var args = "-a sha256RSA";
-            if (!string.IsNullOrWhiteSpace(options.Name))
+            if (!string.IsNullOrWhiteSpace(options.PublisherName))
             {
-                args += $@" -n ""{options.Name}""";
+                args += $@" -n ""{options.PublisherName}""";
             }
 
             Uri? timeStampUrl = options.TimestampService;

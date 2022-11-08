@@ -8,23 +8,24 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class Signer
+    internal sealed class Signer : ISigner
     {
         private readonly IServiceProvider _serviceProvider;
 
-        internal Signer(IServiceProvider serviceProvider)
+        // Dependency injection requires a public constructor.
+        public Signer(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
             _serviceProvider = serviceProvider;
         }
 
-        internal async Task<int> SignAsync(
+        public async Task<int> SignAsync(
             IReadOnlyList<FileInfo> inputFiles,
             string? outputFile,
             FileInfo? fileList,
-            string baseDirectory,
-            string? name,
+            DirectoryInfo baseDirectory,
+            string? publisherName,
             string? description,
             Uri? descriptionUrl,
             Uri? timestampUrl,
@@ -59,7 +60,7 @@ namespace Sign.Core
             keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName);
 
             SignOptions signOptions = new(
-                name,
+                publisherName,
                 description,
                 descriptionUrl,
                 fileHashAlgorithm,
@@ -98,7 +99,7 @@ namespace Sign.Core
                         }
                         else
                         {
-                            var relative = Path.GetRelativePath(baseDirectory, input.FullName);
+                            var relative = Path.GetRelativePath(baseDirectory.FullName, input.FullName);
 
                             var basePath = Path.IsPathRooted(outputFile) ?
                                            outputFile :
@@ -163,11 +164,11 @@ namespace Sign.Core
             return ExitCode.Success;
         }
 
-        private static string ExpandFilePath(string baseDirectory, string file)
+        private static string ExpandFilePath(DirectoryInfo baseDirectory, string file)
         {
             if (!Path.IsPathRooted(file))
             {
-                return $"{baseDirectory}{Path.DirectorySeparatorChar}{file}";
+                return Path.Combine(baseDirectory.FullName, file);
             }
 
             return file;

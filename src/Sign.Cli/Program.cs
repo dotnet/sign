@@ -29,15 +29,9 @@ namespace Sign.Cli
 
             AddEnvironmentPath(netfxDir);
 
-            SignRootCommand command = new();
-
             try
             {
-                Parser parser = new CommandLineBuilder(command)
-                    .UseVersionOption()
-                    .UseParseErrorReporting()
-                    .UseHelp(command.CustomizeHelp)
-                    .Build();
+                Parser parser = CreateParser();
 
                 return await parser.InvokeAsync(args);
             }
@@ -47,6 +41,17 @@ namespace Sign.Cli
 
                 return ExitCode.Failed;
             }
+        }
+
+        internal static Parser CreateParser(IServiceProvider? serviceProvider = null)
+        {
+            SignCommand command = new();
+
+            return new CommandLineBuilder(command)
+                .UseVersionOption()
+                .UseParseErrorReporting()
+                .UseHelp()
+                .Build();
         }
 
         private static void AddEnvironmentPath(string path)
