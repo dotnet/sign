@@ -58,7 +58,7 @@ The scope of the preview release will be limited to the existing funtionality cu
 
 **Goals**
 
-- Support for Authenticode, VSIX, NuGet, ClickOnce
+- Support for Authenticode, VSIX, NuGet (author signature), ClickOnce
 - Only run on Windows x64.
 - Support a single certificate for all files in the operation.
 
@@ -107,7 +107,7 @@ Options:
 - `-kvc | --azure-key-vault-certificate` - The name of the certificate in Azure Key Vault.
 - `-kvm | --azure-key-vault-managed-identity` - Use a Managed Identity to access Azure Key Vault.
 
-Signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any supported file types. It is strongly recommended to use the `filter` parameter to explicitly list the files inside the archive that should be signed. Signing is recursive; it will sign contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one. After signing contents of the archive, the archive itself is signed if supported (currently `VSIX`).
+Signing an archive type (`.zip`, `.nupkg`, `.vsix`) will open up the archive and sign any supported file types. It is strongly recommended to use the `filelist` parameter to explicitly list the files inside the archive that should be signed. Signing is recursive; it will sign contents of any detectected `Zip`, `NuPkg` or `VSIX` files inside the uploaded one. After signing contents of the archive, the archive itself is signed if supported (currently `VSIX`).
 
 ### File list
 
