@@ -46,21 +46,17 @@ stages:
           matrix:
             Release:
               _BuildConfig: Release
-            ${{ if ne(variables['System.TeamProject'], 'internal') }}:
-              Debug:
-                _BuildConfig: Debug
         steps:
-        - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        - ${{ if ne(variables['System.TeamProject'], 'internal') }}:
           - script: eng\common\CIBuild.cmd
               -configuration $(_BuildConfig)
               -prepareMachine
               $(_InternalBuildArgs)
-              /p:Test=false
             name: Build
-            displayName: Build
+            displayName: Build and run tests
             condition: succeeded()
 
-        - ${{ if ne(variables['System.TeamProject'], 'internal') }}:
+        - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           - script: eng\common\CIBuild.cmd
               -configuration $(_BuildConfig)
               -prepareMachine
