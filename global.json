@@ -1,9 +1,9 @@
 {
-  "sdk": {
-    "version": "7.0.100-rc.1.22431.12"
-  },
   "tools": {
-    "dotnet": "7.0.100-rc.1.22431.12"
+    "dotnet": "7.0.100-rc.1.22431.12",
+    "runtimes": {
+      "dotnet/x64": [ "6.0.11" ]
+    }
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "8.0.0-beta.22528.1",

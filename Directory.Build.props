@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>

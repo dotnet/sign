@@ -37,7 +37,12 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
             ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
-            ArgumentException.ThrowIfNullOrEmpty(certificateName, nameof(certificateName));
+            ArgumentNullException.ThrowIfNull(certificateName, nameof(certificateName));
+
+            if (string.IsNullOrEmpty(certificateName))
+            {
+                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateName));
+            }
 
             _keyVaultUrl = keyVaultUrl;
             _tokenCredential = tokenCredential;
