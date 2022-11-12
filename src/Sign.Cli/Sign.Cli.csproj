@@ -2,9 +2,15 @@
 
   <PropertyGroup>
     <AssemblyName>sign</AssemblyName>
+    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <OutputType>Exe</OutputType>
+    <PackageDescription>.NET Sign CLI</PackageDescription>
+    <PackAsTool>true</PackAsTool>
+    <RollForward>Major</RollForward>
     <RootNamespace>Sign.Cli</RootNamespace>
+    <SelfContained>false</SelfContained>
+    <ToolCommandName>sign</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>

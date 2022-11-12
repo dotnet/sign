@@ -4,28 +4,25 @@
 
   <PropertyGroup>
     <Copyright>$(CopyrightNetFoundation)</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <LangVersion>Latest</LangVersion>
-
-    <!--
-      Tools and packages produced by this repository support infrastructure and are not shipping on NuGet or via any other official channel.
-    -->
-    <IsShipping>false</IsShipping>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <DebugType>embedded</DebugType>
     <Deterministic>true</Deterministic>
     <Features>strict</Features>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <!--
+      Tools and packages produced by this repository support infrastructure and are not shipping on NuGet or via any other official channel.
+      This default is overridden in shipping projects.
+    -->
+    <IsShipping>false</IsShipping>
+    <LangVersion>Latest</LangVersion>
     <!-- CS8002:  some dependencies are not strong name signed. -->
     <!-- NU1507:  have not yet onboarded to package source mapping. -->
     <NoWarn>CS8002;NU1507</NoWarn>
+    <Nullable>enable</Nullable>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <TargetFramework>net6.0</TargetFramework>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
