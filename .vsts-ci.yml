@@ -34,7 +34,7 @@ stages:
       enableTelemetry: true
       jobs:
       - job: Windows
-        pool:
+        pool: # See https://helix.dot.net/ for VM names.
           ${{ if ne(variables['System.TeamProject'], 'internal') }}:
             name: NetCore-Public
             demands: ImageOverride -equals windows.vs2019.amd64.open
