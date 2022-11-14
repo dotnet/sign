@@ -20,7 +20,11 @@ namespace Sign.Cli.Test
             Option? option = symbol as Option;
 
             Assert.NotNull(option);
-            Assert.Equal(new[] { "--help", "-?", "-h", "/?", "/h" }, option.Aliases.Order());
+
+            string[] expectedAliases = new[] { "--help", "-?", "-h", "/?", "/h" };
+            string[] actualAliases = option.Aliases.OrderBy(_ => _, StringComparer.Ordinal).ToArray();
+
+            Assert.Equal(expectedAliases, actualAliases);
             Assert.Empty(result.Errors);
         }
 
