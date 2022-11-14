@@ -3,15 +3,14 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class NuGetSignatureProviderTests
+    public class AppInstallerServiceSignatureProviderTests
     {
-        private readonly NuGetSignatureProvider _provider;
+        private readonly AppInstallerServiceSignatureProvider _provider;
 
-        public NuGetSignatureProviderTests()
+        public AppInstallerServiceSignatureProviderTests()
         {
-            _provider = new NuGetSignatureProvider(
+            _provider = new AppInstallerServiceSignatureProvider(
                 Mock.Of<IKeyVaultService>(),
-                Mock.Of<INuGetSignTool>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
@@ -19,42 +18,28 @@ namespace Sign.Core.Test
         public void Constructor_WhenKeyVaultServiceIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new AppInstallerServiceSignatureProvider(
                     keyVaultService: null!,
-                    Mock.Of<INuGetSignTool>(),
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
             Assert.Equal("keyVaultService", exception.ParamName);
         }
 
-        [Fact]
-        public void Constructor_WhenNuGetSignToolIsNull_Throws()
-        {
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    nuGetSignTool: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>()));
-
-            Assert.Equal("nuGetSignTool", exception.ParamName);
-        }
 
         [Fact]
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new AppInstallerServiceSignatureProvider(
                     Mock.Of<IKeyVaultService>(),
-                    Mock.Of<INuGetSignTool>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(".nupkg")]
-        [InlineData(".NUPKG")] // test case insensitivity
-        [InlineData(".snupkg")]
+        [InlineData(".appinstaller")]
+        [InlineData(".APPINSTALLER")] // test case insensitivity
         public void CanSign_WhenFileExtensionMatches_ReturnsTrue(string extension)
         {
             FileInfo file = new($"file{extension}");

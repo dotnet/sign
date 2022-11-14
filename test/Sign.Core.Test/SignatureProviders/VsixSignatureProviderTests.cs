@@ -3,15 +3,15 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class NuGetSignatureProviderTests
+    public class VsixSignatureProviderTests
     {
-        private readonly NuGetSignatureProvider _provider;
+        private readonly VsixSignatureProvider _provider;
 
-        public NuGetSignatureProviderTests()
+        public VsixSignatureProviderTests()
         {
-            _provider = new NuGetSignatureProvider(
+            _provider = new VsixSignatureProvider(
                 Mock.Of<IKeyVaultService>(),
-                Mock.Of<INuGetSignTool>(),
+                Mock.Of<IOpenVsixSignTool>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
@@ -19,9 +19,9 @@ namespace Sign.Core.Test
         public void Constructor_WhenKeyVaultServiceIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new VsixSignatureProvider(
                     keyVaultService: null!,
-                    Mock.Of<INuGetSignTool>(),
+                    Mock.Of<IOpenVsixSignTool>(),
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
             Assert.Equal("keyVaultService", exception.ParamName);
@@ -31,30 +31,29 @@ namespace Sign.Core.Test
         public void Constructor_WhenNuGetSignToolIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new VsixSignatureProvider(
                     Mock.Of<IKeyVaultService>(),
-                    nuGetSignTool: null!,
+                    openVsixSignTool: null!,
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
-            Assert.Equal("nuGetSignTool", exception.ParamName);
+            Assert.Equal("openVsixSignTool", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new VsixSignatureProvider(
                     Mock.Of<IKeyVaultService>(),
-                    Mock.Of<INuGetSignTool>(),
+                    Mock.Of<IOpenVsixSignTool>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }
 
         [Theory]
-        [InlineData(".nupkg")]
-        [InlineData(".NUPKG")] // test case insensitivity
-        [InlineData(".snupkg")]
+        [InlineData(".vsix")]
+        [InlineData(".VSIX")] // test case insensitivity
         public void CanSign_WhenFileExtensionMatches_ReturnsTrue(string extension)
         {
             FileInfo file = new($"file{extension}");

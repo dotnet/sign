@@ -16,6 +16,9 @@ namespace Sign.Core
             IKeyVaultService keyVaultService,
             ILogger<ISignatureProvider> logger)
         {
+            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+
             _keyVaultService = keyVaultService;
             _logger = logger;
         }

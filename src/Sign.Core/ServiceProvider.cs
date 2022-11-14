@@ -20,23 +20,6 @@ namespace Sign.Core
             return _serviceProvider.GetService(serviceType);
         }
 
-        internal static ServiceProvider CreateForCli(LogLevel logLevel = LogLevel.Information)
-        {
-            IServiceCollection services = new ServiceCollection();
-
-            services.AddLogging(builder =>
-            {
-                builder.AddConsole();
-                builder.SetMinimumLevel(logLevel);
-            });
-
-            services.AddSingleton<IMatcherFactory, MatcherFactory>();
-            services.AddSingleton<IFileListReader, FileListReader>();
-            services.AddSingleton<IFileMatcher, FileMatcher>();
-
-            return new ServiceProvider(services.BuildServiceProvider());
-        }
-
         internal static ServiceProvider CreateDefault(LogLevel logLevel = LogLevel.Information)
         {
             IServiceCollection services = new ServiceCollection();
