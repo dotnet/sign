@@ -28,7 +28,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return string.Equals(file.Extension, ".vsix", StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(file.Extension, ".vsix", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)

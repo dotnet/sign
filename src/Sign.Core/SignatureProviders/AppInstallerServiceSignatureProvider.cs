@@ -16,6 +16,9 @@ namespace Sign.Core
             IKeyVaultService keyVaultService,
             ILogger<ISignatureProvider> logger)
         {
+            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+
             _keyVaultService = keyVaultService;
             _logger = logger;
         }
@@ -24,7 +27,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return string.Equals(file.Extension, ".appinstaller", StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(file.Extension, ".appinstaller", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)

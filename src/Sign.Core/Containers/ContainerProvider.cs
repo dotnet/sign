@@ -33,7 +33,7 @@ namespace Sign.Core
             _makeAppxCli = makeAppxCli;
             _logger = logger;
 
-            _appxBundleExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+            _appxBundleExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appxbundle",
                 ".eappxbundle",
@@ -41,7 +41,7 @@ namespace Sign.Core
                 ".msixbundle"
             };
 
-            _appxExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+            _appxExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appx",
                 ".eappx",
@@ -49,7 +49,7 @@ namespace Sign.Core
                 ".msix"
             };
 
-            _zipExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+            _zipExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appxupload",
                 ".msixupload",

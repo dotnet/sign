@@ -38,8 +38,8 @@ namespace Sign.Core.Test
         {
             using (TemporaryFile temporaryFile = new())
             {
-                FileInfo oneFile = new(temporaryFile.File.FullName.ToUpper());
-                FileInfo anotherFile = new(temporaryFile.File.FullName.ToLower());
+                FileInfo oneFile = new(temporaryFile.File.FullName.ToUpperInvariant());
+                FileInfo anotherFile = new(temporaryFile.File.FullName.ToLowerInvariant());
 
                 Assert.False(_instance.Equals(oneFile, anotherFile));
             }

@@ -25,8 +25,8 @@ namespace Sign.Core
 
         public bool CanSign(FileInfo file)
         {
-            return string.Equals(file.Extension, ".nupkg", StringComparison.InvariantCultureIgnoreCase)
-                || string.Equals(file.Extension, ".snupkg", StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(file.Extension, ".nupkg", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(file.Extension, ".snupkg", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)

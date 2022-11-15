@@ -48,7 +48,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return string.Equals(file.Extension, ".clickonce", StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(file.Extension, ".clickonce", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)

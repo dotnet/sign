@@ -29,7 +29,7 @@ namespace Sign.Core
 
                 if (!string.IsNullOrWhiteSpace(line))
                 {
-                    if (line.StartsWith("!"))
+                    if (line.StartsWith("!", StringComparison.Ordinal))
                     {
                         antiglobs.Add(line[1..]);
                     }

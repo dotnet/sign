@@ -72,6 +72,8 @@ namespace Sign.Core
                 {
                     IContainer container = _containerProvider.GetContainer(archive)!;
 
+                    await container.OpenAsync();
+
                     containers.Add(container);
                 }
 
@@ -110,6 +112,8 @@ namespace Sign.Core
                 {
                     IContainer container = _containerProvider.GetContainer(appx)!;
 
+                    await container.OpenAsync();
+
                     containers.Add(container);
                 }
 
@@ -142,6 +146,8 @@ namespace Sign.Core
                 foreach (FileInfo bundle in bundles)
                 {
                     IContainer container = _containerProvider.GetContainer(bundle)!;
+
+                    await container.OpenAsync();
 
                     containers.Add(container);
                 }

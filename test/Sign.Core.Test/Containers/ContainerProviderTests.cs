@@ -97,10 +97,13 @@ namespace Sign.Core.Test
             Assert.Equal("file", exception.ParamName);
         }
 
-        [Fact]
-        public void IsAppxBundleContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse()
+        [Theory]
+        [InlineData(".dll")]
+        [InlineData(".msİxbundle")] // Turkish İ (U+0130)
+        [InlineData(".msıxbundle")] // Turkish ı (U+0131)
+        public void IsAppxBundleContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
-            FileInfo file = new("file.dll");
+            FileInfo file = new($"file{extension}");
 
             Assert.False(_provider.IsAppxBundleContainer(file));
         }
@@ -127,10 +130,13 @@ namespace Sign.Core.Test
             Assert.Equal("file", exception.ParamName);
         }
 
-        [Fact]
-        public void IsAppxContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse()
+        [Theory]
+        [InlineData(".dll")]
+        [InlineData(".msİx")] // Turkish İ (U+0130)
+        [InlineData(".msıx")] // Turkish ı (U+0131)
+        public void IsAppxContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
-            FileInfo file = new("file.dll");
+            FileInfo file = new($"file{extension}");
 
             Assert.False(_provider.IsAppxContainer(file));
         }
@@ -157,10 +163,13 @@ namespace Sign.Core.Test
             Assert.Equal("file", exception.ParamName);
         }
 
-        [Fact]
-        public void IsZipContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse()
+        [Theory]
+        [InlineData(".dll")]
+        [InlineData(".msİx")] // Turkish İ (U+0130)
+        [InlineData(".msıx")] // Turkish ı (U+0131)
+        public void IsZipContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
-            FileInfo file = new("file.dll");
+            FileInfo file = new($"file{extension}");
 
             Assert.False(_provider.IsZipContainer(file));
         }

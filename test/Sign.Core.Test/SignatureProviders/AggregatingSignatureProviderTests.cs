@@ -4,8 +4,10 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class AggregatingSignatureProviderTests
+    public partial class AggregatingSignatureProviderTests
     {
+        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256);
+
         [Fact]
         public void Constructor_WhenSignatureProvidersIsNull_Throws()
         {
@@ -164,9 +166,7 @@ namespace Sign.Core.Test
         {
             AggregatingSignatureProvider provider = CreateProvider();
 
-            SignOptions options = new(HashAlgorithmName.SHA256);
-
-            await provider.SignAsync(Enumerable.Empty<FileInfo>(), options);
+            await provider.SignAsync(Enumerable.Empty<FileInfo>(), _options);
         }
 
         private static AggregatingSignatureProvider CreateProvider(ISignatureProvider? signatureProvider = null)

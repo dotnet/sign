@@ -60,6 +60,31 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task Dispose_WhenOpened_RemovesTemporaryDirectory()
+        {
+            string[] expectedFileNames = new[] { "a" };
+            FileInfo zipFile = CreateZipFile(expectedFileNames);
+
+            using (DirectoryServiceStub directoryService = new())
+            {
+                DirectoryInfo? directory;
+
+                using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+                {
+                    await container.OpenAsync();
+
+                    directory = Assert.Single(directoryService.Directories);
+
+                    Assert.True(directory.Exists);
+                }
+
+                directory = Assert.Single(directoryService.Directories);
+
+                Assert.False(directory.Exists);
+            }
+        }
+
+        [Fact]
         public async Task OpenAsync_WhenZipFileIsNonEmpty_ExtractsZipToDirectory()
         {
             string[] expectedFileNames = new[] { ".a", "b", "c.d" };
