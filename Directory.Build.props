@@ -23,8 +23,9 @@
     <Features>strict</Features>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Some dependencies are not strong name signed. -->
-    <NoWarn>CS8002</NoWarn>
+    <!-- CS8002:  some dependencies are not strong name signed. -->
+    <!-- NU1507:  have not yet onboarded to package source mapping. -->
+    <NoWarn>CS8002;NU1507</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
@@ -35,10 +36,5 @@
     -->
     <MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpVersion)</MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>
   </PropertyGroup>
-
-  <!-- Don't let it restore lower versions of this package, which can come transitively from NetStandard package restores (CSProj only) -->
-  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'" >
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="$(SystemSecurityCryptographyX509CertificatesVersion)" />
-  </ItemGroup>
 
 </Project>
