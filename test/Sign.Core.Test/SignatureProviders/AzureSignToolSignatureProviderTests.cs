@@ -47,10 +47,13 @@ namespace Sign.Core.Test
             Assert.True(_provider.CanSign(file));
         }
 
-        [Fact]
-        public void CanSign_WhenFileExtensionDoesNotMatch_ReturnsFalse()
+        [Theory]
+        [InlineData(".txt")]
+        [InlineData(".msİ")] // Turkish İ (U+0130)
+        [InlineData(".msı")] // Turkish ı (U+0131)
+        public void CanSign_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
-            FileInfo file = new("file.txt");
+            FileInfo file = new($"file{extension}");
 
             Assert.False(_provider.CanSign(file));
         }

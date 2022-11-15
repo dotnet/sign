@@ -26,7 +26,7 @@ namespace Sign.Core
             _logger = logger;
             _toolConfigurationProvider = toolConfigurationProvider;
 
-            _supportedFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
+            _supportedFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appx",
                 ".appxbundle",

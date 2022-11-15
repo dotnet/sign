@@ -27,7 +27,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return string.Equals(file.Extension, ".appinstaller", StringComparison.InvariantCultureIgnoreCase);
+            return string.Equals(file.Extension, ".appinstaller", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)

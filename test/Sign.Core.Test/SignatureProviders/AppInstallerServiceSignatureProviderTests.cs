@@ -25,7 +25,6 @@ namespace Sign.Core.Test
             Assert.Equal("keyVaultService", exception.ParamName);
         }
 
-
         [Fact]
         public void Constructor_WhenLoggerIsNull_Throws()
         {
@@ -38,8 +37,8 @@ namespace Sign.Core.Test
         }
 
         [Theory]
-        [InlineData(".appinstaller")]
-        [InlineData(".APPINSTALLER")] // test case insensitivity
+        [InlineData(".appInstaller")] // Turkish I (U+0049)
+        [InlineData(".appinstaller")] // Turkish i (U+0069)
         public void CanSign_WhenFileExtensionMatches_ReturnsTrue(string extension)
         {
             FileInfo file = new($"file{extension}");
@@ -47,10 +46,13 @@ namespace Sign.Core.Test
             Assert.True(_provider.CanSign(file));
         }
 
-        [Fact]
-        public void CanSign_WhenFileExtensionDoesNotMatch_ReturnsFalse()
+        [Theory]
+        [InlineData(".txt")]
+        [InlineData(".appİnstaller")] // Turkish İ (U+0130)
+        [InlineData(".appınstaller")] // Turkish ı (U+0131)
+        public void CanSign_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
-            FileInfo file = new("file.txt");
+            FileInfo file = new($"file{extension}");
 
             Assert.False(_provider.CanSign(file));
         }
