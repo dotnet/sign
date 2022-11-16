@@ -3,4 +3,9 @@
    <PropertyGroup>
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSign Include="$(ArtifactsShippingPackagesDir)/*.nupkg" />
+  </ItemGroup>
 </Project>
