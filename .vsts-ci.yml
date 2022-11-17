@@ -46,11 +46,16 @@ stages:
         - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
           - group: Publish-Build-Assets
+          - name: _SignType
+            value: real
           - name: _OfficialBuildArgs
             value: /p:DotNetPublishUsingPipelines=true
+                   /p:DotNetSignType=$(_SignType)
                    /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
                    /p:TeamName=$(_TeamName)
         - ${{ else }}:
+          - name: _SignType
+            value: test
           - name: _OfficialBuildArgs
             value: ''
         strategy:
