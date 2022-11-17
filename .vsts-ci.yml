@@ -108,6 +108,7 @@ stages:
         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
         -TsaBugAreaPath $(_TsaBugAreaPath)
         -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "dotnet-sign"
-        -TsaCodebaseName "dotnet-sign"
+        -TsaRepositoryName dotnet-sign
+        -TsaCodebaseName dotnet-sign
+        -TsaOnboard $True
         -TsaPublish $True'
