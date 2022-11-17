@@ -88,7 +88,6 @@ stages:
             inputs:
               ignoreDirectories: '$(Build.SourcesDirectory)/.packages,$(Build.SourcesDirectory)/artifacts/obj/Sign.Cli'
 
-# NuGet publishing
 - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
   - template: eng\common\templates\post-build\post-build.yml
     parameters:
@@ -101,8 +100,7 @@ stages:
       - Validate
       # This is to enable SDL runs part of Post-Build Validation Stage
       SDLValidationParameters:
-        enable: false
-        continueOnError: false
+        enable: true
         params: ' -SourceToolsList @("policheck","credscan")
         -TsaInstanceURL $(_TsaInstanceURL)
         -TsaProjectName $(_TsaProjectName)
