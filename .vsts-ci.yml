@@ -3,6 +3,8 @@ variables:
     value: DotNetCore
   - name: Build.Repository.Clean
     value: true
+  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+    - group: DotNet-Sign-SDLValidation-Params
 
 # CI and PR triggers
 trigger:
