@@ -100,7 +100,7 @@ namespace Sign.Core
             var escaping = false;
             int i;
 
-            // examples and comments refer to this crazy pattern:
+            // examples and comments refer to this particular pattern:
             // a{b,c{d,e},{f,g}h}x{y,z}
             // expected:
             // abxy
