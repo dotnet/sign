@@ -3,6 +3,10 @@ variables:
     value: DotNetCore
   - name: Build.Repository.Clean
     value: true
+  - name: Codeql.Enabled
+    value: ${{ eq(variables['System.TeamProject'], 'internal') }}
+  - name: Codeql.TSAEnabled
+    value: ${{ eq(variables['System.TeamProject'], 'internal') }}
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
     - group: DotNet-Sign-SDLValidation-Params
 
@@ -65,6 +69,10 @@ stages:
             Release:
               _BuildConfig: Release
         steps:
+        - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+          - task: CodeQL3000Init@0
+            displayName: Initialize CodeQL
+            condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
         - script: eng\common\CIBuild.cmd
             -configuration $(_BuildConfig)
             -prepareMachine
@@ -72,7 +80,10 @@ stages:
           name: Build
           displayName: Build and run tests
           condition: succeeded()
-
+        - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+          - task: CodeQL3000Finalize@0
+            displayName: Finalize CodeQL
+            condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
         - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           - task: PublishTestResults@2
             displayName: 'Publish Unit Test Results'
@@ -83,7 +94,6 @@ stages:
               searchFolder: $(System.DefaultWorkingDirectory)
               testRunTitle: sign unit tests - $(Agent.JobName)
             condition: succeededOrFailed()
-
         - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           - task: ComponentGovernanceComponentDetection@0
             displayName: Component Governance scan
