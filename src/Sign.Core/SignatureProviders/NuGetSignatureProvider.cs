@@ -25,6 +25,8 @@ namespace Sign.Core
 
         public bool CanSign(FileInfo file)
         {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
             return string.Equals(file.Extension, ".nupkg", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(file.Extension, ".snupkg", StringComparison.OrdinalIgnoreCase);
         }

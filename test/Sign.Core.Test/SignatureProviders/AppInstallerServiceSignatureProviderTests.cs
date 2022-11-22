@@ -36,6 +36,15 @@ namespace Sign.Core.Test
             Assert.Equal("logger", exception.ParamName);
         }
 
+        [Fact]
+        public void CanSign_WhenFileIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _provider.CanSign(file: null!));
+
+            Assert.Equal("file", exception.ParamName);
+        }
+
         [Theory]
         [InlineData(".appInstaller")] // Turkish I (U+0049)
         [InlineData(".appinstaller")] // Turkish i (U+0069)
