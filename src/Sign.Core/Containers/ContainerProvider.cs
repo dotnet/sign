@@ -52,6 +52,7 @@ namespace Sign.Core
             _zipExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appxupload",
+                ".clickonce",
                 ".msixupload",
                 ".nupkg",
                 ".snupkg",

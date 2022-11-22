@@ -51,6 +51,15 @@ namespace Sign.Core.Test
             Assert.Equal("logger", exception.ParamName);
         }
 
+        [Fact]
+        public void CanSign_WhenFileIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _provider.CanSign(file: null!));
+
+            Assert.Equal("file", exception.ParamName);
+        }
+
         [Theory]
         [InlineData(".nupkg")]
         [InlineData(".NUPKG")] // test case insensitivity

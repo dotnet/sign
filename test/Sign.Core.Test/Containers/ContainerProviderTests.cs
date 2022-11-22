@@ -176,6 +176,7 @@ namespace Sign.Core.Test
 
         [Theory]
         [InlineData(".appxupload")]
+        [InlineData(".clickonce")]
         [InlineData(".msixupload")]
         [InlineData(".nupkg")]
         [InlineData(".snupkg")]

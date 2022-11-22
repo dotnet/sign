@@ -15,6 +15,15 @@ namespace Sign.Core.Test
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
+        [Fact]
+        public void CanSign_WhenFileIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _provider.CanSign(file: null!));
+
+            Assert.Equal("file", exception.ParamName);
+        }
+
         [Theory]
         [InlineData(".appx")]
         [InlineData(".appxbundle")]

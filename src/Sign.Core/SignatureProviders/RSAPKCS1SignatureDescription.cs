@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 
 namespace Sign.Core
 {
-    internal abstract class RSAPKCS1SignatureDescription : SignatureDescription
+    public abstract class RSAPKCS1SignatureDescription : SignatureDescription
     {
         public RSAPKCS1SignatureDescription(string hashAlgorithmName)
         {
