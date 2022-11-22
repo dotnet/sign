@@ -13,6 +13,13 @@ namespace Sign.Cli
     {
         internal static async Task<int> Main(string[] args)
         {
+            if (!Environment.Is64BitProcess)
+            {
+                Console.Error.WriteLine("Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.");
+
+                return ExitCode.Failed;
+            }
+
             string directory = Path.GetDirectoryName(Environment.ProcessPath!)!;
             string baseDirectory = Path.Combine(directory, "tools", "SDK", "x64");
 
