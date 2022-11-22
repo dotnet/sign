@@ -9,3 +9,7 @@ dotnet_diagnostic.CA1304.severity = warning
 dotnet_diagnostic.CA1310.severity = warning
 # CA1311: Specify a culture or use an invariant version
 dotnet_diagnostic.CA1311.severity = warning
+
+# IDE0073: File header
+dotnet_diagnostic.IDE0073.severity = warning
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.\nSee the LICENSE.txt file in the project root for more information.

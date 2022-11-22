@@ -1,3 +1,4 @@
+#pragma warning disable IDE0073 // The file header does not match the required text
 // The MIT License (MIT)
 // 
 // Copyright (c) 2014 Dave Glick
