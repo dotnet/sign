@@ -10,8 +10,6 @@ namespace Sign.Core
     {
         public void Sign(FileInfo file, X509Certificate2 certificate, RSA rsaPrivateKey, SignOptions options)
         {
-            var useSha256 = true;
-
             try
             {
                 XmlDocument manifestDom = new()
@@ -19,16 +17,16 @@ namespace Sign.Core
                     PreserveWhitespace = true
                 };
                 manifestDom.Load(file.FullName);
-                SignedCmiManifest2 signedCmiManifest2 = new(manifestDom, useSha256);
+                SignedCmiManifest2 signedCmiManifest2 = new(manifestDom);
                 CmiManifestSigner2 signer;
 
-                if (useSha256 && rsaPrivateKey is RSACryptoServiceProvider rsaProvider)
+                if (rsaPrivateKey is RSACryptoServiceProvider rsaProvider)
                 {
-                    signer = new CmiManifestSigner2(SignedCmiManifest2.GetFixedRSACryptoServiceProvider(rsaProvider, useSha256), certificate, useSha256);
+                    signer = new CmiManifestSigner2(SignedCmiManifest2.GetFixedRSACryptoServiceProvider(rsaProvider), certificate);
                 }
                 else
                 {
-                    signer = new CmiManifestSigner2(rsaPrivateKey, certificate, useSha256);
+                    signer = new CmiManifestSigner2(rsaPrivateKey, certificate);
                 }
 
                 if (options.TimestampService is null)

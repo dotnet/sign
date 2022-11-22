@@ -26,18 +26,17 @@ using RSAKeyVaultProvider;
 #pragma warning disable CS8618
 #pragma warning disable CS8625
 
+#pragma warning disable CA1822
 #pragma warning disable CA1416 // Call site unreachable on all platforms
 
 #pragma warning disable IDE0016
 #pragma warning disable IDE0017
-#pragma warning disable IDE0018
 #pragma warning disable IDE0019
 #pragma warning disable IDE0029
+#pragma warning disable IDE0031
 #pragma warning disable IDE0032
 #pragma warning disable IDE0049
-#pragma warning disable IDE0060
-#pragma warning disable IDE0003
-#pragma warning disable IDE0051
+#pragma warning disable IDE0074
 #pragma warning disable IDE1006 // Naming Styles
 
 namespace System.Deployment.Internal.CodeSigning
@@ -87,7 +86,6 @@ namespace System.Deployment.Internal.CodeSigning
     class SignedCmiManifest2
     {
         readonly XmlDocument m_manifestDom = null;
-        readonly bool m_useSha256;
 
         const string Sha256SignatureMethodUri = @"http://www.w3.org/2000/09/xmldsig#rsa-sha256";
         const string Sha256DigestMethod = @"http://www.w3.org/2000/09/xmldsig#sha256";
@@ -97,7 +95,7 @@ namespace System.Deployment.Internal.CodeSigning
 
         SignedCmiManifest2() { }
 
-        internal SignedCmiManifest2(XmlDocument manifestDom, bool useSha256)
+        internal SignedCmiManifest2(XmlDocument manifestDom)
         {
             if (manifestDom == null)
             {
@@ -105,7 +103,6 @@ namespace System.Deployment.Internal.CodeSigning
             }
 
             m_manifestDom = manifestDom;
-            m_useSha256 = useSha256;
         }
 
         internal void Sign(CmiManifestSigner2 signer)
@@ -127,7 +124,7 @@ namespace System.Deployment.Internal.CodeSigning
             // Replace public key token in assemblyIdentity if requested.
             if ((signer.Flag & CmiManifestSignerFlag.DontReplacePublicKeyToken) == 0)
             {
-                ReplacePublicKeyToken(m_manifestDom, signer.StrongNameKey, m_useSha256);
+                ReplacePublicKeyToken(m_manifestDom, signer.StrongNameKey);
             }
 
             // No cert means don't Authenticode sign and timestamp.
@@ -139,11 +136,11 @@ namespace System.Deployment.Internal.CodeSigning
                 InsertPublisherIdentity(m_manifestDom, signer.Certificate);
 
                 // Now create the license DOM, and then sign it.
-                licenseDom = CreateLicenseDom(signer, ExtractPrincipalFromManifest(), ComputeHashFromManifest(m_manifestDom, m_useSha256));
-                AuthenticodeSignLicenseDom(licenseDom, signer, timeStampUrl, m_useSha256);
+                licenseDom = CreateLicenseDom(signer, ExtractPrincipalFromManifest(), ComputeHashFromManifest(m_manifestDom));
+                AuthenticodeSignLicenseDom(licenseDom, signer, timeStampUrl);
             }
 
-            StrongNameSignManifestDom(m_manifestDom, licenseDom, signer, m_useSha256);
+            StrongNameSignManifestDom(m_manifestDom, licenseDom, signer);
         }
 
         XmlElement ExtractPrincipalFromManifest()
@@ -226,13 +223,8 @@ namespace System.Deployment.Internal.CodeSigning
         /// </summary>
         /// <param name="oldCsp"></param>
         /// <returns></returns>
-        internal static RSACryptoServiceProvider GetFixedRSACryptoServiceProvider(RSACryptoServiceProvider oldCsp, bool useSha256)
+        internal static RSACryptoServiceProvider GetFixedRSACryptoServiceProvider(RSACryptoServiceProvider oldCsp)
         {
-            if (!useSha256)
-            {
-                return oldCsp;
-            }
-
             // 3rd party crypto providers in general don't need to be forcefully upgraded.
             // This is not an ideal way to check for that but is the best we have available.
             if (!oldCsp.CspKeyContainerInfo.ProviderName.StartsWith("Microsoft", StringComparison.Ordinal))
@@ -256,7 +248,7 @@ namespace System.Deployment.Internal.CodeSigning
 
         }
 
-        static void ReplacePublicKeyToken(XmlDocument manifestDom, AsymmetricAlgorithm snKey, bool useSha256)
+        static void ReplacePublicKeyToken(XmlDocument manifestDom, AsymmetricAlgorithm snKey)
         {
             // Make sure we can find the publicKeyToken attribute.
             var nsm = new XmlNamespaceManager(manifestDom.NameTable);
@@ -276,7 +268,7 @@ namespace System.Deployment.Internal.CodeSigning
 
             if (snKey is RSACryptoServiceProvider provider)
             {
-                cspPublicKeyBlob = (GetFixedRSACryptoServiceProvider(provider, useSha256)).ExportCspBlob(false);
+                cspPublicKeyBlob = (GetFixedRSACryptoServiceProvider(provider)).ExportCspBlob(false);
                 if (cspPublicKeyBlob == null || cspPublicKeyBlob.Length == 0)
                 {
                     throw new CryptographicException(Win32.NTE_BAD_KEY);
@@ -329,41 +321,27 @@ namespace System.Deployment.Internal.CodeSigning
             return assemblyIdentity.GetAttribute("publicKeyToken");
         }
 
-        static byte[] ComputeHashFromManifest(XmlDocument manifestDom, bool useSha256)
+        static byte[] ComputeHashFromManifest(XmlDocument manifestDom)
         {
 #if (true) // 
-            return ComputeHashFromManifest(manifestDom, false, useSha256);
+            return ComputeHashFromManifest(manifestDom, false);
         }
 
-        static byte[] ComputeHashFromManifest(XmlDocument manifestDom, bool oldFormat, bool useSha256)
+        static byte[] ComputeHashFromManifest(XmlDocument manifestDom, bool oldFormat)
         {
             if (oldFormat)
             {
                 var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(manifestDom);
 
-                if (useSha256)
+                using var sha2 = SHA256.Create();
+                var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
+                if (hash == null)
                 {
-                    using var sha2 = SHA256.Create();
-                    var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
-                    if (hash == null)
-                    {
-                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                    }
-
-                    return hash;
+                    throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                 }
-                else
-                {
-                    using var sha1 = SHA1.Create();
-                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
-                    if (hash == null)
-                    {
-                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                    }
 
-                    return hash;
-                }
+                return hash;
             }
             else
             {
@@ -386,28 +364,14 @@ namespace System.Deployment.Internal.CodeSigning
                 var exc = new XmlDsigExcC14NTransform();
                 exc.LoadInput(normalizedDom);
 
-                if (useSha256)
+                using var sha2 = SHA256.Create();
+                var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
+                if (hash == null)
                 {
-                    using var sha2 = SHA256.Create();
-                    var hash = sha2.ComputeHash(exc.GetOutput() as MemoryStream);
-                    if (hash == null)
-                    {
-                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                    }
-
-                    return hash;
+                    throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
                 }
-                else
-                {
-                    using var sha1 = SHA1.Create();
-                    var hash = sha1.ComputeHash(exc.GetOutput() as MemoryStream);
-                    if (hash == null)
-                    {
-                        throw new CryptographicException(Win32.TRUST_E_BAD_DIGEST);
-                    }
 
-                    return hash;
-                }
+                return hash;
 
 #if (true) // 
             }
@@ -457,7 +421,7 @@ namespace System.Deployment.Internal.CodeSigning
             return licenseDom;
         }
 
-        static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner2 signer, string timeStampUrl, bool useSha256)
+        static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner2 signer, string timeStampUrl)
         {
             // Make sure it is RSA, as this is the only one Fusion will support.
             // HACK: do this in a better way
@@ -482,10 +446,7 @@ namespace System.Deployment.Internal.CodeSigning
                 var signedXml = new ManifestSignedXml2(licenseDom);
                 signedXml.SigningKey = rsaPrivateKey;
                 signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
-                if (signer.UseSha256)
-                {
-                    signedXml.SignedInfo.SignatureMethod = Sha256SignatureMethodUri;
-                }
+                signedXml.SignedInfo.SignatureMethod = Sha256SignatureMethodUri;
 
                 // Add the key information.
                 signedXml.KeyInfo.AddClause(new RSAKeyValue(rsaPrivateKey));
@@ -494,10 +455,7 @@ namespace System.Deployment.Internal.CodeSigning
                 // Add the enveloped reference.
                 var reference = new Reference();
                 reference.Uri = "";
-                if (signer.UseSha256)
-                {
-                    reference.DigestMethod = Sha256DigestMethod;
-                }
+                reference.DigestMethod = Sha256DigestMethod;
 
                 // Add an enveloped and an Exc-C14N transform.
                 reference.AddTransform(new XmlDsigEnvelopedSignatureTransform());
@@ -584,7 +542,7 @@ namespace System.Deployment.Internal.CodeSigning
             signatureNode.AppendChild(dsObject);
         }
 
-        static void StrongNameSignManifestDom(XmlDocument manifestDom, XmlDocument licenseDom, CmiManifestSigner2 signer, bool useSha256)
+        static void StrongNameSignManifestDom(XmlDocument manifestDom, XmlDocument licenseDom, CmiManifestSigner2 signer)
         {
             var snKey = signer.StrongNameKey as RSA;
 
@@ -614,7 +572,7 @@ namespace System.Deployment.Internal.CodeSigning
             var signedXml = new ManifestSignedXml2(signatureParent);
             if (signer.StrongNameKey is RSACryptoServiceProvider)
             {
-                signedXml.SigningKey = GetFixedRSACryptoServiceProvider(signer.StrongNameKey as RSACryptoServiceProvider, useSha256);
+                signedXml.SigningKey = GetFixedRSACryptoServiceProvider(signer.StrongNameKey as RSACryptoServiceProvider);
             }
             else
             {
@@ -622,10 +580,7 @@ namespace System.Deployment.Internal.CodeSigning
             }
 
             signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
-            if (signer.UseSha256)
-            {
-                signedXml.SignedInfo.SignatureMethod = Sha256SignatureMethodUri;
-            }
+            signedXml.SignedInfo.SignatureMethod = Sha256SignatureMethodUri;
 
             // Add the key information.
             signedXml.KeyInfo.AddClause(new RSAKeyValue(snKey));
@@ -639,10 +594,7 @@ namespace System.Deployment.Internal.CodeSigning
             // Add the enveloped reference.
             var enveloped = new Reference();
             enveloped.Uri = "";
-            if (signer.UseSha256)
-            {
-                enveloped.DigestMethod = Sha256DigestMethod;
-            }
+            enveloped.DigestMethod = Sha256DigestMethod;
 
             // Add an enveloped then Exc-C14N transform.
             enveloped.AddTransform(new XmlDsigEnvelopedSignatureTransform());
@@ -700,15 +652,14 @@ namespace System.Deployment.Internal.CodeSigning
         readonly X509Certificate2Collection m_certificates;
         X509IncludeOption m_includeOption;
         CmiManifestSignerFlag m_signerFlag;
-        readonly bool m_useSha256;
 
         CmiManifestSigner2() { }
 
         internal CmiManifestSigner2(AsymmetricAlgorithm strongNameKey) :
-            this(strongNameKey, null, false)
+            this(strongNameKey, null)
         { }
 
-        internal CmiManifestSigner2(AsymmetricAlgorithm strongNameKey, X509Certificate2 certificate, bool useSha256)
+        internal CmiManifestSigner2(AsymmetricAlgorithm strongNameKey, X509Certificate2 certificate)
         {
             if (strongNameKey == null)
             {
@@ -727,15 +678,6 @@ namespace System.Deployment.Internal.CodeSigning
             m_certificates = new X509Certificate2Collection();
             m_includeOption = X509IncludeOption.ExcludeRoot;
             m_signerFlag = CmiManifestSignerFlag.None;
-            m_useSha256 = useSha256;
-        }
-
-        internal bool UseSha256
-        {
-            get
-            {
-                return m_useSha256;
-            }
         }
 
         internal AsymmetricAlgorithm StrongNameKey
@@ -831,16 +773,3 @@ namespace System.Deployment.Internal.CodeSigning
         internal const uint CimManifestSignerFlagMask = 0x00000001;
     }
 }
-#pragma warning restore IDE1006 // Naming Styles
-#pragma warning restore IDE0032
-#pragma warning restore IDE0049
-#pragma warning restore IDE0016
-#pragma warning restore IDE0017
-#pragma warning restore IDE0018
-#pragma warning restore IDE0019
-#pragma warning restore IDE0029
-#pragma warning restore IDE0003
-#pragma warning restore IDE0051
-#pragma warning restore IDE0060
-
-#pragma warning restore CA1416 // Call site unreachable on all platforms
