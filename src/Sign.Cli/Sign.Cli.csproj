@@ -77,4 +77,11 @@
     <Error Condition="'$(WinSdkBinDir)' == ''" Text="No supported WinSDK could be found!" />
   </Target>
 
+  <ItemGroup>
+    <Content Include="$(OutputPath)\tools\**">
+      <Pack>true</Pack>
+      <PackagePath>tools\$(TargetFramework)\any\tools</PackagePath>
+    </Content>
+  </ItemGroup>
+
 </Project>
