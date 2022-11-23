@@ -22,8 +22,8 @@
 // SOFTWARE.
 
 #pragma warning disable CS8600
-#pragma warning disable CS8602
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.FileSystemGlobbing;
 
@@ -183,8 +183,8 @@ namespace Sign.Core
             {
                 // console.error("numset", numset[1], numset[2])
                 var suf = ExpandBraces(pattern.Substring(numset.Length)).ToList();
-                int start = int.Parse(numset.Groups[1].Value),
-                end = int.Parse(numset.Groups[2].Value),
+                int start = int.Parse(numset.Groups[1].Value, NumberFormatInfo.CurrentInfo),
+                end = int.Parse(numset.Groups[2].Value, NumberFormatInfo.CurrentInfo),
                 inc = start > end ? -1 : 1;
                 var retVal = new List<string>();
                 for (var w = start; w != (end + inc); w += inc)
