@@ -3,6 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <Copyright>$(CopyrightNetFoundation)</Copyright>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>embedded</DebugType>
