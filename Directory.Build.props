@@ -25,6 +25,10 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))</RepositoryRootDirectory>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
     <!--
       Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
