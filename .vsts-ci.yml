@@ -97,7 +97,7 @@ stages:
               InputType: Basic
               Function: analyze
               TargetPattern: binskimPattern
-              AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(Configuration)\net6.0\win10-x64\*.dll;$(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(Configuration)\net6.0\win10-x64\*.exe
+              AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net6.0\win10-x64\*.dll;$(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net6.0\win10-x64\*.exe
             condition: succeededOrFailed()
           - task: PublishTestResults@2
             displayName: 'Publish Unit Test Results'
