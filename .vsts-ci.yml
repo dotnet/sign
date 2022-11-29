@@ -97,7 +97,7 @@ stages:
               InputType: Basic
               Function: analyze
               TargetPattern: binskimPattern
-              AnalyzeTargetBinskim: $(Build.SourcesDirectory)/artifacts/bin/**/*.dll;$(Build.SourcesDirectory)/artifacts/bin/**/*.exe
+              AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\*.dll;$(Build.SourcesDirectory)\artifacts\bin\*.exe
             condition: succeededOrFailed()
           - task: PublishTestResults@2
             displayName: 'Publish Unit Test Results'
