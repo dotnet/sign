@@ -67,6 +67,10 @@
       <Pack>true</Pack>
       <PackagePath>tools\$(TargetFramework)\any\tools</PackagePath>
     </Content>
+    <Content Include="$(RepositoryRootDirectory)\LICENSE.txt">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
     <Content Include="$(RepositoryRootDirectory)\THIRD-PARTY-NOTICES.txt">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
