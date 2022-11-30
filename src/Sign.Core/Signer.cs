@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Security.Authentication;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -75,6 +76,13 @@ namespace Sign.Core
 
             try
             {
+                using (X509Certificate2 certificate = await keyVaultService.GetCertificateAsync())
+                {
+                    ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
+
+                    certificateVerifier.Verify(certificate);
+                }
+
                 await Parallel.ForEachAsync(inputFiles, parallelOptions, async (input, token) =>
                 {
                     FileInfo output;

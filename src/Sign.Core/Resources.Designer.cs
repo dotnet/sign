@@ -61,6 +61,24 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The certificate is expired..
+        /// </summary>
+        internal static string CertificateIsExpired {
+            get {
+                return ResourceManager.GetString("CertificateIsExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate is not yet time valid..
+        /// </summary>
+        internal static string CertificateIsNotYetTimeValid {
+            get {
+                return ResourceManager.GetString("CertificateIsNotYetTimeValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The value cannot be an empty string..
         /// </summary>
         internal static string ValueCannotBeEmptyString {

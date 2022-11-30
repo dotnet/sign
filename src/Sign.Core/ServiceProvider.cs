@@ -54,6 +54,7 @@ namespace Sign.Core
             services.AddSingleton<IMakeAppxCli, MakeAppxCli>();
             services.AddSingleton<INuGetSignTool, NuGetSignTool>();
             services.AddSingleton<IOpenVsixSignTool, OpenVsixSignTool>();
+            services.AddSingleton<ICertificateVerifier, CertificateVerifier>();
             services.AddSingleton<ISigner, Signer>();
 
             return new ServiceProvider(services.BuildServiceProvider());
