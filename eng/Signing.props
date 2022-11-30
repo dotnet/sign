@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+   <PropertyGroup>
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSign Include="$(ArtifactsShippingPackagesDir)/*.nupkg" />
+  </ItemGroup>
+
+  <!--
+    These 3rd-party libraries are already 3rd party signed; however, we must add a second signature with this certificate.
+  -->
+  <ItemGroup>
+    <FileSignInfo Include="AzureSign.Core.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="NuGetKeyVaultSignTool.Core.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenVsixSignTool.Core.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="RSAKeyVaultProvider.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
+</Project>

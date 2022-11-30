@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Azure.Identity" Version="1.8.0" />
+    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.4.0" />
+    <PackageVersion Include="AzureSign.Core" Version="3.0.0" />
+    <PackageVersion Include="coverlet.collector" Version="3.1.2" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.25231-preview" />
+    <PackageVersion Include="Moq" Version="4.18.1" />
+    <PackageVersion Include="NuGetKeyVaultSignTool.Core" Version="3.2.3" />
+    <PackageVersion Include="OpenVsixSignTool.Core" Version="0.3.2" />
+    <PackageVersion Include="RSAKeyVaultProvider" Version="2.1.1" />
+    <PackageVersion Include="System.CommandLine" Version="$(GenAPISystemCommandLineVersion)" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="7.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="7.0.0" />
+  </ItemGroup>
+</Project>

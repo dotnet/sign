@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>sign</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+    <OutputType>Exe</OutputType>
+    <PackageDescription>.NET Sign CLI</PackageDescription>
+    <PackAsTool>true</PackAsTool>
+    <RollForward>Major</RollForward>
+    <RootNamespace>Sign.Cli</RootNamespace>
+    <SelfContained>false</SelfContained>
+    <ToolCommandName>sign</ToolCommandName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" IncludeAssets="none" PrivateAssets="all" />
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Sign.Cli.Test,PublicKey=0024000004800000940000000602000000240000525341310004000001000100b5fc90e7027f67871e773a8fde8938c81dd402ba65b9201d60593e96c492651e889cc13f1415ebb53fac1131ae0bd333c5ee6021672d9718ea31a8aebd0da0072f25d87dba6fc90ffd598ed4da35e44c398c454307e8e33b8426143daec9f596836f97c8f74750e5975c64e2189f45def46b2a2b1247adc3652bf5c308055da9</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>DynamicProxyGenAssembly2,PublicKey=0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <WinSdkBinDir Condition=" '$(WinSdkBinDir)' == '' ">$(NuGetPackageRoot)microsoft.windows.sdk.buildtools\10.0.25231-preview\bin\10.0.25231.0</WinSdkBinDir>
+    <NetSdkBinDir Condition=" '$(NetSdkBinDir)' == '' ">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools</NetSdkBinDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\appxsip.dll" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\appxpackaging.dll" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\opcservices.dll" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\makeappx.exe" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\makepri.exe" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\mssign32.dll" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\wintrust.dll" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\wintrust.dll.ini" />
+    <SdkFile64 Include="$(WinSdkBinDir)\x64\SignTool.exe.manifest" />
+
+    <SdkFile86 Include="$(NetSdkBinDir)\mage.exe" />
+  </ItemGroup>
+
+  <Target Name="PrebuildScript" BeforeTargets="CoreBuild">
+    <Copy Condition="'$(WinSdkBinDir)' != ''" SourceFiles="@(SdkFile64)" DestinationFolder="$(OutputPath)\tools\SDK\x64" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(WinSdkBinDir)' != ''" SourceFiles="@(SdkFile86)" DestinationFolder="$(OutputPath)\tools\SDK\x86" SkipUnchangedFiles="true" />
+
+    <Error Condition="'$(WinSdkBinDir)' == ''" Text="No supported WinSDK could be found!" />
+  </Target>
+
+  <ItemGroup>
+    <Content Include="$(OutputPath)\tools\**">
+      <Pack>true</Pack>
+      <PackagePath>tools\$(TargetFramework)\any\tools</PackagePath>
+    </Content>
+    <Content Include="$(RepositoryRootDirectory)\LICENSE.txt">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+    <Content Include="$(RepositoryRootDirectory)\THIRD-PARTY-NOTICES.txt">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+</Project>
