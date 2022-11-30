@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
@@ -25,9 +25,16 @@ namespace Sign.Core
 
             DateTime now = DateTime.Now;
 
-            if (now < certificate.NotBefore || certificate.NotAfter < now)
+            if (now < certificate.NotBefore)
             {
-                _logger.LogWarning("The certificate is not time valid.");
+                // See https://github.com/dotnet/roslyn-analyzers/issues/5626
+#pragma warning disable CA2254 // Template should be a static expression
+                _logger.LogWarning(Resources.CertificateIsNotYetTimeValid);
+            }
+            else if (certificate.NotAfter < now)
+            {
+                _logger.LogWarning(Resources.CertificateIsExpired);
+#pragma warning restore CA2254 // Template should be a static expression
             }
         }
     }

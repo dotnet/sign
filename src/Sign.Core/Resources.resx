@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CertificateIsExpired" xml:space="preserve">
+    <value>The certificate is expired.</value>
+  </data>
+  <data name="CertificateIsNotYetTimeValid" xml:space="preserve">
+    <value>The certificate is not yet time valid.</value>
+  </data>
   <data name="ValueCannotBeEmptyString" xml:space="preserve">
     <value>The value cannot be an empty string.</value>
   </data>

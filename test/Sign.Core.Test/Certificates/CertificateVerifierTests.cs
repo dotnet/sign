@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
@@ -34,7 +34,7 @@ namespace Sign.Core.Test
         [Fact]
         public void Verify_WhenCertificateIsNotYetTimeValid_LogsWarning()
         {
-            Logger logger = new();
+            Logger logger = new(Resources.CertificateIsNotYetTimeValid);
             CertificateVerifier verifier = new(logger);
             DateTimeOffset now = DateTimeOffset.Now;
 
@@ -51,7 +51,7 @@ namespace Sign.Core.Test
         [Fact]
         public void Verify_WhenCertificateIsExpired_LogsWarning()
         {
-            Logger logger = new();
+            Logger logger = new(Resources.CertificateIsExpired);
             CertificateVerifier verifier = new(logger);
             DateTimeOffset now = DateTimeOffset.Now;
 
@@ -98,7 +98,14 @@ namespace Sign.Core.Test
 
         private sealed class Logger : ILogger<ICertificateVerifier>
         {
+            private readonly string? _expectedMessage;
+
             internal int Log_CallCount { get; private set; }
+
+            internal Logger(string? expectedMessage = null)
+            {
+                _expectedMessage = expectedMessage;
+            }
 
             public IDisposable? BeginScope<TState>(TState state) where TState : notnull
             {
@@ -115,6 +122,10 @@ namespace Sign.Core.Test
                 ++Log_CallCount;
 
                 Assert.Equal(LogLevel.Warning, logLevel);
+
+                string actualMessage = formatter(state, exception);
+
+                Assert.Equal(_expectedMessage, actualMessage);
             }
 
             private sealed class NoOpDisposable : IDisposable
