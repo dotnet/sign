@@ -9,7 +9,7 @@ namespace Sign.Cli
     internal sealed class SignCommand : Command
     {
         internal SignCommand()
-            : base("sign", ".NET Sign CLI")
+            : base("sign", "Sign CLI")
         {
             CodeCommand codeCommand = new();
 
