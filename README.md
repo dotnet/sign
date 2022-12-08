@@ -28,22 +28,13 @@ You should also use the `filter` parameter with the file list to sign, something
 
 ## Best Practices
 
-* Isolate signing operations in a separate leg in your build pipeline.
-* Ensure that this CLI and all files to be signed are in a directory under your control.
-* Configure Azure Key Vault access with the following permissions:
+* Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices).
+* Configure Azure Key Vault access for your signing account to have the following minimal permissions:
   - Key permissions
-    - Key Management Operations
-      - Get
-      - List
     - Cryptographic Operations
-      - Verify
       - Sign
-  - Secret permissions
-    - Secret Management Operations
-      - Get
-      - List
   - Certificate permissions
     - Certificate Management Operations
       - Get
-      - List
-* Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices)
+* Isolate signing operations in a separate leg of your build pipeline.
+* Ensure that this CLI and all files to be signed are in a directory under your control.
