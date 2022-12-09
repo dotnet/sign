@@ -2,7 +2,7 @@
 
 ## Background
 
-Code signing is a way to provide tamper resistance to binary files and provide a way of establishing identity. There are different code signing mechanisms, but the most common on Windows and .NET are based on X.509 certificates. Other code signing formats may be based on PGP and other non-certificate-based systems.
+Code signing is a way to provide tamper resistance to binary files and provide a way of establishing identity. There are different code signing mechanisms, but the most common on Windows and .NET are based on X.509 certificates.
 
 There are several technology areas within the Windows and .NET ecosystem that support code signing:
 
@@ -46,7 +46,7 @@ An application/library package typically contains multiple assets that need to b
 
 To properly sign all assets, multiple signing tools must be used, and each tool has its own command line syntax, options, and default. The process of code signing is error-prone and hard to get right. The signing tool addresses these challenges by unifying the interface into a single set of options.
 
-## Plan
+## Proposal
 
 Create a modern signing tool to eventually replace the existing tools. The tool will handle all of our first party signing formats, orchestrate signing files in the right order, and have extensibility to support multiple raw signature providers. As our customers use a variety of clouds and HSM's, the extensibility will enable us to meet our customers' needs wherever they store their certificates.
 
@@ -71,7 +71,6 @@ The scope of the preview release will be limited to the existing funtionality cu
 **Non-Goals**
 
 - Strong Name signing won't be in v1; guidance is to use an snk not based on a cert. If easy, perhaps can revisit.
-- Support for Microsoft internal builds and signing services.
 - Containers, including Notary v2 support.
 - Extensibility. v1 will support different signing providers.
 - Support Authenticode on platforms other than Windows x64. Future work will be required to support ARM64 and non-Windows hosts. Support for certain file types may be limited due to platform support.
