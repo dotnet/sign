@@ -14,6 +14,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.25231-preview" />
     <PackageVersion Include="Moq" Version="4.18.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageVersion Include="NuGetKeyVaultSignTool.Core" Version="3.2.3" />
     <PackageVersion Include="OpenVsixSignTool.Core" Version="0.3.2" />
     <PackageVersion Include="RSAKeyVaultProvider" Version="2.1.1" />
