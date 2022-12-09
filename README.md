@@ -29,7 +29,7 @@ You should also use the `filter` parameter with the file list to sign, something
 ## Best Practices
 
 * Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices).
-* Configure Azure Key Vault access for your signing account to have the following minimal permissions:
+* [Configure an Azure Key Vault access policy](https://learn.microsoft.com/en-us/azure/key-vault/general/assign-access-policy?tabs=azure-portal) for your signing account to have minimal permissions:
   - Key permissions
     - Cryptographic Operations
       - Sign
@@ -38,3 +38,4 @@ You should also use the `filter` parameter with the file list to sign, something
       - Get
 * Isolate signing operations in a separate leg of your build pipeline.
 * Ensure that this CLI and all files to be signed are in a directory under your control.
+* Execute this CLI as a standard user.  Elevation is not required.
