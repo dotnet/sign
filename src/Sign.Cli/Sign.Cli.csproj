@@ -73,9 +73,13 @@
   </Target>
 
   <ItemGroup>
-    <Content Include="$(OutputPath)\tools\**">
+    <Content Include="@(SdkFile64)">
       <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools</PackagePath>
+      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+    </Content>
+    <Content Include="@(SdkFile86)">
+      <Pack>true</Pack>
+      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
     </Content>
     <Content Include="$(RepositoryRootDirectory)\LICENSE.txt">
       <Pack>true</Pack>
