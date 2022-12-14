@@ -32,7 +32,9 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <WinSdkBinDir Condition=" '$(WinSdkBinDir)' == '' ">$(NUGET_PACKAGES)microsoft.windows.sdk.buildtools\10.0.25231-preview\bin\10.0.25231.0</WinSdkBinDir>
+    <NuGetPackagesDirectory>$(NUGET_PACKAGES)</NuGetPackagesDirectory>
+    <NuGetPackagesDirectory Condition=" '$(NuGetPackagesDirectory)' == '' " >$(NuGetPackageRoot)</NuGetPackagesDirectory>
+    <WinSdkBinDir Condition=" '$(WinSdkBinDir)' == '' ">$(NuGetPackagesDirectory)microsoft.windows.sdk.buildtools\10.0.25231-preview\bin\10.0.25231.0</WinSdkBinDir>
     <NetSdkBinDir Condition=" '$(NetSdkBinDir)' == '' ">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools</NetSdkBinDir>
   </PropertyGroup>
 
@@ -68,7 +70,7 @@
       <ScriptFilePath Condition=" '$(ScriptFilePath)' == '' ">$(RepositoryRootDirectory)\scripts\VerifyNuGetPackage.ps1</ScriptFilePath>
     </PropertyGroup>
 
-    <Exec Command="$(PowerShellFilePath) -NonInteractive -executionpolicy Unrestricted -command &quot;&amp; { &amp;&apos;$(ScriptFilePath)&apos; &apos;$(ArtifactsShippingPackagesDir)&apos; } &quot;"
+    <Exec Command="$(PowerShellFilePath) -NonInteractive -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;&apos;$(ScriptFilePath)&apos; &apos;$(ArtifactsShippingPackagesDir)&apos; } &quot;"
           LogStandardErrorAsError="true" />
   </Target>
 
@@ -76,10 +78,12 @@
     <Content Include="@(SdkFile64)">
       <Pack>true</Pack>
       <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      <Visible>false</Visible>
     </Content>
     <Content Include="@(SdkFile86)">
       <Pack>true</Pack>
       <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
+      <Visible>false</Visible>
     </Content>
     <Content Include="$(RepositoryRootDirectory)\LICENSE.txt">
       <Pack>true</Pack>
@@ -90,5 +94,4 @@
       <PackagePath>\</PackagePath>
     </Content>
   </ItemGroup>
-
 </Project>
