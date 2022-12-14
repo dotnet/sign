@@ -32,6 +32,10 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <!--
+    Arcade uses its own NuGet packages folder in the repository's root directory.
+    Everything else (Visual Studio, dotnet.exe CLI, etc.) defaults to NuGet's global packages folder.
+    -->
     <NuGetPackagesDirectory>$(NUGET_PACKAGES)</NuGetPackagesDirectory>
     <NuGetPackagesDirectory Condition=" '$(NuGetPackagesDirectory)' == '' " >$(NuGetPackageRoot)</NuGetPackagesDirectory>
     <WinSdkBinDir Condition=" '$(WinSdkBinDir)' == '' ">$(NuGetPackagesDirectory)microsoft.windows.sdk.buildtools\10.0.25231-preview\bin\10.0.25231.0</WinSdkBinDir>
