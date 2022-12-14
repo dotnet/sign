@@ -43,7 +43,7 @@ Function VerifyPackage([System.IO.FileInfo] $packageFile, [string[]] $expectedEn
     }
 }
 
-[string[]] $packageFilePaths = [System.IO.Directory]::GetFiles('E:\git\sign\artifacts\packages\Release\Shipping', '*.nupkg')
+[string[]] $packageFilePaths = [System.IO.Directory]::GetFiles($PackageDirectoryPath, '*.nupkg')
 
 If ($packageFilePaths.Count -ne 1)
 {
