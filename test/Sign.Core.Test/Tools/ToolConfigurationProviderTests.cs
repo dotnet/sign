@@ -6,8 +6,18 @@ namespace Sign.Core.Test
 {
     public class ToolConfigurationProviderTests
     {
-        private readonly ToolConfigurationProvider _provider = new();
-        private readonly DirectoryInfo _rootDirectory = new(Path.GetDirectoryName(Environment.ProcessPath)!);
+        private static readonly AppRootDirectoryLocator DirectoryLocator = new();
+        private readonly ToolConfigurationProvider _provider = new(DirectoryLocator);
+        private readonly DirectoryInfo _rootDirectory = DirectoryLocator.Directory!;
+
+        [Fact]
+        public void Constructor_WhenAppRootDirectoryLocatorIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new ToolConfigurationProvider(appRootDirectoryLocator: null!));
+
+            Assert.Equal("appRootDirectoryLocator", exception.ParamName);
+        }
 
         [Fact]
         public void Mage_Always_ReturnsFile()

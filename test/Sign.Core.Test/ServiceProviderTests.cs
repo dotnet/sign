@@ -25,6 +25,7 @@ namespace Sign.Core.Test
 
             // Start of tests
             Assert.NotNull(serviceProvider.GetRequiredService<ILogger<ServiceProviderTests>>());
+            Assert.NotNull(serviceProvider.GetRequiredService<IAppRootDirectoryLocator>());
             Assert.NotNull(serviceProvider.GetRequiredService<IToolConfigurationProvider>());
             Assert.NotNull(serviceProvider.GetRequiredService<IMatcherFactory>());
             Assert.NotNull(serviceProvider.GetRequiredService<IFileListReader>());
