@@ -34,6 +34,7 @@ namespace Sign.Core
                 builder.SetMinimumLevel(logLevel);
             });
 
+            services.AddSingleton<IAppRootDirectoryLocator, AppRootDirectoryLocator>();
             services.AddSingleton<IToolConfigurationProvider, ToolConfigurationProvider>();
             services.AddSingleton<IMatcherFactory, MatcherFactory>();
             services.AddSingleton<IFileListReader, FileListReader>();

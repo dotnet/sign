@@ -20,8 +20,10 @@ namespace Sign.Cli
                 return ExitCode.Failed;
             }
 
-            string directory = Path.GetDirectoryName(Environment.ProcessPath!)!;
-            string baseDirectory = Path.Combine(directory, "tools", "SDK", "x64");
+            AppRootDirectoryLocator locator = new();
+            DirectoryInfo appRootDirectory = locator.Directory;
+
+            string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", "x64");
 
             //
             // Ensure we invoke wintrust!DllMain before we get too far.
@@ -54,7 +56,7 @@ namespace Sign.Cli
             }
         }
 
-        internal static Parser CreateParser(IServiceProvider? serviceProvider = null)
+        internal static Parser CreateParser()
         {
             SignCommand command = new();
 

@@ -13,9 +13,11 @@ namespace Sign.Core
         public FileInfo SignToolManifest { get; }
 
         // Dependency injection requires a public constructor.
-        public ToolConfigurationProvider()
+        public ToolConfigurationProvider(IAppRootDirectoryLocator appRootDirectoryLocator)
         {
-            _rootDirectory = new DirectoryInfo(Path.GetDirectoryName(Environment.ProcessPath)!);
+            ArgumentNullException.ThrowIfNull(appRootDirectoryLocator, nameof(appRootDirectoryLocator));
+
+            _rootDirectory = appRootDirectoryLocator.Directory;
 
             DirectoryInfo sdkDirectory = new(Path.Combine(_rootDirectory.FullName, "tools", "SDK"));
 
