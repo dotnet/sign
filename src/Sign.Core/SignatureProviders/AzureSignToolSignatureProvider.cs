@@ -161,7 +161,7 @@ namespace Sign.Core
 
             if (success)
             {
-                _logger.LogInformation("Sign tool completed successfuly");
+                _logger.LogInformation("Sign tool completed successfully");
                 return true;
             }
 
