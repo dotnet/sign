@@ -179,7 +179,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => _provider.SignAsync(
                     files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256)));
+                    new SignOptions(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"))));
 
             Assert.Equal("files", exception.ParamName);
         }

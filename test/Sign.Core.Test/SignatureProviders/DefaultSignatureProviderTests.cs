@@ -10,6 +10,8 @@ namespace Sign.Core.Test
 {
     public class DefaultSignatureProviderTests
     {
+        private static readonly Uri TimestampServiceUrl = new("http://timestamp.test");
+
         [Fact]
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
@@ -86,7 +88,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => provider.SignAsync(
                     files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256)));
+                    new SignOptions(HashAlgorithmName.SHA256, TimestampServiceUrl)));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -124,7 +126,7 @@ namespace Sign.Core.Test
 
             await provider.SignAsync(
                 Enumerable.Empty<FileInfo>(),
-                new SignOptions(HashAlgorithmName.SHA256));
+                new SignOptions(HashAlgorithmName.SHA256, TimestampServiceUrl));
 
             mock.VerifyAll();
         }

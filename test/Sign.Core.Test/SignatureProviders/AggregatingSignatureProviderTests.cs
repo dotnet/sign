@@ -10,7 +10,7 @@ namespace Sign.Core.Test
 {
     public partial class AggregatingSignatureProviderTests
     {
-        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256);
+        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"));
 
         [Fact]
         public void Constructor_WhenSignatureProvidersIsNull_Throws()
@@ -147,7 +147,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => provider.SignAsync(
                     files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256)));
+                    new SignOptions(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"))));
 
             Assert.Equal("files", exception.ParamName);
         }
