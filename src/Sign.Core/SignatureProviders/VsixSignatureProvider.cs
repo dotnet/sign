@@ -40,7 +40,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            Logger.LogInformation("Signing OpenVsixSignTool job with {count} files", files.Count());
+            Logger.LogInformation(Resources.VsixSignatureProviderSigning, files.Count());
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
             using (RSA rsa = await _keyVaultService.GetRsaAsync())

@@ -128,15 +128,13 @@ namespace Sign.Core
 
                     //Do action
 
-                    // HttpResponseMessage response;
-
-                    logger.LogInformation($"Submitting '{input.FullName}' for signing.");
+                    logger.LogInformation(Resources.SubmittingFileForSigning, input.FullName);
 
                     // this might have two files, one containing the file list
                     // The first will be the package and the second is the filter
                     using (TemporaryDirectory temporaryDirectory = new(directoryService))
                     {
-                        var inputFileName = Path.Combine(temporaryDirectory.Directory.FullName, Path.GetRandomFileName());
+                        string inputFileName = Path.Combine(temporaryDirectory.Directory.FullName, Path.GetRandomFileName());
                         // However check its extension as it might be important (e.g. zip, bundle, etc)
                         if (signatureProvider.CanSign(input))
                         {
@@ -144,7 +142,7 @@ namespace Sign.Core
                             inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
                         }
 
-                        logger.LogInformation("SignAsync called for {source}. Using {inputFileName} locally.", input.FullName, inputFileName);
+                        logger.LogInformation(Resources.SignAsyncCalled, input.FullName, inputFileName);
 
                         if (input.Length > 0)
                         {
@@ -158,7 +156,7 @@ namespace Sign.Core
                         fi.CopyTo(output.FullName, overwrite: true);
                     }
 
-                    logger.LogInformation("Successfully signed '{filePath}' in {millseconds} ms", output.FullName, sw.ElapsedMilliseconds);
+                    logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, output.FullName, sw.ElapsedMilliseconds);
                 });
 
             }

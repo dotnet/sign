@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Azure.Core;
@@ -21,16 +22,16 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, "Name of the certificate in Azure Key Vault.");
-        internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, "Client ID to authenticate to Azure Key Vault.");
-        internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, "Client secret to authenticate to Azure Key Vault.");
-        internal Argument<string?> FileArgument { get; } = new("file(s)", "File to sign.");
-        internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, "Managed identity to authenticate to Azure Key Vault.");
-        internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, "Tenant ID to authenticate to Azure Key Vault.");
-        internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, "URL to an Azure Key Vault.");
+        internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, AzureKeyVaultResources.CertificateOptionDescription);
+        internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, AzureKeyVaultResources.ClientIdOptionDescription);
+        internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, AzureKeyVaultResources.ClientSecretOptionDescription);
+        internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
+        internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
+        internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, AzureKeyVaultResources.TenantIdOptionDescription);
+        internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, AzureKeyVaultResources.UrlOptionDescription);
 
         internal AzureKeyVaultCommand(CodeCommand codeCommand)
-            : base("azure-key-vault", "Use Azure Key Vault.")
+            : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
 
@@ -74,7 +75,7 @@ namespace Sign.Cli
 
                 if (string.IsNullOrEmpty(fileArgument))
                 {
-                    context.Console.Error.WriteLine("A file or glob is required.");
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.MissingFileValue);
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
@@ -89,7 +90,10 @@ namespace Sign.Cli
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {
-                    context.Console.Error.WriteLine("--base-directory argument must be rooted if specified.");
+                    context.Console.Error.WriteLine(
+                        FormatMessage(
+                            AzureKeyVaultResources.InvalidBaseDirectoryValue,
+                            _codeCommand.BaseDirectoryOption));
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
@@ -106,7 +110,7 @@ namespace Sign.Cli
                 {
                     if (Path.IsPathRooted(fileArgument))
                     {
-                        context.Console.Error.WriteLine("The file path cannot be rooted when using a glob. Use a path relative to the working directory.");
+                        context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidFileValue);
                         context.ExitCode = ExitCode.InvalidOptions;
 
                         return;
@@ -156,14 +160,17 @@ namespace Sign.Cli
 
                 if (inputFiles.Count == 0)
                 {
-                    context.Console.Error.WriteLine("No inputs found to sign.");
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.NoFilesToSign);
                     context.ExitCode = ExitCode.NoInputsFound;
                     return;
                 }
 
                 if (inputFiles.Any(file => !file.Exists))
                 {
-                    context.Console.Error.WriteLine("Some files do not exist.  Try using a different --base-directory or a fully qualified file path.");
+                    context.Console.Error.WriteLine(
+                        FormatMessage(
+                            AzureKeyVaultResources.SomeFilesDoNotExist,
+                            _codeCommand.BaseDirectoryOption));
 
                     foreach (FileInfo file in inputFiles.Where(file => !file.Exists))
                     {
@@ -186,7 +193,12 @@ namespace Sign.Cli
                         string.IsNullOrEmpty(clientId) ||
                         string.IsNullOrEmpty(secret))
                     {
-                        context.Console.Error.WriteLine("If not using managed identity, all of the options are required: --azure-key-vault-tenant-id, --azure-key-vault-client-id, --azure-key-vault-secret.");
+                        context.Console.Error.WriteLine(
+                            FormatMessage(
+                                AzureKeyVaultResources.InvalidClientSecretCredential,
+                                TenantIdOption,
+                                ClientIdOption,
+                                ClientSecretOption));
                         context.ExitCode = ExitCode.NoInputsFound;
 
                         return;
@@ -223,6 +235,15 @@ namespace Sign.Cli
             }
 
             return Path.Combine(baseDirectory.FullName, file);
+        }
+
+        private static string FormatMessage(string format, params IdentifierSymbol[] symbols)
+        {
+            string[] formattedSymbols = symbols
+                .Select(symbol => $"--{symbol.Name}")
+                .ToArray();
+
+            return string.Format(CultureInfo.CurrentCulture, format, formattedSymbols);
         }
     }
 }

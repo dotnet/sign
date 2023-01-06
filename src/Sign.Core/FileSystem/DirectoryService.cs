@@ -24,7 +24,7 @@ namespace Sign.Core
         {
             string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-            _logger.LogTrace("Creating directory {path}.", path);
+            _logger.LogTrace(Resources.CreatingDirectory, path);
 
             DirectoryInfo directory = Directory.CreateDirectory(path);
 
@@ -44,7 +44,7 @@ namespace Sign.Core
                 return;
             }
 
-            _logger.LogTrace("Deleting directory {path}.", directory.FullName);
+            _logger.LogTrace(Resources.DeletingDirectory, directory.FullName);
 
 
             try
@@ -54,12 +54,12 @@ namespace Sign.Core
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "An exception occurred while attempting to delete directory {path}", directory.FullName);
+                _logger.LogWarning(ex, Resources.ExceptionWhileDeletingDirectory, directory.FullName);
 
                 return;
             }
 
-            _logger.LogTrace("Directory {path} deleted.", directory.FullName);
+            _logger.LogTrace(Resources.DeletedDirectory, directory.FullName);
 
             // The directory is not guaranteed to be gone since there could be
             // other open handles. Wait, up to half a second, until the directory is gone.
@@ -72,7 +72,7 @@ namespace Sign.Core
 
             if (directory.Exists)
             {
-                _logger.LogTrace("Directory {path} still exists.", directory.FullName);
+                _logger.LogTrace(Resources.DirectoryNotDeleted, directory.FullName);
             }
         }
 

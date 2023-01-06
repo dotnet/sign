@@ -33,7 +33,7 @@ namespace Sign.Core
             // Append a signature
             using (OpcPackage package = OpcPackage.Open(file.FullName, OpcPackageFileMode.ReadWrite))
             {
-                Logger.LogInformation("Signing {fileName}", file.FullName);
+                Logger.LogInformation(Resources.SigningFile, file.FullName);
 
                 OpcPackageSignatureBuilder signBuilder = package.CreateSignatureBuilder();
                 signBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
@@ -48,7 +48,7 @@ namespace Sign.Core
                     if (result == TimestampResult.Failed)
                     {
                         failed = true;
-                        Logger.LogError("Error timestamping VSIX");
+                        Logger.LogError(Resources.ErrorSigningVsix);
                     }
                 }
             }

@@ -15,7 +15,7 @@ namespace Sign.Core
                 var buffer = new byte[2];
                 if (stream.CanRead)
                 {
-                    var read = stream.Read(buffer, 0, 2);
+                    int read = stream.Read(buffer, offset: 0, count: 2);
                     if (read == 2)
                     {
                         // Look for the magic MZ header 

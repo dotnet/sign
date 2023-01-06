@@ -50,7 +50,7 @@ namespace Sign.Core
             TemporaryDirectory = new TemporaryDirectory(_directoryService);
 
             _logger.LogInformation(
-                "Extracting container file {AppxFilePath} to {DirectoryPath}.",
+                Resources.OpeningContainer,
                 _appx.FullName,
                 TemporaryDirectory.Directory.FullName);
 

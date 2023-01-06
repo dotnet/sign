@@ -4,6 +4,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 
@@ -11,17 +12,17 @@ namespace Sign.Cli
 {
     internal sealed class CodeCommand : Command
     {
-        internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(new[] { "-b", "--base-directory" }, ParseBaseDirectoryOption, description: "Base directory for files to override the working directory.");
-        internal Option<string> DescriptionOption { get; } = new(new[] { "-d", "--description" }, "Description of the signing certificate.");
-        internal Option<Uri?> DescriptionUrlOption { get; } = new(new[] { "-u", "--description-url" }, ParseUrl, description: "Description URL of the signing certificate.");
-        internal Option<HashAlgorithmName> FileDigestOption { get; } = new(new[] { "-fd", "--file-digest" }, ParseHashAlgorithmName, description: "Digest algorithm to hash the file with. Allowed values are sha256, sha384, and sha512.");
-        internal Option<string?> FileListOption = new(new[] { "-fl", "--file-list" }, "Path to file containing paths of files to sign within an archive.");
-        internal Option<int> MaxConcurrencyOption { get; } = new(new[] { "-m", "--max-concurrency" }, ParseMaxConcurrencyOption, description: "Maximum concurrency (default is 4)");
-        internal Option<string?> OutputOption { get; } = new(new[] { "-o", "--output" }, "Output file or directory. If omitted, overwrites input file.");
-        internal Option<string?> PublisherNameOption { get; } = new(new[] { "-pn", "--publisher-name" }, "Publisher name (ClickOnce).");
-        internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(new[] { "-td", "--timestamp-digest" }, ParseHashAlgorithmName, description: "Used with the -t switch to request a digest algorithm used by the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.");
-        internal Option<Uri?> TimestampUrlOption { get; } = new(new[] { "-t", "--timestamp-url" }, ParseUrl, description: "RFC 3161 timestamp server URL.");
-        internal Option<LogLevel> VerbosityOption { get; } = new(new[] { "-v", "--verbosity" }, () => LogLevel.Warning, "Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].");
+        internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(new[] { "-b", "--base-directory" }, ParseBaseDirectoryOption, description: Resources.BaseDirectoryOptionDescription);
+        internal Option<string> DescriptionOption { get; } = new(new[] { "-d", "--description" }, Resources.DescriptionOptionDescription);
+        internal Option<Uri?> DescriptionUrlOption { get; } = new(new[] { "-u", "--description-url" }, ParseUrl, description: Resources.DescriptionUrlOptionDescription);
+        internal Option<HashAlgorithmName> FileDigestOption { get; } = new(new[] { "-fd", "--file-digest" }, ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
+        internal Option<string?> FileListOption = new(new[] { "-fl", "--file-list" }, Resources.FileListOptionDescription);
+        internal Option<int> MaxConcurrencyOption { get; } = new(new[] { "-m", "--max-concurrency" }, ParseMaxConcurrencyOption, description: Resources.MaxConcurrencyOptionDescription);
+        internal Option<string?> OutputOption { get; } = new(new[] { "-o", "--output" }, Resources.OutputOptionDescription);
+        internal Option<string?> PublisherNameOption { get; } = new(new[] { "-pn", "--publisher-name" }, Resources.PublisherNameOptionDescription);
+        internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(new[] { "-td", "--timestamp-digest" }, ParseHashAlgorithmName, description: Resources.TimestampDigestOptionDescription);
+        internal Option<Uri?> TimestampUrlOption { get; } = new(new[] { "-t", "--timestamp-url" }, ParseUrl, description: Resources.TimestampUrlOptionDescription);
+        internal Option<LogLevel> VerbosityOption { get; } = new(new[] { "-v", "--verbosity" }, () => LogLevel.Warning, Resources.VerbosityOptionDescription);
 
         internal CodeCommand()
             : base("code", "Sign binaries and containers.")
@@ -53,12 +54,10 @@ namespace Sign.Cli
 
         private static DirectoryInfo ParseBaseDirectoryOption(ArgumentResult result)
         {
-            const string ErrorMessage = "A fully rooted directory path is required.";
-
             if (result.Tokens.Count != 1 ||
                 string.IsNullOrWhiteSpace(result.Tokens.Single().Value))
             {
-                result.ErrorMessage = ErrorMessage;
+                result.ErrorMessage = FormatMessage(Resources.InvalidBaseDirectoryValue, result.Argument);
 
                 return new DirectoryInfo(Environment.CurrentDirectory);
             }
@@ -70,7 +69,7 @@ namespace Sign.Cli
                 return new DirectoryInfo(value);
             }
 
-            result.ErrorMessage = ErrorMessage;
+            result.ErrorMessage = FormatMessage(Resources.InvalidBaseDirectoryValue, result.Argument);
 
             return new DirectoryInfo(Environment.CurrentDirectory);
         }
@@ -81,7 +80,7 @@ namespace Sign.Cli
                 !int.TryParse(result.Tokens.Single().Value, out int value) ||
                 value < 1)
             {
-                result.ErrorMessage = "A number value greater than or equal to 1 is required.";
+                result.ErrorMessage = FormatMessage(Resources.InvalidMaxConcurrencyValue, result.Argument);
 
                 return default;
             }
@@ -110,7 +109,7 @@ namespace Sign.Cli
                     return HashAlgorithmName.SHA512;
 
                 default:
-                    result.ErrorMessage = "Unsupported hash algorithm.  Valid values are sha256, sha384, and sha512.";
+                    result.ErrorMessage = FormatMessage(Resources.InvalidDigestValue, result.Argument);
 
                     return HashAlgorithmName.SHA256;
             }
@@ -129,6 +128,11 @@ namespace Sign.Cli
             }
 
             return uri;
+        }
+
+        private static string FormatMessage(string format, Argument argument)
+        {
+            return string.Format(CultureInfo.CurrentCulture, format, $"--{argument.Name}");
         }
     }
 }
