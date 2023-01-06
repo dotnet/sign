@@ -122,7 +122,7 @@ namespace Sign.Cli
                 !(string.Equals(Uri.UriSchemeHttp, uri.Scheme, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(Uri.UriSchemeHttps, uri.Scheme, StringComparison.OrdinalIgnoreCase)))
             {
-                result.ErrorMessage = $"Unsupported value for --{result.Argument.Name}.  The value must be an absolute HTTP or HTTPS URL.";
+                result.ErrorMessage = FormatMessage(Resources.InvalidUrlValue, result.Argument);
 
                 return null;
             }

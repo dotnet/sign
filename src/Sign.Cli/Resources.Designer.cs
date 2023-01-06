@@ -142,6 +142,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL..
+        /// </summary>
+        internal static string InvalidUrlValue {
+            get {
+                return ResourceManager.GetString("InvalidUrlValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Maximum concurrency (default is 4)..
         /// </summary>
         internal static string MaxConcurrencyOptionDescription {

@@ -147,6 +147,10 @@
     <value>Invalid value for {0}. The value must be a number value greater than or equal to 1.</value>
     <comment>{0} is the option name (e.g.:  --max-concurrency)</comment>
   </data>
+  <data name="InvalidUrlValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</value>
+    <comment>{0} is the option name (e.g.:  --timestamp-url)</comment>
+  </data>
   <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
     <value>Maximum concurrency (default is 4).</value>
   </data>
