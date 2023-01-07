@@ -10,7 +10,7 @@ namespace Sign.Core.Test
 {
     public class DefaultSignatureProviderTests
     {
-        private static readonly Uri TimestampServiceUrl = new("http://timestamp.test");
+        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"));
 
         [Fact]
         public void Constructor_WhenServiceProviderIsNull_Throws()
@@ -86,9 +86,7 @@ namespace Sign.Core.Test
             DefaultSignatureProvider provider = CreateWithAzureSignTool();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(
-                    files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256, TimestampServiceUrl)));
+                () => provider.SignAsync(files: null!, _options));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -99,9 +97,8 @@ namespace Sign.Core.Test
             DefaultSignatureProvider provider = CreateWithAzureSignTool();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(
-                    Enumerable.Empty<FileInfo>(),
-                    options: null!));
+                () => provider.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
+
             Assert.Equal("options", exception.ParamName);
         }
 
@@ -124,9 +121,7 @@ namespace Sign.Core.Test
 
             DefaultSignatureProvider provider = new(serviceProvider);
 
-            await provider.SignAsync(
-                Enumerable.Empty<FileInfo>(),
-                new SignOptions(HashAlgorithmName.SHA256, TimestampServiceUrl));
+            await provider.SignAsync(Enumerable.Empty<FileInfo>(), _options);
 
             mock.VerifyAll();
         }

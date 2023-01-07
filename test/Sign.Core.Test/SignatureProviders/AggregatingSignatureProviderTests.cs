@@ -145,9 +145,7 @@ namespace Sign.Core.Test
             AggregatingSignatureProvider provider = CreateProvider();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(
-                    files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"))));
+                () => provider.SignAsync(files: null!, _options));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -158,9 +156,7 @@ namespace Sign.Core.Test
             AggregatingSignatureProvider provider = CreateProvider();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(
-                    Enumerable.Empty<FileInfo>(),
-                    options: null!));
+                () => provider.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
 
             Assert.Equal("options", exception.ParamName);
         }
