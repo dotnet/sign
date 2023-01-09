@@ -17,7 +17,7 @@ namespace Sign.Core
             string? publisherName,
             string? description,
             Uri? descriptionUrl,
-            Uri? timestampUrl,
+            Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,

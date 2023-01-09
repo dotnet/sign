@@ -13,14 +13,14 @@ namespace Sign.Cli
     {
         internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(new[] { "-b", "--base-directory" }, ParseBaseDirectoryOption, description: "Base directory for files to override the working directory.");
         internal Option<string> DescriptionOption { get; } = new(new[] { "-d", "--description" }, "Description of the signing certificate.");
-        internal Option<Uri> DescriptionUrlOption { get; } = new(new[] { "-u", "--description-url" }, "Description URL of the signing certificate.");
+        internal Option<Uri?> DescriptionUrlOption { get; } = new(new[] { "-u", "--description-url" }, ParseUrl, description: "Description URL of the signing certificate.");
         internal Option<HashAlgorithmName> FileDigestOption { get; } = new(new[] { "-fd", "--file-digest" }, ParseHashAlgorithmName, description: "Digest algorithm to hash the file with. Allowed values are sha256, sha384, and sha512.");
         internal Option<string?> FileListOption = new(new[] { "-fl", "--file-list" }, "Path to file containing paths of files to sign within an archive.");
         internal Option<int> MaxConcurrencyOption { get; } = new(new[] { "-m", "--max-concurrency" }, ParseMaxConcurrencyOption, description: "Maximum concurrency (default is 4)");
         internal Option<string?> OutputOption { get; } = new(new[] { "-o", "--output" }, "Output file or directory. If omitted, overwrites input file.");
         internal Option<string?> PublisherNameOption { get; } = new(new[] { "-pn", "--publisher-name" }, "Publisher name (ClickOnce).");
         internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(new[] { "-td", "--timestamp-digest" }, ParseHashAlgorithmName, description: "Used with the -t switch to request a digest algorithm used by the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.");
-        internal Option<Uri> TimestampUrlOption { get; } = new(new[] { "-t", "--timestamp-url" }, "RFC 3161 timestamp server URL. If this option is not specified, the signed file will not be timestamped.");
+        internal Option<Uri?> TimestampUrlOption { get; } = new(new[] { "-t", "--timestamp-url" }, ParseUrl, description: "RFC 3161 timestamp server URL.");
         internal Option<LogLevel> VerbosityOption { get; } = new(new[] { "-v", "--verbosity" }, () => LogLevel.Warning, "Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].");
 
         internal CodeCommand()
@@ -28,6 +28,7 @@ namespace Sign.Cli
         {
             DescriptionOption.IsRequired = true;
             DescriptionUrlOption.IsRequired = true;
+            TimestampUrlOption.IsRequired = true;
 
             MaxConcurrencyOption.SetDefaultValue(4);
             FileDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
@@ -113,6 +114,21 @@ namespace Sign.Cli
 
                     return HashAlgorithmName.SHA256;
             }
+        }
+
+        private static Uri? ParseUrl(ArgumentResult result)
+        {
+            if (result.Tokens.Count != 1 ||
+                !Uri.TryCreate(result.Tokens[0].Value, UriKind.Absolute, out Uri? uri) ||
+                !(string.Equals(Uri.UriSchemeHttp, uri.Scheme, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(Uri.UriSchemeHttps, uri.Scheme, StringComparison.OrdinalIgnoreCase)))
+            {
+                result.ErrorMessage = $"Unsupported value for --{result.Argument.Name}.  The value must be an absolute HTTP or HTTPS URL.";
+
+                return null;
+            }
+
+            return uri;
         }
     }
 }

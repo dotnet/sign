@@ -16,7 +16,7 @@ namespace Sign.Core
         internal Matcher? AntiMatcher { get; }
         internal HashAlgorithmName FileHashAlgorithm { get; } = HashAlgorithmName.SHA256;
         internal HashAlgorithmName TimestampHashAlgorithm { get; } = HashAlgorithmName.SHA256;
-        internal Uri? TimestampService { get; }
+        internal Uri TimestampService { get; }
 
         internal SignOptions(
             string? publisherName,
@@ -24,7 +24,7 @@ namespace Sign.Core
             Uri? descriptionUrl,
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
-            Uri? timestampService,
+            Uri timestampService,
             Matcher? matcher,
             Matcher? antiMatcher)
         {
@@ -38,9 +38,9 @@ namespace Sign.Core
             AntiMatcher = antiMatcher;
         }
 
-        internal SignOptions(HashAlgorithmName fileHashAlgorithm)
+        internal SignOptions(HashAlgorithmName fileHashAlgorithm, Uri timestampService)
             : this(publisherName: null, description: null, descriptionUrl: null, fileHashAlgorithm,
-                  HashAlgorithmName.SHA256, timestampService: null, matcher: null, antiMatcher: null)
+                HashAlgorithmName.SHA256, timestampService, matcher: null, antiMatcher: null)
         {
         }
     }
