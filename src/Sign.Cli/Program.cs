@@ -15,7 +15,7 @@ namespace Sign.Cli
         {
             if (!Environment.Is64BitProcess)
             {
-                Console.Error.WriteLine("Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.");
+                Console.Error.WriteLine(Resources.x86NotSupported);
 
                 return ExitCode.Failed;
             }
@@ -36,7 +36,7 @@ namespace Sign.Cli
             Kernel32.LoadLibraryW($@"{baseDirectory}\wintrust.dll");
             Kernel32.LoadLibraryW($@"{baseDirectory}\mssign32.dll");
 
-            // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken             
+            // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken.
             string windir = Environment.GetEnvironmentVariable("windir")!;
             string netfxDir = $@"{windir}\Microsoft.NET\Framework64\v4.0.30319";
 

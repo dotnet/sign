@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using AzureSign.Core;
@@ -71,7 +72,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            _logger.LogInformation("Signing SignTool job with {count} files", files.Count());
+            _logger.LogInformation(Resources.AzureSignToolSignatureProviderSigning, files.Count());
 
             TimeStampConfiguration timestampConfiguration;
 
@@ -98,7 +99,9 @@ namespace Sign.Core
                 {
                     if (!await SignAsync(signer, file, options))
                     {
-                        throw new Exception($"Could not append sign {file}");
+                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+                        throw new Exception(message);
                     }
                 });
             }
@@ -111,13 +114,14 @@ namespace Sign.Core
             SignOptions options)
         {
             TimeSpan retry = TimeSpan.FromSeconds(5);
+            const int maxAttempts = 3;
             var attempt = 1;
 
             do
             {
                 if (attempt > 1)
                 {
-                    _logger.LogInformation("Performing attempt #{attempt} of 3 attempts after {seconds}s", attempt, retry.TotalSeconds);
+                    _logger.LogInformation(Resources.SigningAttempt, attempt, maxAttempts, retry.TotalSeconds);
                     await Task.Delay(retry);
                     retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
                 }
@@ -129,9 +133,9 @@ namespace Sign.Core
 
                 ++attempt;
 
-            } while (attempt <= 3);
+            } while (attempt <= maxAttempts);
 
-            _logger.LogError("Failed to sign. Attempts exceeded.");
+            _logger.LogError(Resources.SigningFailedAfterAllAttempts);
 
             return false;
         }
@@ -140,7 +144,7 @@ namespace Sign.Core
         {
             FileInfo manifestFile = _toolConfigurationProvider.SignToolManifest;
 
-            _logger.LogInformation("Signing using {fileName}", file.FullName);
+            _logger.LogInformation(Resources.SigningFile, file.FullName);
 
             var success = false;
             var code = 0;
@@ -150,7 +154,12 @@ namespace Sign.Core
             {
                 using (var ctx = new Kernel32.ActivationContext(manifestFile))
                 {
-                    code = signer.SignFile(file.FullName, options.Description, options.DescriptionUrl?.AbsoluteUri, null, _logger);
+                    code = signer.SignFile(
+                        file.FullName,
+                        options.Description,
+                        options.DescriptionUrl?.AbsoluteUri,
+                        pageHashing: null,
+                        _logger);
                     success = code == S_OK;
                 }
             }
@@ -161,11 +170,11 @@ namespace Sign.Core
 
             if (success)
             {
-                _logger.LogInformation("Sign tool completed successfully");
+                _logger.LogInformation(Resources.SigningSucceeded);
                 return true;
             }
 
-            _logger.LogError("Sign tool completed with error {errorCode}", code);
+            _logger.LogError(Resources.SigningFailedWithError, code);
 
             return false;
         }

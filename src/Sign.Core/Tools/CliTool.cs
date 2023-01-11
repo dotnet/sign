@@ -3,6 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
@@ -33,18 +34,18 @@ namespace Sign.Core
                     Arguments = args
                 };
 
-                Logger.LogInformation("Running {fileName} with parameters: '{args}'", Cli.Name, args);
+                Logger.LogInformation(Resources.RunningCli, Cli.Name, args);
 
                 process.Start();
 
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
 
-                Logger.LogInformation("{fileName} Out {output}", Cli.Name, output);
+                Logger.LogInformation(Resources.CliStandardOutput, Cli.Name, output);
 
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    Logger.LogInformation("{fileName} Err {error}", Cli.Name, error);
+                    Logger.LogInformation(Resources.CliStandardError, Cli.Name, error);
                 }
 
                 using (CancellationTokenSource cancellationTokenSource = new())
@@ -55,7 +56,9 @@ namespace Sign.Core
 
                     if (cancellationTokenSource.IsCancellationRequested)
                     {
-                        Logger.LogError("Error: {fileName} took too long to respond {exitCode}", Cli.Name, process.ExitCode);
+                        Logger.LogError(Resources.ProcessDidNotExitInTime, Cli.Name, process.ExitCode);
+
+                        string message;
 
                         try
                         {
@@ -63,11 +66,21 @@ namespace Sign.Core
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"{Cli.Name} timed out and could not be killed", ex);
+                            message = string.Format(CultureInfo.CurrentCulture, Resources.ProcessCouldNotBeKilled, Cli.Name);
+
+                            throw new Exception(message, ex);
                         }
 
-                        Logger.LogError("Error: {fileName} took too long to respond {exitCode}", Cli.Name, process.ExitCode);
-                        throw new Exception($"{Cli.Name} took too long to respond with {process.StartInfo.Arguments}");
+                        Logger.LogError(Resources.ProcessDidNotExitInTime, Cli.Name, process.ExitCode);
+
+                        message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Resources.ProcessDidNotExitInTimeWithArguments,
+                            Cli.Name,
+                            process.ExitCode,
+                            process.StartInfo.Arguments);
+
+                        throw new Exception(message);
                     }
 
                     return process.ExitCode;

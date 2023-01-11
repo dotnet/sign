@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
@@ -60,7 +61,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            Logger.LogInformation("Signing Mage job with {count} files", files.Count());
+            Logger.LogInformation(Resources.ClickOnceSignatureProviderSigning, files.Count());
 
             var args = "-a sha256RSA";
             if (!string.IsNullOrWhiteSpace(options.PublisherName))
@@ -123,7 +124,9 @@ namespace Sign.Core
 
                         if (!await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
                         {
-                            throw new Exception($"Could not sign {manifestFile}");
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
+
+                            throw new Exception(message);
                         }
 
                         // Read the publisher name from the manifest for use below
@@ -161,7 +164,9 @@ namespace Sign.Core
 
                             if (!await SignAsync(fileArgs, fileToSign, rsaPrivateKey, certificate, options))
                             {
-                                throw new Exception($"Could not sign {fileToSign.FullName}");
+                                string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, fileToSign.FullName);
+
+                                throw new Exception(message);
                             }
                         }
 
@@ -202,13 +207,13 @@ namespace Sign.Core
 
             if (exitCode == 0)
             {
-                // Now add the signature 
+                // Now add the signature
                 _manifestSigner.Sign(file, certificate, rsaPrivateKey, options);
 
                 return true;
             }
 
-            Logger.LogError("Error: mage.exe returned {exitCode}", exitCode);
+            Logger.LogError(Resources.SigningFailedWithError, exitCode);
 
             return false;
         }

@@ -39,7 +39,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            _logger.LogInformation("Editing AppInstaller job with {count} files", files.Count());
+            _logger.LogInformation(Resources.EditingAppInstaller, files.Count());
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync().ConfigureAwait(false))
             {

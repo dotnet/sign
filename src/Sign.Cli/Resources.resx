@@ -117,118 +117,62 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AzureSignToolSignatureProviderSigning" xml:space="preserve">
-    <value>Signing SignTool job with {count} files.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="BaseDirectoryOptionDescription" xml:space="preserve">
+    <value>Base directory for files.  Overrides the current working directory.</value>
   </data>
-  <data name="CertificateIsExpired" xml:space="preserve">
-    <value>The certificate is expired.</value>
+  <data name="CodeCommandDescription" xml:space="preserve">
+    <value>Sign binaries and containers.</value>
   </data>
-  <data name="CertificateIsNotYetTimeValid" xml:space="preserve">
-    <value>The certificate is not yet time valid.</value>
+  <data name="DescriptionOptionDescription" xml:space="preserve">
+    <value>Description of the signing certificate.</value>
   </data>
-  <data name="ClickOnceSignatureProviderSigning" xml:space="preserve">
-    <value>Signing Mage job with {count} files.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="DescriptionUrlOptionDescription" xml:space="preserve">
+    <value>Description URL of the signing certificate.</value>
   </data>
-  <data name="CliStandardError" xml:space="preserve">
-    <value>{fileName} Err {error}</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="FileDigestOptionDescription" xml:space="preserve">
+    <value>Digest algorithm to hash files with. Allowed values are sha256, sha384, and sha512.</value>
   </data>
-  <data name="CliStandardOutput" xml:space="preserve">
-    <value>{fileName} Out {output}</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="FileListOptionDescription" xml:space="preserve">
+    <value>Path to file containing paths of files to sign within an archive.</value>
   </data>
-  <data name="CreatingDirectory" xml:space="preserve">
-    <value>Creating directory {path}.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="InvalidBaseDirectoryValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be a fully rooted directory path.</value>
+    <comment>{0} is the option name (e.g.:  --base-directory)</comment>
   </data>
-  <data name="DeletedDirectory" xml:space="preserve">
-    <value>Directory {path} deleted.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="InvalidDigestValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be sha256, sha384, or sha512.</value>
+    <comment>{0} is the option name (e.g.:  --file-digest)</comment>
   </data>
-  <data name="DeletingDirectory" xml:space="preserve">
-    <value>Deleting directory {path}.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="InvalidMaxConcurrencyValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be a number value greater than or equal to 1.</value>
+    <comment>{0} is the option name (e.g.:  --max-concurrency)</comment>
   </data>
-  <data name="DirectoryNotDeleted" xml:space="preserve">
-    <value>Directory {path} still exists.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="InvalidUrlValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</value>
+    <comment>{0} is the option name (e.g.:  --timestamp-url)</comment>
   </data>
-  <data name="EditingAppInstaller" xml:space="preserve">
-    <value>Editing AppInstaller job with {count} files.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
+    <value>Maximum concurrency (default is 4).</value>
   </data>
-  <data name="ErrorSigningVsix" xml:space="preserve">
-    <value>An unspecified error occurred during VSIX signing.</value>
+  <data name="OutputOptionDescription" xml:space="preserve">
+    <value>Output file or directory. If omitted, input files will be overwritten.</value>
   </data>
-  <data name="ExceptionWhileDeletingDirectory" xml:space="preserve">
-    <value>An exception occurred while attempting to delete directory {path}.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="PublisherNameOptionDescription" xml:space="preserve">
+    <value>Publisher name (ClickOnce).</value>
   </data>
-  <data name="OpeningContainer" xml:space="preserve">
-    <value>Extracting container {ContainerFilePath} to {DirectoryPath}.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="SignCommandDescription" xml:space="preserve">
+    <value>Sign CLI</value>
   </data>
-  <data name="ProcessCouldNotBeKilled" xml:space="preserve">
-    <value>{0} timed out and could not be killed.</value>
-    <comment>{0} is a file path.</comment>
+  <data name="TimestampDigestOptionDescription" xml:space="preserve">
+    <value>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</value>
   </data>
-  <data name="ProcessDidNotExitInTime" xml:space="preserve">
-    <value>{fileName} took too long to respond. The process exit code is {exitCode}.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="TimestampUrlOptionDescription" xml:space="preserve">
+    <value>RFC 3161 timestamp server URL.</value>
   </data>
-  <data name="ProcessDidNotExitInTimeWithArguments" xml:space="preserve">
-    <value>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</value>
-    <comment>{0} is a file name.  {1} is a process exit code.  {2} is process arguments.</comment>
+  <data name="VerbosityOptionDescription" xml:space="preserve">
+    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
   </data>
-  <data name="RunningCli" xml:space="preserve">
-    <value>Running {fileName} with parameters: '{args}'.</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="SavingContainer" xml:space="preserve">
-    <value>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="SignAsyncCalled" xml:space="preserve">
-    <value>SignAsync called for {filePath}. Using {localFilePath} locally.</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="SigningAttempt" xml:space="preserve">
-    <value>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds}s.</value>
-    <comment>Do not localize value inside {}.  The final "s" after "{seconds}" represents the unit for seconds not the plural for seconds.</comment>
-  </data>
-  <data name="SigningFailed" xml:space="preserve">
-    <value>Could not sign {0}.</value>
-    <comment>{0} is a file path.</comment>
-  </data>
-  <data name="SigningFailedAfterAllAttempts" xml:space="preserve">
-    <value>Failed to sign. Attempts exceeded.</value>
-  </data>
-  <data name="SigningFailedWithError" xml:space="preserve">
-    <value>Signing failed with error {errorCode}.</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="SigningFile" xml:space="preserve">
-    <value>Signing {filePath}.</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="SigningSucceeded" xml:space="preserve">
-    <value>Signing succeeded.</value>
-  </data>
-  <data name="SigningSucceededWithTimeElapsed" xml:space="preserve">
-    <value>Successfully signed {filePath} in {millseconds} ms</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="SubmittingFileForSigning" xml:space="preserve">
-    <value>Submitting {filePath} for signing.</value>
-    <comment>Do not localize value inside {}.</comment>
-  </data>
-  <data name="ValueCannotBeEmptyString" xml:space="preserve">
-    <value>The value cannot be an empty string.</value>
-  </data>
-  <data name="VsixSignatureProviderSigning" xml:space="preserve">
-    <value>Signing OpenVsixSignTool job with {count} files.</value>
-    <comment>Do not localize value inside {}.</comment>
+  <data name="x86NotSupported" xml:space="preserve">
+    <value>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</value>
   </data>
 </root>
