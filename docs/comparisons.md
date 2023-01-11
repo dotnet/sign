@@ -33,7 +33,7 @@ macOS | ❌ | ✔️ | ❌
 Requirement | NuGet CLI | dotnet CLI | Sign CLI
 -- | -- | -- | --
 .NET Framework | ✔️ (>= 4.7.2) | ❌ | ❌
-.NET SDK | ❌ | ✔️ (>= 7) | ❌
+.NET SDK | ❌ | ✔️ (>= 5 on Windows, >= 7 on Linux, N/A on macOS) | ❌
 .NET Runtime | ❌ | ❌ | ✔️ (>= 6)
 
 ## References
