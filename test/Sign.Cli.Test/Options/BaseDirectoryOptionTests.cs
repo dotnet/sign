@@ -3,13 +3,14 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine.Parsing;
+using System.Globalization;
 
 namespace Sign.Cli.Test
 {
     public class BaseDirectoryOptionTests : DirectoryInfoOptionTests
     {
         public BaseDirectoryOptionTests()
-            : base(new CodeCommand().BaseDirectoryOption, "-b", "--base-directory", isRequired: false)
+            : base(new CodeCommand().BaseDirectoryOption, "-b", "--base-directory")
         {
         }
 
@@ -27,7 +28,9 @@ namespace Sign.Cli.Test
         [InlineData(@".\directory")]
         public void Option_WhenValueIsNotRooted_HasError(string relativePath)
         {
-            VerifyHasError($"{LongOption} {relativePath}");
+            VerifyHasErrors(
+                $"{LongOption} {relativePath}",
+                string.Format(CultureInfo.CurrentCulture, Resources.InvalidBaseDirectoryValue, "--base-directory"));
         }
 
         [Fact]

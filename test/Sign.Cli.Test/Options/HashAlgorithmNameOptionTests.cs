@@ -12,8 +12,8 @@ namespace Sign.Cli.Test
     {
         private static readonly HashAlgorithmName ExpectedValue = HashAlgorithmName.SHA256;
 
-        protected HashAlgorithmNameOptionTests(Option<HashAlgorithmName> option, string shortOption, string longOption, bool isRequired)
-            : base(option, shortOption, longOption, ExpectedValue, isRequired)
+        protected HashAlgorithmNameOptionTests(Option<HashAlgorithmName> option, string shortOption, string longOption)
+            : base(option, shortOption, longOption, ExpectedValue)
         {
         }
 
@@ -47,7 +47,9 @@ namespace Sign.Cli.Test
         [InlineData("sha-256")]
         public void Verbosity_WhenValueIsInvalid_HasError(string value)
         {
-            VerifyHasError($"{LongOption} {value}");
+            VerifyHasErrors(
+                $"{LongOption} {value}",
+                GetFormattedResourceString(Resources.InvalidDigestValue, LongOption));
         }
 
         [Fact]

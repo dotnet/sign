@@ -10,15 +10,29 @@ namespace Sign.Cli.Test
     {
         private static readonly Uri ExpectedValue = new("https://domain.test");
 
-        protected UriOptionTests(Option<Uri?> option, string shortOption, string longOption, bool isRequired)
-            : base(option, shortOption, longOption, ExpectedValue, isRequired)
+        protected UriOptionTests(Option<Uri?> option, string shortOption, string longOption)
+            : base(option, shortOption, longOption, ExpectedValue)
         {
         }
 
         [Fact]
         public void Option_WhenValueFailsToParse_HasError()
         {
-            VerifyHasError("3");
+            const string value = "3";
+
+            if (Option.IsRequired)
+            {
+                VerifyHasErrors(
+                    value,
+                    GetOptionIsRequiredMessage(ShortOption),
+                    GetUnrecognizedCommandOrArgumentMessage(value));
+            }
+            else
+            {
+                VerifyHasErrors(
+                    value,
+                    GetUnrecognizedCommandOrArgumentMessage(value));
+            }
         }
 
         [Theory]
@@ -37,7 +51,9 @@ namespace Sign.Cli.Test
         [InlineData("file:///file.bin")]
         public void Option_WithShortOptionAndInvalidUrl_HasErrors(string invalidUrl)
         {
-            VerifyHasError($"{ShortOption} {invalidUrl}");
+            VerifyHasErrors(
+                $"{ShortOption} {invalidUrl}",
+                GetFormattedResourceString(Resources.InvalidUrlValue, LongOption));
         }
 
         protected override void VerifyEqual(Uri? expectedValue, Uri? actualValue)
