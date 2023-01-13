@@ -14,6 +14,10 @@
     <!-- Only use release versions.  Pre-release versions are signed with an untrusted certificate. -->
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
     <PackageVersion Include="Moq" Version="4.18.1" />
+    <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
+    <PackageVersion Include="NuGet.Packaging" Version="6.4.0" />
+    <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
+    <PackageVersion Include="NuGet.Protocol" Version="6.4.0" />
     <PackageVersion Include="NuGetKeyVaultSignTool.Core" Version="3.2.3" />
     <PackageVersion Include="OpenVsixSignTool.Core" Version="0.3.2" />
     <PackageVersion Include="RSAKeyVaultProvider" Version="2.1.1" />
