@@ -20,13 +20,16 @@ Can sign files (e.g.: *.dll) inside package | ❌ | ❌ | ✔️
 Can verify signed package | ✔️ | ✔️ | ❌
 
 ### Platform support
+
 Platform | NuGet CLI | dotnet CLI | Sign CLI
 -- | -- | -- | --
 Windows x86 | ✔️ | ✔️ | ❌
 Windows x64 | ✔️ | ✔️ | ✔️
 Windows ARM64 | ❌ | ✔️ | ❌
-Linux | ❌ | ✔️ | ❌
-macOS | ❌ | ✔️ | ❌
+Linux | ❌ | ✔️* | ❌
+macOS | ❌ | ✔️* | ❌
+
+\* NuGet signs packages not files within a package (e.g.:  DLL's).  On every platform where signing is supported, it is possible to sign a package that contains signable files which are unsigned.  Because Authenticode signing is only available on Windows, signing a NuGet package on Linux or macOS can more easily result in a signed package with unsigned files inside.  See https://github.com/NuGet/Home/issues/12362.
 
 ### Requirements
 
