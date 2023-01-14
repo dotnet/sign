@@ -205,7 +205,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]..
+        ///   Looks up a localized string similar to Sets the verbosity level. Allowed values are None, Critical, Error, Warning, Information, Debug, and Trace..
         /// </summary>
         internal static string VerbosityOptionDescription {
             get {

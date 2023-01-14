@@ -174,8 +174,8 @@
     <comment>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</comment>
   </data>
   <data name="VerbosityOptionDescription" xml:space="preserve">
-    <value>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</value>
-    <comment>{Locked="q[uiet]","m[inimal]","n[ormal]","d[etailed]","diag[nostic]"} are option values and should not be localized.</comment>
+    <value>Sets the verbosity level. Allowed values are None, Critical, Error, Warning, Information, Debug, and Trace.</value>
+    <comment>{Locked="None","Critical","Error","Warning","Information","Debug","Trace"} are option values and should not be localized.</comment>
   </data>
   <data name="x86NotSupported" xml:space="preserve">
     <value>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</value>
