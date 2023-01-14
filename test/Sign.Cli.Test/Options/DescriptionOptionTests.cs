@@ -9,7 +9,7 @@ namespace Sign.Cli.Test
         private const string ExpectedValue = "peach";
 
         public DescriptionOptionTests()
-            : base(new CodeCommand().DescriptionOption, "-d", "--description", ExpectedValue, isRequired: true)
+            : base(new CodeCommand().DescriptionOption, "-d", "--description", ExpectedValue)
         {
         }
     }
