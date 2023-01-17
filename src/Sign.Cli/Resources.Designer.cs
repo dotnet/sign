@@ -79,6 +79,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Deployment name (ClickOnce)..
+        /// </summary>
+        internal static string DeploymentNameOptionDescription {
+            get {
+                return ResourceManager.GetString("DeploymentNameOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Description of the signing certificate..
         /// </summary>
         internal static string DescriptionOptionDescription {

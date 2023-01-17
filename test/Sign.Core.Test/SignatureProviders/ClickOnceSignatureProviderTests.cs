@@ -238,6 +238,7 @@ namespace Sign.Core.Test
                     "MyApp_1_0_0_0", "MyApp.json.deploy");
 
                 SignOptions options = new(
+                    "DeploymentName",
                     "PublisherName",
                     "Description",
                     new Uri("https://description.test"),
@@ -271,12 +272,12 @@ namespace Sign.Core.Test
 
                     IDirectoryService directoryService = Mock.Of<IDirectoryService>();
                     Mock<IMageCli> mageCli = new();
-                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.PublisherName}\"";
+                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.DeploymentName}\"";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);
 
-                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.PublisherName}\" -appm \"{manifestFile.FullName}\" -pub \"Test certificate (DO NOT TRUST)\"  -SupportURL https://description.test/";
+                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.DeploymentName}\" -appm \"{manifestFile.FullName}\" -pub \"{options.PublisherName}\"  -SupportURL https://description.test/";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);

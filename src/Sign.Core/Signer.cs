@@ -33,6 +33,7 @@ namespace Sign.Core
             string? outputFile,
             FileInfo? fileList,
             DirectoryInfo baseDirectory,
+            string? deploymentName,
             string? publisherName,
             string? description,
             Uri? descriptionUrl,
@@ -67,6 +68,7 @@ namespace Sign.Core
             keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName);
 
             SignOptions signOptions = new(
+                deploymentName,
                 publisherName,
                 description,
                 descriptionUrl,

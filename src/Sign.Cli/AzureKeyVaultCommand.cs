@@ -54,6 +54,7 @@ namespace Sign.Cli
             this.SetHandler(async (InvocationContext context) =>
             {
                 DirectoryInfo baseDirectory = context.ParseResult.GetValueForOption(_codeCommand.BaseDirectoryOption)!;
+                string? deploymentName = context.ParseResult.GetValueForOption(_codeCommand.DeploymentNameOption);
                 string? publisherName = context.ParseResult.GetValueForOption(_codeCommand.PublisherNameOption);
                 string? description = context.ParseResult.GetValueForOption(_codeCommand.DescriptionOption);
                 // This option is required.  If its value fails to parse we won't have reached here,
@@ -214,6 +215,7 @@ namespace Sign.Cli
                     output,
                     fileList,
                     baseDirectory,
+                    deploymentName,
                     publisherName,
                     description,
                     descriptionUrl,

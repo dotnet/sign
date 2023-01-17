@@ -14,6 +14,7 @@ namespace Sign.Cli
     {
         internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(new[] { "-b", "--base-directory" }, ParseBaseDirectoryOption, description: Resources.BaseDirectoryOptionDescription);
         internal Option<string> DescriptionOption { get; } = new(new[] { "-d", "--description" }, Resources.DescriptionOptionDescription);
+        internal Option<string?> DeploymentNameOption { get; } = new(new[] { "-dn", "--deployment-name" }, Resources.DeploymentNameOptionDescription);
         internal Option<Uri?> DescriptionUrlOption { get; } = new(new[] { "-u", "--description-url" }, ParseUrl, description: Resources.DescriptionUrlOptionDescription);
         internal Option<HashAlgorithmName> FileDigestOption { get; } = new(new[] { "-fd", "--file-digest" }, ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
         internal Option<string?> FileListOption = new(new[] { "-fl", "--file-list" }, Resources.FileListOptionDescription);
@@ -39,6 +40,7 @@ namespace Sign.Cli
             // Global options are available on the adding command and all subcommands.
             // Order here is significant as it represents the order in which options are
             // displayed in help.
+            AddGlobalOption(DeploymentNameOption);
             AddGlobalOption(DescriptionOption);
             AddGlobalOption(DescriptionUrlOption);
             AddGlobalOption(BaseDirectoryOption);
