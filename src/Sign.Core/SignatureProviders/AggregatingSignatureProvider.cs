@@ -64,7 +64,7 @@ namespace Sign.Core
 
             // See if any of them are archives
             List<FileInfo> archives = (from file in files
-                                       where _containerProvider.IsZipContainer(file)
+                                       where _containerProvider.IsZipContainer(file) || _containerProvider.IsNuGetContainer(file)
                                        select file).ToList();
 
             // expand the archives and sign recursively first

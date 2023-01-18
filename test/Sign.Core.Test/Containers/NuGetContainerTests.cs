@@ -6,16 +6,17 @@ using System.IO.Compression;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NuGet.Packaging.Signing;
 
 namespace Sign.Core.Test
 {
-    public class ZipContainerTests
+    public class NuGetContainerTests
     {
         [Fact]
         public void Constructor_WhenZipFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ZipContainer(
+                () => new NuGetContainer(
                     zipFile: null!,
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
@@ -28,7 +29,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenDirectoryServiceIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ZipContainer(
+                () => new NuGetContainer(
                     new FileInfo("a"),
                     directoryService: null!,
                     Mock.Of<IFileMatcher>(),
@@ -41,7 +42,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenFileMatcherIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ZipContainer(
+                () => new NuGetContainer(
                     new FileInfo("a"),
                     Mock.Of<IDirectoryService>(),
                     fileMatcher: null!,
@@ -54,7 +55,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ZipContainer(
+                () => new NuGetContainer(
                     new FileInfo("a"),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
@@ -73,7 +74,7 @@ namespace Sign.Core.Test
             {
                 DirectoryInfo? directory;
 
-                using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+                using (NuGetContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
                 {
                     await container.OpenAsync();
 
@@ -89,13 +90,13 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task OpenAsync_WhenZipFileIsNonEmpty_ExtractsZipToDirectory()
+        public async Task OpenAsync_WhenNupkgFileIsNonEmpty_ExtractsNupkgToDirectory()
         {
             string[] expectedFileNames = new[] { ".a", "b", "c.d" };
             FileInfo zipFile = CreateZipFile(expectedFileNames);
 
             using (DirectoryServiceStub directoryService = new())
-            using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+            using (NuGetContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
             {
                 await container.OpenAsync();
 
@@ -109,13 +110,13 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task SaveAsync_WhenZipFileIsNonEmpty_CompressesZipFromDirectory()
+        public async Task SaveAsync_WhenNupkgFileIsNonEmpty_CompressesNupkgFromDirectory()
         {
             string[] fileNames = new[] { "a" };
             FileInfo zipFile = CreateZipFile(fileNames);
 
             using (DirectoryServiceStub directoryService = new())
-            using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+            using (NuGetContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
             {
                 await container.OpenAsync();
 
@@ -130,6 +131,27 @@ namespace Sign.Core.Test
                 Assert.Equal(2, zip.Entries.Count);
                 Assert.NotNull(zip.GetEntry("a"));
                 Assert.NotNull(zip.GetEntry("b"));
+            }
+        }
+
+        [Fact]
+        public async Task SaveAsync_WhenNupkgFileHasSignatureFile_RemovesSignatureFile()
+        {
+            string[] fileNames = new[] { "a", SigningSpecifications.V1.SignaturePath };
+            FileInfo zipFile = CreateZipFile(fileNames);
+
+            using (DirectoryServiceStub directoryService = new())
+            using (NuGetContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+            {
+                await container.OpenAsync();
+                await container.SaveAsync();
+            }
+
+            using (FileStream stream = zipFile.OpenRead())
+            using (ZipArchive zip = new(stream, ZipArchiveMode.Read))
+            {
+                ZipArchiveEntry entry = Assert.Single(zip.Entries);
+                Assert.Equal(fileNames[0], entry.Name);
             }
         }
 

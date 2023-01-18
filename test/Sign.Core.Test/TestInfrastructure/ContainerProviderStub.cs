@@ -33,6 +33,11 @@ namespace Sign.Core.Test
             return _containerProvider.IsAppxContainer(file);
         }
 
+        public bool IsNuGetContainer(FileInfo file)
+        {
+            return _containerProvider.IsNuGetContainer(file);
+        }
+
         public bool IsZipContainer(FileInfo file)
         {
             return _containerProvider.IsZipContainer(file);

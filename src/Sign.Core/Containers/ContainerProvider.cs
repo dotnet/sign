@@ -15,6 +15,7 @@ namespace Sign.Core
         private readonly IKeyVaultService _keyVaultService;
         private readonly ILogger _logger;
         private readonly IMakeAppxCli _makeAppxCli;
+        private readonly HashSet<string> _nuGetExtensions;
         private readonly HashSet<string> _zipExtensions;
 
         // Dependency injection requires a public constructor.
@@ -53,13 +54,17 @@ namespace Sign.Core
                 ".msix"
             };
 
+            _nuGetExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".nupkg",
+                ".snupkg"
+            };
+
             _zipExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appxupload",
                 ".clickonce",
                 ".msixupload",
-                ".nupkg",
-                ".snupkg",
                 ".vsix",
                 ".zip"
             };
@@ -77,6 +82,13 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
             return _appxExtensions.Contains(file.Extension);
+        }
+
+        public bool IsNuGetContainer(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return _nuGetExtensions.Contains(file.Extension);
         }
 
         public bool IsZipContainer(FileInfo file)
@@ -103,6 +115,11 @@ namespace Sign.Core
             if (IsZipContainer(file))
             {
                 return new ZipContainer(file, _directoryService, _fileMatcher, _logger);
+            }
+
+            if (IsNuGetContainer(file))
+            {
+                return new NuGetContainer(file, _directoryService, _fileMatcher, _logger);
             }
 
             return null;

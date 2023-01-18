@@ -130,6 +130,7 @@ namespace Sign.Core.Test
                     if (!isDirectory &&
                         (_containerProvider.IsAppxBundleContainer(file) ||
                         _containerProvider.IsAppxContainer(file) ||
+                        _containerProvider.IsNuGetContainer(file) ||
                         _containerProvider.IsZipContainer(file)))
                     {
                         files.Add(file);

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class ZipContainer : Container
+    internal class ZipContainer : Container
     {
         private readonly IDirectoryService _directoryService;
         private readonly ILogger _logger;

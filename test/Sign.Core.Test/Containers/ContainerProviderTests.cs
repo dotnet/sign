@@ -91,7 +91,6 @@ namespace Sign.Core.Test
             Assert.Equal("logger", exception.ParamName);
         }
 
-
         [Fact]
         public void IsAppxBundleContainer_WhenFileIsNull_Throws()
         {
@@ -159,6 +158,35 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void IsNuGetContainer_WhenFileIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _provider.IsNuGetContainer(file: null!));
+
+            Assert.Equal("file", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(".zip")]
+        public void IsNuGetContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
+        {
+            FileInfo file = new($"file{extension}");
+
+            Assert.False(_provider.IsNuGetContainer(file));
+        }
+
+        [Theory]
+        [InlineData(".nupkg")]
+        [InlineData(".snupkg")]
+        [InlineData(".NuPkg")] // test case insensitivity
+        public void IsNuGetContainer_WhenFileExtensionMatches_ReturnsTrue(string extension)
+        {
+            FileInfo file = new($"file{extension}");
+
+            Assert.True(_provider.IsNuGetContainer(file));
+        }
+
+        [Fact]
         public void IsZipContainer_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
@@ -182,8 +210,6 @@ namespace Sign.Core.Test
         [InlineData(".appxupload")]
         [InlineData(".clickonce")]
         [InlineData(".msixupload")]
-        [InlineData(".nupkg")]
-        [InlineData(".snupkg")]
         [InlineData(".vsix")]
         [InlineData(".zip")]
         [InlineData(".ZIP")] // test case insensitivity
