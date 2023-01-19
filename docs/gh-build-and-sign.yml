@@ -1,0 +1,90 @@
+name: Build and Sign
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:    
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.x
+        
+    - name: Build Package
+      run: dotnet pack --configuration Release src/AClassLibrary/AClassLibrary.csproj
+      
+    - name: Upload signing file list
+      uses: actions/upload-artifact@v3
+      with:
+        name: config
+        path: config
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: BuildArtifacts
+        path: src/AClassLibrary/bin/Release/**/*.nupkg
+    
+  sign:
+    needs: build
+    runs-on: windows-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    permissions:
+      id-token: write # Required for requesting the JWT
+      
+    steps:    
+    - name: Download signing config
+      uses: actions/download-artifact@v3
+      with:
+        name: config
+        path: config
+        
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: BuildArtifacts
+        path: BuildArtifacts
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.x
+        
+    - name: Install Sign CLI tool
+      run: dotnet tool install --tool-path . sign --version 0.9.0-beta.23063.3
+      
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        allow-no-subscriptions: true
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Sign artifacts
+      shell: pwsh
+      run: >
+        ./sign code azure-key-vault
+        **/*.nupkg
+        --timestamp-url "http://timestamp.digicert.com"
+        --base-directory "${{ github.workspace }}/BuildArtifacts"
+        --file-list "${{ github.workspace }}/config/filelist.txt"
+        --publisher-name "CodeSignDemo"
+        --description "CodeSignDemo"
+        --description-url "https://github.com/novotnyllc/CodeSignDemo"
+        --azure-key-vault-managed-identity true
+        --azure-key-vault-url "${{ secrets.KEY_VAULT_URL }}"
+        --azure-key-vault-certificate "${{ secrets.KEY_VAULT_CERTIFICATE_ID }}"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: SignedArtifacts
+        path: BuildArtifacts

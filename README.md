@@ -28,6 +28,7 @@ You should also use the `filter` parameter with the file list to sign, something
 
 ## Best Practices
 
+* Create a [ServicePrincipal with minimum permissions](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). Note that you do not need to assign any subscription-level roles to this identity. Only access to Key Vault is required.
 * Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices).
 * [Configure an Azure Key Vault access policy](https://learn.microsoft.com/en-us/azure/key-vault/general/assign-access-policy?tabs=azure-portal) for your signing account to have minimal permissions:
   - Key permissions
@@ -39,3 +40,24 @@ You should also use the `filter` parameter with the file list to sign, something
 * Isolate signing operations in a separate leg of your build pipeline.
 * Ensure that this CLI and all files to be signed are in a directory under your control.
 * Execute this CLI as a standard user.  Elevation is not required.
+* Use [OIDC authentication from your GitHub Action to Azure](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Cwindows#use-the-azure-login-action-with-openid-connect).
+
+## Sample Workflows
+
+* [Azure DevOps Pipelines](./docs/azdo-build-and-sign.yml)
+* [GitHub Actions](./docs/gh-build-and-sign.yml)
+
+Code signing is a complex process that may involve multiple signing formats and artifact types. Some artifacts are containers that contain other signable file types. For example, NuGet Packages (`.nupkg`) frequently contain `.dll` files. The signing tool will sign all files inside-out, starting with the most nested files and then the outer files, ensuring everything is signed in the correct order.
+
+Signing `.exe`/`.dll` files, and other Authenticode file types is only possible on Windows at this time. The recommended solution is to use a multi-stage/job build where the signing steps run on Windows. Running code signing on a separate stage to ensure secrets aren't exposed to the build stage.
+
+### Build Variables
+
+The following variables are used by the signing build:
+* `Tenant Id` Azure AD tenant
+* `Client Id` / `Application Id` ServicePrincipal identifier
+* `Key Vault Url` Url to Key Vault. Must be a Premium Sku for EV code signing certificates and all certificates issued after June 2023
+* `Certificate Id` Id of the certificate in Key Vault. 
+* `Client Secret` for Azure DevOps Pipelines
+* `Subscription Id` for GitHub Actions
+
