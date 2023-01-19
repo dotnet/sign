@@ -1,4 +1,4 @@
-# Sign CLI
+# OneSign CLI
 
 [<img align="right" src="https://xunit.net/images/dotnet-fdn-logo.png" width="100" />](https://www.dotnetfoundation.org/)
 
@@ -29,7 +29,7 @@ You should also use the `filter` parameter with the file list to sign, something
 ## Best Practices
 
 * Create a [ServicePrincipal with minimum permissions](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). Note that you do not need to assign any subscription-level roles to this identity. Only access to Key Vault is required.
-* Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices).
+* Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices). The Premium SKU is required for code signing certificates to meet key storage requirements.
 * [Configure an Azure Key Vault access policy](https://learn.microsoft.com/en-us/azure/key-vault/general/assign-access-policy?tabs=azure-portal) for your signing account to have minimal permissions:
   - Key permissions
     - Cryptographic Operations
@@ -49,11 +49,12 @@ You should also use the `filter` parameter with the file list to sign, something
 
 Code signing is a complex process that may involve multiple signing formats and artifact types. Some artifacts are containers that contain other signable file types. For example, NuGet Packages (`.nupkg`) frequently contain `.dll` files. The signing tool will sign all files inside-out, starting with the most nested files and then the outer files, ensuring everything is signed in the correct order.
 
-Signing `.exe`/`.dll` files, and other Authenticode file types is only possible on Windows at this time. The recommended solution is to use a multi-stage/job build where the signing steps run on Windows. Running code signing on a separate stage to ensure secrets aren't exposed to the build stage.
+Signing `.exe`/`.dll` files, and other Authenticode file types is only possible on Windows at this time. The recommended solution is to build on one agent and sign on another using jobs or stages where the signing steps run on Windows. Running code signing on a separate stage to ensure secrets aren't exposed to the build stage.
 
 ### Build Variables
 
-The following variables are used by the signing build:
+The following information is needed for the signing build:
+
 * `Tenant Id` Azure AD tenant
 * `Client Id` / `Application Id` ServicePrincipal identifier
 * `Key Vault Url` Url to Key Vault. Must be a Premium Sku for EV code signing certificates and all certificates issued after June 2023
@@ -61,3 +62,11 @@ The following variables are used by the signing build:
 * `Client Secret` for Azure DevOps Pipelines
 * `Subscription Id` for GitHub Actions
 
+## Creating a code signing certificate in Azure Key Vault
+
+Code signing certificates must use the `RSA-HSM` key type to ensure the private keys are stored in a FIPS 140-2 compliant manner. While you can import a certificate from a PFX file, if available, the most secure option is to create a new Certificate Signing Request to provide to your certificate authority, and then merge in the public certificate they issue. Detailed steps are available [here](https://learn.microsoft.com/en-us/answers/questions/732422/ev-code-signing-with-azure-keyvault-and-azure-pipe).
+
+
+## Migrating from the legacy code signing service
+
+If you've been using the legacy code signing service, using `SignClient.exe` to upload files for signing, you can use your existing certificate and Key Vault with this new tool. You will need to create a new ServicePrincipal and assign it permissions as described above.
