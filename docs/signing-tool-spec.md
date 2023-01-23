@@ -2,7 +2,7 @@
 
 ## Background
 
-Code signing is a way to provide tamper resistance to binary files and provide a way of establishing identity. There are different code signing mechanisms, but the most common on Windows and .NET are based on X.509 certificates.
+Code signing is a way to provide tamper detection to binary files and provide a way of establishing identity. There are different code signing mechanisms, but the most common on Windows and .NET are based on X.509 certificates.
 
 There are several technology areas within the Windows and .NET ecosystem that support code signing:
 
