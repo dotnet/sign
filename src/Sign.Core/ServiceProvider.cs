@@ -26,7 +26,9 @@ namespace Sign.Core
             return _serviceProvider.GetService(serviceType);
         }
 
-        internal static ServiceProvider CreateDefault(LogLevel logLevel = LogLevel.Information)
+        internal static ServiceProvider CreateDefault(
+            LogLevel logLevel = LogLevel.Information,
+            ILoggerProvider? loggerProvider = null)
         {
             IServiceCollection services = new ServiceCollection();
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
@@ -41,9 +43,14 @@ namespace Sign.Core
 
             services.AddLogging(builder =>
             {
-                builder.SetMinimumLevel(logLevel)
+                builder = builder.SetMinimumLevel(logLevel)
                     .AddConfiguration(loggingSection)
                     .AddConsole();
+
+                if (loggerProvider is not null)
+                {
+                    builder.AddProvider(loggerProvider);
+                }
             });
 
             services.AddSingleton<IAppRootDirectoryLocator, AppRootDirectoryLocator>();

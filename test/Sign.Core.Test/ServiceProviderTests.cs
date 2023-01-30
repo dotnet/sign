@@ -51,5 +51,93 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<ICertificateVerifier>());
             Assert.NotNull(serviceProvider.GetRequiredService<ISigner>());
         }
+
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Debug)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.None)]
+        public void CreateDefault_Always_ConfiguresLoggingVerbosity(LogLevel logLevel)
+        {
+            TestLoggerProvider loggerProvider = new();
+            ServiceProvider serviceProvider = ServiceProvider.CreateDefault(logLevel, loggerProvider);
+
+            ILogger logger = serviceProvider.GetRequiredService<ILogger<ServiceProviderTests>>();
+
+            logger.LogTrace("trace");
+            logger.LogDebug("debug");
+            logger.LogInformation("information");
+            logger.LogWarning("warning");
+            logger.LogError("error");
+            logger.LogCritical("error");
+
+            LoggerSpy loggerSpy = Assert.Single(loggerProvider.Loggers);
+
+            Assert.Equal(LogLevel.None - logLevel, loggerSpy.Logs.Count);
+
+            Assert.Equal(logLevel <= LogLevel.Trace ? 1 : 0, loggerSpy.Logs.Count(pair => pair.Key == LogLevel.Trace));
+            Assert.Equal(logLevel <= LogLevel.Debug ? 1 : 0, loggerSpy.Logs.Count(pair => pair.Key == LogLevel.Debug));
+            Assert.Equal(logLevel <= LogLevel.Information ? 1 : 0, loggerSpy.Logs.Count(pair => pair.Key == LogLevel.Information));
+            Assert.Equal(logLevel <= LogLevel.Warning ? 1 : 0, loggerSpy.Logs.Count(pair => pair.Key == LogLevel.Warning));
+            Assert.Equal(logLevel <= LogLevel.Error ? 1 : 0, loggerSpy.Logs.Count(pair => pair.Key == LogLevel.Error));
+            Assert.Equal(logLevel <= LogLevel.Critical ? 1 : 0, loggerSpy.Logs.Count(pair => pair.Key == LogLevel.Critical));
+        }
+
+        private sealed class TestLoggerProvider : ILoggerProvider
+        {
+            private readonly List<LoggerSpy> _loggers = new();
+
+            internal IReadOnlyList<LoggerSpy> Loggers => _loggers;
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                LoggerSpy logger = new(categoryName);
+
+                _loggers.Add(logger);
+
+                return logger;
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+
+        private sealed class LoggerSpy : ILogger
+        {
+            private readonly Dictionary<LogLevel, int> _logs = new();
+
+            internal IReadOnlyDictionary<LogLevel, int> Logs => _logs;
+
+            internal string CategoryName { get; }
+
+            internal LoggerSpy(string categoryName)
+            {
+                CategoryName = categoryName;
+            }
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (!Logs.TryGetValue(logLevel, out int count))
+                {
+                    count = 0;
+                }
+
+                _logs[logLevel] = ++count;
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return true;
+            }
+
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
