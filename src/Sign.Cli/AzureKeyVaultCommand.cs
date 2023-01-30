@@ -98,7 +98,7 @@ namespace Sign.Cli
                     return;
                 }
 
-                Core.ServiceProvider serviceProvider = Core.ServiceProvider.CreateDefault();
+                Core.ServiceProvider serviceProvider = Core.ServiceProvider.CreateDefault(verbosity);
 
                 List<FileInfo> inputFiles;
 
