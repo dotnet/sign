@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
+using Microsoft.Extensions.Logging;
 using RSAKeyVaultProvider;
 
 namespace Sign.Core
@@ -14,8 +16,17 @@ namespace Sign.Core
     internal sealed class KeyVaultService : IKeyVaultService
     {
         private Uri? _keyVaultUrl;
+        private readonly ILogger<IKeyVaultService> _logger;
         private Task<KeyVaultCertificateWithPolicy>? _task;
         private TokenCredential? _tokenCredential;
+
+        // Dependency injection requires a public constructor.
+        public KeyVaultService(ILogger<IKeyVaultService> logger)
+        {
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+
+            _logger = logger;
+        }
 
         public async Task<X509Certificate2> GetCertificateAsync()
         {
@@ -54,14 +65,20 @@ namespace Sign.Core
             _task = GetKeyVaultCertificateAsync(keyVaultUrl, tokenCredential, certificateName);
         }
 
-        private static async Task<KeyVaultCertificateWithPolicy> GetKeyVaultCertificateAsync(
+        private async Task<KeyVaultCertificateWithPolicy> GetKeyVaultCertificateAsync(
             Uri keyVaultUrl,
             TokenCredential tokenCredential,
             string certificateName)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            _logger.LogTrace(Resources.FetchingCertificate);
+
             CertificateClient client = new(keyVaultUrl, tokenCredential);
             Response<KeyVaultCertificateWithPolicy>? response =
                 await client.GetCertificateAsync(certificateName).ConfigureAwait(false);
+
+            _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
             return response.Value;
         }

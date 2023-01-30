@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
 
 namespace Sign.Core
 {
@@ -27,11 +29,21 @@ namespace Sign.Core
         internal static ServiceProvider CreateDefault(LogLevel logLevel = LogLevel.Information)
         {
             IServiceCollection services = new ServiceCollection();
+            IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+            AppRootDirectoryLocator locator = new();
+
+            configurationBuilder.SetBasePath(locator.Directory.FullName)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddEnvironmentVariables();
+
+            IConfiguration configuration = configurationBuilder.Build();
+            IConfigurationSection loggingSection = configuration.GetSection("Logging");
 
             services.AddLogging(builder =>
             {
-                builder.AddConsole();
-                builder.SetMinimumLevel(logLevel);
+                builder.SetMinimumLevel(logLevel)
+                    .AddConfiguration(loggingSection)
+                    .AddConsole();
             });
 
             services.AddSingleton<IAppRootDirectoryLocator, AppRootDirectoryLocator>();

@@ -166,6 +166,13 @@
     <value>An exception occurred while attempting to delete directory {path}.</value>
     <comment>Do not localize value inside {}.</comment>
   </data>
+  <data name="FetchedCertificate" xml:space="preserve">
+    <value>Fetched certificate. [{milliseconds} ms]</value>
+    <comment>Do not localize value inside {}.</comment>
+  </data>
+  <data name="FetchingCertificate" xml:space="preserve">
+    <value>Fetching certificate from Azure Key Vault.</value>
+  </data>
   <data name="OpeningContainer" xml:space="preserve">
     <value>Extracting container {ContainerFilePath} to {DirectoryPath}.</value>
     <comment>Do not localize value inside {}.</comment>
