@@ -178,6 +178,24 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fetched certificate. [{milliseconds} ms].
+        /// </summary>
+        internal static string FetchedCertificate {
+            get {
+                return ResourceManager.GetString("FetchedCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fetching certificate from Azure Key Vault..
+        /// </summary>
+        internal static string FetchingCertificate {
+            get {
+                return ResourceManager.GetString("FetchingCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extracting container {ContainerFilePath} to {DirectoryPath}..
         /// </summary>
         internal static string OpeningContainer {

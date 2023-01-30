@@ -16,13 +16,16 @@ namespace Sign.Core
     internal sealed class Signer : ISigner
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ISigner> _logger;
 
         // Dependency injection requires a public constructor.
-        public Signer(IServiceProvider serviceProvider)
+        public Signer(IServiceProvider serviceProvider, ILogger<ISigner> logger)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         public async Task<int> SignAsync(
@@ -42,7 +45,6 @@ namespace Sign.Core
             string certificateName)
         {
             IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
-            ILogger<Signer> logger = _serviceProvider.GetRequiredService<ILogger<Signer>>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
             ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxConcurrency };
 
@@ -128,7 +130,7 @@ namespace Sign.Core
 
                     //Do action
 
-                    logger.LogInformation(Resources.SubmittingFileForSigning, input.FullName);
+                    _logger.LogInformation(Resources.SubmittingFileForSigning, input.FullName);
 
                     // this might have two files, one containing the file list
                     // The first will be the package and the second is the filter
@@ -142,7 +144,7 @@ namespace Sign.Core
                             inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
                         }
 
-                        logger.LogInformation(Resources.SignAsyncCalled, input.FullName, inputFileName);
+                        _logger.LogInformation(Resources.SignAsyncCalled, input.FullName, inputFileName);
 
                         if (input.Length > 0)
                         {
@@ -156,18 +158,18 @@ namespace Sign.Core
                         fi.CopyTo(output.FullName, overwrite: true);
                     }
 
-                    logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, output.FullName, sw.ElapsedMilliseconds);
+                    _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, output.FullName, sw.ElapsedMilliseconds);
                 });
 
             }
             catch (AuthenticationException e)
             {
-                logger.LogError(e, e.Message);
+                _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
             catch (Exception e)
             {
-                logger.LogError(e, e.Message);
+                _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
 
