@@ -259,7 +259,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Performing attempt #{attempt} of {maxAttempts} attempts after {seconds}s..
+        ///   Looks up a localized string similar to Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s..
         /// </summary>
         internal static string SigningAttempt {
             get {
