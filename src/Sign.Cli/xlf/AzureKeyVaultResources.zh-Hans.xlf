@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../AzureKeyVaultResources.resx">
+    <body>
+      <trans-unit id="CertificateOptionDescription">
+        <source>Name of the certificate in Azure Key Vault.</source>
+        <target state="new">Name of the certificate in Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ClientIdOptionDescription">
+        <source>Client ID to authenticate to Azure Key Vault.</source>
+        <target state="new">Client ID to authenticate to Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ClientSecretOptionDescription">
+        <source>Client secret to authenticate to Azure Key Vault.</source>
+        <target state="new">Client secret to authenticate to Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Use Azure Key Vault.</source>
+        <target state="new">Use Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FilesArgumentDescription">
+        <source>File(s) to sign.</source>
+        <target state="new">File(s) to sign.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidBaseDirectoryValue">
+        <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
+        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidClientSecretCredential">
+        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
+        <target state="new">If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</target>
+        <note>{0}, {1}, and {2} are option names and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidFileValue">
+        <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
+        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManagedIdentityOptionDescription">
+        <source>Managed identity to authenticate to Azure Key Vault.</source>
+        <target state="new">Managed identity to authenticate to Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingFileValue">
+        <source>A file or glob is required.</source>
+        <target state="new">A file or glob is required.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoFilesToSign">
+        <source>No inputs found to sign.</source>
+        <target state="new">No inputs found to sign.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SomeFilesDoNotExist">
+        <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
+        <target state="new">Some files do not exist.  Try using a different {0} value or a fully qualified file path.</target>
+        <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="TenantIdOptionDescription">
+        <source>Tenant ID to authenticate to Azure Key Vault.</source>
+        <target state="new">Tenant ID to authenticate to Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UrlOptionDescription">
+        <source>URL to an Azure Key Vault.</source>
+        <target state="new">URL to an Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
