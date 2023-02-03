@@ -4,72 +4,72 @@
     <body>
       <trans-unit id="CertificateOptionDescription">
         <source>Name of the certificate in Azure Key Vault.</source>
-        <target state="new">Name of the certificate in Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault 中的憑證名稱。</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="new">Client ID to authenticate to Azure Key Vault.</target>
+        <target state="translated">要向 Azure Key Vault 進行驗證的用戶端識別碼。</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientSecretOptionDescription">
         <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="new">Client secret to authenticate to Azure Key Vault.</target>
+        <target state="translated">要向 Azure Key Vault 進行驗證的用戶端密碼。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
-        <target state="new">Use Azure Key Vault.</target>
+        <target state="translated">使用 Azure Key Vault。</target>
         <note />
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
         <source>File(s) to sign.</source>
-        <target state="new">File(s) to sign.</target>
+        <target state="translated">要簽署的檔案。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <target state="translated">{0} 的值無效。值必須是完整的根目錄路徑。</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidClientSecretCredential">
         <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="new">If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</target>
+        <target state="translated">如果未使用受控識別，則需要下列所有選項: {0}、{1} 和 {2}。</target>
         <note>{0}, {1}, and {2} are option names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidFileValue">
         <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
+        <target state="translated">使用 Glob 時，檔案路徑不可為根目錄。請使用工作目錄或基底目錄 (若使用該目錄) 的相對路徑。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="new">Managed identity to authenticate to Azure Key Vault.</target>
+        <target state="translated">要向 Azure Key Vault 進行驗證的受控識別。</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingFileValue">
         <source>A file or glob is required.</source>
-        <target state="new">A file or glob is required.</target>
+        <target state="translated">需要檔案或 Glob。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
-        <target state="new">No inputs found to sign.</target>
+        <target state="translated">找不到要簽署的輸入。</target>
         <note />
       </trans-unit>
       <trans-unit id="SomeFilesDoNotExist">
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="new">Some files do not exist.  Try using a different {0} value or a fully qualified file path.</target>
+        <target state="translated">某些檔案不存在。請嘗試使用不同的 {0} 值或完整檔案路徑。</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">
         <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="new">Tenant ID to authenticate to Azure Key Vault.</target>
+        <target state="translated">要向 Azure Key Vault 進行驗證的租用戶識別碼。</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">
         <source>URL to an Azure Key Vault.</source>
-        <target state="new">URL to an Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault 的 URL。</target>
         <note />
       </trans-unit>
     </body>

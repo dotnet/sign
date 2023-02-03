@@ -4,92 +4,92 @@
     <body>
       <trans-unit id="BaseDirectoryOptionDescription">
         <source>Base directory for files.  Overrides the current working directory.</source>
-        <target state="new">Base directory for files.  Overrides the current working directory.</target>
+        <target state="translated">파일의 기본 디렉터리입니다. 현재 작업 디렉터리를 재정의합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
-        <target state="new">Sign binaries and containers.</target>
+        <target state="translated">이진 파일 및 컨테이너에 서명합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
-        <target state="new">Description of the signing certificate.</target>
+        <target state="translated">서명 인증서에 대한 설명입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionUrlOptionDescription">
         <source>Description URL of the signing certificate.</source>
-        <target state="new">Description URL of the signing certificate.</target>
+        <target state="translated">서명 인증서의 설명 URL입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
         <source>Digest algorithm to hash files with. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="new">Digest algorithm to hash files with. Allowed values are sha256, sha384, and sha512.</target>
+        <target state="translated">파일을 해시하는 다이제스트 알고리즘입니다. 허용되는 값은 sha256, sha384 및 sha512입니다.</target>
         <note>{Locked="sha256","sha384","sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to file containing paths of files to sign within an archive.</source>
-        <target state="new">Path to file containing paths of files to sign within an archive.</target>
+        <target state="translated">보관함 내에서 서명할 파일의 경로를 포함하는 파일 경로입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 완전한 루트 디렉터리 경로여야 합니다.</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
         <source>Invalid value for {0}. The value must be sha256, sha384, or sha512.</source>
-        <target state="new">Invalid value for {0}. The value must be sha256, sha384, or sha512.</target>
+        <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 sha256, sha384 또는 sha512여야 합니다.</target>
         <note>{Locked="sha256","sha384","sha512"} are cryptographic hash algorithm names and should not be localized.  {0} is an option name (e.g.:  --file-digest) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
-        <target state="new">Invalid value for {0}. The value must be a number value greater than or equal to 1.</target>
+        <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 1보다 크거나 같은 숫자 값이어야 합니다.</target>
         <note>{0} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
-        <target state="new">Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</target>
+        <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 절대 HTTP 또는 HTTPS URL이어야 합니다.</target>
         <note>{0} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency (default is 4).</source>
-        <target state="new">Maximum concurrency (default is 4).</target>
+        <target state="translated">최대 동시성(기본값은 4)입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>
-        <target state="new">Output file or directory. If omitted, input files will be overwritten.</target>
+        <target state="translated">출력 파일 또는 디렉터리입니다. 생략하면 입력 파일을 덮어씁니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublisherNameOptionDescription">
         <source>Publisher name (ClickOnce).</source>
-        <target state="new">Publisher name (ClickOnce).</target>
+        <target state="translated">게시자 이름(ClickOnce).</target>
         <note>ClickOnce is a Microsoft deployment technology.</note>
       </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>
-        <target state="new">Sign CLI</target>
+        <target state="translated">CLI 서명</target>
         <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="new">Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</target>
+        <target state="translated">RFC 3161 타임스탬프 서버용 다이제스트 알고리즘입니다. 허용되는 값은 sha256, sha384 및 sha512입니다.</target>
         <note>{Locked="RFC 3161","sha256","sha384","sha512"} RFC 3161 is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and the others are cryptographic hash algorithm names should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampUrlOptionDescription">
         <source>RFC 3161 timestamp server URL.</source>
-        <target state="new">RFC 3161 timestamp server URL.</target>
+        <target state="translated">RFC 3161 타임스탬프 서버 URL.</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
         <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
-        <target state="new">Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</target>
+        <target state="translated">세부 정보 표시 수준을 설정합니다. 허용되는 값은 q[uiet], m[inimal], n[ormal], d[etailed] 및 diag[nostic]입니다.</target>
         <note>{Locked="q[uiet]","m[inimal]","n[ormal]","d[etailed]","diag[nostic]"} are option values and should not be localized.</note>
       </trans-unit>
       <trans-unit id="x86NotSupported">
         <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
-        <target state="new">Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</target>
+        <target state="translated">현재 Windows x64만 지원됩니다. Windows x86 지원에 대해서는 https://github.com/dotnet/sign/issues/474를 참조하세요.</target>
         <note />
       </trans-unit>
     </body>
