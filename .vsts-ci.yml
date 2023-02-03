@@ -31,10 +31,12 @@ stages:
 - stage: Build_Windows
   displayName: Build Windows
   jobs:
-  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
     - template: /eng/common/templates/job/onelocbuild.yml
       parameters:
-        CreatePr: false
+        LclSource: lclFilesfromPackage
+        LclPackageId: 'LCL-JUNO-PROD-SIGNCLI'
+        MirrorRepo: sign
 
   - template: /eng/common/templates/jobs/jobs.yml
     parameters:
