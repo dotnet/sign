@@ -4,72 +4,72 @@
     <body>
       <trans-unit id="CertificateOptionDescription">
         <source>Name of the certificate in Azure Key Vault.</source>
-        <target state="new">Name of the certificate in Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault의 인증서 이름입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="new">Client ID to authenticate to Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault에 인증하기 위한 클라이언트 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientSecretOptionDescription">
         <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="new">Client secret to authenticate to Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault에 인증하기 위한 클라이언트 암호입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
-        <target state="new">Use Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
         <source>File(s) to sign.</source>
-        <target state="new">File(s) to sign.</target>
+        <target state="translated">서명할 파일입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 완전한 루트 디렉터리 경로여야 합니다.</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidClientSecretCredential">
         <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="new">If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</target>
+        <target state="translated">관리 ID를 사용하고 있지 않은 경우 {0}, {1} 및 {2} 옵션이 모두 필요합니다.</target>
         <note>{0}, {1}, and {2} are option names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidFileValue">
         <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
+        <target state="translated">glob을 사용할 때 파일 경로를 루팅할 수 없습니다. 작업 디렉터리(또는 사용되는 경우 기본 디렉터리)에 상대적인 경로를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="new">Managed identity to authenticate to Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault에 인증하기 위한 관리 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingFileValue">
         <source>A file or glob is required.</source>
-        <target state="new">A file or glob is required.</target>
+        <target state="translated">파일 또는 글로브가 필요합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
-        <target state="new">No inputs found to sign.</target>
+        <target state="translated">서명할 입력이 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SomeFilesDoNotExist">
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="new">Some files do not exist.  Try using a different {0} value or a fully qualified file path.</target>
+        <target state="translated">일부 파일이 존재하지 않습니다.  다른 {0} 값 또는 정규화된 파일 경로를 사용해 보세요.</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">
         <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="new">Tenant ID to authenticate to Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault에 인증하기 위한 테넌트 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">
         <source>URL to an Azure Key Vault.</source>
-        <target state="new">URL to an Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault에 대한 URL입니다.</target>
         <note />
       </trans-unit>
     </body>

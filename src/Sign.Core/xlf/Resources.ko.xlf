@@ -4,87 +4,87 @@
     <body>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>
-        <target state="new">Signing SignTool job with {count} files.</target>
+        <target state="translated">{count} 파일로 SignTool 작업에 서명하는 중입니다.</target>
         <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="CertificateIsExpired">
         <source>The certificate is expired.</source>
-        <target state="new">The certificate is expired.</target>
+        <target state="translated">인증서가 만료되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateIsNotYetTimeValid">
         <source>The certificate is not yet time valid.</source>
-        <target state="new">The certificate is not yet time valid.</target>
+        <target state="translated">인증서가 아직 유효하지 않습니다.</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} Err {error}</source>
-        <target state="new">{fileName} Err {error}</target>
+        <target state="translated">{fileName} Err {error}</target>
         <note>{fileName} is a file name and {error} is verbose output from a tool.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="CliStandardOutput">
         <source>{fileName} Out {output}</source>
-        <target state="new">{fileName} Out {output}</target>
+        <target state="translated">{fileName} Out {output}</target>
         <note>{fileName} is a file name and {output} is verbose output from a tool.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
-        <target state="new">Signing Mage job with {count} files.</target>
+        <target state="translated">{count} 파일로 Mage 작업에 서명하는 중입니다.</target>
         <note>{Locked="Mage"} is another signing tool.  {count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
-        <target state="new">Creating directory {path}.</target>
+        <target state="translated">디렉터리 {path}을(를) 생성하는 중입니다.</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="DeletedDirectory">
         <source>Directory {path} deleted.</source>
-        <target state="new">Directory {path} deleted.</target>
+        <target state="translated">디렉터리 {path}이(가) 삭제되었습니다.</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="DeletingDirectory">
         <source>Deleting directory {path}.</source>
-        <target state="new">Deleting directory {path}.</target>
+        <target state="translated">디렉터리 {path}을(를) 삭제하는 중입니다.</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="DirectoryNotDeleted">
         <source>Directory {path} still exists.</source>
-        <target state="new">Directory {path} still exists.</target>
+        <target state="translated">디렉터리 {path}이(가) 여전히 존재합니다.</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
-        <target state="new">Editing AppInstaller job with {count} files.</target>
+        <target state="translated">{count} 파일로 AppInstaller 작업을 편집하는 중입니다.</target>
         <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ErrorSigningVsix">
         <source>An unspecified error occurred during VSIX signing.</source>
-        <target state="new">An unspecified error occurred during VSIX signing.</target>
+        <target state="translated">VSIX 서명 중에 지정되지 않은 오류가 발생했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExceptionWhileDeletingDirectory">
         <source>An exception occurred while attempting to delete directory {path}.</source>
-        <target state="new">An exception occurred while attempting to delete directory {path}.</target>
+        <target state="translated">디렉터리 {path}을(를) 삭제하려고 시도하는 동안 예외가 발생했습니다.</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="new">Fetched certificate. [{milliseconds} ms]</target>
+        <target state="translated">인증서를 가져왔습니다. [{milliseconds}ms]</target>
         <note>{milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
         <source>Fetching certificate from Azure Key Vault.</source>
-        <target state="new">Fetching certificate from Azure Key Vault.</target>
+        <target state="translated">Azure Key Vault에서 인증서를 가져오는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
-        <target state="new">Extracting container {ContainerFilePath} to {DirectoryPath}.</target>
+        <target state="translated">컨테이너 {ContainerFilePath}을(를) {DirectoryPath}(으)로 추출하는 중입니다.</target>
         <note>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ProcessCouldNotBeKilled">
         <source>{0} timed out and could not be killed.</source>
-        <target state="new">{0} timed out and could not be killed.</target>
+        <target state="translated">{0}이(가) 시간 초과되어 종료할 수 없습니다.</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
         <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
-        <target state="new">{0} took too long to respond. The process exit code is {1}. Arguments: {2}</target>
+        <target state="translated">{0} 응답하는 데 너무 오래 걸렸습니다. 프로세스 종료 코드는 {1}입니다. 인수: {2}</target>
         <note>{0} is a file name.  {1} is a process exit code.  {2} is process arguments.</note>
       </trans-unit>
       <trans-unit id="RunningCli">
@@ -104,62 +104,62 @@
       </trans-unit>
       <trans-unit id="SavingContainer">
         <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
-        <target state="new">Rebuilding container {ContainerFilePath} from {DirectoryPath}.</target>
+        <target state="translated">{DirectoryPath}에서 컨테이너 {ContainerFilePath}을(를) 다시 빌드하는 중입니다.</target>
         <note>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SignAsyncCalled">
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
-        <target state="new">SignAsync called for {filePath}. Using {localFilePath} locally.</target>
+        <target state="translated">{filePath}에 대해 SignAsync가 호출되었습니다. 로컬에서 {localFilePath}을(를) 사용하고 있습니다.</target>
         <note>{filePath} and {localFilePath} are both file paths.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
-        <target state="new">Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</target>
+        <target state="translated">{seconds}초 후에 {maxAttempts}회 시도 중 #{attempt}을(를) 시도하는 중입니다.</target>
         <note>{attempt} and {maxAttempts} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  "s" is the unit abbreviation for seconds.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningFailed">
         <source>Could not sign {0}.</source>
-        <target state="new">Could not sign {0}.</target>
+        <target state="translated">{0}에 서명할 수 없습니다.</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningFailedAfterAllAttempts">
         <source>Failed to sign. Attempts exceeded.</source>
-        <target state="new">Failed to sign. Attempts exceeded.</target>
+        <target state="translated">서명하지 못했습니다. 시도 횟수를 초과했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningFailedWithError">
         <source>Signing failed with error {errorCode}.</source>
-        <target state="new">Signing failed with error {errorCode}.</target>
+        <target state="translated">오류 {errorCode}(으)로 인해 서명에 실패했습니다.</target>
         <note>{errorCode} is an error code.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
-        <target state="new">Signing {filePath}.</target>
+        <target state="translated">{filePath}에 서명하는 중입니다.</target>
         <note>{filePath} is a file path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing succeeded.</source>
-        <target state="new">Signing succeeded.</target>
+        <target state="translated">서명에 성공했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="new">Successfully signed {filePath} in {millseconds} ms</target>
+        <target state="translated">{millseconds}ms 내에 {filePath}에 서명했습니다.</target>
         <note>{filePath} is a file path, {milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
-        <target state="new">Submitting {filePath} for signing.</target>
+        <target state="translated">서명을 위해 {filePath}을(를) 제출하는 중입니다.</target>
         <note>{filePath} is a file path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
         <source>The value cannot be an empty string.</source>
-        <target state="new">The value cannot be an empty string.</target>
+        <target state="translated">값은 빈 문자열일 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="new">Signing OpenVsixSignTool job with {count} files.</target>
+        <target state="translated">{count} 파일로 OpenVsixSignTool 작업에 서명하는 중입니다.</target>
         <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
     </body>
