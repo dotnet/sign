@@ -106,7 +106,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are sha256, sha384, and sha512..
+        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;sha256&apos;, &apos;sha384&apos;, and &apos;sha512&apos;..
         /// </summary>
         internal static string FileDigestOptionDescription {
             get {
@@ -133,7 +133,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be sha256, sha384, or sha512..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
         /// </summary>
         internal static string InvalidDigestValue {
             get {
@@ -214,7 +214,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]..
+        ///   Looks up a localized string similar to Sets the verbosity level. Allowed values are &apos;none&apos;, &apos;critical&apos;, &apos;error&apos;, &apos;warning&apos;, &apos;information&apos;, &apos;debug&apos;, and &apos;trace&apos;..
         /// </summary>
         internal static string VerbosityOptionDescription {
             get {
