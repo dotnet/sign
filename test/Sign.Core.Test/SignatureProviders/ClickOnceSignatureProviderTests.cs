@@ -195,9 +195,13 @@ namespace Sign.Core.Test
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact]
-        public async Task SignAsync_WhenFilesIsClickOnceFile_Signs()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("PublisherName")]
+        public async Task SignAsync_WhenFilesIsClickOnceFile_Signs(string publisherName)
         {
+            const string commonName = "Test certificate (DO NOT TRUST)";
+
             using (TemporaryDirectory temporaryDirectory = new(_directoryService))
             {
                 FileInfo clickOnceFile = new(
@@ -221,9 +225,9 @@ namespace Sign.Core.Test
                 FileInfo manifestFile = AddFile(
                     containerSpy,
                     temporaryDirectory.Directory,
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+                    @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
-  <publisherIdentity name=""CN=Test certificate (DO NOT TRUST), O=unit.test"" />
+  <publisherIdentity name=""CN={commonName}, O=unit.test"" />
 </asmv1:assembly>",
                     "MyApp_1_0_0_0", "MyApp.dll.manifest");
                 FileInfo exeDeployFile = AddFile(
@@ -238,7 +242,8 @@ namespace Sign.Core.Test
                     "MyApp_1_0_0_0", "MyApp.json.deploy");
 
                 SignOptions options = new(
-                    "PublisherName",
+                    "ApplicationName",
+                    publisherName,
                     "Description",
                     new Uri("https://description.test"),
                     HashAlgorithmName.SHA256,
@@ -271,12 +276,23 @@ namespace Sign.Core.Test
 
                     IDirectoryService directoryService = Mock.Of<IDirectoryService>();
                     Mock<IMageCli> mageCli = new();
-                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.PublisherName}\"";
+                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);
 
-                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.PublisherName}\" -appm \"{manifestFile.FullName}\" -pub \"Test certificate (DO NOT TRUST)\"  -SupportURL https://description.test/";
+                    string publisher;
+
+                    if (string.IsNullOrEmpty(options.PublisherName))
+                    {
+                        publisher = commonName;
+                    }
+                    else
+                    {
+                        publisher = options.PublisherName;
+                    }
+
+                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -appm \"{manifestFile.FullName}\" -pub \"{publisher}\"  -SupportURL https://description.test/";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);

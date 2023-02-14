@@ -64,9 +64,9 @@ namespace Sign.Core
             Logger.LogInformation(Resources.ClickOnceSignatureProviderSigning, files.Count());
 
             var args = "-a sha256RSA";
-            if (!string.IsNullOrWhiteSpace(options.PublisherName))
+            if (!string.IsNullOrWhiteSpace(options.ApplicationName))
             {
-                args += $@" -n ""{options.PublisherName}""";
+                args += $@" -n ""{options.ApplicationName}""";
             }
 
             Uri? timeStampUrl = options.TimestampService;
@@ -129,19 +129,26 @@ namespace Sign.Core
                             throw new Exception(message);
                         }
 
-                        // Read the publisher name from the manifest for use below
-                        XDocument manifestDoc = XDocument.Load(manifestFile.FullName);
-                        XNamespace ns = manifestDoc.Root!.GetDefaultNamespace();
-                        XElement? publisherIdentity = manifestDoc.Root.Element(ns + "publisherIdentity");
-                        string publisherName = publisherIdentity!.Attribute("name")!.Value;
+                        string publisherParam = string.Empty;
 
-                        var publisherParam = "";
-
-                        Dictionary<string, List<string>> dict = DistinguishedNameParser.Parse(publisherName);
-                        if (dict.TryGetValue("CN", out var cns))
+                        if (string.IsNullOrEmpty(options.PublisherName))
                         {
-                            // get the CN. it may be quoted
-                            publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
+                            // Read the publisher name from the manifest for use below
+                            XDocument manifestDoc = XDocument.Load(manifestFile.FullName);
+                            XNamespace ns = manifestDoc.Root!.GetDefaultNamespace();
+                            XElement? publisherIdentity = manifestDoc.Root.Element(ns + "publisherIdentity");
+                            string publisherName = publisherIdentity!.Attribute("name")!.Value;
+                            Dictionary<string, List<string>> dict = DistinguishedNameParser.Parse(publisherName);
+ 
+                            if (dict.TryGetValue("CN", out List<string>? cns))
+                            {
+                                // get the CN. it may be quoted
+                                publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
+                            }
+                        }
+                        else
+                        {
+                            publisherParam = $"-pub \"{options.PublisherName}\" ";
                         }
 
                         // Now sign the inner vsto/clickonce file
