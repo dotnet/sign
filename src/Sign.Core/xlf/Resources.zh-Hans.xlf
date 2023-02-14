@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>
-        <target state="new">Signing SignTool job with {count} files.</target>
+        <target state="translated">正在对包含 {count} 个文件的 SignTool 作业进行签名。</target>
         <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="CertificateIsExpired">
         <source>The certificate is expired.</source>
-        <target state="new">The certificate is expired.</target>
+        <target state="translated">证书已过期。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateIsNotYetTimeValid">
         <source>The certificate is not yet time valid.</source>
-        <target state="new">The certificate is not yet time valid.</target>
+        <target state="translated">该证书尚未生效。</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -29,62 +29,62 @@
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
-        <target state="new">Signing Mage job with {count} files.</target>
+        <target state="translated">正在对包含 {count} 个文件的 Mage 作业进行签名。</target>
         <note>{Locked="Mage"} is another signing tool.  {count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
-        <target state="new">Creating directory {path}.</target>
+        <target state="translated">正在创建目录 {path}。</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="DeletedDirectory">
         <source>Directory {path} deleted.</source>
-        <target state="new">Directory {path} deleted.</target>
+        <target state="translated">已删除目录 {path}。</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="DeletingDirectory">
         <source>Deleting directory {path}.</source>
-        <target state="new">Deleting directory {path}.</target>
+        <target state="translated">正在删除目录 {path}。</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="DirectoryNotDeleted">
         <source>Directory {path} still exists.</source>
-        <target state="new">Directory {path} still exists.</target>
+        <target state="translated">目录 {path} 仍然存在。</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
-        <target state="new">Editing AppInstaller job with {count} files.</target>
+        <target state="translated">正在编辑包含 {count} 个文件的 AppInstaller 作业。</target>
         <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ErrorSigningVsix">
         <source>An unspecified error occurred during VSIX signing.</source>
-        <target state="new">An unspecified error occurred during VSIX signing.</target>
+        <target state="translated">VSIX 签名期间发生未指定的错误。</target>
         <note />
       </trans-unit>
       <trans-unit id="ExceptionWhileDeletingDirectory">
         <source>An exception occurred while attempting to delete directory {path}.</source>
-        <target state="new">An exception occurred while attempting to delete directory {path}.</target>
+        <target state="translated">尝试删除目录 {path} 时发生异常。</target>
         <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="new">Fetched certificate. [{milliseconds} ms]</target>
+        <target state="translated">已提取证书。[{milliseconds} 毫秒]</target>
         <note>{milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
         <source>Fetching certificate from Azure Key Vault.</source>
-        <target state="new">Fetching certificate from Azure Key Vault.</target>
+        <target state="translated">正在从 Azure Key Vault 提取证书。</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
-        <target state="new">Extracting container {ContainerFilePath} to {DirectoryPath}.</target>
+        <target state="translated">正在将容器 {ContainerFilePath} 提取到 {DirectoryPath}。</target>
         <note>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ProcessCouldNotBeKilled">
         <source>{0} timed out and could not be killed.</source>
-        <target state="new">{0} timed out and could not be killed.</target>
+        <target state="translated">{0} 超时，无法终止。</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
         <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
-        <target state="new">{0} took too long to respond. The process exit code is {1}. Arguments: {2}</target>
+        <target state="translated">{0} 响应的时间太长。进程退出代码为 {1}。参数: {2}</target>
         <note>{0} is a file name.  {1} is a process exit code.  {2} is process arguments.</note>
       </trans-unit>
       <trans-unit id="RunningCli">
@@ -104,62 +104,62 @@
       </trans-unit>
       <trans-unit id="SavingContainer">
         <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
-        <target state="new">Rebuilding container {ContainerFilePath} from {DirectoryPath}.</target>
+        <target state="translated">正在从 {DirectoryPath} 重新生成容器 {ContainerFilePath}。</target>
         <note>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SignAsyncCalled">
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
-        <target state="new">SignAsync called for {filePath}. Using {localFilePath} locally.</target>
+        <target state="translated">为 {filePath} 调用了 SignAsync。请在本地使用 {localFilePath}。</target>
         <note>{filePath} and {localFilePath} are both file paths.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
-        <target state="new">Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</target>
+        <target state="translated">正在 {seconds} 秒后执行第 #{attempt} 次尝试(最多 {maxAttempts} 次)。</target>
         <note>{attempt} and {maxAttempts} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  "s" is the unit abbreviation for seconds.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningFailed">
         <source>Could not sign {0}.</source>
-        <target state="new">Could not sign {0}.</target>
+        <target state="translated">无法对 {0} 进行签名。</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningFailedAfterAllAttempts">
         <source>Failed to sign. Attempts exceeded.</source>
-        <target state="new">Failed to sign. Attempts exceeded.</target>
+        <target state="translated">签名失败。超过了尝试次数。</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningFailedWithError">
         <source>Signing failed with error {errorCode}.</source>
-        <target state="new">Signing failed with error {errorCode}.</target>
+        <target state="translated">签名失败，出现错误 {errorCode}。</target>
         <note>{errorCode} is an error code.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
-        <target state="new">Signing {filePath}.</target>
+        <target state="translated">正在对 {filePath} 进行签名。</target>
         <note>{filePath} is a file path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing succeeded.</source>
-        <target state="new">Signing succeeded.</target>
+        <target state="translated">签名成功。</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="new">Successfully signed {filePath} in {millseconds} ms</target>
+        <target state="translated">已成功在 {millseconds} 毫秒内对 {filePath} 进行签名</target>
         <note>{filePath} is a file path, {milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
-        <target state="new">Submitting {filePath} for signing.</target>
+        <target state="translated">正在提交 {filePath} 进行签名。</target>
         <note>{filePath} is a file path.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
         <source>The value cannot be an empty string.</source>
-        <target state="new">The value cannot be an empty string.</target>
+        <target state="translated">值不能为空字符串。</target>
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="new">Signing OpenVsixSignTool job with {count} files.</target>
+        <target state="translated">正在对包含 {count} 个文件的 OpenVsixSignTool 作业进行签名。</target>
         <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
       </trans-unit>
     </body>

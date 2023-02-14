@@ -9,22 +9,22 @@
       </trans-unit>
       <trans-unit id="BaseDirectoryOptionDescription">
         <source>Base directory for files.  Overrides the current working directory.</source>
-        <target state="new">Base directory for files.  Overrides the current working directory.</target>
+        <target state="translated">Basisverzeichnis für Dateien.  Überschreibt das aktuelle Arbeitsverzeichnis.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
-        <target state="new">Sign binaries and containers.</target>
+        <target state="translated">Signieren Sie Binärdateien und Container.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
-        <target state="new">Description of the signing certificate.</target>
+        <target state="translated">Beschreibung des Signaturzertifikats.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionUrlOptionDescription">
         <source>Description URL of the signing certificate.</source>
-        <target state="new">Description URL of the signing certificate.</target>
+        <target state="translated">Beschreibungs-URL des Signaturzertifikats.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to file containing paths of files to sign within an archive.</source>
-        <target state="new">Path to file containing paths of files to sign within an archive.</target>
+        <target state="translated">Pfad zu einer Datei, die Pfade von Dateien enthält, die innerhalb eines Archivs signiert werden sollen.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <target state="translated">Ungültiger Wert für {0}. Der Wert muss ein vollständiger Stammverzeichnispfad sein.</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
@@ -49,42 +49,42 @@
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
-        <target state="new">Invalid value for {0}. The value must be a number value greater than or equal to 1.</target>
+        <target state="translated">Ungültiger Wert für {0}. Der Wert muss ein Zahlenwert größer oder gleich 1 sein.</target>
         <note>{0} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
-        <target state="new">Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</target>
+        <target state="translated">Ungültiger Wert für {0}. Der Wert muss eine absolute HTTP- oder HTTPS-URL sein.</target>
         <note>{0} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency (default is 4).</source>
-        <target state="new">Maximum concurrency (default is 4).</target>
+        <target state="translated">Maximale Parallelität (Standard ist 4).</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>
-        <target state="new">Output file or directory. If omitted, input files will be overwritten.</target>
+        <target state="translated">Ausgabedatei oder -verzeichnis. Wenn dies weggelassen wird, werden Eingabedateien überschrieben.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublisherNameOptionDescription">
         <source>Publisher name (ClickOnce).</source>
-        <target state="new">Publisher name (ClickOnce).</target>
+        <target state="translated">Herausgebername (ClickOnce).</target>
         <note>ClickOnce is a Microsoft deployment technology.</note>
       </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>
-        <target state="new">Sign CLI</target>
+        <target state="translated">CLI signieren</target>
         <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="new">Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</target>
+        <target state="translated">Digest-Algorithmus für den RFC 3161-Zeitstempelserver. Zulässige Werte sind sha256, sha384 und sha512.</target>
         <note>{Locked="RFC 3161","sha256","sha384","sha512"} RFC 3161 is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and the others are cryptographic hash algorithm names should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampUrlOptionDescription">
         <source>RFC 3161 timestamp server URL.</source>
-        <target state="new">RFC 3161 timestamp server URL.</target>
+        <target state="translated">URL für RFC 3161-Zeitstempelserver.</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="x86NotSupported">
         <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
-        <target state="new">Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</target>
+        <target state="translated">Derzeit wird nur Windows x64 unterstützt. Weitere Informationen hinsichtlich Windows x86-Support finden Sie unter https://github.com/dotnet/sign/issues/474.</target>
         <note />
       </trans-unit>
     </body>

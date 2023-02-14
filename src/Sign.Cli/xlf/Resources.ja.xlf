@@ -9,22 +9,22 @@
       </trans-unit>
       <trans-unit id="BaseDirectoryOptionDescription">
         <source>Base directory for files.  Overrides the current working directory.</source>
-        <target state="new">Base directory for files.  Overrides the current working directory.</target>
+        <target state="translated">ファイルのベース ディレクトリ。 現在の作業ディレクトリをオーバーライドします。</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
-        <target state="new">Sign binaries and containers.</target>
+        <target state="translated">バイナリとコンテナーに署名します。</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
-        <target state="new">Description of the signing certificate.</target>
+        <target state="translated">署名証明書の説明。</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionUrlOptionDescription">
         <source>Description URL of the signing certificate.</source>
-        <target state="new">Description URL of the signing certificate.</target>
+        <target state="translated">署名証明書の説明 URL。</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to file containing paths of files to sign within an archive.</source>
-        <target state="new">Path to file containing paths of files to sign within an archive.</target>
+        <target state="translated">アーカイブ内の署名するファイルのパスを含むファイルへのパス。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <target state="translated">{0} の値が無効です。値は、完全にルート化されたディレクトリ パスである必要があります。</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
@@ -49,42 +49,42 @@
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
-        <target state="new">Invalid value for {0}. The value must be a number value greater than or equal to 1.</target>
+        <target state="translated">{0} の値が無効です。値は、1 以上の数値である必要があります。</target>
         <note>{0} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
-        <target state="new">Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</target>
+        <target state="translated">{0}の値が無効です。値は HTTP または HTTPS の絶対 URL である必要があります。</target>
         <note>{0} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency (default is 4).</source>
-        <target state="new">Maximum concurrency (default is 4).</target>
+        <target state="translated">最大コンカレンシー (既定値は 4)。</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>
-        <target state="new">Output file or directory. If omitted, input files will be overwritten.</target>
+        <target state="translated">出力ファイルまたはディレクトリ。省略すると、入力ファイルが上書きされます。</target>
         <note />
       </trans-unit>
       <trans-unit id="PublisherNameOptionDescription">
         <source>Publisher name (ClickOnce).</source>
-        <target state="new">Publisher name (ClickOnce).</target>
+        <target state="translated">パブリッシャー名 (ClickOnce)。</target>
         <note>ClickOnce is a Microsoft deployment technology.</note>
       </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>
-        <target state="new">Sign CLI</target>
+        <target state="translated">CLI に署名</target>
         <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="new">Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</target>
+        <target state="translated">RFC 3161 タイムスタンプ サーバーのダイジェスト アルゴリズム。使用できる値は、sha256、sha384、および sha512 です。</target>
         <note>{Locked="RFC 3161","sha256","sha384","sha512"} RFC 3161 is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and the others are cryptographic hash algorithm names should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampUrlOptionDescription">
         <source>RFC 3161 timestamp server URL.</source>
-        <target state="new">RFC 3161 timestamp server URL.</target>
+        <target state="translated">RFC 3161 タイムスタンプ サーバーの URL。</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="x86NotSupported">
         <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
-        <target state="new">Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</target>
+        <target state="translated">現時点でサポートされているのは Windows x64 のみです。Windows x86 のサポートに関する https://github.com/dotnet/sign/issues/474 を参照してください。</target>
         <note />
       </trans-unit>
     </body>

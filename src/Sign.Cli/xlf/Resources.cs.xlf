@@ -9,22 +9,22 @@
       </trans-unit>
       <trans-unit id="BaseDirectoryOptionDescription">
         <source>Base directory for files.  Overrides the current working directory.</source>
-        <target state="new">Base directory for files.  Overrides the current working directory.</target>
+        <target state="translated">Základní adresář pro soubory  Přepíše aktuální pracovní adresář.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
-        <target state="new">Sign binaries and containers.</target>
+        <target state="translated">Podepisovat binární soubory a kontejnery.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
-        <target state="new">Description of the signing certificate.</target>
+        <target state="translated">Popis podpisového certifikátu.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionUrlOptionDescription">
         <source>Description URL of the signing certificate.</source>
-        <target state="new">Description URL of the signing certificate.</target>
+        <target state="translated">Popis adresy URL podpisového certifikátu.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to file containing paths of files to sign within an archive.</source>
-        <target state="new">Path to file containing paths of files to sign within an archive.</target>
+        <target state="translated">Cesta k souboru obsahujícímu cesty k souborům, které se mají podepsat v rámci archivu.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="new">Invalid value for {0}. The value must be a fully rooted directory path.</target>
+        <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být plně kořenová cesta k adresáři.</target>
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
@@ -49,42 +49,42 @@
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
-        <target state="new">Invalid value for {0}. The value must be a number value greater than or equal to 1.</target>
+        <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být číselná hodnota větší nebo rovna 1.</target>
         <note>{0} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
-        <target state="new">Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</target>
+        <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být absolutní adresa URL protokolu HTTP nebo HTTPS.</target>
         <note>{0} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency (default is 4).</source>
-        <target state="new">Maximum concurrency (default is 4).</target>
+        <target state="translated">Maximální souběžnost (výchozí hodnota je 4).</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>
-        <target state="new">Output file or directory. If omitted, input files will be overwritten.</target>
+        <target state="translated">Výstupní soubor nebo adresář. Pokud je tento parametr vynechán, vstupní soubory budou přepsány.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublisherNameOptionDescription">
         <source>Publisher name (ClickOnce).</source>
-        <target state="new">Publisher name (ClickOnce).</target>
+        <target state="translated">Název vydavatele (ClickOnce)</target>
         <note>ClickOnce is a Microsoft deployment technology.</note>
       </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>
-        <target state="new">Sign CLI</target>
+        <target state="translated">Podepsat rozhraní příkazového řádku</target>
         <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="new">Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</target>
+        <target state="translated">Algoritmus hodnoty hash pro server časového razítka RFC 3161. Povolené hodnoty jsou sha256, sha384 a sha512.</target>
         <note>{Locked="RFC 3161","sha256","sha384","sha512"} RFC 3161 is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and the others are cryptographic hash algorithm names should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampUrlOptionDescription">
         <source>RFC 3161 timestamp server URL.</source>
-        <target state="new">RFC 3161 timestamp server URL.</target>
+        <target state="translated">Adresa URL serveru časového razítka RFC 3161.</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="x86NotSupported">
         <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
-        <target state="new">Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</target>
+        <target state="translated">V současné době je podporován pouze systém Windows x64. Podívejte se na https://github.com/dotnet/sign/issues/474 týkající se podpory windows x86.</target>
         <note />
       </trans-unit>
     </body>
