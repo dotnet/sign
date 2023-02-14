@@ -117,14 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ApplicationNameOptionDescription" xml:space="preserve">
+    <value>Application name (ClickOnce).</value>
+  </data>
   <data name="BaseDirectoryOptionDescription" xml:space="preserve">
     <value>Base directory for files.  Overrides the current working directory.</value>
   </data>
   <data name="CodeCommandDescription" xml:space="preserve">
     <value>Sign binaries and containers.</value>
-  </data>
-  <data name="DeploymentNameOptionDescription" xml:space="preserve">
-    <value>Deployment name (ClickOnce).</value>
   </data>
   <data name="DescriptionOptionDescription" xml:space="preserve">
     <value>Description of the signing certificate.</value>

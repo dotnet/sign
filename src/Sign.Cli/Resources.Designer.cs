@@ -61,6 +61,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Application name (ClickOnce)..
+        /// </summary>
+        internal static string ApplicationNameOptionDescription {
+            get {
+                return ResourceManager.GetString("ApplicationNameOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Base directory for files.  Overrides the current working directory..
         /// </summary>
         internal static string BaseDirectoryOptionDescription {
@@ -75,15 +84,6 @@ namespace Sign.Cli {
         internal static string CodeCommandDescription {
             get {
                 return ResourceManager.GetString("CodeCommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Deployment name (ClickOnce)..
-        /// </summary>
-        internal static string DeploymentNameOptionDescription {
-            get {
-                return ResourceManager.GetString("DeploymentNameOptionDescription", resourceCulture);
             }
         }
         

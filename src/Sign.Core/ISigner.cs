@@ -14,7 +14,7 @@ namespace Sign.Core
             string? outputFile,
             FileInfo? fileList,
             DirectoryInfo baseDirectory,
-            string? deploymentName,
+            string? applicationName,
             string? publisherName,
             string? description,
             Uri? descriptionUrl,

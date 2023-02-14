@@ -4,12 +4,12 @@
 
 namespace Sign.Cli.Test
 {
-    public class DeploymentNameOptionTests : OptionTests<string?>
+    public class ApplicationNameOptionTests : OptionTests<string?>
     {
         private const string? ExpectedValue = "peach";
 
-        public DeploymentNameOptionTests()
-            : base(new CodeCommand().DeploymentNameOption, "-dn", "--deployment-name", ExpectedValue)
+        public ApplicationNameOptionTests()
+            : base(new CodeCommand().ApplicationNameOption, "-an", "--application-name", ExpectedValue)
         {
         }
     }
