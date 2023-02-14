@@ -23,8 +23,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
-        <source>Digest algorithm to hash files with. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="translated">用於雜湊檔案的摘要演算法。允許的值為 sha256、sha384 和 sha512。</target>
+        <source>Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
+        <target state="needs-review-translation">用於雜湊檔案的摘要演算法。允許的值為 sha256、sha384 和 sha512。</target>
         <note>{Locked="sha256","sha384","sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
@@ -38,8 +38,8 @@
         <note>{0} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
-        <source>Invalid value for {0}. The value must be sha256, sha384, or sha512.</source>
-        <target state="translated">{0} 的值無效。值必須是 sha256、sha384 或 sha512。</target>
+        <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
+        <target state="needs-review-translation">{0} 的值無效。值必須是 sha256、sha384 或 sha512。</target>
         <note>{Locked="sha256","sha384","sha512"} are cryptographic hash algorithm names and should not be localized.  {0} is an option name (e.g.:  --file-digest) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
@@ -83,9 +83,9 @@
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
-        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].</source>
-        <target state="translated">設定詳細資訊層級。允許的值為 q[uiet]、m[inimal]、n[ormal]、d[etailed] 和 diag[nostic]。</target>
-        <note>{Locked="q[uiet]","m[inimal]","n[ormal]","d[etailed]","diag[nostic]"} are option values and should not be localized.</note>
+        <source>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</source>
+        <target state="needs-review-translation">設定詳細資訊層級。允許的值為 q[uiet]、m[inimal]、n[ormal]、d[etailed] 和 diag[nostic]。</target>
+        <note>{Locked="none","critical","error","warning","information","debug","trace"} are option values and should not be localized.</note>
       </trans-unit>
       <trans-unit id="x86NotSupported">
         <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
