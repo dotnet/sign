@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="ApplicationNameOptionDescription">
         <source>Application name (ClickOnce).</source>
-        <target state="new">Application name (ClickOnce).</target>
+        <target state="translated">应用程序名称(ClickOnce)。</target>
         <note />
       </trans-unit>
       <trans-unit id="BaseDirectoryOptionDescription">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
         <source>Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="new">Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <target state="translated">用于对文件进行哈希处理的摘要算法。允许的值为 "sha256"、"sha384" 和 "sha512"。</target>
         <note>{Locked="sha256","sha384","sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
-        <target state="new">Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</target>
+        <target state="translated">{0} 的值无效。值必须为 "sha256"、"sha384" 或 "sha512"。</target>
         <note>{Locked="sha256","sha384","sha512"} are cryptographic hash algorithm names and should not be localized.  {0} is an option name (e.g.:  --file-digest) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
         <source>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</source>
-        <target state="new">Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</target>
+        <target state="translated">设置详细级别。允许的值为 "none"、"critical"、"error"、"warning"、"information"、"debug" 和 "trace"。</target>
         <note>{Locked="none","critical","error","warning","information","debug","trace"} are option values and should not be localized.</note>
       </trans-unit>
       <trans-unit id="x86NotSupported">
