@@ -24,6 +24,7 @@
     <PackageVersion Include="OpenVsixSignTool.Core" Version="0.4.0" />
     <PackageVersion Include="RSAKeyVaultProvider" Version="2.1.1" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="7.0.1" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="7.0.1" />
     <PackageVersion Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
