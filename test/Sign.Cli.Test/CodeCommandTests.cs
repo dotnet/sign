@@ -125,9 +125,9 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void TimestampUrlOption_Always_IsRequired()
+        public void TimestampUrlOption_Always_IsNotRequired()
         {
-            Assert.True(_command.TimestampUrlOption.IsRequired);
+            Assert.False(_command.TimestampUrlOption.IsRequired);
         }
 
         [Fact]

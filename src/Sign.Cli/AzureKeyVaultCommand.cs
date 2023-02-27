@@ -64,8 +64,8 @@ namespace Sign.Cli
                 string? fileListFilePath = context.ParseResult.GetValueForOption(_codeCommand.FileListOption);
                 HashAlgorithmName fileHashAlgorithmName = context.ParseResult.GetValueForOption(_codeCommand.FileDigestOption);
                 HashAlgorithmName timestampHashAlgorithmName = context.ParseResult.GetValueForOption(_codeCommand.TimestampDigestOption);
-                // This option is required.  If its value fails to parse we won't have reached here,
-                // and after successful parsing its value will never be null.
+                // This option is optional but has a default value.  If its value fails to parse we won't have
+                // reached here, and after successful parsing its value will never be null.
                 // Non-null is already guaranteed; the null-forgiving operator (!) just simplifies code.
                 Uri timestampUrl = context.ParseResult.GetValueForOption(_codeCommand.TimestampUrlOption)!;
                 LogLevel verbosity = context.ParseResult.GetValueForOption(_codeCommand.VerbosityOption);
