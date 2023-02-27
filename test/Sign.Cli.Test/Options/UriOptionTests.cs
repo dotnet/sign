@@ -46,6 +46,7 @@ namespace Sign.Cli.Test
         }
 
         [Theory]
+        [InlineData("\"\"")]
         [InlineData("//domain.test")]
         [InlineData("/path")]
         [InlineData("file:///file.bin")]

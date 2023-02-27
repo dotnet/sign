@@ -30,11 +30,11 @@ namespace Sign.Cli
         {
             DescriptionOption.IsRequired = true;
             DescriptionUrlOption.IsRequired = true;
-            TimestampUrlOption.IsRequired = true;
 
             MaxConcurrencyOption.SetDefaultValue(4);
             FileDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
             TimestampDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
+            TimestampUrlOption.SetDefaultValue(new Uri("http://timestamp.acs.microsoft.com"));
             BaseDirectoryOption.SetDefaultValue(new DirectoryInfo(Environment.CurrentDirectory));
 
             // Global options are available on the adding command and all subcommands.
