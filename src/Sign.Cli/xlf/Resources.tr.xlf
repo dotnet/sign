@@ -58,8 +58,8 @@
         <note>{0} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
-        <source>Maximum concurrency (default is 4).</source>
-        <target state="translated">Maksimum eşzamanlılık (varsayılan değer 4’tür).</target>
+        <source>Maximum concurrency.</source>
+        <target state="needs-review-translation">Maksimum eşzamanlılık (varsayılan değer 4’tür).</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
