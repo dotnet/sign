@@ -160,7 +160,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Maximum concurrency (default is 4)..
+        ///   Looks up a localized string similar to Maximum concurrency..
         /// </summary>
         internal static string MaxConcurrencyOptionDescription {
             get {

@@ -156,7 +156,7 @@
     <comment>{0} is an option name (e.g.:  --timestamp-url) and should not be localized.</comment>
   </data>
   <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
-    <value>Maximum concurrency (default is 4).</value>
+    <value>Maximum concurrency.</value>
   </data>
   <data name="OutputOptionDescription" xml:space="preserve">
     <value>Output file or directory. If omitted, input files will be overwritten.</value>
