@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
-        <target state="needs-review-translation">Maksimum eşzamanlılık (varsayılan değer 4’tür).</target>
+        <target state="new">Maximum concurrency.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">

@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
-        <target state="needs-review-translation">並行最大值 (預設為 4)。</target>
+        <target state="new">Maximum concurrency.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">

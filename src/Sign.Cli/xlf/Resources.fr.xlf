@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
-        <target state="needs-review-translation">Concurrence maximale (la valeur par défaut est 4).</target>
+        <target state="new">Maximum concurrency.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
