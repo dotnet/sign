@@ -1,4 +1,4 @@
-# OneSign CLI
+# Sign CLI
 
 [<img align="right" src="https://xunit.net/images/dotnet-fdn-logo.png" width="100" />](https://www.dotnetfoundation.org/)
 
