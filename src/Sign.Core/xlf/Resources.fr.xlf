@@ -4,8 +4,8 @@
     <body>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>
-        <target state="translated">Signature du travail SignTool avec {count} fichiers.</target>
-        <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Signature du travail SignTool avec {count} fichiers.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CertificateIsExpired">
         <source>The certificate is expired.</source>
@@ -18,44 +18,44 @@
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
       <trans-unit id="CliStandardError">
-        <source>{fileName} Err {error}</source>
-        <target state="translated">{fileName} Err {error}</target>
-        <note>{fileName} is a file name and {error} is verbose output from a tool.  The literal text inside the brackets should not be localized.</note>
+        <source>{fileName} returned the error {error}</source>
+        <target state="needs-review-translation">{fileName} Err {error}</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="CliStandardOutput">
-        <source>{fileName} Out {output}</source>
-        <target state="new">{fileName} Out {output}</target>
-        <note>{fileName} is a file name and {output} is verbose output from a tool.  The literal text inside the brackets should not be localized.</note>
+        <source>{fileName} returned the output {output}</source>
+        <target state="new">{fileName} returned the output {output}</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
-        <target state="translated">Signature du travail Mage avec {count} fichiers.</target>
-        <note>{Locked="Mage"} is another signing tool.  {count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Signature du travail Mage avec {count} fichiers.</target>
+        <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
-        <target state="translated">Création du répertoire {path}.</target>
-        <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Création du répertoire {path}.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletedDirectory">
         <source>Directory {path} deleted.</source>
-        <target state="translated">Répertoire {path} supprimé.</target>
-        <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Répertoire {path} supprimé.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletingDirectory">
         <source>Deleting directory {path}.</source>
-        <target state="translated">Suppression du répertoire {path}.</target>
-        <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Suppression du répertoire {path}.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DirectoryNotDeleted">
         <source>Directory {path} still exists.</source>
-        <target state="translated">Le répertoire {path} existe toujours.</target>
-        <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Le répertoire {path} existe toujours.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
-        <target state="translated">Modification du travail AppInstaller avec {count} fichiers.</target>
-        <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Modification du travail AppInstaller avec {count} fichiers.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="ErrorSigningVsix">
         <source>An unspecified error occurred during VSIX signing.</source>
@@ -64,13 +64,13 @@
       </trans-unit>
       <trans-unit id="ExceptionWhileDeletingDirectory">
         <source>An exception occurred while attempting to delete directory {path}.</source>
-        <target state="translated">Une exception s’est produite lors de la tentative de suppression du répertoire {path}.</target>
-        <note>{path} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Une exception s’est produite lors de la tentative de suppression du répertoire {path}.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="translated">Certificat récupéré. [{milliseconds} ms]</target>
-        <note>{milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Certificat récupéré. [{milliseconds} ms]</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
         <source>Fetching certificate from Azure Key Vault.</source>
@@ -79,48 +79,48 @@
       </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
-        <target state="translated">Extraction du conteneur {ContainerFilePath} vers {DirectoryPath}.</target>
-        <note>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Extraction du conteneur {ContainerFilePath} vers {DirectoryPath}.</target>
+        <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="ProcessCouldNotBeKilled">
         <source>{0} timed out and could not be killed.</source>
-        <target state="translated">{0} a expiré et n’a pas pu être arrêté.</target>
-        <note>{0} is a file path.</note>
+        <target state="needs-review-translation">{0} a expiré et n’a pas pu être arrêté.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
         <source>{fileName} took too long to respond. The process exit code is {exitCode}.</source>
         <target state="new">{fileName} took too long to respond. The process exit code is {exitCode}.</target>
-        <note>{fileName} is a file name and {exitCode} is a number representing the error code returned from a process.  The literal text inside the brackets should not be localized.</note>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{exitCode}"} is a number representing the error code returned from a process.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
         <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
-        <target state="translated">{0} a mis trop de temps à répondre. Le code de sortie du processus est {1}. Arguments : {2}</target>
-        <note>{0} is a file name.  {1} is a process exit code.  {2} is process arguments.</note>
+        <target state="needs-review-translation">{0} a mis trop de temps à répondre. Le code de sortie du processus est {1}. Arguments : {2}</target>
+        <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="RunningCli">
         <source>Running {fileName} with parameters: '{args}'.</source>
         <target state="new">Running {fileName} with parameters: '{args}'.</target>
-        <note>{fileName} is a file name and {args} is process arguments.  The literal text inside the brackets should not be localized.</note>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="SavingContainer">
         <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
-        <target state="translated">Reconstruction du conteneur {ContainerFilePath} à partir de {DirectoryPath}.</target>
-        <note>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Reconstruction du conteneur {ContainerFilePath} à partir de {DirectoryPath}.</target>
+        <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="SignAsyncCalled">
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
-        <target state="translated">SignAsync appelé pour {filePath}. Utilisation locale de {localFilePath}.</target>
-        <note>{filePath} and {localFilePath} are both file paths.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">SignAsync appelé pour {filePath}. Utilisation locale de {localFilePath}.</target>
+        <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
-        <target state="translated">Exécution de la tentative n° {attempt} sur {maxAttempts} après {seconds} s.</target>
-        <note>{attempt} and {maxAttempts} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  "s" is the unit abbreviation for seconds.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Exécution de la tentative n° {attempt} sur {maxAttempts} après {seconds} s.</target>
+        <note>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</note>
       </trans-unit>
       <trans-unit id="SigningFailed">
         <source>Could not sign {0}.</source>
-        <target state="translated">Impossible de signer {0}.</target>
-        <note>{0} is a file path.</note>
+        <target state="needs-review-translation">Impossible de signer {0}.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningFailedAfterAllAttempts">
         <source>Failed to sign. Attempts exceeded.</source>
@@ -129,13 +129,13 @@
       </trans-unit>
       <trans-unit id="SigningFailedWithError">
         <source>Signing failed with error {errorCode}.</source>
-        <target state="translated">Échec de la signature avec l’erreur {errorCode}.</target>
-        <note>{errorCode} is an error code.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Échec de la signature avec l’erreur {errorCode}.</target>
+        <note>{Placeholder="{errorCode}"} is an error code.</note>
       </trans-unit>
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
-        <target state="translated">Signature de {filePath}.</target>
-        <note>{filePath} is a file path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Signature de {filePath}.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing succeeded.</source>
@@ -144,13 +144,13 @@
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="translated">{filePath} signé en {millseconds} ms</target>
-        <note>{filePath} is a file path, {milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">{filePath} signé en {millseconds} ms</target>
+        <note>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
-        <target state="translated">Envoi de {filePath} pour signature.</target>
-        <note>{filePath} is a file path.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Envoi de {filePath} pour signature.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
         <source>The value cannot be an empty string.</source>
@@ -159,8 +159,8 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="translated">Signature du travail OpenVsixSignTool avec {count} fichiers.</target>
-        <note>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</note>
+        <target state="needs-review-translation">Signature du travail OpenVsixSignTool avec {count} fichiers.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>
   </file>
