@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>
-        <target state="needs-review-translation">正在对包含 {count} 个文件的 SignTool 作业进行签名。</target>
+        <target state="translated">正在对包含 {count} 个文件的 SignTool 作业进行签名。</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CertificateIsExpired">
@@ -29,32 +29,32 @@
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
-        <target state="needs-review-translation">正在对包含 {count} 个文件的 Mage 作业进行签名。</target>
+        <target state="translated">正在对包含 {count} 个文件的 Mage 作业进行签名。</target>
         <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
-        <target state="needs-review-translation">正在创建目录 {path}。</target>
+        <target state="translated">正在创建目录 {path}。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletedDirectory">
         <source>Directory {path} deleted.</source>
-        <target state="needs-review-translation">已删除目录 {path}。</target>
+        <target state="translated">已删除目录 {path}。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletingDirectory">
         <source>Deleting directory {path}.</source>
-        <target state="needs-review-translation">正在删除目录 {path}。</target>
+        <target state="translated">正在删除目录 {path}。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DirectoryNotDeleted">
         <source>Directory {path} still exists.</source>
-        <target state="needs-review-translation">目录 {path} 仍然存在。</target>
+        <target state="translated">目录 {path} 仍然存在。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
-        <target state="needs-review-translation">正在编辑包含 {count} 个文件的 AppInstaller 作业。</target>
+        <target state="translated">正在编辑包含 {count} 个文件的 AppInstaller 作业。</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="ErrorSigningVsix">
@@ -64,12 +64,12 @@
       </trans-unit>
       <trans-unit id="ExceptionWhileDeletingDirectory">
         <source>An exception occurred while attempting to delete directory {path}.</source>
-        <target state="needs-review-translation">尝试删除目录 {path} 时发生异常。</target>
+        <target state="translated">尝试删除目录 {path} 时发生异常。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="needs-review-translation">已提取证书。[{milliseconds} 毫秒]</target>
+        <target state="translated">已提取证书。[{milliseconds} 毫秒]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
-        <target state="needs-review-translation">正在将容器 {ContainerFilePath} 提取到 {DirectoryPath}。</target>
+        <target state="translated">正在将容器 {ContainerFilePath} 提取到 {DirectoryPath}。</target>
         <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="ProcessCouldNotBeKilled">
         <source>{0} timed out and could not be killed.</source>
-        <target state="needs-review-translation">{0} 超时，无法终止。</target>
+        <target state="translated">{0} 超时，无法终止。</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
         <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
-        <target state="needs-review-translation">{0} 响应的时间太长。进程退出代码为 {1}。参数: {2}</target>
+        <target state="translated">{0} 响应的时间太长。进程退出代码为 {1}。参数: {2}</target>
         <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="RunningCli">
@@ -104,22 +104,22 @@
       </trans-unit>
       <trans-unit id="SavingContainer">
         <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
-        <target state="needs-review-translation">正在从 {DirectoryPath} 重新生成容器 {ContainerFilePath}。</target>
+        <target state="translated">正在从 {DirectoryPath} 重新生成容器 {ContainerFilePath}。</target>
         <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="SignAsyncCalled">
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
-        <target state="needs-review-translation">为 {filePath} 调用了 SignAsync。请在本地使用 {localFilePath}。</target>
+        <target state="translated">为 {filePath} 调用了 SignAsync。请在本地使用 {localFilePath}。</target>
         <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
-        <target state="needs-review-translation">正在 {seconds} 秒后执行第 #{attempt} 次尝试(最多 {maxAttempts} 次)。</target>
+        <target state="translated">正在 {seconds} 秒后执行第 #{attempt} 次尝试(最多 {maxAttempts} 次)。</target>
         <note>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</note>
       </trans-unit>
       <trans-unit id="SigningFailed">
         <source>Could not sign {0}.</source>
-        <target state="needs-review-translation">无法对 {0} 进行签名。</target>
+        <target state="translated">无法对 {0} 进行签名。</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningFailedAfterAllAttempts">
@@ -129,12 +129,12 @@
       </trans-unit>
       <trans-unit id="SigningFailedWithError">
         <source>Signing failed with error {errorCode}.</source>
-        <target state="needs-review-translation">签名失败，出现错误 {errorCode}。</target>
+        <target state="translated">签名失败，出现错误 {errorCode}。</target>
         <note>{Placeholder="{errorCode}"} is an error code.</note>
       </trans-unit>
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
-        <target state="needs-review-translation">正在对 {filePath} 进行签名。</target>
+        <target state="translated">正在对 {filePath} 进行签名。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
@@ -144,12 +144,12 @@
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="needs-review-translation">已成功在 {millseconds} 毫秒内对 {filePath} 进行签名</target>
+        <target state="translated">已成功在 {millseconds} 毫秒内对 {filePath} 进行签名</target>
         <note>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
-        <target state="needs-review-translation">正在提交 {filePath} 进行签名。</target>
+        <target state="translated">正在提交 {filePath} 进行签名。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -159,7 +159,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="needs-review-translation">正在对包含 {count} 个文件的 OpenVsixSignTool 作业进行签名。</target>
+        <target state="translated">正在对包含 {count} 个文件的 OpenVsixSignTool 作业进行签名。</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>

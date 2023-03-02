@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>
-        <target state="needs-review-translation">Podepisování úlohy SignTool s tímto počtem souborů: {count}.</target>
+        <target state="translated">Podepisování úlohy SignTool s tímto počtem souborů: {count}.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CertificateIsExpired">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
-        <target state="needs-review-translation">{fileName} Err {error}</target>
+        <target state="new">{fileName} returned the error {error}</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="CliStandardOutput">
@@ -29,32 +29,32 @@
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
-        <target state="needs-review-translation">Podepisování úlohy Mage pomocí {count} souborů.</target>
+        <target state="translated">Podepisování úlohy Mage pomocí {count} souborů.</target>
         <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
-        <target state="needs-review-translation">Vytváří se adresář {path}.</target>
+        <target state="translated">Vytváří se adresář {path}.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletedDirectory">
         <source>Directory {path} deleted.</source>
-        <target state="needs-review-translation">Adresář {path} se odstranil.</target>
+        <target state="translated">Adresář {path} se odstranil.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletingDirectory">
         <source>Deleting directory {path}.</source>
-        <target state="needs-review-translation">Odstraňuje se adresář {path}.</target>
+        <target state="translated">Odstraňuje se adresář {path}.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DirectoryNotDeleted">
         <source>Directory {path} still exists.</source>
-        <target state="needs-review-translation">Adresář {path} stále existuje.</target>
+        <target state="translated">Adresář {path} stále existuje.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
-        <target state="needs-review-translation">Upravuje se úloha AppInstaller s tímto počtem souborů: {count}.</target>
+        <target state="translated">Upravuje se úloha AppInstaller s tímto počtem souborů: {count}.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="ErrorSigningVsix">
@@ -64,12 +64,12 @@
       </trans-unit>
       <trans-unit id="ExceptionWhileDeletingDirectory">
         <source>An exception occurred while attempting to delete directory {path}.</source>
-        <target state="needs-review-translation">Při pokusu o odstranění adresáře {path} došlo k výjimce.</target>
+        <target state="translated">Při pokusu o odstranění adresáře {path} došlo k výjimce.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="needs-review-translation">Načetl se certifikát. [{milisekund} ms]</target>
+        <target state="new">Fetched certificate. [{milliseconds} ms]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
-        <target state="needs-review-translation">Extrahuje se kontejner {ContainerFilePath} do adresáře {DirectoryPath}.</target>
+        <target state="translated">Extrahuje se kontejner {ContainerFilePath} do adresáře {DirectoryPath}.</target>
         <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="ProcessCouldNotBeKilled">
         <source>{0} timed out and could not be killed.</source>
-        <target state="needs-review-translation">Vypršel časový limit cesty k {0} a nelze ji ukončit.</target>
+        <target state="translated">Vypršel časový limit cesty k {0} a nelze ji ukončit.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
         <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
-        <target state="needs-review-translation">Odpověď souboru {0} trvala příliš dlouho,. Ukončovací kód procesu je {1}. Argumenty: {2}</target>
+        <target state="translated">Odpověď souboru {0} trvala příliš dlouho,. Ukončovací kód procesu je {1}. Argumenty: {2}</target>
         <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="RunningCli">
@@ -104,22 +104,22 @@
       </trans-unit>
       <trans-unit id="SavingContainer">
         <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
-        <target state="needs-review-translation">Kontejner {ContainerFilePath} se znovu sestavuje z adresáře {DirectoryPath}.</target>
+        <target state="translated">Kontejner {ContainerFilePath} se znovu sestavuje z adresáře {DirectoryPath}.</target>
         <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="SignAsyncCalled">
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
-        <target state="needs-review-translation">Byla volána metoda SignAsync pro soubor {filePath}. Používá se {localFilePath} místně.</target>
+        <target state="translated">Byla volána metoda SignAsync pro soubor {filePath}. Používá se {localFilePath} místně.</target>
         <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
-        <target state="needs-review-translation">Probíhá pokus #{attempt} z {maxAttempts} pokusů po {seconds} s.</target>
+        <target state="translated">Probíhá pokus #{attempt} z {maxAttempts} pokusů po {seconds} s.</target>
         <note>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</note>
       </trans-unit>
       <trans-unit id="SigningFailed">
         <source>Could not sign {0}.</source>
-        <target state="needs-review-translation">Nelze podepsat {0}{0}.</target>
+        <target state="translated">Nelze podepsat {0}{0}.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningFailedAfterAllAttempts">
@@ -129,12 +129,12 @@
       </trans-unit>
       <trans-unit id="SigningFailedWithError">
         <source>Signing failed with error {errorCode}.</source>
-        <target state="needs-review-translation">Podepisování selhalo s chybou {errorCode}.</target>
+        <target state="translated">Podepisování selhalo s chybou {errorCode}.</target>
         <note>{Placeholder="{errorCode}"} is an error code.</note>
       </trans-unit>
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
-        <target state="needs-review-translation">Podepisování souboru {filePath}</target>
+        <target state="translated">Podepisování souboru {filePath}</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
@@ -144,12 +144,12 @@
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="needs-review-translation">Soubor {filePath} se úspěšně podepsal za {millseconds} ms.</target>
+        <target state="translated">Soubor {filePath} se úspěšně podepsal za {millseconds} ms.</target>
         <note>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
-        <target state="needs-review-translation">Odesílá se soubor {filePath} pro podepisování.</target>
+        <target state="translated">Odesílá se soubor {filePath} pro podepisování.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -159,7 +159,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="needs-review-translation">Podepisování úlohy OpenVsixSignTool pomocí tohoto počtu souborů: {count}.</target>
+        <target state="translated">Podepisování úlohy OpenVsixSignTool pomocí tohoto počtu souborů: {count}.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>

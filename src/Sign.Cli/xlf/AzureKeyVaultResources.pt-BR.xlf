@@ -29,12 +29,12 @@
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="needs-review-translation">Valor inválido para {0}. O valor deve ser um caminho de diretório totalmente desbloqueado por rooting.</target>
+        <target state="translated">Valor inválido para {0}. O valor deve ser um caminho de diretório totalmente desbloqueado por rooting.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidClientSecretCredential">
         <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="needs-review-translation">Se não estiver usando uma identidade gerenciada, todas essas opções serão necessárias: {0}, {1} e {2}.</target>
+        <target state="translated">Se não estiver usando uma identidade gerenciada, todas essas opções serão necessárias: {0}, {1} e {2}.</target>
         <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidFileValue">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="SomeFilesDoNotExist">
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="needs-review-translation">Alguns arquivos não existem.  Tente usar um valor diferente de {0} ou um caminho de arquivo totalmente qualificado.</target>
+        <target state="translated">Alguns arquivos não existem.  Tente usar um valor diferente de {0} ou um caminho de arquivo totalmente qualificado.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">

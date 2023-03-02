@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="FileDigestOptionDescription">
         <source>Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="needs-review-translation">用于对文件进行哈希处理的摘要算法。允许的值为 "sha256"、"sha384" 和 "sha512"。</target>
+        <target state="translated">用于对文件进行哈希处理的摘要算法。允许的值为 "sha256"、"sha384" 和 "sha512"。</target>
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
@@ -39,27 +39,27 @@
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="needs-review-translation">{0} 的值无效。该值必须是完整的根目录路径。</target>
+        <target state="translated">{0} 的值无效。该值必须是完整的根目录路径。</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
-        <target state="needs-review-translation">{0} 的值无效。值必须为 "sha256"、"sha384" 或 "sha512"。</target>
+        <target state="translated">{0} 的值无效。值必须为 "sha256"、"sha384" 或 "sha512"。</target>
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.  {NumberedPlaceholder="{0}"} is an option name (e.g.:  --file-digest) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
-        <target state="needs-review-translation">{0} 的值无效。该值必须是大于或等于 1 的数值。</target>
+        <target state="translated">{0} 的值无效。该值必须是大于或等于 1 的数值。</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
-        <target state="needs-review-translation">{0} 的值无效。值必须是绝对 HTTP 或 HTTPS URL。</target>
+        <target state="translated">{0} 的值无效。值必须是绝对 HTTP 或 HTTPS URL。</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
-        <target state="new">Maximum concurrency.</target>
+        <target state="translated">最大并发。</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>
-        <target state="needs-review-translation">RFC 3161 时间戳服务器的摘要算法。允许的值为 sha256、sha384 和 sha512。</target>
+        <target state="translated">RFC 3161 时间戳服务器的摘要算法。允许的值为 sha256、sha384 和 sha512。</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161), and {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampUrlOptionDescription">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
         <source>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</source>
-        <target state="needs-review-translation">设置详细级别。允许的值为 "none"、"critical"、"error"、"warning"、"information"、"debug" 和 "trace"。</target>
+        <target state="translated">设置详细级别。允许的值为 "none"、"critical"、"error"、"warning"、"information"、"debug" 和 "trace"。</target>
         <note>{Locked="none", "critical", "error", "warning", "information", "debug", "trace"} are option values and should not be localized.</note>
       </trans-unit>
       <trans-unit id="x86NotSupported">
