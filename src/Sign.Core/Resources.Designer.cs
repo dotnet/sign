@@ -97,7 +97,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {fileName} Err {error}.
+        ///   Looks up a localized string similar to {fileName} returned the error {error}.
         /// </summary>
         internal static string CliStandardError {
             get {
@@ -106,7 +106,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {fileName} Out {output}.
+        ///   Looks up a localized string similar to {fileName} returned the output {output}.
         /// </summary>
         internal static string CliStandardOutput {
             get {

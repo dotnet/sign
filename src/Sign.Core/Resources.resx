@@ -119,7 +119,7 @@
   </resheader>
   <data name="AzureSignToolSignatureProviderSigning" xml:space="preserve">
     <value>Signing SignTool job with {count} files.</value>
-    <comment>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
   <data name="CertificateIsExpired" xml:space="preserve">
     <value>The certificate is expired.</value>
@@ -130,113 +130,113 @@
   </data>
   <data name="ClickOnceSignatureProviderSigning" xml:space="preserve">
     <value>Signing Mage job with {count} files.</value>
-    <comment>{Locked="Mage"} is another signing tool.  {count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
   <data name="CliStandardError" xml:space="preserve">
-    <value>{fileName} Err {error}</value>
-    <comment>{fileName} is a file name and {error} is verbose output from a tool.  The literal text inside the brackets should not be localized.</comment>
+    <value>{fileName} returned the error {error}</value>
+    <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</comment>
   </data>
   <data name="CliStandardOutput" xml:space="preserve">
-    <value>{fileName} Out {output}</value>
-    <comment>{fileName} is a file name and {output} is verbose output from a tool.  The literal text inside the brackets should not be localized.</comment>
+    <value>{fileName} returned the output {output}</value>
+    <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</comment>
   </data>
   <data name="CreatingDirectory" xml:space="preserve">
     <value>Creating directory {path}.</value>
-    <comment>{path} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
   <data name="DeletedDirectory" xml:space="preserve">
     <value>Directory {path} deleted.</value>
-    <comment>{path} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
   <data name="DeletingDirectory" xml:space="preserve">
     <value>Deleting directory {path}.</value>
-    <comment>{path} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
   <data name="DirectoryNotDeleted" xml:space="preserve">
     <value>Directory {path} still exists.</value>
-    <comment>{path} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
   <data name="EditingAppInstaller" xml:space="preserve">
     <value>Editing AppInstaller job with {count} files.</value>
-    <comment>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
   <data name="ErrorSigningVsix" xml:space="preserve">
     <value>An unspecified error occurred during VSIX signing.</value>
   </data>
   <data name="ExceptionWhileDeletingDirectory" xml:space="preserve">
     <value>An exception occurred while attempting to delete directory {path}.</value>
-    <comment>{path} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
   <data name="FetchedCertificate" xml:space="preserve">
     <value>Fetched certificate. [{milliseconds} ms]</value>
-    <comment>{milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
   </data>
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
   </data>
   <data name="OpeningContainer" xml:space="preserve">
     <value>Extracting container {ContainerFilePath} to {DirectoryPath}.</value>
-    <comment>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</comment>
   </data>
   <data name="ProcessCouldNotBeKilled" xml:space="preserve">
     <value>{0} timed out and could not be killed.</value>
-    <comment>{0} is a file path.</comment>
+    <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
   </data>
   <data name="ProcessDidNotExitInTime" xml:space="preserve">
     <value>{fileName} took too long to respond. The process exit code is {exitCode}.</value>
-    <comment>{fileName} is a file name and {exitCode} is a number representing the error code returned from a process.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{exitCode}"} is a number representing the error code returned from a process.</comment>
   </data>
   <data name="ProcessDidNotExitInTimeWithArguments" xml:space="preserve">
     <value>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</value>
-    <comment>{0} is a file name.  {1} is a process exit code.  {2} is process arguments.</comment>
+    <comment>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</comment>
   </data>
   <data name="RunningCli" xml:space="preserve">
     <value>Running {fileName} with parameters: '{args}'.</value>
-    <comment>{fileName} is a file name and {args} is process arguments.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</comment>
   </data>
   <data name="SavingContainer" xml:space="preserve">
     <value>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</value>
-    <comment>{ContainerFilePath} is a file path and {DirectoryPath} is a directory path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</comment>
   </data>
   <data name="SignAsyncCalled" xml:space="preserve">
     <value>SignAsync called for {filePath}. Using {localFilePath} locally.</value>
-    <comment>{filePath} and {localFilePath} are both file paths.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</comment>
   </data>
   <data name="SigningAttempt" xml:space="preserve">
     <value>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</value>
-    <comment>{attempt} and {maxAttempts} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  "s" is the unit abbreviation for seconds.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</comment>
   </data>
   <data name="SigningFailed" xml:space="preserve">
     <value>Could not sign {0}.</value>
-    <comment>{0} is a file path.</comment>
+    <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
   </data>
   <data name="SigningFailedAfterAllAttempts" xml:space="preserve">
     <value>Failed to sign. Attempts exceeded.</value>
   </data>
   <data name="SigningFailedWithError" xml:space="preserve">
     <value>Signing failed with error {errorCode}.</value>
-    <comment>{errorCode} is an error code.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{errorCode}"} is an error code.</comment>
   </data>
   <data name="SigningFile" xml:space="preserve">
     <value>Signing {filePath}.</value>
-    <comment>{filePath} is a file path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{filePath}"} is a file path.</comment>
   </data>
   <data name="SigningSucceeded" xml:space="preserve">
     <value>Signing succeeded.</value>
   </data>
   <data name="SigningSucceededWithTimeElapsed" xml:space="preserve">
     <value>Successfully signed {filePath} in {millseconds} ms</value>
-    <comment>{filePath} is a file path, {milliseconds} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
   </data>
   <data name="SubmittingFileForSigning" xml:space="preserve">
     <value>Submitting {filePath} for signing.</value>
-    <comment>{filePath} is a file path.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{filePath}"} is a file path.</comment>
   </data>
   <data name="ValueCannotBeEmptyString" xml:space="preserve">
     <value>The value cannot be an empty string.</value>
   </data>
   <data name="VsixSignatureProviderSigning" xml:space="preserve">
     <value>Signing OpenVsixSignTool job with {count} files.</value>
-    <comment>{count} is the number of files to be signed.  The literal text inside the brackets should not be localized.</comment>
+    <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
 </root>
