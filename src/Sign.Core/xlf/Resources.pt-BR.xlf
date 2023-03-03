@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>
-        <target state="needs-review-translation">Autenticando o trabalho SignTool com {count} arquivos.</target>
+        <target state="translated">Autenticando o trabalho SignTool com {count} arquivos.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CertificateIsExpired">
@@ -29,32 +29,32 @@
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
-        <target state="needs-review-translation">Autenticando o trabalho Mage com {count} arquivos.</target>
+        <target state="translated">Autenticando o trabalho Mage com {count} arquivos.</target>
         <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
-        <target state="needs-review-translation">Criando o diretório {path}.</target>
+        <target state="translated">Criando o diretório {path}.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletedDirectory">
         <source>Directory {path} deleted.</source>
-        <target state="needs-review-translation">Diretório {path} excluído.</target>
+        <target state="translated">Diretório {path} excluído.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DeletingDirectory">
         <source>Deleting directory {path}.</source>
-        <target state="needs-review-translation">Excluindo o diretório {path}.</target>
+        <target state="translated">Excluindo o diretório {path}.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="DirectoryNotDeleted">
         <source>Directory {path} still exists.</source>
-        <target state="needs-review-translation">O diretório {path} ainda existe.</target>
+        <target state="translated">O diretório {path} ainda existe.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
-        <target state="needs-review-translation">Editando o trabalho do AppInstaller com {count} arquivos.</target>
+        <target state="translated">Editando o trabalho do AppInstaller com {count} arquivos.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
       <trans-unit id="ErrorSigningVsix">
@@ -64,12 +64,12 @@
       </trans-unit>
       <trans-unit id="ExceptionWhileDeletingDirectory">
         <source>An exception occurred while attempting to delete directory {path}.</source>
-        <target state="needs-review-translation">Ocorreu uma exceção ao tentar excluir o diretório {path}.</target>
+        <target state="translated">Ocorreu uma exceção ao tentar excluir o diretório {path}.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="needs-review-translation">Certificado buscado. [{milissegundos} ms]</target>
+        <target state="new">Fetched certificate. [{milliseconds} ms]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
@@ -79,12 +79,12 @@
       </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
-        <target state="needs-review-translation">Extraindo o contêiner {ContainerFilePath} para {DirectoryPath}.</target>
+        <target state="translated">Extraindo o contêiner {ContainerFilePath} para {DirectoryPath}.</target>
         <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="ProcessCouldNotBeKilled">
         <source>{0} timed out and could not be killed.</source>
-        <target state="needs-review-translation">{0} atingiu o tempo limite e não pôde ser eliminado.</target>
+        <target state="translated">{0} atingiu o tempo limite e não pôde ser eliminado.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
         <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
-        <target state="needs-review-translation">{0} demorou muito para responder. O código de saída do processo {1}. Argumentos: {2}</target>
+        <target state="translated">{0} demorou muito para responder. O código de saída do processo {1}. Argumentos: {2}</target>
         <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="RunningCli">
@@ -104,22 +104,22 @@
       </trans-unit>
       <trans-unit id="SavingContainer">
         <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
-        <target state="needs-review-translation">Recriando o contêiner {ContainerFilePath} a partir do {DirectoryPath}.</target>
+        <target state="translated">Recriando o contêiner {ContainerFilePath} a partir do {DirectoryPath}.</target>
         <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
       </trans-unit>
       <trans-unit id="SignAsyncCalled">
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
-        <target state="needs-review-translation">SignAsync chamado para {filePath}. Usando {localFilePath} localmente.</target>
+        <target state="translated">SignAsync chamado para {filePath}. Usando {localFilePath} localmente.</target>
         <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
-        <target state="needs-review-translation">Executando a tentativa #{attempt} de {maxAttempts} tentativas após {seconds} s.</target>
+        <target state="translated">Executando a tentativa #{attempt} de {maxAttempts} tentativas após {seconds} s.</target>
         <note>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</note>
       </trans-unit>
       <trans-unit id="SigningFailed">
         <source>Could not sign {0}.</source>
-        <target state="needs-review-translation">Não foi possível autenticar {0}.</target>
+        <target state="translated">Não foi possível autenticar {0}.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningFailedAfterAllAttempts">
@@ -129,12 +129,12 @@
       </trans-unit>
       <trans-unit id="SigningFailedWithError">
         <source>Signing failed with error {errorCode}.</source>
-        <target state="needs-review-translation">Falha na autenticação com o erro {errorCode}.</target>
+        <target state="translated">Falha na autenticação com o erro {errorCode}.</target>
         <note>{Placeholder="{errorCode}"} is an error code.</note>
       </trans-unit>
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
-        <target state="needs-review-translation">Autenticando {filePath}.</target>
+        <target state="translated">Autenticando {filePath}.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
@@ -144,12 +144,12 @@
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="needs-review-translation">{filePath} autenticado com êxito em {millseconds} ms</target>
+        <target state="translated">{filePath} autenticado com êxito em {millseconds} ms</target>
         <note>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
-        <target state="needs-review-translation">Enviando {filePath} para autenticação.</target>
+        <target state="translated">Enviando {filePath} para autenticação.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -159,7 +159,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="needs-review-translation">Autenticando o trabalho OpenVsixSignTool com {count} arquivos.</target>
+        <target state="translated">Autenticando o trabalho OpenVsixSignTool com {count} arquivos.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>
