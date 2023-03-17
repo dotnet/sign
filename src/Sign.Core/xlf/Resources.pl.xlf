@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
-        <target state="new">{fileName} returned the error {error}</target>
+        <target state="translated">Plik {fileName} zwrócił błąd {error}</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="CliStandardOutput">
         <source>{fileName} returned the output {output}</source>
-        <target state="new">{fileName} returned the output {output}</target>
+        <target state="translated">Plik {fileName} zwrócił dane wyjśćiowe {output}</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
         <source>{fileName} took too long to respond. The process exit code is {exitCode}.</source>
-        <target state="new">{fileName} took too long to respond. The process exit code is {exitCode}.</target>
+        <target state="translated">W przypadku pliku {fileName} uzyskanie odpowiedzi trwało zbyt długo. Kod zakończenia procesu to {exitCode}.</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{exitCode}"} is a number representing the error code returned from a process.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="RunningCli">
         <source>Running {fileName} with parameters: '{args}'.</source>
-        <target state="new">Running {fileName} with parameters: '{args}'.</target>
+        <target state="translated">Uruchamianie {fileName} za pomocą parametrów: '{args}'.</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="SavingContainer">

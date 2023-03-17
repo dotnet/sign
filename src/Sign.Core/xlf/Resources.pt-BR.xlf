@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
-        <target state="new">{fileName} returned the error {error}</target>
+        <target state="translated">{fileName} retornou o erro {error}</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="CliStandardOutput">
         <source>{fileName} returned the output {output}</source>
-        <target state="new">{fileName} returned the output {output}</target>
+        <target state="translated">{fileName} retornou a saída {output}</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="new">Fetched certificate. [{milliseconds} ms]</target>
+        <target state="translated">Certificado buscado. [{milliseconds} ms]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTime">
         <source>{fileName} took too long to respond. The process exit code is {exitCode}.</source>
-        <target state="new">{fileName} took too long to respond. The process exit code is {exitCode}.</target>
+        <target state="translated">{fileName} demorou muito para responder. O código de saída do processo é {exitCode}.</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{exitCode}"} is a number representing the error code returned from a process.</note>
       </trans-unit>
       <trans-unit id="ProcessDidNotExitInTimeWithArguments">
@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="RunningCli">
         <source>Running {fileName} with parameters: '{args}'.</source>
-        <target state="new">Running {fileName} with parameters: '{args}'.</target>
+        <target state="translated">Executando {fileName} com parâmetros: '{args}'.</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</note>
       </trans-unit>
       <trans-unit id="SavingContainer">
