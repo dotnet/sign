@@ -225,8 +225,8 @@
     <value>Signing succeeded.</value>
   </data>
   <data name="SigningSucceededWithTimeElapsed" xml:space="preserve">
-    <value>Successfully signed {filePath} in {millseconds} ms</value>
-    <comment>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
+    <value>Completed in {millseconds} ms.</value>
+    <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
   </data>
   <data name="SubmittingFileForSigning" xml:space="preserve">
     <value>Submitting {filePath} for signing.</value>
