@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Completed in {millseconds} ms.</source>
-        <target state="needs-review-translation">{filePath} signé en {millseconds} ms</target>
+        <target state="new">Completed in {millseconds} ms.</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
