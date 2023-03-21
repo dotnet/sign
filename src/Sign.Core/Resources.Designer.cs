@@ -313,7 +313,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully signed {filePath} in {millseconds} ms.
+        ///   Looks up a localized string similar to Completed in {millseconds} ms..
         /// </summary>
         internal static string SigningSucceededWithTimeElapsed {
             get {

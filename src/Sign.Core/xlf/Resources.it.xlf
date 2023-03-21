@@ -143,9 +143,9 @@
         <note />
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
-        <source>Successfully signed {filePath} in {millseconds} ms</source>
-        <target state="translated">{filePath} è stato firmato in {millseconds} ms</target>
-        <note>{Placeholder="{filePath}"} is a file path, {Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+        <source>Completed in {millseconds} ms.</source>
+        <target state="needs-review-translation">{filePath} è stato firmato in {millseconds} ms</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="SubmittingFileForSigning">
         <source>Submitting {filePath} for signing.</source>
