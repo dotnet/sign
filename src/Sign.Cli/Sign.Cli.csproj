@@ -83,6 +83,10 @@
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </Content>
+    <Content Include="$(RepositoryRootDirectory)\README.md">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
     <Content Include="$(RepositoryRootDirectory)\THIRD-PARTY-NOTICES.txt">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
