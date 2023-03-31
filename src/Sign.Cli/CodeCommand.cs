@@ -26,7 +26,7 @@ namespace Sign.Cli
         internal Option<LogLevel> VerbosityOption { get; } = new(new[] { "-v", "--verbosity" }, () => LogLevel.Warning, Resources.VerbosityOptionDescription);
 
         internal CodeCommand()
-            : base("code", "Sign binaries and containers.")
+            : base("code", Resources.CodeCommandDescription)
         {
             DescriptionOption.IsRequired = true;
             DescriptionUrlOption.IsRequired = true;
