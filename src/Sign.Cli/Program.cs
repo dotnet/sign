@@ -59,9 +59,9 @@ namespace Sign.Cli
             }
         }
 
-        internal static Parser CreateParser()
+        internal static Parser CreateParser(IServiceProviderFactory? serviceProviderFactory = null)
         {
-            SignCommand command = new();
+            SignCommand command = new(serviceProviderFactory);
 
             return new CommandLineBuilder(command)
                 .UseVersionOption()
@@ -72,10 +72,12 @@ namespace Sign.Cli
 
         private static void AddEnvironmentPath(string path)
         {
-            string paths = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            const string name = "PATH";
+
+            string paths = Environment.GetEnvironmentVariable(name) ?? string.Empty;
             string newPaths = string.Join(Path.PathSeparator.ToString(), paths, path);
 
-            Environment.SetEnvironmentVariable("PATH", newPaths);
+            Environment.SetEnvironmentVariable(name, newPaths);
         }
     }
 }

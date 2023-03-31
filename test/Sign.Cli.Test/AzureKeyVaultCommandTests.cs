@@ -5,20 +5,31 @@
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using Moq;
+using Sign.Core;
 
 namespace Sign.Cli.Test
 {
     public class AzureKeyVaultCommandTests
     {
-        private readonly AzureKeyVaultCommand _command = new(new CodeCommand());
+        private readonly AzureKeyVaultCommand _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
 
         [Fact]
         public void Constructor_WhenCodeCommandIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AzureKeyVaultCommand(codeCommand: null!));
+                () => new AzureKeyVaultCommand(codeCommand: null!, Mock.Of<IServiceProviderFactory>()));
 
             Assert.Equal("codeCommand", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenServiceProviderFactoryIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new AzureKeyVaultCommand(new CodeCommand(), serviceProviderFactory: null!));
+
+            Assert.Equal("serviceProviderFactory", exception.ParamName);
         }
 
         [Fact]
@@ -100,7 +111,7 @@ namespace Sign.Cli.Test
 
             public ParserTests()
             {
-                _command = new(new CodeCommand());
+                _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
                 _parser = new CommandLineBuilder(_command).Build();
             }
 
