@@ -30,10 +30,11 @@ namespace Sign.Cli
         internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, AzureKeyVaultResources.TenantIdOptionDescription);
         internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, AzureKeyVaultResources.UrlOptionDescription);
 
-        internal AzureKeyVaultCommand(CodeCommand codeCommand)
+        internal AzureKeyVaultCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
+            ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
             _codeCommand = codeCommand;
 
@@ -99,7 +100,7 @@ namespace Sign.Cli
                     return;
                 }
 
-                Core.ServiceProvider serviceProvider = Core.ServiceProvider.CreateDefault(verbosity);
+                IServiceProvider serviceProvider = serviceProviderFactory.Create(verbosity);
 
                 List<FileInfo> inputFiles;
 

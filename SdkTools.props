@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" IncludeAssets="build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NetSdkBinDir Condition=" '$(NetSdkBinDir)' == '' ">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools</NetSdkBinDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\appxsip.dll" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\appxpackaging.dll" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\opcservices.dll" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\makeappx.exe" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\makepri.exe" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\mssign32.dll" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini" />
+    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\SignTool.exe.manifest" />
+
+    <SdkFile86 Include="$(NetSdkBinDir)\mage.exe" />
+  </ItemGroup>
+
+  <Target Name="CopySdkFiles" AfterTargets="Build">
+    <Copy SourceFiles="@(SdkFile64)" DestinationFolder="$(OutputPath)\tools\SDK\x64" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(SdkFile86)" DestinationFolder="$(OutputPath)\tools\SDK\x86" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <Content Include="@(SdkFile64)">
+      <Pack>true</Pack>
+      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      <Visible>false</Visible>
+    </Content>
+    <Content Include="@(SdkFile86)">
+      <Pack>true</Pack>
+      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+</Project>

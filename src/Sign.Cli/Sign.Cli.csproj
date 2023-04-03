@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepositoryRootDirectory)\SdkTools.props" />
 
   <PropertyGroup>
     <AssemblyName>sign</AssemblyName>
@@ -14,7 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" IncludeAssets="build" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
@@ -31,34 +31,6 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <PropertyGroup>
-    <NetSdkBinDir Condition=" '$(NetSdkBinDir)' == '' ">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools</NetSdkBinDir>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\appxsip.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\appxpackaging.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\opcservices.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\makeappx.exe" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\makepri.exe" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\mssign32.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\SignTool.exe.manifest" />
-
-    <SdkFile86 Include="$(NetSdkBinDir)\mage.exe" />
-  </ItemGroup>
-
-  <Target Name="CopySdkFiles" AfterTargets="Build">
-    <Copy SourceFiles="@(SdkFile64)" DestinationFolder="$(OutputPath)\tools\SDK\x64" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(SdkFile86)" DestinationFolder="$(OutputPath)\tools\SDK\x86" SkipUnchangedFiles="true" />
-  </Target>
-
   <Target Name="VerifyNuGetPackage" AfterTargets="Pack">
     <PropertyGroup>
       <PowerShellFilePath Condition=" '$(PowerShellFilePath)' == '' ">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellFilePath>
@@ -69,16 +41,6 @@
   </Target>
 
   <ItemGroup>
-    <Content Include="@(SdkFile64)">
-      <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="@(SdkFile86)">
-      <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
-      <Visible>false</Visible>
-    </Content>
     <Content Include="$(RepositoryRootDirectory)\LICENSE.txt">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
