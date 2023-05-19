@@ -13,6 +13,7 @@ namespace Sign.Core.Test
         internal static readonly Oid IdQtCps = new(DottedDecimalValues.IdQtCps);
         internal static readonly Oid IdQtUnotice = new(DottedDecimalValues.IdQtUnotice);
         internal static readonly Oid MicrosoftRfc3161Timestamp = new(DottedDecimalValues.MicrosoftRfc3161Timestamp);
+        internal static readonly Oid Sha1 = new(DottedDecimalValues.Sha1);
         internal static readonly Oid Sha256 = new(DottedDecimalValues.Sha256);
         internal static readonly Oid Sha384 = new(DottedDecimalValues.Sha384);
         internal static readonly Oid Sha512 = new(DottedDecimalValues.Sha512);
@@ -38,6 +39,9 @@ namespace Sign.Core.Test
 
             // "szOID_RFC3161_counterSign" from wincrypt.h
             internal const string MicrosoftRfc3161Timestamp = "1.3.6.1.4.1.311.3.3.1";
+
+            // RFC 8017 appendix B.1 (https://datatracker.ietf.org/doc/html/rfc8017#appendix-B.1)
+            internal const string Sha1 = "1.3.14.3.2.26";
 
             // RFC 8017 appendix B.1 (https://datatracker.ietf.org/doc/html/rfc8017#appendix-B.1)
             internal const string Sha256 = "2.16.840.1.101.3.4.2.1";

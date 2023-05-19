@@ -17,7 +17,6 @@ namespace Sign.Core.Test
             Assert.Equal(typeof(RSAPKCS1SignatureFormatter).AssemblyQualifiedName, description.FormatterAlgorithm);
             Assert.Equal(typeof(RSAPKCS1SignatureDeformatter).AssemblyQualifiedName, description.DeformatterAlgorithm);
             Assert.Equal(nameof(SHA256), description.DigestAlgorithm);
-
         }
 
         [Fact]
