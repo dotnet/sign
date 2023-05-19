@@ -9,18 +9,10 @@ namespace Sign.Core
 {
     internal sealed class OpenVsixSignTool : Tool, IOpenVsixSignTool
     {
-        private readonly IKeyVaultService _keyVaultService;
-
         // Dependency injection requires a public constructor.
-        public OpenVsixSignTool(
-            IKeyVaultService keyVaultService,
-            IToolConfigurationProvider toolConfigurationProvider,
-            ILogger<INuGetSignTool> logger)
+        public OpenVsixSignTool(ILogger<INuGetSignTool> logger)
             : base(logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
-
-            _keyVaultService = keyVaultService;
         }
 
         public async Task<bool> SignAsync(FileInfo file, SignConfigurationSet configuration, SignOptions options)
