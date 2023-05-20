@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\signtool.exe" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="TestAssets\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
