@@ -5,4 +5,4 @@
 // a specific target and scoped to a namespace, type, member, etc.
 
 using System.Diagnostics.CodeAnalysis;
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "This program onl supports Windows at this time.", Scope = "member", Target = "~M:Sign.Core.ManifestSigner.Sign(System.IO.FileInfo,System.Security.Cryptography.X509Certificates.X509Certificate2,System.Security.Cryptography.RSA,Sign.Core.SignOptions)")]
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "This program only supports Windows at this time.", Scope = "member", Target = "~M:Sign.Core.ManifestSigner.Sign(System.IO.FileInfo,System.Security.Cryptography.X509Certificates.X509Certificate2,System.Security.Cryptography.RSA,Sign.Core.SignOptions)")]
