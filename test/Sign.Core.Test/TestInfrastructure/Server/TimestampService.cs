@@ -121,18 +121,27 @@ namespace Sign.Core.Test
                 return Task.CompletedTask;
             }
 
-            ReadOnlyMemory<byte> tstInfo = CreateTstInfo(
-                request.HashAlgorithmId,
-                request.GetMessageHash(),
-                _nextSerialNumber,
-                request.GetNonce());
+            ReadOnlyMemory<byte> response;
 
-            _serialNumbers.Add(_nextSerialNumber);
+            if (request.HashAlgorithmId.IsEqualTo(Oids.Sha1))
+            {
+                response = CreateResponse(PkiStatus.Rejection, signedCms: null);
+            }
+            else
+            {
+                ReadOnlyMemory<byte> tstInfo = CreateTstInfo(
+                    request.HashAlgorithmId,
+                    request.GetMessageHash(),
+                    _nextSerialNumber,
+                    request.GetNonce());
 
-            ++_nextSerialNumber;
+                _serialNumbers.Add(_nextSerialNumber);
 
-            SignedCms timestamp = GenerateTimestamp(request!, tstInfo);
-            ReadOnlyMemory<byte> response = CreateResponse(PkiStatus.Granted, timestamp);
+                ++_nextSerialNumber;
+
+                SignedCms timestamp = GenerateTimestamp(request!, tstInfo);
+                response = CreateResponse(PkiStatus.Granted, timestamp);
+            }
 
             context.Response.ContentType = ResponseContentType;
             context.Response.StatusCode = 200;
