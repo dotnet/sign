@@ -1,21 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 namespace Sign.Core.Test
 {
-    internal sealed class TemporaryEnvironmentPath : IDisposable
+    internal sealed class TemporaryEnvironmentPathOverride : IDisposable
     {
         private const string Name = "PATH";
 
         private readonly string? _originalEnvironmentPath;
 
-        internal TemporaryEnvironmentPath(string path)
+        internal TemporaryEnvironmentPathOverride(string path)
         {
             _originalEnvironmentPath = Environment.GetEnvironmentVariable(Name);
 
             string paths = _originalEnvironmentPath ?? string.Empty;
-            string newPaths = string.Join(Path.PathSeparator.ToString(), paths, path);
+            string newPaths = string.Join(Path.PathSeparator, paths, path);
 
             Environment.SetEnvironmentVariable(Name, newPaths);
         }
@@ -23,8 +23,6 @@ namespace Sign.Core.Test
         public void Dispose()
         {
             Environment.SetEnvironmentVariable(Name, _originalEnvironmentPath);
-
-            GC.SuppressFinalize(this);
         }
     }
 }

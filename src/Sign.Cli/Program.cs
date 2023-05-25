@@ -75,7 +75,7 @@ namespace Sign.Cli
             const string name = "PATH";
 
             string paths = Environment.GetEnvironmentVariable(name) ?? string.Empty;
-            string newPaths = string.Join(Path.PathSeparator.ToString(), paths, path);
+            string newPaths = string.Join(Path.PathSeparator, paths, path);
 
             Environment.SetEnvironmentVariable(name, newPaths);
         }

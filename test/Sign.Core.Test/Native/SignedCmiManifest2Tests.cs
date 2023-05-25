@@ -47,7 +47,7 @@ namespace Sign.Core.Test
                     Flag = CmiManifestSignerFlag.DontReplacePublicKeyToken
                 };
 
-                using (TemporaryEnvironmentPath temporaryEnvironmentPath = CreateTemporaryEnvironmentPath())
+                using (TemporaryEnvironmentPathOverride temporaryEnvironmentPath = CreateTemporaryEnvironmentPathOverride())
                 {
                     signedCmiManifest.Sign(signer, _certificatesFixture.TimestampServiceUrl.AbsoluteUri);
                 }
@@ -76,12 +76,12 @@ namespace Sign.Core.Test
             return request.CreateSelfSigned(now.AddMinutes(-5), now.AddMinutes(5));
         }
 
-        private static TemporaryEnvironmentPath CreateTemporaryEnvironmentPath()
+        private static TemporaryEnvironmentPathOverride CreateTemporaryEnvironmentPathOverride()
         {
             string windir = Environment.GetEnvironmentVariable("windir")!;
             string netfxDir = $@"{windir}\Microsoft.NET\Framework64\v4.0.30319";
 
-            return new TemporaryEnvironmentPath(netfxDir);
+            return new TemporaryEnvironmentPathOverride(netfxDir);
         }
 
         private static byte[] GetTimestampBytes(XmlDocument manifest)
