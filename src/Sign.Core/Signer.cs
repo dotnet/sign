@@ -160,7 +160,7 @@ namespace Sign.Core
                         fi.CopyTo(output.FullName, overwrite: true);
                     }
 
-                    _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, output.FullName, sw.ElapsedMilliseconds);
+                    _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
                 });
 
             }
