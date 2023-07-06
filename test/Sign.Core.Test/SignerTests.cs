@@ -125,7 +125,8 @@ namespace Sign.Core.Test
         private async Task SignAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
         {
             ServiceProvider serviceProvider = Create();
-            Signer signer = new(serviceProvider, Mock.Of<ILogger<ISigner>>());
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
 
             int exitCode = await signer.SignAsync(
                 new[] { file },
@@ -145,6 +146,11 @@ namespace Sign.Core.Test
                 certificateName: "c");
 
             Assert.Equal(ExitCode.Success, exitCode);
+
+            TestLogEntry lastLogEntry = logger.Entries.Last();
+
+            Assert.Equal(LogLevel.Information, lastLogEntry.LogLevel);
+            Assert.Matches(@"^Completed in \d+ ms.$", lastLogEntry.Message);
         }
 
         private static FileInfo GetTestAsset(TemporaryDirectory temporaryDirectory, string fileName)
