@@ -4,10 +4,10 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.Identity" Version="1.8.2" />
-    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.4.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.3" />
+    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.5.1" />
     <PackageVersion Include="AzureSign.Core" Version="4.0.1" />
-    <PackageVersion Include="coverlet.collector" Version="3.2.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
@@ -17,18 +17,18 @@
     <!-- Lift this dependency to enable Sign.Core.Test override the version. -->
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="7.0.0" />
     <!-- Only use release versions.  Pre-release versions are signed with an untrusted certificate. -->
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
-    <PackageVersion Include="NuGet.Packaging" Version="6.4.0" />
+    <PackageVersion Include="NuGet.Packaging" Version="6.7.0" />
     <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
-    <PackageVersion Include="NuGet.Protocol" Version="6.4.0" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.7.0" />
     <PackageVersion Include="NuGetKeyVaultSignTool.Core" Version="3.2.3" />
     <PackageVersion Include="OpenVsixSignTool.Core" Version="0.4.0" />
     <PackageVersion Include="RSAKeyVaultProvider" Version="2.1.1" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="7.0.1" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="7.0.3" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="7.0.1" />
-    <PackageVersion Include="System.Text.Json" Version="7.0.2" />
+    <PackageVersion Include="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
 </Project>
