@@ -236,7 +236,7 @@
     <value>The value cannot be an empty string.</value>
   </data>
   <data name="VsixSignatureProviderSigning" xml:space="preserve">
-    <value>Signing OpenVsixSignTool job with {count} files.</value>
+    <value>Signing VsixSignTool job with {count} files.</value>
     <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
 </root>

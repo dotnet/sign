@@ -5,27 +5,26 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using OpenVsixSignTool.Core;
 
 namespace Sign.Core
 {
     internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
         private readonly IKeyVaultService _keyVaultService;
-        private readonly IOpenVsixSignTool _openVsixSignTool;
+        private readonly IVsixSignTool _VsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
             IKeyVaultService keyVaultService,
-            IOpenVsixSignTool openVsixSignTool,
+            IVsixSignTool vsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
-            ArgumentNullException.ThrowIfNull(openVsixSignTool, nameof(openVsixSignTool));
+            ArgumentNullException.ThrowIfNull(vsixSignTool, nameof(vsixSignTool));
 
             _keyVaultService = keyVaultService;
-            _openVsixSignTool = openVsixSignTool;
+            _VsixSignTool = vsixSignTool;
         }
 
         public bool CanSign(FileInfo file)
@@ -60,7 +59,7 @@ namespace Sign.Core
                 rsaPrivateKey,
                 certificate);
 
-            return await _openVsixSignTool.SignAsync(file, configuration, options);
+            return await _VsixSignTool.SignAsync(file, configuration, options);
         }
     }
 }

@@ -3,14 +3,14 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using OpenVsixSignTool.Core;
+using Sign.Core.Timestamp;
 
 namespace Sign.Core
 {
-    internal sealed class OpenVsixSignTool : Tool, IOpenVsixSignTool
+    internal sealed class VsixSignTool : Tool, IVsixSignTool
     {
         // Dependency injection requires a public constructor.
-        public OpenVsixSignTool(ILogger<INuGetSignTool> logger)
+        public VsixSignTool(ILogger<INuGetSignTool> logger)
             : base(logger)
         {
         }

@@ -28,7 +28,7 @@ namespace Sign.Core.Test
             IMageCli mageCli = Mock.Of<IMageCli>();
             IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();
             INuGetSignTool nuGetSignTool = Mock.Of<INuGetSignTool>();
-            IOpenVsixSignTool openVsixSignTool = Mock.Of<IOpenVsixSignTool>();
+            IVsixSignTool vsixSignTool = Mock.Of<IVsixSignTool>();
             IServiceProvider serviceProvider = Mock.Of<IServiceProvider>();
             IToolConfigurationProvider toolConfigurationProvider = Mock.Of<IToolConfigurationProvider>();
 
@@ -47,7 +47,7 @@ namespace Sign.Core.Test
                     manifestSigner,
                     logger),
                 new NuGetSignatureProvider(keyVaultService, nuGetSignTool, logger),
-                new VsixSignatureProvider(keyVaultService, openVsixSignTool, logger)
+                new VsixSignatureProvider(keyVaultService, vsixSignTool, logger)
             };
         }
 

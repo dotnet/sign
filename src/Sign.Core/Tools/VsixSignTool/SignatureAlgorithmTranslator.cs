@@ -1,0 +1,40 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE.txt file in the project root for more information.
+
+using System.Security.Cryptography;
+
+namespace Sign.Core
+{
+    internal static class SignatureAlgorithmTranslator
+    {
+        public static Uri SignatureAlgorithmToXmlDSigUri(SigningAlgorithm signatureAlgorithm, HashAlgorithmName hashAlgorithmName)
+        {
+            switch (signatureAlgorithm)
+            {
+                case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.MD5.Name:
+                    return OpcKnownUris.SignatureAlgorithms.rsaMD5;
+                case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA1.Name:
+                    return OpcKnownUris.SignatureAlgorithms.rsaSHA1;
+                case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA256.Name:
+                    return OpcKnownUris.SignatureAlgorithms.rsaSHA256;
+                case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA384.Name:
+                    return OpcKnownUris.SignatureAlgorithms.rsaSHA384;
+                case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA512.Name:
+                    return OpcKnownUris.SignatureAlgorithms.rsaSHA512;
+
+                case SigningAlgorithm.ECDSA when hashAlgorithmName.Name == HashAlgorithmName.SHA1.Name:
+                    return OpcKnownUris.SignatureAlgorithms.ecdsaSHA1;
+                case SigningAlgorithm.ECDSA when hashAlgorithmName.Name == HashAlgorithmName.SHA256.Name:
+                    return OpcKnownUris.SignatureAlgorithms.ecdsaSHA256;
+                case SigningAlgorithm.ECDSA when hashAlgorithmName.Name == HashAlgorithmName.SHA384.Name:
+                    return OpcKnownUris.SignatureAlgorithms.ecdsaSHA384;
+                case SigningAlgorithm.ECDSA when hashAlgorithmName.Name == HashAlgorithmName.SHA512.Name:
+                    return OpcKnownUris.SignatureAlgorithms.ecdsaSHA512;
+                default:
+                    throw new NotSupportedException("The algorithm specified is not supported.");
+
+            }
+        }
+    }
+}

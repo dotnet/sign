@@ -340,7 +340,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signing OpenVsixSignTool job with {count} files..
+        ///   Looks up a localized string similar to Signing VsixSignTool job with {count} files..
         /// </summary>
         internal static string VsixSignatureProviderSigning {
             get {

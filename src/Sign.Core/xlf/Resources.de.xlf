@@ -158,8 +158,8 @@
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
-        <source>Signing OpenVsixSignTool job with {count} files.</source>
-        <target state="translated">OpenVsixSignTool-Auftrag wird mit {count} Dateien signiert.</target>
+        <source>Signing VsixSignTool job with {count} files.</source>
+        <target state="needs-review-translation">OpenVsixSignTool-Auftrag wird mit {count} Dateien signiert.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>
