@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
@@ -14,42 +14,29 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic.FileIO;
 using Sign.Core;
 
 namespace Sign.Cli
 {
-    internal sealed class AzureKeyVaultCommand : Command
+    internal sealed class CertManagerCommand : Command
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, AzureKeyVaultResources.CertificateOptionDescription);
-        internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, AzureKeyVaultResources.ClientIdOptionDescription);
-        internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, AzureKeyVaultResources.ClientSecretOptionDescription);
+        internal Option<string?> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, Resources.SHA1ThumbprintOptionDescription);
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
-        internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
-        internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, AzureKeyVaultResources.TenantIdOptionDescription);
-        internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, AzureKeyVaultResources.UrlOptionDescription);
 
-        internal AzureKeyVaultCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
-            : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
+        internal CertManagerCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
+            : base("certificate-manager", Resources.LocalCommandDescription)
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
             _codeCommand = codeCommand;
 
-            CertificateOption.IsRequired = true;
-            UrlOption.IsRequired = true;
+            SHA1ThumbprintOption.IsRequired = true;
 
-            ManagedIdentityOption.SetDefaultValue(false);
-
-            AddOption(UrlOption);
-            AddOption(TenantIdOption);
-            AddOption(ClientIdOption);
-            AddOption(ClientSecretOption);
-            AddOption(CertificateOption);
-            AddOption(ManagedIdentityOption);
-
+            AddOption(SHA1ThumbprintOption);
             AddArgument(FileArgument);
 
             this.SetHandler(async (InvocationContext context) =>
@@ -73,6 +60,7 @@ namespace Sign.Cli
                 string? output = context.ParseResult.GetValueForOption(_codeCommand.OutputOption);
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
+                string? sha1Thumbprint = context.ParseResult.GetValueForOption(SHA1ThumbprintOption);
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
 
                 if (string.IsNullOrEmpty(fileArgument))
@@ -81,13 +69,6 @@ namespace Sign.Cli
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
-
-                Uri? url = context.ParseResult.GetValueForOption(UrlOption);
-                string? tenantId = context.ParseResult.GetValueForOption(TenantIdOption);
-                string? clientId = context.ParseResult.GetValueForOption(ClientIdOption);
-                string? secret = context.ParseResult.GetValueForOption(ClientSecretOption);
-                string? certificateId = context.ParseResult.GetValueForOption(CertificateOption);
-                bool useManagedIdentity = context.ParseResult.GetValueForOption(ManagedIdentityOption);
 
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
@@ -185,28 +166,12 @@ namespace Sign.Cli
 
                 TokenCredential? credential = null;
 
-                if (useManagedIdentity)
+                if (string.IsNullOrEmpty(context.ParseResult.GetValueForOption(SHA1ThumbprintOption)))
                 {
-                    credential = new DefaultAzureCredential();
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(tenantId) ||
-                        string.IsNullOrEmpty(clientId) ||
-                        string.IsNullOrEmpty(secret))
-                    {
-                        context.Console.Error.WriteLine(
-                            FormatMessage(
-                                AzureKeyVaultResources.InvalidClientSecretCredential,
-                                TenantIdOption,
-                                ClientIdOption,
-                                ClientSecretOption));
-                        context.ExitCode = ExitCode.NoInputsFound;
+                    context.Console.Error.WriteLine(Resources.InvalidSha1ThumbrpintValue);
+                    context.ExitCode = ExitCode.NoInputsFound;
 
-                        return;
-                    }
-
-                    credential = new ClientSecretCredential(tenantId!, clientId!, secret!);
+                    return;
                 }
 
                 ISigner signer = serviceProvider.GetRequiredService<ISigner>();
@@ -224,9 +189,8 @@ namespace Sign.Cli
                     maxConcurrency,
                     fileHashAlgorithmName,
                     timestampHashAlgorithmName,
-                    credential,
-                    keyVaultUrl: url!,
-                    certificateName: certificateId!);
+                    credential!,
+                    SHA1Thumbprint: sha1Thumbprint!);
             });
         }
 

@@ -151,11 +151,29 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager..
+        /// </summary>
+        internal static string InvalidSha1ThumbrpintValue {
+            get {
+                return ResourceManager.GetString("InvalidSha1ThumbrpintValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL..
         /// </summary>
         internal static string InvalidUrlValue {
             get {
                 return ResourceManager.GetString("InvalidUrlValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use Windows Certificate Mananger.
+        /// </summary>
+        internal static string LocalCommandDescription {
+            get {
+                return ResourceManager.GetString("LocalCommandDescription", resourceCulture);
             }
         }
         
@@ -183,6 +201,15 @@ namespace Sign.Cli {
         internal static string PublisherNameOptionDescription {
             get {
                 return ResourceManager.GetString("PublisherNameOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX).
+        /// </summary>
+        internal static string SHA1ThumbprintOptionDescription {
+            get {
+                return ResourceManager.GetString("SHA1ThumbprintOptionDescription", resourceCulture);
             }
         }
         

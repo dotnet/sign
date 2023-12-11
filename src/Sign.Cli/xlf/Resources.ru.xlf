@@ -52,10 +52,20 @@
         <target state="translated">Недопустимое значение для "{0}". Значение должно быть числом, большим или равным 1.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
+      <trans-unit id="InvalidSha1ThumbrpintValue">
+        <source>Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</source>
+        <target state="new">Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
         <target state="translated">Недопустимое значение для {0}. Значение должно быть абсолютным URL-адресом HTTP или HTTPS.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="LocalCommandDescription">
+        <source>Use Windows Certificate Mananger</source>
+        <target state="new">Use Windows Certificate Mananger</target>
+        <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
@@ -71,6 +81,11 @@
         <source>Publisher name (ClickOnce).</source>
         <target state="translated">Имя издателя (ClickOnce).</target>
         <note>ClickOnce is a Microsoft deployment technology.</note>
+      </trans-unit>
+      <trans-unit id="SHA1ThumbprintOptionDescription">
+        <source>SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX)</source>
+        <target state="new">SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX)</target>
+        <note />
       </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>

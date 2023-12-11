@@ -21,6 +21,11 @@ namespace Sign.Cli
                 serviceProviderFactory ?? new ServiceProviderFactory());
 
             codeCommand.AddCommand(azureKeyVaultCommand);
+
+            CertManagerCommand certManagerCommand = new(codeCommand,
+                serviceProviderFactory ?? new ServiceProviderFactory());
+
+            codeCommand.AddCommand(certManagerCommand);
         }
     }
 }
