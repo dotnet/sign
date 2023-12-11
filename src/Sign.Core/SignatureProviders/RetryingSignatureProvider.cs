@@ -19,10 +19,10 @@ namespace Sign.Core
             Logger = logger;
         }
 
-        protected abstract Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options);
+        protected abstract Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options);
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
-        protected async Task<bool> SignAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 publicCertificate, SignOptions options)
+        protected async Task<bool> SignAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 publicCertificate, SignOptions options)
         {
             var retry = TimeSpan.FromSeconds(5);
             const int maxAttempts = 3;

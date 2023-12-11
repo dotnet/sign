@@ -10,12 +10,12 @@ namespace Sign.Core
 {
     internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _keyVaultService;
         private readonly IVsixSignTool _VsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ICertificateService? keyVaultService,
             IVsixSignTool vsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
@@ -42,7 +42,7 @@ namespace Sign.Core
             Logger.LogInformation(Resources.VsixSignatureProviderSigning, files.Count());
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsa = await _keyVaultService.GetRsaAsync())
+            using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
             {
                 IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 
@@ -50,7 +50,7 @@ namespace Sign.Core
             }
         }
 
-        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
             // Dual isn't supported, use sha256
             SignConfigurationSet configuration = new(

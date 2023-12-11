@@ -8,7 +8,7 @@ using Azure.Core;
 
 namespace Sign.Core.Test
 {
-    internal sealed class KeyVaultServiceStub : IKeyVaultService, IDisposable
+    internal sealed class KeyVaultServiceStub : ICertificateService, IDisposable
     {
         private RSA? _rsa;
         private X509Certificate2? _certificate;
@@ -26,10 +26,10 @@ namespace Sign.Core.Test
             return Task.FromResult(new X509Certificate2(_certificate!));
         }
 
-        public Task<RSA> GetRsaAsync()
+        public Task<AsymmetricAlgorithm> GetRsaAsync()
         {
             RSAParameters parameters = _rsa!.ExportParameters(includePrivateParameters: true);
-            RSA rsa = RSA.Create(parameters);
+            AsymmetricAlgorithm rsa = RSA.Create(parameters);
 
             return Task.FromResult(rsa);
         }

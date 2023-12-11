@@ -12,7 +12,7 @@ namespace Sign.Core
         private readonly HashSet<string> _appxExtensions;
         private readonly IDirectoryService _directoryService;
         private readonly IFileMatcher _fileMatcher;
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _keyVaultService;
         private readonly ILogger _logger;
         private readonly IMakeAppxCli _makeAppxCli;
         private readonly HashSet<string> _nuGetExtensions;
@@ -20,7 +20,7 @@ namespace Sign.Core
 
         // Dependency injection requires a public constructor.
         public ContainerProvider(
-            IKeyVaultService keyVaultService,
+            ICertificateService keyVaultService,
             IDirectoryService directoryService,
             IFileMatcher fileMatcher,
             IMakeAppxCli makeAppxCli,

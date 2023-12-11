@@ -17,7 +17,7 @@ namespace Sign.Core.Test
         public ClickOnceSignatureProviderTests()
         {
             _provider = new ClickOnceSignatureProvider(
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ICertificateService>(),
                 Mock.Of<IContainerProvider>(),
                 Mock.Of<IServiceProvider>(),
                 Mock.Of<IDirectoryService>(),
@@ -52,7 +52,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     containerProvider: null!,
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
@@ -68,7 +68,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IContainerProvider>(),
                     serviceProvider: null!,
                     Mock.Of<IDirectoryService>(),
@@ -84,7 +84,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     directoryService: null!,
@@ -100,7 +100,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
@@ -116,7 +116,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
@@ -132,7 +132,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
@@ -255,7 +255,7 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<IKeyVaultService> keyVaultService = new();
+                    Mock<ICertificateService> keyVaultService = new();
 
                     keyVaultService.Setup(x => x.GetCertificateAsync())
                         .ReturnsAsync(certificate);

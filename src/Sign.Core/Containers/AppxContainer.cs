@@ -14,13 +14,13 @@ namespace Sign.Core
     {
         private readonly FileInfo _appx;
         private readonly IDirectoryService _directoryService;
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _keyVaultService;
         private readonly ILogger _logger;
         private readonly IMakeAppxCli _makeAppxCli;
 
         public AppxContainer(
             FileInfo appx,
-            IKeyVaultService keyVaultService,
+            ICertificateService keyVaultService,
             IDirectoryService directoryService,
             IFileMatcher fileMatcher,
             IMakeAppxCli makeAppxCli,

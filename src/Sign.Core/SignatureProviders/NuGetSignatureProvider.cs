@@ -10,12 +10,12 @@ namespace Sign.Core
 {
     internal sealed class NuGetSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _keyVaultService;
         private readonly INuGetSignTool _nuGetSignTool;
 
         // Dependency injection requires a public constructor.
         public NuGetSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ICertificateService keyVaultService,
             INuGetSignTool nuGetSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
@@ -41,7 +41,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsa = await _keyVaultService.GetRsaAsync())
+            using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
             {
                 IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 
@@ -49,9 +49,9 @@ namespace Sign.Core
             }
         }
 
-        protected override Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
-            return _nuGetSignTool.SignAsync(file, rsaPrivateKey, certificate, options);
+            return _nuGetSignTool.SignAsync(file, (RSA)rsaPrivateKey, certificate, options);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Sign.Core.Test
         public ContainerProviderTests()
         {
             _provider = new ContainerProvider(
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ICertificateService>(),
                 Mock.Of<IDirectoryService>(),
                 Mock.Of<IFileMatcher>(),
                 Mock.Of<IMakeAppxCli>(),
@@ -40,7 +40,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ContainerProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     directoryService: null!,
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
@@ -54,7 +54,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ContainerProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IDirectoryService>(),
                     fileMatcher: null!,
                     Mock.Of<IMakeAppxCli>(),
@@ -68,7 +68,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ContainerProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     makeAppxCli: null!,
@@ -82,7 +82,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ContainerProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),

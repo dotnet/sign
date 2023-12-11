@@ -13,15 +13,15 @@ using RSAKeyVaultProvider;
 
 namespace Sign.Core
 {
-    internal sealed class KeyVaultService : IKeyVaultService
+    internal sealed class KeyVaultService : ICertificateService
     {
         private Uri? _keyVaultUrl;
-        private readonly ILogger<IKeyVaultService> _logger;
+        private readonly ILogger<ICertificateService> _logger;
         private Task<KeyVaultCertificateWithPolicy>? _task;
         private TokenCredential? _tokenCredential;
 
         // Dependency injection requires a public constructor.
-        public KeyVaultService(ILogger<IKeyVaultService> logger)
+        public KeyVaultService(ILogger<ICertificateService> logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
@@ -37,7 +37,7 @@ namespace Sign.Core
             return new X509Certificate2(certificateWithPolicy.Cer);
         }
 
-        public async Task<RSA> GetRsaAsync()
+        public async Task<AsymmetricAlgorithm> GetRsaAsync()
         {
             ThrowIfUninitialized();
 

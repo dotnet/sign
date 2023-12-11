@@ -16,14 +16,14 @@ namespace Sign.Core
         private readonly Lazy<IAggregatingSignatureProvider> _aggregatingSignatureProvider;
         private readonly IContainerProvider _containerProvider;
         private readonly IDirectoryService _directoryService;
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _keyVaultService;
         private readonly IMageCli _mageCli;
         private readonly IManifestSigner _manifestSigner;
         private readonly ParallelOptions _parallelOptions = new() { MaxDegreeOfParallelism = 4 };
 
         // Dependency injection requires a public constructor.
         public ClickOnceSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ICertificateService keyVaultService,
             IContainerProvider containerProvider,
             IServiceProvider serviceProvider,
             IDirectoryService directoryService,
@@ -72,7 +72,7 @@ namespace Sign.Core
             Uri? timeStampUrl = options.TimestampService;
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsaPrivateKey = await _keyVaultService.GetRsaAsync())
+            using (AsymmetricAlgorithm rsaPrivateKey = await _keyVaultService.GetRsaAsync())
             {
                 // This outer loop is for a .clickonce file
                 await Parallel.ForEachAsync(files, _parallelOptions, async (file, state) =>
@@ -208,14 +208,14 @@ namespace Sign.Core
             }
         }
 
-        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
             int exitCode = await _mageCli.RunAsync(args);
 
             if (exitCode == 0)
             {
                 // Now add the signature
-                _manifestSigner.Sign(file, certificate, rsaPrivateKey, options);
+                _manifestSigner.Sign(file, certificate, (RSA)rsaPrivateKey, options);
 
                 return true;
             }

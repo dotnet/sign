@@ -12,7 +12,7 @@ namespace Sign.Core
 {
     internal sealed class AzureSignToolSignatureProvider : IAzureSignToolSignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _keyVaultService;
         private readonly ILogger _logger;
         private readonly HashSet<string> _supportedFileExtensions;
         private readonly IToolConfigurationProvider _toolConfigurationProvider;
@@ -20,7 +20,7 @@ namespace Sign.Core
         // Dependency injection requires a public constructor.
         public AzureSignToolSignatureProvider(
             IToolConfigurationProvider toolConfigurationProvider,
-            IKeyVaultService keyVaultService,
+            ICertificateService keyVaultService,
             ILogger<ISignatureProvider> logger)
         {
             ArgumentNullException.ThrowIfNull(toolConfigurationProvider, nameof(toolConfigurationProvider));
@@ -86,7 +86,7 @@ namespace Sign.Core
             }
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsa = await _keyVaultService.GetRsaAsync())
+            using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
             using (AuthenticodeKeyVaultSigner signer = new(
                 rsa,
                 certificate,

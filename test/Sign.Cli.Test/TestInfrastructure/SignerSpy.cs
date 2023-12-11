@@ -25,6 +25,7 @@ namespace Sign.Cli.Test
         internal TokenCredential? TokenCredential { get; private set; }
         internal Uri? KeyVaultUrl { get; private set; }
         internal string? CertificateName { get; private set; }
+        internal string? SHA1Thumbprint { get; private set; }
         internal int ExitCode { get; }
 
         internal SignerSpy()
@@ -46,8 +47,9 @@ namespace Sign.Cli.Test
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
             TokenCredential tokenCredential,
-            Uri keyVaultUrl,
-            string certificateName)
+            Uri? keyVaultUrl,
+            string? certificateName,
+            string? sha1Thumbprint)
         {
             InputFiles = inputFiles;
             OutputFile = outputFile;
@@ -64,6 +66,7 @@ namespace Sign.Cli.Test
             TokenCredential = tokenCredential;
             KeyVaultUrl = keyVaultUrl;
             CertificateName = certificateName;
+            SHA1Thumbprint = sha1Thumbprint;
 
             return Task.FromResult(ExitCode);
         }

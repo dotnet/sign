@@ -14,7 +14,7 @@ namespace Sign.Core.Test
         public AppInstallerServiceSignatureProviderTests()
         {
             _provider = new AppInstallerServiceSignatureProvider(
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ICertificateService>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
@@ -34,7 +34,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppInstallerServiceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateService>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);

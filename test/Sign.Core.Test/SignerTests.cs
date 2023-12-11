@@ -421,7 +421,7 @@ namespace Sign.Core.Test
             services.AddSingleton<IContainerProvider, ContainerProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
-            services.AddSingleton<IKeyVaultService>(_keyVaultServiceStub);
+            services.AddSingleton<ICertificateService>(_keyVaultServiceStub);
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
             services.AddSingleton<ISignatureProvider, ClickOnceSignatureProvider>();
             services.AddSingleton<ISignatureProvider, VsixSignatureProvider>();
