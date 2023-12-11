@@ -42,8 +42,9 @@ namespace Sign.Core
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
             TokenCredential tokenCredential,
-            Uri keyVaultUrl,
-            string certificateName)
+            Uri? keyVaultUrl = null,
+            string? certificateName = null,
+            string? SHA1Thumbprint = null)
         {
             IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
@@ -63,10 +64,6 @@ namespace Sign.Core
                 }
             }
 
-            IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
-
-            keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName);
-
             SignOptions signOptions = new(
                 applicationName,
                 publisherName,
@@ -80,11 +77,29 @@ namespace Sign.Core
 
             try
             {
-                using (X509Certificate2 certificate = await keyVaultService.GetCertificateAsync())
+                if (keyVaultUrl != null && string.IsNullOrEmpty(certificateName))
                 {
-                    ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
+                    IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
+                    keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName!);
 
-                    certificateVerifier.Verify(certificate);
+                    using (X509Certificate2 certificate = await keyVaultService.GetCertificateAsync())
+                    {
+                        ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
+
+                        certificateVerifier.Verify(certificate);
+                    }
+                }
+                else if (!string.IsNullOrEmpty(SHA1Thumbprint))
+                {
+                    ICertificateManangerService certificiateManangerService = _serviceProvider.GetRequiredService<ICertificateManangerService>();
+                    certificiateManangerService.Initialize(SHA1Thumbprint);
+
+                    using (X509Certificate2 certificate = await certificiateManangerService.GetCertificateAsync())
+                    {
+                        ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
+
+                        certificateVerifier.Verify(certificate);
+                    }
                 }
 
                 await Parallel.ForEachAsync(inputFiles, parallelOptions, async (input, token) =>

@@ -23,7 +23,8 @@ namespace Sign.Core
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
             TokenCredential tokenCredential,
-            Uri keyVaultUrl,
-            string certificateName);
+            Uri? keyVaultUrl = null,
+            string? certificateName = null,
+            string? SHA1Thumbprint = null);
     }
 }
