@@ -10,19 +10,23 @@ namespace Sign.Core
 {
     internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly ICertificateService _keyVaultService;
+        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateService _certificateService;
         private readonly IVsixSignTool _VsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
-            ICertificateService? keyVaultService,
+            IKeyVaultService? keyVaultService,
+            ICertificateManangerService certificateManangerService,
             IVsixSignTool vsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(certificateManangerService, nameof(certificateManangerService));
             ArgumentNullException.ThrowIfNull(vsixSignTool, nameof(vsixSignTool));
 
+            _certificateService = certificateManangerService;
             _keyVaultService = keyVaultService;
             _VsixSignTool = vsixSignTool;
         }
@@ -41,12 +45,29 @@ namespace Sign.Core
 
             Logger.LogInformation(Resources.VsixSignatureProviderSigning, files.Count());
 
-            using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
+            if (_keyVaultService.IsInitialized())
             {
-                IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
+                using (X509Certificate2 certificate = await _certificateService.GetCertificateAsync())
+                using (AsymmetricAlgorithm rsa = await _certificateService.GetRsaAsync())
+                {
+                    IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 
-                await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks);
+                }
+            }
+            else if (_certificateService.IsInitialized())
+            {
+                using (X509Certificate2 certificate = await _certificateService.GetCertificateAsync())
+                using (AsymmetricAlgorithm rsa = await _certificateService.GetRsaAsync())
+                {
+                    IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
+
+                    await Task.WhenAll(tasks);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("KeyVault and Certificate Manager services are not available.");
             }
         }
 
