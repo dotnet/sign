@@ -5,7 +5,6 @@
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
-using System.Diagnostics;
 using Sign.Core;
 
 namespace Sign.Cli
@@ -44,7 +43,6 @@ namespace Sign.Cli
                 string netfxDir = $@"{windir}\Microsoft.NET\Framework64\v4.0.30319";
 
                 AddEnvironmentPath(netfxDir);
-                Debugger.Launch();
 
                 try
                 {
