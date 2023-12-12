@@ -7,6 +7,11 @@
         <target state="translated">Signature du travail SignTool avec {count} fichiers.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
+      <trans-unit id="CertificateECDsaNotFound">
+        <source>Unable to acquire ECDsa private key from the provided certificate.</source>
+        <target state="new">Unable to acquire ECDsa private key from the provided certificate.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CertificateIsExpired">
         <source>The certificate is expired.</source>
         <target state="translated">Le certificat est arrivé à expiration.</target>
@@ -16,6 +21,21 @@
         <source>The certificate is not yet time valid.</source>
         <target state="translated">La date de début du certificat n’est pas encore valide.</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
+      </trans-unit>
+      <trans-unit id="CertificateNotFound">
+        <source>Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store.</source>
+        <target state="new">Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateRSANotFound">
+        <source>Unable to acquire RSA private key from the provided certificate.</source>
+        <target state="new">Unable to acquire RSA private key from the provided certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateUnknownSignAlgoError">
+        <source>Unknown certificate signing algorithm.</source>
+        <target state="new">Unknown certificate signing algorithm.</target>
+        <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
@@ -75,6 +95,16 @@
       <trans-unit id="FetchingCertificate">
         <source>Fetching certificate from Azure Key Vault.</source>
         <target state="translated">Récupération du certificat à partir d’Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingSha1OrKeyVaultUrlError">
+        <source>Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</source>
+        <target state="new">Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSignatureProvidersAvailableError">
+        <source>Certificate Services failed to initialize.</source>
+        <target state="new">Certificate Services failed to initialize.</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">

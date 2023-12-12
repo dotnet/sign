@@ -47,8 +47,8 @@ namespace Sign.Core
 
             if (_keyVaultService.IsInitialized())
             {
-                using (X509Certificate2 certificate = await _certificateService.GetCertificateAsync())
-                using (AsymmetricAlgorithm rsa = await _certificateService.GetRsaAsync())
+                using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
+                using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
                 {
                     IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 

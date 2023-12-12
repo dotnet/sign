@@ -25,6 +25,7 @@ namespace Sign.Core.Test
     {
         private readonly CertificatesFixture _certificatesFixture;
         private readonly KeyVaultServiceStub _keyVaultServiceStub;
+        private readonly CertificateManagerServiceStub _certificateManagerServiceStub;
 
         public SignerTests(CertificatesFixture certificatesFixture)
         {
@@ -32,11 +33,13 @@ namespace Sign.Core.Test
 
             _certificatesFixture = certificatesFixture;
             _keyVaultServiceStub = new KeyVaultServiceStub();
+            _certificateManagerServiceStub = new CertificateManagerServiceStub();
         }
 
         public void Dispose()
         {
             _keyVaultServiceStub.Dispose();
+            _certificateManagerServiceStub.Dispose();
         }
 
         [Fact]
@@ -69,7 +72,7 @@ namespace Sign.Core.Test
 
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.dll"));
 
-                await SignAsync(temporaryDirectory, file, outputFile);
+                await SignWithAzureKeyVaultAsync(temporaryDirectory, file, outputFile);
 
                 await VerifyAuthenticodeSignedFileAsync(outputFile);
             }
@@ -86,7 +89,7 @@ namespace Sign.Core.Test
 
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.ps1"));
 
-                await SignAsync(temporaryDirectory, file, outputFile);
+                await SignWithAzureKeyVaultAsync(temporaryDirectory, file, outputFile);
 
                 SignedCms signedCms = GetSignedCmsFromPowerShellScript(outputFile);
 
@@ -102,8 +105,12 @@ namespace Sign.Core.Test
                 FileInfo file = GetTestAsset(temporaryDirectory, "VsixPackage.vsix");
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.vsix"));
 
-                await SignAsync(temporaryDirectory, file, outputFile);
+                await SignWithAzureKeyVaultAsync(temporaryDirectory, file, outputFile);
+                await VerifyVsixAsync(outputFile, temporaryDirectory);
 
+                outputFile.Delete();
+
+                await SignWithCertificateManagerAsync(temporaryDirectory, file, outputFile);
                 await VerifyVsixAsync(outputFile, temporaryDirectory);
             }
         }
@@ -116,13 +123,13 @@ namespace Sign.Core.Test
                 FileInfo file = GetTestAsset(temporaryDirectory, "App1_1.0.0.0_x64.msixbundle");
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.msixbundle"));
 
-                await SignAsync(temporaryDirectory, file, outputFile);
+                await SignWithAzureKeyVaultAsync(temporaryDirectory, file, outputFile);
 
                 await VerifyMsixBundleFile(outputFile, temporaryDirectory);
             }
         }
 
-        private async Task SignAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
+        private async Task SignWithAzureKeyVaultAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
         {
             ServiceProvider serviceProvider = Create();
             TestLogger<ISigner> logger = new();
@@ -144,6 +151,38 @@ namespace Sign.Core.Test
                 new DefaultAzureCredential(),
                 new Uri("https://keyvault.test"),
                 certificateName: "c");
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            TestLogEntry lastLogEntry = logger.Entries.Last();
+
+            Assert.Equal(LogLevel.Information, lastLogEntry.LogLevel);
+            Assert.Matches(@"^Completed in \d+ ms.$", lastLogEntry.Message);
+        }
+
+        private async Task SignWithCertificateManagerAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
+        {
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                new[] { file },
+                outputFile: outputFile.FullName,
+                fileList: null,
+                temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256,
+                new DefaultAzureCredential(),
+                keyVaultUrl: null,
+                certificateName: null,
+                SHA1Thumbprint: "testSha1");
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -422,6 +461,7 @@ namespace Sign.Core.Test
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
             services.AddSingleton<IKeyVaultService>(_keyVaultServiceStub);
+            services.AddSingleton<ICertificateManangerService>(_certificateManagerServiceStub);
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
             services.AddSingleton<ISignatureProvider, ClickOnceSignatureProvider>();
             services.AddSingleton<ISignatureProvider, VsixSignatureProvider>();

@@ -34,6 +34,7 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<IFileMetadataService>());
             Assert.NotNull(serviceProvider.GetRequiredService<IDirectoryService>());
             Assert.NotNull(serviceProvider.GetRequiredService<IKeyVaultService>());
+            Assert.NotNull(serviceProvider.GetRequiredService<ICertificateManangerService>());
 
             IDefaultSignatureProvider defaultSignatureProvider = serviceProvider.GetRequiredService<IDefaultSignatureProvider>();
             Assert.IsType<AzureSignToolSignatureProvider>(defaultSignatureProvider.SignatureProvider);

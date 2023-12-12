@@ -34,6 +34,19 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void Constructor_WhenCertificateManagerServiceIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new VsixSignatureProvider(
+                    Mock.Of<IKeyVaultService>(),
+                    certificateManangerService: null!,
+                    Mock.Of<IVsixSignTool>(),
+                    Mock.Of<ILogger<ISignatureProvider>>()));
+
+            Assert.Equal("certificateManangerService", exception.ParamName);
+        }
+
+        [Fact]
         public void Constructor_WhenNuGetSignToolIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
