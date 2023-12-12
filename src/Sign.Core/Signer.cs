@@ -77,7 +77,9 @@ namespace Sign.Core
 
             try
             {
-                if (keyVaultUrl != null && string.IsNullOrEmpty(certificateName))
+                if (keyVaultUrl != null 
+                    && !string.IsNullOrEmpty(certificateName) 
+                    && string.IsNullOrEmpty(SHA1Thumbprint))
                 {
                     IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
                     keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName!);
@@ -100,6 +102,10 @@ namespace Sign.Core
 
                         certificateVerifier.Verify(certificate);
                     }
+                }
+                else
+                {
+                    throw new ArgumentNullException(Resources.MissingSha1OrKeyVaultUrlError);
                 }
 
                 await Parallel.ForEachAsync(inputFiles, parallelOptions, async (input, token) =>

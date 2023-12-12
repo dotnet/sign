@@ -22,7 +22,8 @@ namespace Sign.Cli
 
             codeCommand.AddCommand(azureKeyVaultCommand);
 
-            CertManagerCommand certManagerCommand = new(codeCommand,
+            CertManagerCommand certManagerCommand = new(
+                codeCommand,
                 serviceProviderFactory ?? new ServiceProviderFactory());
 
             codeCommand.AddCommand(certManagerCommand);

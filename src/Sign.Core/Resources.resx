@@ -121,12 +121,24 @@
     <value>Signing SignTool job with {count} files.</value>
     <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
+  <data name="CertificateECDsaNotFound" xml:space="preserve">
+    <value>Unable to acquire ECDsa private key from the provided certificate.</value>
+  </data>
   <data name="CertificateIsExpired" xml:space="preserve">
     <value>The certificate is expired.</value>
   </data>
   <data name="CertificateIsNotYetTimeValid" xml:space="preserve">
     <value>The certificate is not yet time valid.</value>
     <comment>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</comment>
+  </data>
+  <data name="CertificateNotFound" xml:space="preserve">
+    <value>Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store.</value>
+  </data>
+  <data name="CertificateRSANotFound" xml:space="preserve">
+    <value>Unable to acquire RSA private key from the provided certificate.</value>
+  </data>
+  <data name="CertificateUnknownSignAlgoError" xml:space="preserve">
+    <value>Unknown certificate signing algorithm.</value>
   </data>
   <data name="ClickOnceSignatureProviderSigning" xml:space="preserve">
     <value>Signing Mage job with {count} files.</value>
@@ -173,6 +185,12 @@
   </data>
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
+  </data>
+  <data name="MissingSha1OrKeyVaultUrlError" xml:space="preserve">
+    <value>Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</value>
+  </data>
+  <data name="NoSignatureProvidersAvailableError" xml:space="preserve">
+    <value>Certificate Services failed to initialize.</value>
   </data>
   <data name="OpeningContainer" xml:space="preserve">
     <value>Extracting container {ContainerFilePath} to {DirectoryPath}.</value>

@@ -67,7 +67,7 @@ namespace Sign.Core
             }
             else
             {
-                throw new InvalidOperationException("KeyVault and Certificate Manager services are not available.");
+                throw new InvalidOperationException(Resources.NoSignatureProvidersAvailableError);
             }
         }
 

@@ -13,9 +13,9 @@ namespace Sign.Core
     internal interface ICertificateService
     {
         /// <summary>
-        /// Acquires the certificate in the initialized store.
+        /// Acquires the certificate from the initialized certificate service.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An <see cref="X509Certificate2"/> certificate acquired from the initialized certificate service.</returns>
         Task<X509Certificate2> GetCertificateAsync();
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Sign.Core
         /// <summary>
         /// Checks if the underlying certificate service has been initialized by the signer class.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if ready to acquire certificates or RSA. False otherwise.</returns>
         bool IsInitialized();
     }
 }

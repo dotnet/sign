@@ -70,6 +70,15 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to acquire ECDsa private key from the provided certificate..
+        /// </summary>
+        internal static string CertificateECDsaNotFound {
+            get {
+                return ResourceManager.GetString("CertificateECDsaNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The certificate is expired..
         /// </summary>
         internal static string CertificateIsExpired {
@@ -84,6 +93,33 @@ namespace Sign.Core {
         internal static string CertificateIsNotYetTimeValid {
             get {
                 return ResourceManager.GetString("CertificateIsNotYetTimeValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store..
+        /// </summary>
+        internal static string CertificateNotFound {
+            get {
+                return ResourceManager.GetString("CertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to acquire RSA private key from the provided certificate..
+        /// </summary>
+        internal static string CertificateRSANotFound {
+            get {
+                return ResourceManager.GetString("CertificateRSANotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown certificate signing algorithm..
+        /// </summary>
+        internal static string CertificateUnknownSignAlgoError {
+            get {
+                return ResourceManager.GetString("CertificateUnknownSignAlgoError", resourceCulture);
             }
         }
         
@@ -192,6 +228,24 @@ namespace Sign.Core {
         internal static string FetchingCertificate {
             get {
                 return ResourceManager.GetString("FetchingCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint.
+        /// </summary>
+        internal static string MissingSha1OrKeyVaultUrlError {
+            get {
+                return ResourceManager.GetString("MissingSha1OrKeyVaultUrlError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate Services failed to initialize..
+        /// </summary>
+        internal static string NoSignatureProvidersAvailableError {
+            get {
+                return ResourceManager.GetString("NoSignatureProvidersAvailableError", resourceCulture);
             }
         }
         

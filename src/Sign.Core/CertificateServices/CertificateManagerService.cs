@@ -30,8 +30,9 @@ namespace Sign.Core
         /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
         public Task<X509Certificate2> GetCertificateAsync()
         {
-            ThrowIfUninitialized();// Check machine certificate store.
-
+            ThrowIfUninitialized();
+            
+            // Check machine certificate store.
             using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
             {
                 store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
@@ -51,7 +52,7 @@ namespace Sign.Core
 
                 if (certificates.Count == 0)
                 {
-                    throw new ArgumentException("Provided SHA1 Thumbprint not found under machine or user certificate store.");
+                    throw new ArgumentException(Resources.CertificateNotFound);
                 }
 
                 return Task.FromResult(certificates[0]);
@@ -71,11 +72,11 @@ namespace Sign.Core
             switch (keyAlgorithm)
             {
                 case RSA:
-                    return certificate.GetRSAPrivateKey() ?? throw new InvalidOperationException();
+                    return certificate.GetRSAPrivateKey() ?? throw new InvalidOperationException(Resources.CertificateRSANotFound);
                 case Ecc:
-                    return certificate.GetECDsaPrivateKey() ?? throw new InvalidOperationException();
+                    return certificate.GetECDsaPrivateKey() ?? throw new InvalidOperationException(Resources.CertificateECDsaNotFound);
                 default:
-                    throw new InvalidOperationException("Unknown certificate signing algorithm.");
+                    throw new InvalidOperationException(Resources.CertificateUnknownSignAlgoError);
             }
         }
 
