@@ -10,12 +10,12 @@ namespace Sign.Core
 {
     internal sealed class NuGetSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly ICertificateService _keyVaultService;
+        private readonly IKeyVaultService _keyVaultService;
         private readonly INuGetSignTool _nuGetSignTool;
 
         // Dependency injection requires a public constructor.
         public NuGetSignatureProvider(
-            ICertificateService keyVaultService,
+            IKeyVaultService keyVaultService,
             INuGetSignTool nuGetSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)

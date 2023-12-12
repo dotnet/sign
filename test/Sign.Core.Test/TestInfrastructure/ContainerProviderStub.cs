@@ -16,7 +16,7 @@ namespace Sign.Core.Test
         internal ContainerProviderStub()
         {
             _containerProvider = new ContainerProvider(
-                Mock.Of<ICertificateService>(),
+                Mock.Of<IKeyVaultService>(),
                 Mock.Of<IDirectoryService>(),
                 Mock.Of<IFileMatcher>(),
                 Mock.Of<IMakeAppxCli>(),

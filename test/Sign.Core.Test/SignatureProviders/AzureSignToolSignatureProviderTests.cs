@@ -15,7 +15,7 @@ namespace Sign.Core.Test
         {
             _provider = new AzureSignToolSignatureProvider(
                 Mock.Of<IToolConfigurationProvider>(),
-                Mock.Of<ICertificateService>(),
+                Mock.Of<IKeyVaultService>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 

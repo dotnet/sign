@@ -12,7 +12,7 @@ namespace Sign.Core
 {
     internal sealed class AzureSignToolSignatureProvider : IAzureSignToolSignatureProvider
     {
-        private readonly ICertificateService _keyVaultService;
+        private readonly IKeyVaultService _keyVaultService;
         private readonly ILogger _logger;
         private readonly HashSet<string> _supportedFileExtensions;
         private readonly IToolConfigurationProvider _toolConfigurationProvider;
@@ -20,7 +20,7 @@ namespace Sign.Core
         // Dependency injection requires a public constructor.
         public AzureSignToolSignatureProvider(
             IToolConfigurationProvider toolConfigurationProvider,
-            ICertificateService keyVaultService,
+            IKeyVaultService keyVaultService,
             ILogger<ISignatureProvider> logger)
         {
             ArgumentNullException.ThrowIfNull(toolConfigurationProvider, nameof(toolConfigurationProvider));

@@ -86,7 +86,7 @@ namespace Sign.Core.Test
             HashSet<FileInfo> looseFiles = new(FileInfoComparer.Instance);
             AzureSignToolSignatureProvider azureSignToolSignatureProvider = new(
                 Mock.Of<IToolConfigurationProvider>(),
-                Mock.Of<ICertificateService>(),
+                Mock.Of<IKeyVaultService>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
             FileMetadataServiceStub fileMetadataService = new();
 

@@ -23,7 +23,8 @@ namespace Sign.Core.Test
         {
             IContainerProvider containerProvider = Mock.Of<IContainerProvider>();
             IDirectoryService directoryService = Mock.Of<IDirectoryService>();
-            ICertificateService keyVaultService = Mock.Of<ICertificateService>();
+            IKeyVaultService keyVaultService = Mock.Of<IKeyVaultService>();
+            ICertificateManangerService certMgrService = Mock.Of<ICertificateManangerService>();
             ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
             IMageCli mageCli = Mock.Of<IMageCli>();
             IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();
@@ -47,7 +48,7 @@ namespace Sign.Core.Test
                     manifestSigner,
                     logger),
                 new NuGetSignatureProvider(keyVaultService, nuGetSignTool, logger),
-                new VsixSignatureProvider(keyVaultService, vsixSignTool, logger)
+                new VsixSignatureProvider(keyVaultService, certMgrService, vsixSignTool, logger)
             };
         }
 

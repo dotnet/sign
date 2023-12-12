@@ -12,12 +12,12 @@ namespace Sign.Core
     // correct publisher information
     internal sealed class AppInstallerServiceSignatureProvider : ISignatureProvider
     {
-        private readonly ICertificateService _keyVaultService;
+        private readonly IKeyVaultService _keyVaultService;
         private readonly ILogger _logger;
 
         // Dependency injection requires a public constructor.
         public AppInstallerServiceSignatureProvider(
-            ICertificateService keyVaultService,
+            IKeyVaultService keyVaultService,
             ILogger<ISignatureProvider> logger)
         {
             ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));

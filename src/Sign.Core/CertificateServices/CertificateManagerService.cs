@@ -13,10 +13,10 @@ namespace Sign.Core
     internal class CertificateManagerService : ICertificateManangerService
     {
         private string? _Sha1Thumbprint;
-        private readonly ILogger<ICertificateService> _logger;
+        private readonly ILogger<ICertificateManangerService> _logger;
 
         // Dependency injection requires a public constructor.
-        public CertificateManagerService(ILogger<ICertificateService> logger)
+        public CertificateManagerService(ILogger<ICertificateManangerService> logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
@@ -93,5 +93,7 @@ namespace Sign.Core
                 throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(_Sha1Thumbprint));
             }
         }
+
+        public bool IsInitialized() => _Sha1Thumbprint != null;
     }
 }

@@ -13,15 +13,15 @@ using RSAKeyVaultProvider;
 
 namespace Sign.Core
 {
-    internal sealed class KeyVaultService : ICertificateService
+    internal sealed class KeyVaultService : IKeyVaultService
     {
         private Uri? _keyVaultUrl;
-        private readonly ILogger<ICertificateService> _logger;
+        private readonly ILogger<IKeyVaultService> _logger;
         private Task<KeyVaultCertificateWithPolicy>? _task;
         private TokenCredential? _tokenCredential;
 
         // Dependency injection requires a public constructor.
-        public KeyVaultService(ILogger<ICertificateService> logger)
+        public KeyVaultService(ILogger<IKeyVaultService> logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
@@ -90,5 +90,7 @@ namespace Sign.Core
                 throw new InvalidOperationException($"{nameof(Initialize)}(...) must be called first.");
             }
         }
+
+        public bool IsInitialized() => _task != null;
     }
 }

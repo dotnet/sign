@@ -16,14 +16,14 @@ namespace Sign.Core
         private readonly Lazy<IAggregatingSignatureProvider> _aggregatingSignatureProvider;
         private readonly IContainerProvider _containerProvider;
         private readonly IDirectoryService _directoryService;
-        private readonly ICertificateService _keyVaultService;
+        private readonly IKeyVaultService _keyVaultService;
         private readonly IMageCli _mageCli;
         private readonly IManifestSigner _manifestSigner;
         private readonly ParallelOptions _parallelOptions = new() { MaxDegreeOfParallelism = 4 };
 
         // Dependency injection requires a public constructor.
         public ClickOnceSignatureProvider(
-            ICertificateService keyVaultService,
+            IKeyVaultService keyVaultService,
             IContainerProvider containerProvider,
             IServiceProvider serviceProvider,
             IDirectoryService directoryService,

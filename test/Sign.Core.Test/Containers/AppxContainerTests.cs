@@ -15,7 +15,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: null!,
-                    Mock.Of<ICertificateService>(),
+                    Mock.Of<IKeyVaultService>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
@@ -45,7 +45,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<ICertificateService>(),
+                    Mock.Of<IKeyVaultService>(),
                     directoryService: null!,
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
@@ -60,7 +60,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<ICertificateService>(),
+                    Mock.Of<IKeyVaultService>(),
                     Mock.Of<IDirectoryService>(),
                     fileMatcher: null!,
                     Mock.Of<IMakeAppxCli>(),
@@ -75,7 +75,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<ICertificateService>(),
+                    Mock.Of<IKeyVaultService>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     makeAppxCli: null!,
@@ -90,7 +90,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<ICertificateService>(),
+                    Mock.Of<IKeyVaultService>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),

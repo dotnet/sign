@@ -8,7 +8,7 @@ using Azure.Core;
 
 namespace Sign.Core.Test
 {
-    internal sealed class KeyVaultServiceStub : ICertificateService, IDisposable
+    internal sealed class KeyVaultServiceStub : IKeyVaultService, IDisposable
     {
         private RSA? _rsa;
         private X509Certificate2? _certificate;
@@ -42,6 +42,11 @@ namespace Sign.Core.Test
             DateTimeOffset now = DateTimeOffset.Now;
 
             _certificate = request.CreateSelfSigned(now.AddMinutes(-5), now.AddMinutes(10));
+        }
+
+        public bool IsInitialized()
+        {
+            return _certificate != null && _rsa != null;
         }
     }
 }
