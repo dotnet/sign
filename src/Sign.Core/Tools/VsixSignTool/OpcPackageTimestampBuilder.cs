@@ -78,7 +78,7 @@ namespace Sign.Core
             var signature = new XElement(xmlDSigNamespace + "Object",
                 new XElement(xmlSignatureNamespace + "TimeStamp", new XAttribute("Id", "idSignatureTimestamp"),
                     new XElement(xmlSignatureNamespace + "Comment", "Timestamp got from the time stamp server"),
-                    new XElement(xmlSignatureNamespace + "EncodedTime", Convert.ToBase64String(timestampSignature ?? []))
+                    new XElement(xmlSignatureNamespace + "EncodedTime", Convert.ToBase64String(timestampSignature ?? Array.Empty<byte>()))
                 )
             );
 
