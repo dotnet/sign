@@ -19,12 +19,12 @@ namespace Sign.Core.Test
             _provider = new ClickOnceSignatureProvider(
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
-                Mock.Of<IContainerProvider>(),
                 Mock.Of<IServiceProvider>(),
                 Mock.Of<IDirectoryService>(),
                 Mock.Of<IMageCli>(),
                 Mock.Of<IManifestSigner>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<ISignatureProvider>>(),
+                Mock.Of<IFileMatcher>());
         }
 
         public void Dispose()
@@ -39,12 +39,12 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     signatureAlgorithmProvider: null!,
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -56,31 +56,14 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
-                    Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_WhenContainerProviderIsNull_Throws()
-        {
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    containerProvider: null!,
-                    Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
-
-            Assert.Equal("containerProvider", exception.ParamName);
         }
 
         [Fact]
@@ -90,12 +73,12 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IContainerProvider>(),
                     serviceProvider: null!,
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
@@ -107,12 +90,12 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     directoryService: null!,
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("directoryService", exception.ParamName);
         }
@@ -124,12 +107,12 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
                     mageCli: null!,
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("mageCli", exception.ParamName);
         }
@@ -141,12 +124,12 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     manifestSigner: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("manifestSigner", exception.ParamName);
         }
@@ -158,12 +141,12 @@ namespace Sign.Core.Test
                 () => new ClickOnceSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IContainerProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    logger: null!));
+                    logger: null!,
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -290,11 +273,6 @@ namespace Sign.Core.Test
                     signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
                         .ReturnsAsync(privateKey);
 
-                    Mock<IContainerProvider> containerProvider = new();
-
-                    containerProvider.Setup(x => x.GetContainer(It.IsAny<FileInfo>()))
-                        .Returns(containerSpy);
-
                     Mock<IServiceProvider> serviceProvider = new();
                     AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
 
@@ -325,6 +303,7 @@ namespace Sign.Core.Test
                         .ReturnsAsync(0);
 
                     Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
 
                     manifestSigner.Setup(
                         x => x.Sign(
@@ -344,20 +323,14 @@ namespace Sign.Core.Test
                     ClickOnceSignatureProvider provider = new(
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
-                        containerProvider.Object,
                         serviceProvider.Object,
                         directoryService,
                         mageCli.Object,
                         manifestSigner.Object,
-                        logger);
+                        logger,
+                        fileMatcher.Object);
 
-                    await provider.SignAsync(new[] { clickOnceFile }, options);
-
-                    Assert.Equal(1, containerSpy.OpenAsync_CallCount);
-                    Assert.Equal(0, containerSpy.GetFilesWithMatcher_CallCount);
-                    Assert.Equal(2, containerSpy.GetFiles_CallCount);
-                    Assert.Equal(1, containerSpy.SaveAsync_CallCount);
-                    Assert.Equal(1, containerSpy.Dispose_CallCount);
+                    await provider.SignAsync(new[] { applicationFile }, options);
 
                     // Verify that files have been renamed back.
                     foreach (FileInfo file in containerSpy.Files)

@@ -21,7 +21,6 @@ namespace Sign.Core.Test
 
         internal SignatureProviderSpy()
         {
-            IContainerProvider containerProvider = Mock.Of<IContainerProvider>();
             IDirectoryService directoryService = Mock.Of<IDirectoryService>();
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Mock.Of<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Mock.Of<ICertificateProvider>();
@@ -32,6 +31,7 @@ namespace Sign.Core.Test
             IOpenVsixSignTool openVsixSignTool = Mock.Of<IOpenVsixSignTool>();
             IServiceProvider serviceProvider = Mock.Of<IServiceProvider>();
             IToolConfigurationProvider toolConfigurationProvider = Mock.Of<IToolConfigurationProvider>();
+            IFileMatcher fileMatcher = Mock.Of<IFileMatcher>();
 
             SignatureProvider = new AzureSignToolSignatureProvider(
                 toolConfigurationProvider,
@@ -46,12 +46,12 @@ namespace Sign.Core.Test
                 new ClickOnceSignatureProvider(
                     signatureAlgorithmProvider,
                     certificateProvider,
-                    containerProvider,
                     serviceProvider,
                     directoryService,
                     mageCli,
                     manifestSigner,
-                    logger),
+                    logger,
+                    fileMatcher),
                 new NuGetSignatureProvider(signatureAlgorithmProvider, certificateProvider, nuGetSignTool, logger),
                 new VsixSignatureProvider(signatureAlgorithmProvider, certificateProvider, openVsixSignTool, logger)
             };
