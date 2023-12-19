@@ -25,6 +25,9 @@ namespace Sign.Core
             TokenCredential tokenCredential,
             Uri? keyVaultUrl = null,
             string? certificateName = null,
-            string? SHA1Thumbprint = null);
+            string? SHA1Thumbprint = null,
+            string? cryptoServiceProvider = null,
+            string? privateKeyContainer = null,
+            string? privateMachineKeyContainer = null);
     }
 }

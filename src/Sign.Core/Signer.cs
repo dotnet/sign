@@ -44,7 +44,10 @@ namespace Sign.Core
             TokenCredential tokenCredential,
             Uri? keyVaultUrl = null,
             string? certificateName = null,
-            string? SHA1Thumbprint = null)
+            string? SHA1Thumbprint = null,
+            string? cryptoServiceProvider = null,
+            string? privateKeyContainer = null,
+            string? privateMachineKeyContainer = null)
         {
             IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
@@ -93,10 +96,10 @@ namespace Sign.Core
                 }
                 else if (!string.IsNullOrEmpty(SHA1Thumbprint))
                 {
-                    ICertificateManangerService certificiateManangerService = _serviceProvider.GetRequiredService<ICertificateManangerService>();
-                    certificiateManangerService.Initialize(SHA1Thumbprint);
+                    ICertificateManangerService certificateManagerService = _serviceProvider.GetRequiredService<ICertificateManangerService>();
+                    certificateManagerService.Initialize(SHA1Thumbprint, cryptoServiceProvider, privateKeyContainer, privateMachineKeyContainer);
 
-                    using (X509Certificate2 certificate = await certificiateManangerService.GetCertificateAsync())
+                    using (X509Certificate2 certificate = await certificateManagerService.GetCertificateAsync())
                     {
                         ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
 
@@ -163,7 +166,7 @@ namespace Sign.Core
                         // However check its extension as it might be important (e.g. zip, bundle, etc)
                         if (signatureProvider.CanSign(input))
                         {
-                            // Keep the input extenstion as it has significance.
+                            // Keep the input extension as it has significance.
                             inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
                         }
 

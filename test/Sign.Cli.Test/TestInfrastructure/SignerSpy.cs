@@ -26,6 +26,9 @@ namespace Sign.Cli.Test
         internal Uri? KeyVaultUrl { get; private set; }
         internal string? CertificateName { get; private set; }
         internal string? SHA1Thumbprint { get; private set; }
+        internal string? CryptoServiceProvider { get; private set; }
+        internal string? PrivateKeyContainer { get; private set; }
+        internal string? PrivateMachineKeyContainer { get; private set; }
         internal int ExitCode { get; }
 
         internal SignerSpy()
@@ -49,7 +52,10 @@ namespace Sign.Cli.Test
             TokenCredential tokenCredential,
             Uri? keyVaultUrl,
             string? certificateName,
-            string? sha1Thumbprint)
+            string? sha1Thumbprint,
+            string? cryptoServiceProvider,
+            string? privateKeyContainer,
+            string? privateMachineKeyContainer)
         {
             InputFiles = inputFiles;
             OutputFile = outputFile;
@@ -67,6 +73,9 @@ namespace Sign.Cli.Test
             KeyVaultUrl = keyVaultUrl;
             CertificateName = certificateName;
             SHA1Thumbprint = sha1Thumbprint;
+            CryptoServiceProvider = cryptoServiceProvider;
+            PrivateKeyContainer = privateKeyContainer;
+            PrivateMachineKeyContainer = privateMachineKeyContainer;
 
             return Task.FromResult(ExitCode);
         }

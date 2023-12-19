@@ -3,8 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System.Runtime.Intrinsics.Arm;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -13,6 +12,9 @@ namespace Sign.Core
     internal class CertificateManagerService : ICertificateManangerService
     {
         private string? _Sha1Thumbprint;
+        private string? _cryptoServiceProvider;
+        private string? _privateKeyContainer;
+        private string? _privateMachineKeyContainer;
         private readonly ILogger<ICertificateManangerService> _logger;
 
         // Dependency injection requires a public constructor.
@@ -31,7 +33,7 @@ namespace Sign.Core
         public Task<X509Certificate2> GetCertificateAsync()
         {
             ThrowIfUninitialized();
-            
+
             // Check machine certificate store.
             using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
             {
@@ -59,10 +61,35 @@ namespace Sign.Core
             }
         }
 
+
+        [SupportedOSPlatform("windows")] // CsCParameters is Windows-only but we support cross platform frameworks.
         public async Task<AsymmetricAlgorithm> GetRsaAsync()
         {
             ThrowIfUninitialized();
 
+            // Get RSA from a 3rd party cryptographic service provider
+            if (!string.IsNullOrEmpty(_privateMachineKeyContainer))
+            {
+                var cspOptions = new CspParameters();
+
+                cspOptions.KeyContainerName = _privateMachineKeyContainer;
+                cspOptions.Flags = CspProviderFlags.UseMachineKeyStore;
+
+                RSACryptoServiceProvider.UseMachineKeyStore = true;
+
+                return new RSACryptoServiceProvider(cspOptions);
+            }
+            else if (!string.IsNullOrEmpty(_privateKeyContainer))
+            {
+                var cspOptions = new CspParameters();
+
+                cspOptions.KeyContainerName = _privateKeyContainer;
+                cspOptions.Flags = CspProviderFlags.UseDefaultKeyContainer;
+
+                return new RSACryptoServiceProvider(cspOptions);
+            }
+
+            // Extract RSA from Windows Cert Manager certificate.
             const string RSA = "1.2.840.113549.1.1.1";
             const string Ecc = "1.2.840.10045.2.1";
 
@@ -80,15 +107,20 @@ namespace Sign.Core
             }
         }
 
-        public void Initialize(string sha1Thumbprint)
+        public void Initialize(string sha1Thumbprint, string? cryptoServiceProvider, string? privateKeyContainer,
+            string? privateMachineKeyContainer)
         {
             this._Sha1Thumbprint = sha1Thumbprint;
+            this._cryptoServiceProvider = cryptoServiceProvider;
+            this._privateKeyContainer = privateKeyContainer;
+            this._privateMachineKeyContainer = privateMachineKeyContainer;
         }
 
         private void ThrowIfUninitialized()
         {
             ArgumentNullException.ThrowIfNull(_Sha1Thumbprint, nameof(_Sha1Thumbprint));
 
+            // Only SHA1 is required.
             if (string.IsNullOrEmpty(_Sha1Thumbprint))
             {
                 throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(_Sha1Thumbprint));

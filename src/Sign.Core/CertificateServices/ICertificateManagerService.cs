@@ -14,6 +14,6 @@ namespace Sign.Core
     /// </summary>
     internal interface ICertificateManangerService : ICertificateService
     {
-        void Initialize(string sha1Thumbprint);
+        void Initialize(string sha1Thumbprint, string? cryptoServiceProvider, string? privateKeyContainer, string? privateMachineKeyContainer);
     }
 }
