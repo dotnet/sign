@@ -178,8 +178,9 @@ namespace Sign.Core.Test
         }
 
         [Theory]
-        [InlineData(".clickonce")]
-        [InlineData(".CLICKONCE")] // test case insensitivity
+        [InlineData(".application")]
+        [InlineData(".APPLICATION")] // test case insensitivity
+        [InlineData(".vsto")]
         public void CanSign_WhenFileExtensionMatches_ReturnsTrue(string extension)
         {
             FileInfo file = new($"file{extension}");
@@ -189,8 +190,8 @@ namespace Sign.Core.Test
 
         [Theory]
         [InlineData(".txt")]
-        [InlineData(".clİckonce")] // Turkish İ (U+0130)
-        [InlineData(".clıckonce")] // Turkish ı (U+0131)
+        [InlineData(".applİcation")] // Turkish İ (U+0130)
+        [InlineData(".applıcation")] // Turkish ı (U+0131)
         public void CanSign_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
             FileInfo file = new($"file{extension}");
