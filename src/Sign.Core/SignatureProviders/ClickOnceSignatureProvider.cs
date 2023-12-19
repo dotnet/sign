@@ -61,7 +61,11 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return string.Equals(file.Extension, ".clickonce", StringComparison.OrdinalIgnoreCase);
+            return file.Extension.ToLowerInvariant() switch
+            {
+                ".vsto" or ".application" => true,
+                _ => false
+            };
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)
@@ -82,116 +86,113 @@ namespace Sign.Core
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
             using (RSA rsaPrivateKey = await _signatureAlgorithmProvider.GetRsaAsync())
             {
-                // This outer loop is for a .clickonce file
+                // This outer loop is for a single deployment manifest (.application/vsto).
                 await Parallel.ForEachAsync(files, _parallelOptions, async (file, state) =>
                 {
                     // We need to be explicit about the order these files are signed in. The data files must be signed first
                     // Then the .manifest file
                     // Then the nested clickonce/vsto file
                     // finally the top-level clickonce/vsto file
+                    // It's possible that there might not actually be a .manifest file or any data files if the user just
+                    // wants to re-sign an existing deployment manifest because e.g. the update URL has changed but nothing
+                    // else. In that case we don't need to touch the other files and we can just sign the deployment manifest.
 
-                    using (TemporaryDirectory temporaryDirectory = new(_directoryService))
-                    using (IContainer zip = _containerProvider.GetContainer(file)!)
+                    // Look for the data files first - these are .deploy files
+                    // we need to rename them, sign, then restore the name
+
+                    DirectoryInfo clickOnceDirectory = file.Directory!;
+
+                    List<FileInfo> filteredFiles = GetFiles(clickOnceDirectory, options).ToList();
+                    List<FileInfo> deployFilesToSign = filteredFiles
+                        .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    List<FileInfo> contentFiles = new();
+
+                    RemoveDeployExtension(deployFilesToSign, contentFiles);
+
+                    List<FileInfo> filesToSign = contentFiles.ToList(); // copy it since we may add setup.exe
+                    IEnumerable<FileInfo> setupExe = filteredFiles.Where(f => ".exe".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
+                    filesToSign.AddRange(setupExe);
+
+                    // sign the inner files
+                    await _aggregatingSignatureProvider.Value.SignAsync(filesToSign!, options);
+
+                    // rename the rest of the deploy files since signing the manifest will need them
+                    List<FileInfo> filesExceptFiltered = GetFiles(clickOnceDirectory, options).Except(filteredFiles, FileInfoComparer.Instance).ToList();
+                    List<FileInfo> deployFiles = filesExceptFiltered
+                        .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                    RemoveDeployExtension(deployFiles, contentFiles);
+
+                    // at this point contentFiles has all deploy files renamed
+
+                    // Inner files are now signed
+                    // now look for the manifest file and sign that
+
+                    FileInfo manifestFile = filteredFiles.Single(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
+
+                    string fileArgs = $@"-update ""{manifestFile}"" {args}";
+
+                    if (!await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
                     {
-                        await zip.OpenAsync();
+                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
 
-                        // Look for the data files first - these are .deploy files
-                        // we need to rename them, sign, then restore the name
+                        throw new Exception(message);
+                    }
 
-                        List<FileInfo> filteredFiles = GetFiles(zip, options).ToList();
-                        List<FileInfo> deployFilesToSign = filteredFiles
-                            .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-                        List<FileInfo> contentFiles = new();
+                    string publisherParam = string.Empty;
 
-                        RemoveDeployExtension(deployFilesToSign, contentFiles);
-
-                        List<FileInfo> filesToSign = contentFiles.ToList(); // copy it since we may add setup.exe
-                        IEnumerable<FileInfo> setupExe = filteredFiles.Where(f => ".exe".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
-                        filesToSign.AddRange(setupExe);
-
-                        // sign the inner files
-                        await _aggregatingSignatureProvider.Value.SignAsync(filesToSign!, options);
-
-                        // rename the rest of the deploy files since signing the manifest will need them
-                        List<FileInfo> filesExceptFiltered = zip.GetFiles().Except(filteredFiles, FileInfoComparer.Instance).ToList();
-                        List<FileInfo> deployFiles = filesExceptFiltered
-                            .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-
-                        RemoveDeployExtension(deployFiles, contentFiles);
-
-                        // at this point contentFiles has all deploy files renamed
-
-                        // Inner files are now signed
-                        // now look for the manifest file and sign that
-
-                        FileInfo manifestFile = filteredFiles.Single(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
-
-                        string fileArgs = $@"-update ""{manifestFile}"" {args}";
-
-                        if (!await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
+                    if (string.IsNullOrEmpty(options.PublisherName))
+                    {
+                        // Read the publisher name from the manifest for use below
+                        XDocument manifestDoc = XDocument.Load(manifestFile.FullName);
+                        XNamespace ns = manifestDoc.Root!.GetDefaultNamespace();
+                        XElement? publisherIdentity = manifestDoc.Root.Element(ns + "publisherIdentity");
+                        string publisherName = publisherIdentity!.Attribute("name")!.Value;
+                        Dictionary<string, List<string>> dict = DistinguishedNameParser.Parse(publisherName);
+ 
+                        if (dict.TryGetValue("CN", out List<string>? cns))
                         {
-                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
+                            // get the CN. it may be quoted
+                            publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
+                        }
+                    }
+                    else
+                    {
+                        publisherParam = $"-pub \"{options.PublisherName}\" ";
+                    }
+
+                    // Now sign the inner vsto/clickonce file
+                    // Order by desending length to put the inner one first
+                    List<FileInfo> clickOnceFilesToSign = filteredFiles
+                        .Where(f => ".vsto".Equals(f.Extension, StringComparison.OrdinalIgnoreCase) ||
+                                    ".application".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
+                        .Select(f => new { file = f, f.FullName.Length })
+                        .OrderByDescending(f => f.Length)
+                        .Select(f => f.file)
+                        .ToList();
+
+                    foreach (FileInfo fileToSign in clickOnceFilesToSign)
+                    {
+                        fileArgs = $@"-update ""{fileToSign.FullName}"" {args} -appm ""{manifestFile.FullName}"" {publisherParam}";
+                        if (options.DescriptionUrl is not null)
+                        {
+                            fileArgs += $@" -SupportURL {options.DescriptionUrl.AbsoluteUri}";
+                        }
+
+                        if (!await SignAsync(fileArgs, fileToSign, rsaPrivateKey, certificate, options))
+                        {
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, fileToSign.FullName);
 
                             throw new Exception(message);
                         }
+                    }
 
-                        string publisherParam = string.Empty;
-
-                        if (string.IsNullOrEmpty(options.PublisherName))
-                        {
-                            // Read the publisher name from the manifest for use below
-                            XDocument manifestDoc = XDocument.Load(manifestFile.FullName);
-                            XNamespace ns = manifestDoc.Root!.GetDefaultNamespace();
-                            XElement? publisherIdentity = manifestDoc.Root.Element(ns + "publisherIdentity");
-                            string publisherName = publisherIdentity!.Attribute("name")!.Value;
-                            Dictionary<string, List<string>> dict = DistinguishedNameParser.Parse(publisherName);
- 
-                            if (dict.TryGetValue("CN", out List<string>? cns))
-                            {
-                                // get the CN. it may be quoted
-                                publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
-                            }
-                        }
-                        else
-                        {
-                            publisherParam = $"-pub \"{options.PublisherName}\" ";
-                        }
-
-                        // Now sign the inner vsto/clickonce file
-                        // Order by desending length to put the inner one first
-                        List<FileInfo> clickOnceFilesToSign = filteredFiles
-                            .Where(f => ".vsto".Equals(f.Extension, StringComparison.OrdinalIgnoreCase) ||
-                                        ".application".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
-                            .Select(f => new { file = f, f.FullName.Length })
-                            .OrderByDescending(f => f.Length)
-                            .Select(f => f.file)
-                            .ToList();
-
-                        foreach (FileInfo fileToSign in clickOnceFilesToSign)
-                        {
-                            fileArgs = $@"-update ""{fileToSign.FullName}"" {args} -appm ""{manifestFile.FullName}"" {publisherParam}";
-                            if (options.DescriptionUrl is not null)
-                            {
-                                fileArgs += $@" -SupportURL {options.DescriptionUrl.AbsoluteUri}";
-                            }
-
-                            if (!await SignAsync(fileArgs, fileToSign, rsaPrivateKey, certificate, options))
-                            {
-                                string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, fileToSign.FullName);
-
-                                throw new Exception(message);
-                            }
-                        }
-
-                        // restore the .deploy files
-                        foreach (FileInfo contentFile in contentFiles)
-                        {
-                            File.Move(contentFile.FullName, $"{contentFile.FullName}.deploy");
-                        }
-
-                        await zip.SaveAsync();
+                    // restore the .deploy files
+                    foreach (FileInfo contentFile in contentFiles)
+                    {
+                        File.Move(contentFile.FullName, $"{contentFile.FullName}.deploy");
                     }
                 });
             }
