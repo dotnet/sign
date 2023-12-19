@@ -312,7 +312,7 @@ namespace Sign.Core.Test
 
                     if (string.IsNullOrEmpty(options.PublisherName))
                     {
-                        publisher = commonName;
+                        publisher = certificate.SubjectName.Name;
                     }
                     else
                     {
