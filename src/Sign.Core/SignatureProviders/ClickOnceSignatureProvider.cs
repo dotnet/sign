@@ -145,18 +145,10 @@ namespace Sign.Core
 
                     if (string.IsNullOrEmpty(options.PublisherName))
                     {
-                        // Read the publisher name from the manifest for use below
-                        XDocument manifestDoc = XDocument.Load(manifestFile.FullName);
-                        XNamespace ns = manifestDoc.Root!.GetDefaultNamespace();
-                        XElement? publisherIdentity = manifestDoc.Root.Element(ns + "publisherIdentity");
-                        string publisherName = publisherIdentity!.Attribute("name")!.Value;
-                        Dictionary<string, List<string>> dict = DistinguishedNameParser.Parse(publisherName);
+                        string publisherName = certificate.SubjectName.Name;
  
-                        if (dict.TryGetValue("CN", out List<string>? cns))
-                        {
-                            // get the CN. it may be quoted
-                            publisherParam = $@"-pub ""{string.Join("+", cns.Select(s => s.Replace("\"", "")))}"" ";
-                        }
+                        // get the DN. it may be quoted
+                        publisherParam = $@"-pub ""{publisherName.Replace("\"", "")}"" ";
                     }
                     else
                     {
