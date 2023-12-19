@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
@@ -21,6 +22,7 @@ namespace Sign.Core
         private readonly IMageCli _mageCli;
         private readonly IManifestSigner _manifestSigner;
         private readonly ParallelOptions _parallelOptions = new() { MaxDegreeOfParallelism = 4 };
+        private readonly IFileMatcher _fileMatcher;
 
         // Dependency injection requires a public constructor.
         public ClickOnceSignatureProvider(
@@ -31,7 +33,8 @@ namespace Sign.Core
             IDirectoryService directoryService,
             IMageCli mageCli,
             IManifestSigner manifestSigner,
-            ILogger<ISignatureProvider> logger)
+            ILogger<ISignatureProvider> logger,
+            IFileMatcher fileMatcher)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
@@ -48,6 +51,7 @@ namespace Sign.Core
             _directoryService = directoryService;
             _mageCli = mageCli;
             _manifestSigner = manifestSigner;
+            _fileMatcher = fileMatcher;
 
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             _aggregatingSignatureProvider = new Lazy<IAggregatingSignatureProvider>(() => serviceProvider.GetService<IAggregatingSignatureProvider>()!);
@@ -229,28 +233,43 @@ namespace Sign.Core
             return false;
         }
 
-        private static IEnumerable<FileInfo> GetFiles(IContainer container, SignOptions options)
+        private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot, SignOptions options)
         {
             IEnumerable<FileInfo> files;
 
             if (options.Matcher is null)
             {
                 // If not filtered, default to all
-                files = container.GetFiles();
+                files = clickOnceRoot.EnumerateFiles("*", SearchOption.AllDirectories);
             }
             else
             {
-                files = container.GetFiles(options.Matcher);
+                files = _fileMatcher.EnumerateMatches(new DirectoryInfoWrapper(clickOnceRoot), options.Matcher);
             }
 
             if (options.AntiMatcher is not null)
             {
-                IEnumerable<FileInfo> antiFiles = container.GetFiles(options.AntiMatcher);
+                IEnumerable<FileInfo> antiFiles = _fileMatcher.EnumerateMatches(new DirectoryInfoWrapper(clickOnceRoot), options.AntiMatcher);
 
                 files = files.Except(antiFiles, FileInfoComparer.Instance).ToList();
             }
-
             return files;
+        }
+
+        public void CopySigningDependencies(FileInfo file, DirectoryInfo destination, SignOptions signOptions)
+        {
+            foreach (var f in GetFiles(file.Directory!, signOptions))
+            {
+                // don't copy the file itself because that's already taken care of (and we don't want a duplicate copy with the 'real' name)
+                // lying around since it'll get copied back and overwrite the signed one.
+                if (f.FullName != file.FullName)
+                {
+                    var relativeDestPath = Path.GetRelativePath(file.Directory!.FullName, f.FullName);
+                    var fullDestPath = Path.Combine(destination.FullName, relativeDestPath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(fullDestPath!)!);
+                    f.CopyTo(fullDestPath, overwrite: true);
+                }
+            }
         }
     }
 }
