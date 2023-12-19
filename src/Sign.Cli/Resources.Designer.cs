@@ -205,15 +205,6 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX).
-        /// </summary>
-        internal static string SHA1ThumbprintOptionDescription {
-            get {
-                return ResourceManager.GetString("SHA1ThumbprintOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Sign CLI.
         /// </summary>
         internal static string SignCommandDescription {

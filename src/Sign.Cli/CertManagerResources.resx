@@ -117,76 +117,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ApplicationNameOptionDescription" xml:space="preserve">
-    <value>Application name (ClickOnce).</value>
+  <data name="CSPOptionDescription" xml:space="preserve">
+    <value>Cryptographic Service Provider containing the private key container. Requires /k or /km</value>
   </data>
-  <data name="BaseDirectoryOptionDescription" xml:space="preserve">
-    <value>Base directory for files.  Overrides the current working directory.</value>
+  <data name="KeyContainerOptionDescription" xml:space="preserve">
+    <value>Private key container in the user store</value>
   </data>
-  <data name="CodeCommandDescription" xml:space="preserve">
-    <value>Sign binaries and containers.</value>
+  <data name="MachineKeyContainerOptionDescription" xml:space="preserve">
+    <value>Private key container in the machine store</value>
   </data>
-  <data name="DescriptionOptionDescription" xml:space="preserve">
-    <value>Description of the signing certificate.</value>
+  <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
+    <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores</value>
   </data>
-  <data name="DescriptionUrlOptionDescription" xml:space="preserve">
-    <value>Description URL of the signing certificate.</value>
+  <data name="NoPrivateKeyContainerError" xml:space="preserve">
+    <value>Private key container missing while using /csp. Use /k or /km to provide a key container.</value>
   </data>
-  <data name="FileDigestOptionDescription" xml:space="preserve">
-    <value>Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</value>
-    <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</comment>
-  </data>
-  <data name="FileListOptionDescription" xml:space="preserve">
-    <value>Path to file containing paths of files to sign within an archive.</value>
-  </data>
-  <data name="InvalidBaseDirectoryValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be a fully rooted directory path.</value>
-    <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</comment>
-  </data>
-  <data name="InvalidDigestValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</value>
-    <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.  {NumberedPlaceholder="{0}"} is an option name (e.g.:  --file-digest) and should not be localized.</comment>
-  </data>
-  <data name="InvalidMaxConcurrencyValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be a number value greater than or equal to 1.</value>
-    <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</comment>
-  </data>
-  <data name="InvalidSha1ThumbrpintValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</value>
-  </data>
-  <data name="InvalidUrlValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</value>
-    <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</comment>
-  </data>
-  <data name="LocalCommandDescription" xml:space="preserve">
-    <value>Use Windows Certificate Mananger</value>
-  </data>
-  <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
-    <value>Maximum concurrency.</value>
-  </data>
-  <data name="OutputOptionDescription" xml:space="preserve">
-    <value>Output file or directory. If omitted, input files will be overwritten.</value>
-  </data>
-  <data name="PublisherNameOptionDescription" xml:space="preserve">
-    <value>Publisher name (ClickOnce).</value>
-    <comment>ClickOnce is a Microsoft deployment technology.</comment>
-  </data>
-  <data name="SignCommandDescription" xml:space="preserve">
-    <value>Sign CLI</value>
-  </data>
-  <data name="TimestampDigestOptionDescription" xml:space="preserve">
-    <value>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</value>
-    <comment>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161), and {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names should not be localized.</comment>
-  </data>
-  <data name="TimestampUrlOptionDescription" xml:space="preserve">
-    <value>RFC 3161 timestamp server URL.</value>
-    <comment>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</comment>
-  </data>
-  <data name="VerbosityOptionDescription" xml:space="preserve">
-    <value>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</value>
-    <comment>{Locked="none", "critical", "error", "warning", "information", "debug", "trace"} are option values and should not be localized.</comment>
-  </data>
-  <data name="x86NotSupported" xml:space="preserve">
-    <value>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</value>
+  <data name="SHA1ThumbprintOptionDescription" xml:space="preserve">
+    <value>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</value>
   </data>
 </root>

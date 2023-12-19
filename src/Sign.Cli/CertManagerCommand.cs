@@ -23,7 +23,11 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string?> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, Resources.SHA1ThumbprintOptionDescription);
+        internal Option<string?> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertManagerResources.SHA1ThumbprintOptionDescription);
+        internal Option<string?> CryptoServiceProvider { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertManagerResources.CSPOptionDescription);
+        internal Option<string?> PrivateKeyContainer { get; } = new(new[] { "-k", "--key-container" }, CertManagerResources.KeyContainerOptionDescription);
+        internal Option<string?> PrivateMachineKeyContainer { get; } = new(new[] { "-km", "--key-container-machine" }, CertManagerResources.MachineKeyContainerOptionDescription);
+
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
 
         internal CertManagerCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
@@ -37,6 +41,9 @@ namespace Sign.Cli
             SHA1ThumbprintOption.IsRequired = true;
 
             AddOption(SHA1ThumbprintOption);
+            AddOption(CryptoServiceProvider);
+            AddOption(PrivateKeyContainer);
+            AddOption(PrivateMachineKeyContainer);
             AddArgument(FileArgument);
 
             this.SetHandler(async (InvocationContext context) =>
@@ -61,6 +68,10 @@ namespace Sign.Cli
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
                 string? sha1Thumbprint = context.ParseResult.GetValueForOption(SHA1ThumbprintOption);
+                string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProvider);
+                string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainer);
+                string? privateMachineKeyContainer = context.ParseResult.GetValueForOption(PrivateMachineKeyContainer);
+
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
 
                 if (string.IsNullOrEmpty(fileArgument))
@@ -68,6 +79,26 @@ namespace Sign.Cli
                     context.Console.Error.WriteLine(AzureKeyVaultResources.MissingFileValue);
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
+                }
+
+                // CPS requires either K or KM options but not both.
+                if (!string.IsNullOrEmpty(cryptoServiceProvider)
+                    && (string.IsNullOrEmpty(privateKeyContainer) ^ string.IsNullOrEmpty(privateMachineKeyContainer)))
+                {
+                    if (string.IsNullOrEmpty(privateKeyContainer) && string.IsNullOrEmpty(privateMachineKeyContainer))
+                    {
+                        // Both were empty and one is required.
+                        context.Console.Error.WriteLine(CertManagerResources.MultiplePrivateKeyContainersError);
+                        context.ExitCode = ExitCode.InvalidOptions;
+                        return;
+                    }
+                    else
+                    {
+                        // Both were provided but can only use one.
+                        context.Console.Error.WriteLine(CertManagerResources.NoPrivateKeyContainerError);
+                        context.ExitCode = ExitCode.InvalidOptions;
+                        return;
+                    }
                 }
 
                 // Make sure this is rooted
@@ -190,7 +221,11 @@ namespace Sign.Cli
                     fileHashAlgorithmName,
                     timestampHashAlgorithmName,
                     credential!,
-                    SHA1Thumbprint: sha1Thumbprint!);
+                    keyVaultUrl: null,
+                    certificateName: null,
+                    SHA1Thumbprint: sha1Thumbprint!,
+                    cryptoServiceProvider,
+                    privateKeyContainer);
             });
         }
 

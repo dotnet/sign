@@ -82,11 +82,6 @@
         <target state="translated">发布服务器名称(ClickOnce)。</target>
         <note>ClickOnce is a Microsoft deployment technology.</note>
       </trans-unit>
-      <trans-unit id="SHA1ThumbprintOptionDescription">
-        <source>SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX)</source>
-        <target state="new">SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>
         <target state="translated">对 CLI 进行签名</target>
