@@ -328,14 +328,14 @@ namespace Sign.Core.Test
 
                     manifestSigner.Setup(
                         x => x.Sign(
-                            It.Is<FileInfo>(fi => ReferenceEquals(manifestFile, fi)),
+                            It.Is<FileInfo>(fi => fi.Name == manifestFile.Name),
                             It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
 
                     manifestSigner.Setup(
                         x => x.Sign(
-                            It.Is<FileInfo>(fi => ReferenceEquals(applicationFile, fi)),
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
                             It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
