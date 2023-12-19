@@ -15,7 +15,6 @@ namespace Sign.Core
     internal sealed class ClickOnceSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
         private readonly Lazy<IAggregatingSignatureProvider> _aggregatingSignatureProvider;
-        private readonly IContainerProvider _containerProvider;
         private readonly IDirectoryService _directoryService;
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
@@ -28,7 +27,6 @@ namespace Sign.Core
         public ClickOnceSignatureProvider(
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
-            IContainerProvider containerProvider,
             IServiceProvider serviceProvider,
             IDirectoryService directoryService,
             IMageCli mageCli,
@@ -39,7 +37,6 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
             ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
-            ArgumentNullException.ThrowIfNull(containerProvider, nameof(containerProvider));
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
             ArgumentNullException.ThrowIfNull(directoryService, nameof(directoryService));
             ArgumentNullException.ThrowIfNull(mageCli, nameof(mageCli));
@@ -47,7 +44,6 @@ namespace Sign.Core
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
-            _containerProvider = containerProvider;
             _directoryService = directoryService;
             _mageCli = mageCli;
             _manifestSigner = manifestSigner;
