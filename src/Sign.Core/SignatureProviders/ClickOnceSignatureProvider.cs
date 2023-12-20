@@ -98,6 +98,9 @@ namespace Sign.Core
 
                     DirectoryInfo clickOnceDirectory = file.Directory!;
 
+                    // get the files, _including_ the SignOptions, so that we only actually try to sign the files specified.
+                    // this is useful if e.g. you don't want to sign third-party assemblies that your application depends on
+                    // but you do still want to sign your own assemblies.
                     List<FileInfo> filteredFiles = GetFiles(clickOnceDirectory, options).ToList();
                     List<FileInfo> deployFilesToSign = filteredFiles
                         .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
@@ -113,8 +116,10 @@ namespace Sign.Core
                     // sign the inner files
                     await _aggregatingSignatureProvider.Value.SignAsync(filesToSign!, options);
 
-                    // rename the rest of the deploy files since signing the manifest will need them
-                    List<FileInfo> filesExceptFiltered = GetFiles(clickOnceDirectory, options).Except(filteredFiles, FileInfoComparer.Instance).ToList();
+                    // rename the rest of the deploy files since signing the manifest will need them.
+                    // this uses the overload of GetFiles() that ignores file matching options because we
+                    // require all files to be named correctly in order to generate valid manifests.
+                    List<FileInfo> filesExceptFiltered = GetFiles(clickOnceDirectory).Except(filteredFiles, FileInfoComparer.Instance).ToList();
                     List<FileInfo> deployFiles = filesExceptFiltered
                         .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
                         .ToList();
@@ -222,6 +227,12 @@ namespace Sign.Core
             return false;
         }
 
+
+        private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot)
+        {
+            return clickOnceRoot.EnumerateFiles("*", SearchOption.AllDirectories);
+        }
+
         private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot, SignOptions options)
         {
             IEnumerable<FileInfo> files;
@@ -229,7 +240,7 @@ namespace Sign.Core
             if (options.Matcher is null)
             {
                 // If not filtered, default to all
-                files = clickOnceRoot.EnumerateFiles("*", SearchOption.AllDirectories);
+                files = GetFiles(clickOnceRoot);
             }
             else
             {
@@ -247,7 +258,9 @@ namespace Sign.Core
 
         public void CopySigningDependencies(FileInfo file, DirectoryInfo destination, SignOptions signOptions)
         {
-            foreach (var f in GetFiles(file.Directory!, signOptions))
+            // copy _all_ files, ignoring matching options, because we need them to be available to generate
+            // valid manifests.
+            foreach (var f in GetFiles(file.Directory!))
             {
                 // don't copy the file itself because that's already taken care of (and we don't want a duplicate copy with the 'real' name)
                 // lying around since it'll get copied back and overwrite the signed one.
