@@ -33,8 +33,8 @@
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
-        <source>Path to file containing paths of files to sign within an archive.</source>
-        <target state="translated">Pfad zu einer Datei, die Pfade von Dateien enthält, die innerhalb eines Archivs signiert werden sollen.</target>
+        <source>Path to file containing paths of files to sign within an archive or ClickOnce package.</source>
+        <target state="needs-review-translation">Pfad zu einer Datei, die Pfade von Dateien enthält, die innerhalb eines Archivs signiert werden sollen.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">

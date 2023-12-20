@@ -176,7 +176,7 @@ namespace Sign.Core
 
             if (success)
             {
-                _logger.LogInformation(Resources.SigningSucceeded);
+                _logger.LogInformation(Resources.SigningSucceeded, file.FullName);
                 return true;
             }
 

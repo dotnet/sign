@@ -137,7 +137,7 @@
     <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</comment>
   </data>
   <data name="FileListOptionDescription" xml:space="preserve">
-    <value>Path to file containing paths of files to sign within an archive.</value>
+    <value>Path to file containing paths of files to sign within an archive or ClickOnce package.</value>
   </data>
   <data name="InvalidBaseDirectoryValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be a fully rooted directory path.</value>
