@@ -41,7 +41,7 @@ namespace Sign.Core
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential tokenCredential,
+            TokenCredential? tokenCredential,
             Uri? keyVaultUrl = null,
             string? certificateName = null,
             string? SHA1Thumbprint = null,
@@ -80,12 +80,13 @@ namespace Sign.Core
 
             try
             {
-                if (keyVaultUrl != null 
-                    && !string.IsNullOrEmpty(certificateName) 
+                if (keyVaultUrl != null
+                    && tokenCredential != null
+                    && !string.IsNullOrEmpty(certificateName)
                     && string.IsNullOrEmpty(SHA1Thumbprint))
                 {
                     IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
-                    keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName!);
+                    keyVaultService.Initialize(keyVaultUrl!, tokenCredential!, certificateName!);
 
                     using (X509Certificate2 certificate = await keyVaultService.GetCertificateAsync())
                     {

@@ -22,7 +22,7 @@ namespace Sign.Core
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential tokenCredential,
+            TokenCredential? tokenCredential,
             Uri? keyVaultUrl = null,
             string? certificateName = null,
             string? SHA1Thumbprint = null,

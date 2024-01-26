@@ -9,12 +9,10 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Azure.Core;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic.FileIO;
 using Sign.Core;
 
 namespace Sign.Cli
@@ -81,9 +79,9 @@ namespace Sign.Cli
                     return;
                 }
 
-                // CPS requires either K or KM options but not both.
+                // CSP requires either K or KM options but not both.
                 if (!string.IsNullOrEmpty(cryptoServiceProvider)
-                    && (string.IsNullOrEmpty(privateKeyContainer) ^ string.IsNullOrEmpty(privateMachineKeyContainer)))
+                    && string.IsNullOrEmpty(privateKeyContainer) == string.IsNullOrEmpty(privateMachineKeyContainer))
                 {
                     if (string.IsNullOrEmpty(privateKeyContainer) && string.IsNullOrEmpty(privateMachineKeyContainer))
                     {
@@ -195,11 +193,10 @@ namespace Sign.Cli
                     return;
                 }
 
-                TokenCredential? credential = null;
-
                 if (string.IsNullOrEmpty(context.ParseResult.GetValueForOption(SHA1ThumbprintOption)))
                 {
-                    context.Console.Error.WriteLine(Resources.InvalidSha1ThumbrpintValue);
+                    context.Console.Error.WriteLine(
+                        FormatMessage(Resources.InvalidSha1ThumbrpintValue, SHA1ThumbprintOption));
                     context.ExitCode = ExitCode.NoInputsFound;
 
                     return;
@@ -220,7 +217,7 @@ namespace Sign.Cli
                     maxConcurrency,
                     fileHashAlgorithmName,
                     timestampHashAlgorithmName,
-                    credential!,
+                    tokenCredential: null,
                     keyVaultUrl: null,
                     certificateName: null,
                     SHA1Thumbprint: sha1Thumbprint!,
