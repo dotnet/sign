@@ -8,7 +8,7 @@ using Azure.Core;
 
 namespace Sign.Core.Test
 {
-    internal sealed class CertificateManagerServiceStub : ICertificateManangerService, IDisposable
+    internal sealed class CertificateManagerServiceStub : ICertificateStoreService, IDisposable
     {
         private RSA? _rsa;
         private X509Certificate2? _certificate;

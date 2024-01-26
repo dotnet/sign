@@ -15,7 +15,7 @@ namespace Sign.Core.Test
         {
             _provider = new VsixSignatureProvider(
                 Mock.Of<IKeyVaultService>(),
-                Mock.Of<ICertificateManangerService>(),
+                Mock.Of<ICertificateStoreService>(),
                 Mock.Of<IVsixSignTool>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
@@ -26,7 +26,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSignatureProvider(
                     keyVaultService: null!,
-                    Mock.Of<ICertificateManangerService>(),
+                    Mock.Of<ICertificateStoreService>(),
                     Mock.Of<IVsixSignTool>(),
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
@@ -52,7 +52,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSignatureProvider(
                     Mock.Of<IKeyVaultService>(),
-                    Mock.Of<ICertificateManangerService>(),
+                    Mock.Of<ICertificateStoreService>(),
                     vsixSignTool: null!,
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
@@ -65,7 +65,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSignatureProvider(
                     Mock.Of<IKeyVaultService>(),
-                    Mock.Of<ICertificateManangerService>(),
+                    Mock.Of<ICertificateStoreService>(),
                     Mock.Of<IVsixSignTool>(),
                     logger: null!));
 

@@ -24,7 +24,7 @@ namespace Sign.Core.Test
             IContainerProvider containerProvider = Mock.Of<IContainerProvider>();
             IDirectoryService directoryService = Mock.Of<IDirectoryService>();
             IKeyVaultService keyVaultService = Mock.Of<IKeyVaultService>();
-            ICertificateManangerService certMgrService = Mock.Of<ICertificateManangerService>();
+            ICertificateStoreService certMgrService = Mock.Of<ICertificateStoreService>();
             ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
             IMageCli mageCli = Mock.Of<IMageCli>();
             IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();

@@ -62,7 +62,7 @@ namespace Sign.Core
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
             services.AddSingleton<IKeyVaultService, KeyVaultService>();
-            services.AddSingleton<ICertificateManangerService, CertificateManagerService>();
+            services.AddSingleton<ICertificateStoreService, CertificateManagerService>();
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
             services.AddSingleton<ISignatureProvider, ClickOnceSignatureProvider>();
             services.AddSingleton<ISignatureProvider, VsixSignatureProvider>();

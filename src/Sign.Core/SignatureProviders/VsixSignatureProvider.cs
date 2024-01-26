@@ -17,7 +17,7 @@ namespace Sign.Core
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
             IKeyVaultService? keyVaultService,
-            ICertificateManangerService certificateManangerService,
+            ICertificateStoreService certificateManangerService,
             IVsixSignTool vsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)

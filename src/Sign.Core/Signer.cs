@@ -97,7 +97,7 @@ namespace Sign.Core
                 }
                 else if (!string.IsNullOrEmpty(SHA1Thumbprint))
                 {
-                    ICertificateManangerService certificateManagerService = _serviceProvider.GetRequiredService<ICertificateManangerService>();
+                    ICertificateStoreService certificateManagerService = _serviceProvider.GetRequiredService<ICertificateStoreService>();
                     certificateManagerService.Initialize(SHA1Thumbprint, cryptoServiceProvider, privateKeyContainer, privateMachineKeyContainer);
 
                     using (X509Certificate2 certificate = await certificateManagerService.GetCertificateAsync())

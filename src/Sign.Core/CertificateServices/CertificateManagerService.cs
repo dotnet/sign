@@ -10,16 +10,16 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.Core
 {
-    internal sealed class CertificateManagerService : ICertificateManangerService
+    internal sealed class CertificateManagerService : ICertificateStoreService
     {
         private string? _sha1Thumbprint;
         private string? _cryptoServiceProvider;
         private string? _privateKeyContainer;
         private string? _privateMachineKeyContainer;
-        private readonly ILogger<ICertificateManangerService> _logger;
+        private readonly ILogger<ICertificateStoreService> _logger;
 
         // Dependency injection requires a public constructor.
-        public CertificateManagerService(ILogger<ICertificateManangerService> logger)
+        public CertificateManagerService(ILogger<ICertificateStoreService> logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
