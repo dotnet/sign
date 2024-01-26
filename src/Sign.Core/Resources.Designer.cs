@@ -70,15 +70,6 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to acquire ECDsa private key from the provided certificate..
-        /// </summary>
-        internal static string CertificateECDsaNotFound {
-            get {
-                return ResourceManager.GetString("CertificateECDsaNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The certificate is expired..
         /// </summary>
         internal static string CertificateIsExpired {
@@ -232,11 +223,38 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager..
+        /// </summary>
+        internal static string InvalidSha1ThumbrpintValue {
+            get {
+                return ResourceManager.GetString("InvalidSha1ThumbrpintValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint.
         /// </summary>
         internal static string MissingSha1OrKeyVaultUrlError {
             get {
                 return ResourceManager.GetString("MissingSha1OrKeyVaultUrlError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple private key containers provided. Use either /k for user stores or /km for machine stores..
+        /// </summary>
+        internal static string MultiplePrivateKeyContainersError {
+            get {
+                return ResourceManager.GetString("MultiplePrivateKeyContainersError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Private key container missing while using /csp. Use /k or /km to provide a key container..
+        /// </summary>
+        internal static string NoPrivateKeyContainerError {
+            get {
+                return ResourceManager.GetString("NoPrivateKeyContainerError", resourceCulture);
             }
         }
         

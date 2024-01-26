@@ -121,9 +121,6 @@
     <value>Signing SignTool job with {count} files.</value>
     <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
-  <data name="CertificateECDsaNotFound" xml:space="preserve">
-    <value>Unable to acquire ECDsa private key from the provided certificate.</value>
-  </data>
   <data name="CertificateIsExpired" xml:space="preserve">
     <value>The certificate is expired.</value>
   </data>
@@ -186,8 +183,17 @@
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
   </data>
+  <data name="InvalidSha1ThumbrpintValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</value>
+  </data>
   <data name="MissingSha1OrKeyVaultUrlError" xml:space="preserve">
     <value>Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</value>
+  </data>
+  <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
+    <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
+  </data>
+  <data name="NoPrivateKeyContainerError" xml:space="preserve">
+    <value>Private key container missing while using /csp. Use /k or /km to provide a key container.</value>
   </data>
   <data name="NoSignatureProvidersAvailableError" xml:space="preserve">
     <value>Certificate Services failed to initialize.</value>

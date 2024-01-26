@@ -3,15 +3,16 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.Core
 {
-    internal class CertificateManagerService : ICertificateManangerService
+    internal sealed class CertificateManagerService : ICertificateManangerService
     {
-        private string? _Sha1Thumbprint;
+        private string? _sha1Thumbprint;
         private string? _cryptoServiceProvider;
         private string? _privateKeyContainer;
         private string? _privateMachineKeyContainer;
@@ -34,35 +35,17 @@ namespace Sign.Core
         {
             ThrowIfUninitialized();
 
-            // Check machine certificate store.
-            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            if (TryFindCertificate(StoreLocation.LocalMachine, _sha1Thumbprint!, out X509Certificate2? certificate)
+                || TryFindCertificate(StoreLocation.CurrentUser, _sha1Thumbprint!, out certificate))
             {
-                store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
-                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, _Sha1Thumbprint!, false);
-
-                if (certificates.Count > 0)
-                {
-                    return Task.FromResult(certificates[0]);
-                }
+                return Task.FromResult(certificate);
             }
 
-            // Check current user certificate store.
-            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-            {
-                store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
-                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, _Sha1Thumbprint!, false);
-
-                if (certificates.Count == 0)
-                {
-                    throw new ArgumentException(Resources.CertificateNotFound);
-                }
-
-                return Task.FromResult(certificates[0]);
-            }
+            throw new ArgumentException(Resources.CertificateNotFound);
         }
 
 
-        [SupportedOSPlatform("windows")] // CsCParameters is Windows-only but we support cross platform frameworks.
+        [SupportedOSPlatform("windows")] // CspParameters is Windows-only but project uses cross platform frameworks. Dotnet/Sign is Windows only
         public async Task<AsymmetricAlgorithm> GetRsaAsync()
         {
             ThrowIfUninitialized();
@@ -89,9 +72,9 @@ namespace Sign.Core
                 return new RSACryptoServiceProvider(cspOptions);
             }
 
-            // Extract RSA from Windows Cert Manager certificate.
+            // Try to retrieve the certificate's private key.
+            // EDCSA uses "1.2.840.10045.2.1";
             const string RSA = "1.2.840.113549.1.1.1";
-            const string Ecc = "1.2.840.10045.2.1";
 
             var certificate = await GetCertificateAsync();
             var keyAlgorithm = certificate.GetKeyAlgorithm();
@@ -100,8 +83,6 @@ namespace Sign.Core
             {
                 case RSA:
                     return certificate.GetRSAPrivateKey() ?? throw new InvalidOperationException(Resources.CertificateRSANotFound);
-                case Ecc:
-                    return certificate.GetECDsaPrivateKey() ?? throw new InvalidOperationException(Resources.CertificateECDsaNotFound);
                 default:
                     throw new InvalidOperationException(Resources.CertificateUnknownSignAlgoError);
             }
@@ -110,23 +91,66 @@ namespace Sign.Core
         public void Initialize(string sha1Thumbprint, string? cryptoServiceProvider, string? privateKeyContainer,
             string? privateMachineKeyContainer)
         {
-            this._Sha1Thumbprint = sha1Thumbprint;
-            this._cryptoServiceProvider = cryptoServiceProvider;
-            this._privateKeyContainer = privateKeyContainer;
-            this._privateMachineKeyContainer = privateMachineKeyContainer;
+            // CSP requires either K or KM options but not both.
+            if (!string.IsNullOrEmpty(cryptoServiceProvider)
+                && string.IsNullOrEmpty(privateKeyContainer) == string.IsNullOrEmpty(privateMachineKeyContainer))
+            {
+                if (string.IsNullOrEmpty(privateKeyContainer) && string.IsNullOrEmpty(privateMachineKeyContainer))
+                {
+                    _logger.LogError(Resources.MultiplePrivateKeyContainersError);
+                    throw new ArgumentException(Resources.MultiplePrivateKeyContainersError);
+                }
+                else
+                {
+                    // Both were provided but can only use one.
+                    _logger.LogError(Resources.NoPrivateKeyContainerError);
+                    throw new ArgumentException(Resources.NoPrivateKeyContainerError);
+                }
+            }
+            
+            if (string.IsNullOrEmpty(sha1Thumbprint))
+            {
+                _logger.LogError(Resources.InvalidSha1ThumbrpintValue);
+                throw new ArgumentException(Resources.InvalidSha1ThumbrpintValue);
+            }
+
+            _sha1Thumbprint = sha1Thumbprint;
+            _cryptoServiceProvider = cryptoServiceProvider;
+            _privateKeyContainer = privateKeyContainer;
+            _privateMachineKeyContainer = privateMachineKeyContainer;
         }
 
         private void ThrowIfUninitialized()
         {
-            ArgumentNullException.ThrowIfNull(_Sha1Thumbprint, nameof(_Sha1Thumbprint));
+            ArgumentNullException.ThrowIfNull(_sha1Thumbprint, nameof(_sha1Thumbprint));
 
             // Only SHA1 is required.
-            if (string.IsNullOrEmpty(_Sha1Thumbprint))
+            if (string.IsNullOrEmpty(_sha1Thumbprint))
             {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(_Sha1Thumbprint));
+                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(_sha1Thumbprint));
             }
         }
 
-        public bool IsInitialized() => _Sha1Thumbprint != null;
+        public bool IsInitialized() => !string.IsNullOrEmpty(_sha1Thumbprint);
+
+        private static bool TryFindCertificate(StoreLocation storeLocation, string sha1Fingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
+        {
+            // Check machine certificate store.
+            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            {
+                store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
+                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, sha1Fingerprint, validOnly: false);
+
+                if (certificates.Count > 0)
+                {
+                    certificate = certificates[0];
+                    return true;
+                }
+
+                certificate = null;
+                return false;
+            }
+        }
+
     }
 }
