@@ -32,6 +32,8 @@ namespace Sign.Core.Test
 
             _certificatesFixture = certificatesFixture;
             _keyVaultServiceStub = new KeyVaultServiceStub();
+
+            RegisterSipsFromIniFile(); // Register SIPS from INI file to avoid relying SIPs being registered prior to running tests.
         }
 
         public void Dispose()
@@ -119,6 +121,18 @@ namespace Sign.Core.Test
                 await SignAsync(temporaryDirectory, file, outputFile);
 
                 await VerifyMsixBundleFile(outputFile, temporaryDirectory);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileIsApp_Signs()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(new DirectoryService(Mock.Of<ILogger<IDirectoryService>>())))
+            {
+                FileInfo file = GetTestAsset(temporaryDirectory, "EmptyExtension.app");
+                FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.app"));
+                
+                await SignAsync(temporaryDirectory, file, outputFile);
             }
         }
 
@@ -438,6 +452,16 @@ namespace Sign.Core.Test
             services.AddSingleton<ISigner, Signer>();
 
             return new ServiceProvider(services.BuildServiceProvider());
+        }
+
+        private void RegisterSipsFromIniFile()
+        {
+            AppRootDirectoryLocator locator = new();
+            DirectoryInfo appRootDirectory = locator.Directory;
+            string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", "x64");
+            Kernel32.SetDllDirectoryW(baseDirectory);
+            Kernel32.LoadLibraryW($@"{baseDirectory}\wintrust.dll");
+            Kernel32.LoadLibraryW($@"{baseDirectory}\mssign32.dll");
         }
     }
 }

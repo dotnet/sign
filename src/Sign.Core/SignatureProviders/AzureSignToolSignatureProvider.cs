@@ -33,6 +33,7 @@ namespace Sign.Core
 
             _supportedFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
+                ".app",
                 ".appx",
                 ".appxbundle",
                 ".cab",

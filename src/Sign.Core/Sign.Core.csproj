@@ -22,6 +22,7 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Security.Cryptography.Xml" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Text.Json" PrivateAssets="analyzers;build;compile;contentfiles" />
+    <PackageReference Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" />
   </ItemGroup>
 
   <ItemGroup>
