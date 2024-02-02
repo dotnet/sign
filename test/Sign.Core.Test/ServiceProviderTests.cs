@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Sign.Core.Test
 {
@@ -21,7 +22,15 @@ namespace Sign.Core.Test
         [Fact]
         public void CreateDefault_Always_RegistersRequiredServices()
         {
-            ServiceProvider serviceProvider = ServiceProvider.CreateDefault();
+            ServiceProvider serviceProvider = ServiceProvider.CreateDefault(
+                addServices: (IServiceCollection services) =>
+                {
+                    // This is a hack.
+                    // Some service constructors have an `IKeyVaultService` parameter.
+                    // We should introduce new `ISignatureAlgorithmProvider` and `ICertificateProvider`
+                    // interfaces and use them instead.
+                    services.AddSingleton<IKeyVaultService>(Mock.Of<IKeyVaultService>());
+                });
 
             // Start of tests
             Assert.NotNull(serviceProvider.GetRequiredService<ILogger<ServiceProviderTests>>());

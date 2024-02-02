@@ -89,6 +89,32 @@ namespace Sign.Cli
                 string? certificateId = context.ParseResult.GetValueForOption(CertificateOption);
                 bool useManagedIdentity = context.ParseResult.GetValueForOption(ManagedIdentityOption);
 
+                TokenCredential? credential = null;
+
+                if (useManagedIdentity)
+                {
+                    credential = new DefaultAzureCredential();
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(tenantId) ||
+                        string.IsNullOrEmpty(clientId) ||
+                        string.IsNullOrEmpty(secret))
+                    {
+                        context.Console.Error.WriteLine(
+                            FormatMessage(
+                                AzureKeyVaultResources.InvalidClientSecretCredential,
+                                TenantIdOption,
+                                ClientIdOption,
+                                ClientSecretOption));
+                        context.ExitCode = ExitCode.NoInputsFound;
+
+                        return;
+                    }
+
+                    credential = new ClientSecretCredential(tenantId!, clientId!, secret!);
+                }
+
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {
@@ -100,7 +126,13 @@ namespace Sign.Cli
                     return;
                 }
 
-                IServiceProvider serviceProvider = serviceProviderFactory.Create(verbosity);
+                IServiceProvider serviceProvider = serviceProviderFactory.Create(
+                    verbosity,
+                    addServices: (IServiceCollection services) =>
+                    {
+                        services.AddSingleton<IKeyVaultService>(
+                            (IServiceProvider serviceProvider) => new KeyVaultService(serviceProvider, credential, url!, certificateId!));
+                    });
 
                 List<FileInfo> inputFiles;
 
@@ -183,32 +215,6 @@ namespace Sign.Cli
                     return;
                 }
 
-                TokenCredential? credential = null;
-
-                if (useManagedIdentity)
-                {
-                    credential = new DefaultAzureCredential();
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(tenantId) ||
-                        string.IsNullOrEmpty(clientId) ||
-                        string.IsNullOrEmpty(secret))
-                    {
-                        context.Console.Error.WriteLine(
-                            FormatMessage(
-                                AzureKeyVaultResources.InvalidClientSecretCredential,
-                                TenantIdOption,
-                                ClientIdOption,
-                                ClientSecretOption));
-                        context.ExitCode = ExitCode.NoInputsFound;
-
-                        return;
-                    }
-
-                    credential = new ClientSecretCredential(tenantId!, clientId!, secret!);
-                }
-
                 ISigner signer = serviceProvider.GetRequiredService<ISigner>();
 
                 context.ExitCode = await signer.SignAsync(
@@ -223,10 +229,7 @@ namespace Sign.Cli
                     timestampUrl,
                     maxConcurrency,
                     fileHashAlgorithmName,
-                    timestampHashAlgorithmName,
-                    credential,
-                    url!,
-                    certificateId!);
+                    timestampHashAlgorithmName);
             });
         }
 

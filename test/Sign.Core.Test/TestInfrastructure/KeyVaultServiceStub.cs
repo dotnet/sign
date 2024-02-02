@@ -4,7 +4,6 @@
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Azure.Core;
 
 namespace Sign.Core.Test
 {
@@ -12,6 +11,16 @@ namespace Sign.Core.Test
     {
         private RSA? _rsa;
         private X509Certificate2? _certificate;
+
+        internal KeyVaultServiceStub()
+        {
+            _rsa = RSA.Create(keySizeInBits: 4096);
+
+            CertificateRequest request = new("CN=test", _rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            DateTimeOffset now = DateTimeOffset.Now;
+
+            _certificate = request.CreateSelfSigned(now.AddMinutes(-5), now.AddMinutes(10));
+        }
 
         public void Dispose()
         {
@@ -32,16 +41,6 @@ namespace Sign.Core.Test
             RSA rsa = RSA.Create(parameters);
 
             return Task.FromResult(rsa);
-        }
-
-        public void Initialize(Uri keyVaultUrl, TokenCredential tokenCredential, string certificateName)
-        {
-            _rsa = RSA.Create(keySizeInBits: 4096);
-
-            CertificateRequest request = new("CN=test", _rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-            DateTimeOffset now = DateTimeOffset.Now;
-
-            _certificate = request.CreateSelfSigned(now.AddMinutes(-5), now.AddMinutes(10));
         }
     }
 }

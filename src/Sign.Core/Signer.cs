@@ -40,10 +40,7 @@ namespace Sign.Core
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential tokenCredential,
-            Uri keyVaultUrl,
-            string certificateName)
+            HashAlgorithmName timestampHashAlgorithm)
         {
             IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
@@ -64,8 +61,6 @@ namespace Sign.Core
             }
 
             IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
-
-            keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName);
 
             SignOptions signOptions = new(
                 applicationName,
@@ -162,7 +157,6 @@ namespace Sign.Core
 
                     _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
                 });
-
             }
             catch (AuthenticationException e)
             {
