@@ -11,7 +11,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
@@ -140,10 +139,7 @@ namespace Sign.Core.Test
                 _certificatesFixture.TimestampServiceUrl,
                 maxConcurrency: 4,
                 HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256,
-                new DefaultAzureCredential(),
-                new Uri("https://keyvault.test"),
-                certificateName: "c");
+                HashAlgorithmName.SHA256);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -421,7 +417,8 @@ namespace Sign.Core.Test
             services.AddSingleton<IContainerProvider, ContainerProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
-            services.AddSingleton<IKeyVaultService>(_keyVaultServiceStub);
+            services.AddSingleton<ISignatureAlgorithmProvider>(_keyVaultServiceStub);
+            services.AddSingleton<ICertificateProvider>(_keyVaultServiceStub);
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
             services.AddSingleton<ISignatureProvider, ClickOnceSignatureProvider>();
             services.AddSingleton<ISignatureProvider, VsixSignatureProvider>();
