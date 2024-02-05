@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Sign.Core.Test
 {
@@ -21,7 +22,14 @@ namespace Sign.Core.Test
         [Fact]
         public void CreateDefault_Always_RegistersRequiredServices()
         {
-            ServiceProvider serviceProvider = ServiceProvider.CreateDefault();
+            ServiceProvider serviceProvider = ServiceProvider.CreateDefault(
+                addServices: (IServiceCollection services) =>
+                {
+                    // Dependency injection of some services require these services.
+                    // Normally, these services are added at runtime in the CLI.
+                    services.AddSingleton<ISignatureAlgorithmProvider>(Mock.Of<ISignatureAlgorithmProvider>());
+                    services.AddSingleton<ICertificateProvider>(Mock.Of<ICertificateProvider>());
+                });
 
             // Start of tests
             Assert.NotNull(serviceProvider.GetRequiredService<ILogger<ServiceProviderTests>>());
@@ -33,8 +41,8 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<IContainerProvider>());
             Assert.NotNull(serviceProvider.GetRequiredService<IFileMetadataService>());
             Assert.NotNull(serviceProvider.GetRequiredService<IDirectoryService>());
-            Assert.NotNull(serviceProvider.GetRequiredService<IKeyVaultService>());
-            Assert.NotNull(serviceProvider.GetRequiredService<ICertificateStoreService>());
+            Assert.NotNull(serviceProvider.GetRequiredService<ISignatureAlgorithmProvider>());
+            Assert.NotNull(serviceProvider.GetRequiredService<ICertificateProvider>());
 
             IDefaultSignatureProvider defaultSignatureProvider = serviceProvider.GetRequiredService<IDefaultSignatureProvider>();
             Assert.IsType<AzureSignToolSignatureProvider>(defaultSignatureProvider.SignatureProvider);
@@ -48,7 +56,7 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<IMageCli>());
             Assert.NotNull(serviceProvider.GetRequiredService<IMakeAppxCli>());
             Assert.NotNull(serviceProvider.GetRequiredService<INuGetSignTool>());
-            Assert.NotNull(serviceProvider.GetRequiredService<IVsixSignTool>());
+            Assert.NotNull(serviceProvider.GetRequiredService<IOpenVsixSignTool>());
             Assert.NotNull(serviceProvider.GetRequiredService<ICertificateVerifier>());
             Assert.NotNull(serviceProvider.GetRequiredService<ISigner>());
         }

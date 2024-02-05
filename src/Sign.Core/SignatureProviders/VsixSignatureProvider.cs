@@ -5,30 +5,31 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
+using OpenVsixSignTool.Core;
 
 namespace Sign.Core
 {
     internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly ISignatureAlgorithmProvider _rsaProvider;
-        private readonly ICertificateProvider _certificateService;
-        private readonly IVsixSignTool _VsixSignTool;
+        private readonly ICertificateProvider _certificateProvider;
+        private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
+        private readonly IOpenVsixSignTool _openVsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
-            ISignatureAlgorithmProvider rsaProvider,
-            ICertificateProvider certificateManangerService,
-            IVsixSignTool vsixSignTool,
+            ISignatureAlgorithmProvider signatureAlgorithmProvider,
+            ICertificateProvider certificateProvider,
+            IOpenVsixSignTool openVsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
-            ArgumentNullException.ThrowIfNull(rsaProvider, nameof(rsaProvider));
-            ArgumentNullException.ThrowIfNull(certificateManangerService, nameof(certificateManangerService));
-            ArgumentNullException.ThrowIfNull(vsixSignTool, nameof(vsixSignTool));
+            ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
+            ArgumentNullException.ThrowIfNull(openVsixSignTool, nameof(openVsixSignTool));
 
-            _certificateService = certificateManangerService;
-            _rsaProvider = rsaProvider;
-            _VsixSignTool = vsixSignTool;
+            _signatureAlgorithmProvider = signatureAlgorithmProvider;
+            _certificateProvider = certificateProvider;
+            _openVsixSignTool = openVsixSignTool;
         }
 
         public bool CanSign(FileInfo file)
@@ -45,29 +46,12 @@ namespace Sign.Core
 
             Logger.LogInformation(Resources.VsixSignatureProviderSigning, files.Count());
 
-            if (_keyVaultService.IsInitialized())
+            using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
+            using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
             {
-                using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-                using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
-                {
-                    IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
+                IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 
-                    await Task.WhenAll(tasks);
-                }
-            }
-            else if (_certificateService.IsInitialized())
-            {
-                using (X509Certificate2 certificate = await _certificateService.GetCertificateAsync())
-                using (AsymmetricAlgorithm rsa = await _certificateService.GetRsaAsync())
-                {
-                    IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
-
-                    await Task.WhenAll(tasks);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException(Resources.NoSignatureProvidersAvailableError);
+                await Task.WhenAll(tasks);
             }
         }
 
@@ -80,7 +64,7 @@ namespace Sign.Core
                 rsaPrivateKey,
                 certificate);
 
-            return await _VsixSignTool.SignAsync(file, configuration, options);
+            return await _openVsixSignTool.SignAsync(file, configuration, options);
         }
     }
 }

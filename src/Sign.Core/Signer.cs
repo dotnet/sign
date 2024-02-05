@@ -40,14 +40,7 @@ namespace Sign.Core
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential? tokenCredential,
-            Uri? keyVaultUrl = null,
-            string? certificateName = null,
-            string? SHA1Thumbprint = null,
-            string? cryptoServiceProvider = null,
-            string? privateKeyContainer = null,
-            string? privateMachineKeyContainer = null)
+            HashAlgorithmName timestampHashAlgorithm)
         {
             IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
@@ -67,6 +60,8 @@ namespace Sign.Core
                 }
             }
 
+            ICertificateProvider certificateProvider = _serviceProvider.GetRequiredService<ICertificateProvider>();
+
             SignOptions signOptions = new(
                 applicationName,
                 publisherName,
@@ -80,36 +75,11 @@ namespace Sign.Core
 
             try
             {
-                if (keyVaultUrl != null
-                    && tokenCredential != null
-                    && !string.IsNullOrEmpty(certificateName)
-                    && string.IsNullOrEmpty(SHA1Thumbprint))
+                using (X509Certificate2 certificate = await certificateProvider.GetCertificateAsync())
                 {
-                    IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
-                    keyVaultService.Initialize(keyVaultUrl!, tokenCredential!, certificateName!);
+                    ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
 
-                    using (X509Certificate2 certificate = await keyVaultService.GetCertificateAsync())
-                    {
-                        ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
-
-                        certificateVerifier.Verify(certificate);
-                    }
-                }
-                else if (!string.IsNullOrEmpty(SHA1Thumbprint))
-                {
-                    ICertificateStoreService certificateManagerService = _serviceProvider.GetRequiredService<ICertificateStoreService>();
-                    certificateManagerService.Initialize(SHA1Thumbprint, cryptoServiceProvider, privateKeyContainer, privateMachineKeyContainer);
-
-                    using (X509Certificate2 certificate = await certificateManagerService.GetCertificateAsync())
-                    {
-                        ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
-
-                        certificateVerifier.Verify(certificate);
-                    }
-                }
-                else
-                {
-                    throw new ArgumentNullException(Resources.MissingSha1OrKeyVaultUrlError);
+                    certificateVerifier.Verify(certificate);
                 }
 
                 await Parallel.ForEachAsync(inputFiles, parallelOptions, async (input, token) =>
@@ -167,7 +137,7 @@ namespace Sign.Core
                         // However check its extension as it might be important (e.g. zip, bundle, etc)
                         if (signatureProvider.CanSign(input))
                         {
-                            // Keep the input extension as it has significance.
+                            // Keep the input extenstion as it has significance.
                             inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
                         }
 
@@ -187,7 +157,6 @@ namespace Sign.Core
 
                     _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
                 });
-
             }
             catch (AuthenticationException e)
             {

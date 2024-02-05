@@ -15,7 +15,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: null!,
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
@@ -25,18 +25,18 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void Constructor_WhenKeyVaultServiceIsNull_Throws()
+        public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    keyVaultService: null!,
+                    certificateProvider: null!,
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
                     Mock.Of<ILogger<IContainer>>()));
 
-            Assert.Equal("keyVaultService", exception.ParamName);
+            Assert.Equal("certificateProvider", exception.ParamName);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateProvider>(),
                     directoryService: null!,
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
@@ -60,7 +60,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IDirectoryService>(),
                     fileMatcher: null!,
                     Mock.Of<IMakeAppxCli>(),
@@ -75,7 +75,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     makeAppxCli: null!,
@@ -90,7 +90,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxContainer(
                     appx: new FileInfo("a"),
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),

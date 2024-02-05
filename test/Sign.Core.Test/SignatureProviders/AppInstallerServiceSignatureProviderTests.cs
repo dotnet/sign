@@ -14,19 +14,19 @@ namespace Sign.Core.Test
         public AppInstallerServiceSignatureProviderTests()
         {
             _provider = new AppInstallerServiceSignatureProvider(
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ICertificateProvider>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
         [Fact]
-        public void Constructor_WhenKeyVaultServiceIsNull_Throws()
+        public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppInstallerServiceSignatureProvider(
-                    keyVaultService: null!,
+                    certificateProvider: null!,
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
-            Assert.Equal("keyVaultService", exception.ParamName);
+            Assert.Equal("certificateProvider", exception.ParamName);
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppInstallerServiceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ICertificateProvider>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);

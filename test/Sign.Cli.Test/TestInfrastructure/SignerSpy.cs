@@ -3,7 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
-using Azure.Core;
 using Sign.Core;
 
 namespace Sign.Cli.Test
@@ -22,13 +21,6 @@ namespace Sign.Cli.Test
         internal int? MaxConcurrency { get; private set; }
         internal HashAlgorithmName? FileHashAlgorithm { get; private set; }
         internal HashAlgorithmName? TimestampHashAlgorithm { get; private set; }
-        internal TokenCredential? TokenCredential { get; private set; }
-        internal Uri? KeyVaultUrl { get; private set; }
-        internal string? CertificateName { get; private set; }
-        internal string? SHA1Thumbprint { get; private set; }
-        internal string? CryptoServiceProvider { get; private set; }
-        internal string? PrivateKeyContainer { get; private set; }
-        internal string? PrivateMachineKeyContainer { get; private set; }
         internal int ExitCode { get; }
 
         internal SignerSpy()
@@ -48,14 +40,7 @@ namespace Sign.Cli.Test
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential tokenCredential,
-            Uri? keyVaultUrl,
-            string? certificateName,
-            string? sha1Thumbprint,
-            string? cryptoServiceProvider,
-            string? privateKeyContainer,
-            string? privateMachineKeyContainer)
+            HashAlgorithmName timestampHashAlgorithm)
         {
             InputFiles = inputFiles;
             OutputFile = outputFile;
@@ -69,13 +54,6 @@ namespace Sign.Cli.Test
             MaxConcurrency = maxConcurrency;
             FileHashAlgorithm = fileHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
-            TokenCredential = tokenCredential;
-            KeyVaultUrl = keyVaultUrl;
-            CertificateName = certificateName;
-            SHA1Thumbprint = sha1Thumbprint;
-            CryptoServiceProvider = cryptoServiceProvider;
-            PrivateKeyContainer = privateKeyContainer;
-            PrivateMachineKeyContainer = privateMachineKeyContainer;
 
             return Task.FromResult(ExitCode);
         }

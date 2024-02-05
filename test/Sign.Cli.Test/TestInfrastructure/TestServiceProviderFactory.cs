@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
 
@@ -16,7 +17,10 @@ namespace Sign.Cli.Test
             _serviceProvider = serviceProvider;
         }
 
-        public IServiceProvider Create(LogLevel logLevel = LogLevel.Information, ILoggerProvider? loggerProvider = null)
+        public IServiceProvider Create(
+            LogLevel logLevel = LogLevel.Information,
+            ILoggerProvider? loggerProvider = null,
+            Action<IServiceCollection>? addServices = null)
         {
             return _serviceProvider;
         }
