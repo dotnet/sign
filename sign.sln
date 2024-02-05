@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.vsts-ci.yml = .vsts-ci.yml
+		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
 		NuGet.Config = NuGet.Config
 	EndProjectSection
@@ -23,7 +24,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Core.Test", "test\Sign
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Cli", "src\Sign.CLI\Sign.Cli.csproj", "{A54EAFBE-AB23-48F7-86C5-C91ACEEDF509}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sign.Cli.Test", "test\Sign.Cli.Test\Sign.Cli.Test.csproj", "{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Cli.Test", "test\Sign.Cli.Test\Sign.Cli.Test.csproj", "{3C6FC0EB-F5B9-430C-B420-4DEC6B390768}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
