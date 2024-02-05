@@ -88,7 +88,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store..
+        ///   Looks up a localized string similar to Unable to find a matching certificate..
         /// </summary>
         internal static string CertificateNotFound {
             get {
@@ -97,20 +97,11 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to acquire RSA private key from the provided certificate..
+        ///   Looks up a localized string similar to Unable to acquire RSA private key for the provided certificate..
         /// </summary>
         internal static string CertificateRSANotFound {
             get {
                 return ResourceManager.GetString("CertificateRSANotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unknown certificate signing algorithm..
-        /// </summary>
-        internal static string CertificateUnknownSignAlgoError {
-            get {
-                return ResourceManager.GetString("CertificateUnknownSignAlgoError", resourceCulture);
             }
         }
         
@@ -399,6 +390,15 @@ namespace Sign.Core {
         internal static string SubmittingFileForSigning {
             get {
                 return ResourceManager.GetString("SubmittingFileForSigning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate has an unsupported public key algorithm..
+        /// </summary>
+        internal static string UnsupportedPublicKeyAlgorithm {
+            get {
+                return ResourceManager.GetString("UnsupportedPublicKeyAlgorithm", resourceCulture);
             }
         }
         

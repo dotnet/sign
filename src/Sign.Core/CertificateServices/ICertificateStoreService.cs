@@ -5,10 +5,10 @@
 namespace Sign.Core
 {
     /// <summary>
-    /// Interface used to define <see cref="CertificateManagerService"/>'s initialize method for accessing
+    /// Interface used to define <see cref="CertificateStoreService"/>'s initialize method for accessing
     /// Windows Certificate Manager resources.
     /// </summary>
-    internal interface ICertificateStoreService : ICertificateService
+    internal interface ICertificateStoreService : ICertificateProvider, ISignatureAlgorithmProvider
     {
         void Initialize(string sha1Thumbprint, string? cryptoServiceProvider, string? privateKeyContainer, string? privateMachineKeyContainer);
     }

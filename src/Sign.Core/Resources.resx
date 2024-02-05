@@ -129,13 +129,10 @@
     <comment>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</comment>
   </data>
   <data name="CertificateNotFound" xml:space="preserve">
-    <value>Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store.</value>
+    <value>Unable to find a matching certificate.</value>
   </data>
   <data name="CertificateRSANotFound" xml:space="preserve">
-    <value>Unable to acquire RSA private key from the provided certificate.</value>
-  </data>
-  <data name="CertificateUnknownSignAlgoError" xml:space="preserve">
-    <value>Unknown certificate signing algorithm.</value>
+    <value>Unable to acquire RSA private key for the provided certificate.</value>
   </data>
   <data name="ClickOnceSignatureProviderSigning" xml:space="preserve">
     <value>Signing Mage job with {count} files.</value>
@@ -255,6 +252,9 @@
   <data name="SubmittingFileForSigning" xml:space="preserve">
     <value>Submitting {filePath} for signing.</value>
     <comment>{Placeholder="{filePath}"} is a file path.</comment>
+  </data>
+  <data name="UnsupportedPublicKeyAlgorithm" xml:space="preserve">
+    <value>The certificate has an unsupported public key algorithm.</value>
   </data>
   <data name="ValueCannotBeEmptyString" xml:space="preserve">
     <value>The value cannot be an empty string.</value>

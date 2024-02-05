@@ -37,7 +37,7 @@ namespace Sign.Core
             return new X509Certificate2(certificateWithPolicy.Cer);
         }
 
-        public async Task<AsymmetricAlgorithm> GetRsaAsync()
+        public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
             ThrowIfUninitialized();
 
@@ -90,7 +90,5 @@ namespace Sign.Core
                 throw new InvalidOperationException($"{nameof(Initialize)}(...) must be called first.");
             }
         }
-
-        public bool IsInitialized() => _task != null;
     }
 }

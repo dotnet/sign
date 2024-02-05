@@ -10,7 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.Core
 {
-    internal sealed class CertificateManagerService : ICertificateStoreService
+    internal sealed class CertificateStoreService : ICertificateStoreService
     {
         private string? _sha1Thumbprint;
         private string? _cryptoServiceProvider;
@@ -19,7 +19,7 @@ namespace Sign.Core
         private readonly ILogger<ICertificateStoreService> _logger;
 
         // Dependency injection requires a public constructor.
-        public CertificateManagerService(ILogger<ICertificateStoreService> logger)
+        public CertificateStoreService(ILogger<ICertificateStoreService> logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
@@ -46,7 +46,7 @@ namespace Sign.Core
 
 
         [SupportedOSPlatform("windows")] // CspParameters is Windows-only but project uses cross platform frameworks. Dotnet/Sign is Windows only
-        public async Task<AsymmetricAlgorithm> GetRsaAsync()
+        public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
             ThrowIfUninitialized();
 
@@ -54,7 +54,8 @@ namespace Sign.Core
             if (!string.IsNullOrEmpty(_privateMachineKeyContainer))
             {
                 var cspOptions = new CspParameters();
-
+                cspOptions.ProviderName = _cryptoServiceProvider;
+                cspOptions.ProviderType = 1; // RSA = 1 DSA = 13
                 cspOptions.KeyContainerName = _privateMachineKeyContainer;
                 cspOptions.Flags = CspProviderFlags.UseMachineKeyStore;
 
@@ -65,6 +66,9 @@ namespace Sign.Core
             else if (!string.IsNullOrEmpty(_privateKeyContainer))
             {
                 var cspOptions = new CspParameters();
+
+                cspOptions.ProviderName = _cryptoServiceProvider;
+                cspOptions.ProviderType = 1; // RSA = 1 DSA = 13
 
                 cspOptions.KeyContainerName = _privateKeyContainer;
                 cspOptions.Flags = CspProviderFlags.UseDefaultKeyContainer;
@@ -84,7 +88,7 @@ namespace Sign.Core
                 case RSA:
                     return certificate.GetRSAPrivateKey() ?? throw new InvalidOperationException(Resources.CertificateRSANotFound);
                 default:
-                    throw new InvalidOperationException(Resources.CertificateUnknownSignAlgoError);
+                    throw new InvalidOperationException(Resources.UnsupportedPublicKeyAlgorithm);
             }
         }
 
@@ -130,8 +134,6 @@ namespace Sign.Core
                 throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(_sha1Thumbprint));
             }
         }
-
-        public bool IsInitialized() => !string.IsNullOrEmpty(_sha1Thumbprint);
 
         private static bool TryFindCertificate(StoreLocation storeLocation, string sha1Fingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
         {

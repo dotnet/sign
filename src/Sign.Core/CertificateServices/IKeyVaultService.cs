@@ -6,7 +6,7 @@ using Azure.Core;
 
 namespace Sign.Core
 {
-    internal interface IKeyVaultService : ICertificateService
+    internal interface IKeyVaultService : ICertificateProvider, ISignatureAlgorithmProvider
     {
         void Initialize(Uri keyVaultUrl, TokenCredential tokenCredential, string certificateName);
     }
