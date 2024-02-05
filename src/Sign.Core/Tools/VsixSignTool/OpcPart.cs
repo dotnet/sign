@@ -10,7 +10,7 @@ namespace Sign.Core
     /// <summary>
     /// Represents a part inside of a package.
     /// </summary>
-    public class OpcPart : IEquatable<OpcPart>
+    internal sealed class OpcPart : IEquatable<OpcPart>
     {
         internal OpcRelationships? _relationships;
         private readonly OpcPackageFileMode _mode;

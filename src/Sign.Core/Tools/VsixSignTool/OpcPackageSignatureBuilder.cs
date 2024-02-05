@@ -9,7 +9,7 @@ namespace Sign.Core
     /// <summary>
     /// A builder to sign an OPC package.
     /// </summary>
-    public class OpcPackageSignatureBuilder
+    internal sealed class OpcPackageSignatureBuilder
     {
         private readonly OpcPackage _package;
         private readonly List<OpcPart> _enqueuedParts;

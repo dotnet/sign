@@ -7,7 +7,7 @@ namespace Sign.Core.Timestamp
     /// <summary>
     /// Indicates the status of the timestamp operation.
     /// </summary>
-    public enum TimestampResult
+    internal enum TimestampResult
     {
         /// <summary>
         /// The timestamp operation was a success.

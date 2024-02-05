@@ -11,7 +11,7 @@ namespace Sign.Core
     /// <summary>
     /// A class that represents a part relationship in a package.
     /// </summary>
-    public class OpcRelationship : IEquatable<OpcRelationship>
+    internal sealed class OpcRelationship : IEquatable<OpcRelationship>
     {
         /// <summary>
         /// The target part for the relationship.
@@ -76,7 +76,7 @@ namespace Sign.Core
     /// <summary>
     /// A class for a collection of <see cref="OpcRelationship"/>.
     /// </summary>
-    public class OpcRelationships : IList<OpcRelationship>
+    internal sealed class OpcRelationships : IList<OpcRelationship>
     {
         private static readonly XNamespace _opcRelationshipNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
         private readonly List<OpcRelationship> _relationships = new List<OpcRelationship>();

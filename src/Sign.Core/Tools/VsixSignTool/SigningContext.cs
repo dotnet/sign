@@ -10,7 +10,7 @@ namespace Sign.Core
     /// <summary>
     /// A signing context used for signing packages with Azure Key Vault Keys.
     /// </summary>
-    public class SigningContext : ISigningContext
+    internal sealed class SigningContext : ISigningContext
     {
         private readonly SignConfigurationSet _configuration;
 

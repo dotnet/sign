@@ -21,20 +21,8 @@ namespace Sign.Core
         public HashAlgorithmInfo(HashAlgorithmName name)
         {
             Name = name;
-
-            if (name == HashAlgorithmName.MD5)
-            {
-                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.md5DigestUri;
-                Factory = MD5.Create;
-                Oid = new Oid(KnownOids.HashAlgorithms.md5);
-            }
-            else if (name == HashAlgorithmName.SHA1)
-            {
-                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.sha1DigestUri;
-                Factory = SHA1.Create;
-                Oid = new Oid(KnownOids.HashAlgorithms.sha1);
-            }
-            else if (name == HashAlgorithmName.SHA256)
+            
+            if (name == HashAlgorithmName.SHA256)
             {
                 XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.sha256DigestUri;
                 Factory = SHA256.Create;

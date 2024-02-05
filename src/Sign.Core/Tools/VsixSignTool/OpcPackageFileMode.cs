@@ -7,7 +7,7 @@ namespace Sign.Core
     /// <summary>
     /// Sets the mode of the package when opened.
     /// </summary>
-    public enum OpcPackageFileMode
+    internal enum OpcPackageFileMode
     {
         /// <summary>
         /// The package will be opened in read-only mode.

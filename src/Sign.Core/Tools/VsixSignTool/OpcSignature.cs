@@ -10,7 +10,7 @@ namespace Sign.Core
     /// <remarks>
     /// This type cannot be directly created. To create a signature on a package, use <see cref="OpcPackage.CreateSignatureBuilder" />.
     /// </remarks>
-    public sealed class OpcSignature
+    internal sealed class OpcSignature
     {
         private readonly OpcPart _signaturePart;
         private bool _detached;

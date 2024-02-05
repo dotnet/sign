@@ -7,7 +7,7 @@ namespace Sign.Core
     /// <summary>
     /// The preset for VSIX files.
     /// </summary>
-    public sealed class VSIXSignatureBuilderPreset : ISignatureBuilderPreset
+    internal sealed class VSIXSignatureBuilderPreset : ISignatureBuilderPreset
     {
         IEnumerable<OpcPart> ISignatureBuilderPreset.GetPartsForSigning(OpcPackage package)
         {

@@ -86,7 +86,7 @@ namespace Sign.Core
             }
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
+            using (RSA rsa = await _keyVaultService.GetRsaAsync())
             using (AuthenticodeKeyVaultSigner signer = new(
                 rsa,
                 certificate,

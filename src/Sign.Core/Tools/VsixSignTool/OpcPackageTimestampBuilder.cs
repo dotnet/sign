@@ -12,7 +12,7 @@ namespace Sign.Core
     /// <summary>
     /// A builder for adding timestamps to a package.
     /// </summary>
-    public class OpcPackageTimestampBuilder
+    internal sealed class OpcPackageTimestampBuilder
     {
         private readonly OpcPart _part;
 

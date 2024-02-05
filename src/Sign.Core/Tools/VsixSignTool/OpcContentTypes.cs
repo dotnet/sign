@@ -11,7 +11,7 @@ namespace Sign.Core
     /// <summary>
     /// Represents the mode of a content type.
     /// </summary>
-    public enum OpcContentTypeMode
+    internal enum OpcContentTypeMode
     {
         /// <summary>
         /// This is a default content type.
@@ -28,7 +28,7 @@ namespace Sign.Core
     /// Represents a content type defined in a package.
     /// </summary>
     [DebuggerDisplay("Extension = {Extension}; PartName = {PartName}; ContentType = {ContentType};")]
-    public class OpcContentType
+    internal class OpcContentType
     {
         /// <summary>
         /// The extension, without a leading period, of the content type.
@@ -80,7 +80,7 @@ namespace Sign.Core
     /// <summary>
     /// Represents a collection of content types in a package.
     /// </summary>
-    public class OpcContentTypes : IList<OpcContentType>
+    internal class OpcContentTypes : IList<OpcContentType>
     {
         private static readonly XNamespace _opcContentTypeNamespace = "http://schemas.openxmlformats.org/package/2006/content-types";
         private readonly List<OpcContentType> _contentTypes = new List<OpcContentType>();

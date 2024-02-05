@@ -10,7 +10,7 @@ namespace Sign.Core
     /// <summary>
     /// Allow manipulating and signing an OPC package, such as a VSIX.
     /// </summary>
-    public class OpcPackage : IDisposable
+    internal class OpcPackage : IDisposable
     {
         internal static readonly Uri BasePackageUri = new Uri("package:///", UriKind.Absolute);
         private const string CONTENT_TYPES_XML = "[Content_Types].xml";

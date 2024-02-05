@@ -10,7 +10,7 @@ namespace Sign.Core
     /// <summary>
     /// A configuration set for a signing operation.
     /// </summary>
-    public sealed class SignConfigurationSet
+    internal sealed class SignConfigurationSet
     {
         /// <summary>
         /// Creates a new instance of the <see cref="SignConfigurationSet"/>.

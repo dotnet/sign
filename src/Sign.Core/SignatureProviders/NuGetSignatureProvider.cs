@@ -41,7 +41,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (AsymmetricAlgorithm rsa = await _keyVaultService.GetRsaAsync())
+            using (RSA rsa = await _keyVaultService.GetRsaAsync())
             {
                 IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 
@@ -49,9 +49,9 @@ namespace Sign.Core
             }
         }
 
-        protected override Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
-            return _nuGetSignTool.SignAsync(file, (RSA)rsaPrivateKey, certificate, options);
+            return _nuGetSignTool.SignAsync(file, rsaPrivateKey, certificate, options);
         }
     }
 }

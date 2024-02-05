@@ -7,7 +7,7 @@ namespace Sign.Core
     /// <summary>
     /// Extensions for working with URIs in OPC packages.
     /// </summary>
-    public static class UriHelpers
+    internal static class UriHelpers
     {
         private static readonly Uri _packageBaseUri = new Uri("package:///", UriKind.Absolute);
         private static readonly Uri _rootedPackageBaseUri = new Uri("package:", UriKind.Absolute);

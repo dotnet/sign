@@ -10,24 +10,24 @@ namespace Sign.Core
 {
     internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
-        private readonly ICertificateService _certificateService;
+        private readonly ISignatureAlgorithmProvider _rsaProvider;
+        private readonly ICertificateProvider _certificateService;
         private readonly IVsixSignTool _VsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
-            IKeyVaultService? keyVaultService,
-            ICertificateStoreService certificateManangerService,
+            ISignatureAlgorithmProvider rsaProvider,
+            ICertificateProvider certificateManangerService,
             IVsixSignTool vsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(rsaProvider, nameof(rsaProvider));
             ArgumentNullException.ThrowIfNull(certificateManangerService, nameof(certificateManangerService));
             ArgumentNullException.ThrowIfNull(vsixSignTool, nameof(vsixSignTool));
 
             _certificateService = certificateManangerService;
-            _keyVaultService = keyVaultService;
+            _rsaProvider = rsaProvider;
             _VsixSignTool = vsixSignTool;
         }
 
@@ -71,7 +71,7 @@ namespace Sign.Core
             }
         }
 
-        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
             // Dual isn't supported, use sha256
             SignConfigurationSet configuration = new(

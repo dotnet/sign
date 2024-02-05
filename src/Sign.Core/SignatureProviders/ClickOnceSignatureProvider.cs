@@ -72,7 +72,7 @@ namespace Sign.Core
             Uri? timeStampUrl = options.TimestampService;
 
             using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (AsymmetricAlgorithm rsaPrivateKey = await _keyVaultService.GetRsaAsync())
+            using (RSA rsaPrivateKey = await _keyVaultService.GetRsaAsync())
             {
                 // This outer loop is for a .clickonce file
                 await Parallel.ForEachAsync(files, _parallelOptions, async (file, state) =>
@@ -208,14 +208,14 @@ namespace Sign.Core
             }
         }
 
-        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, AsymmetricAlgorithm rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
             int exitCode = await _mageCli.RunAsync(args);
 
             if (exitCode == 0)
             {
                 // Now add the signature
-                _manifestSigner.Sign(file, certificate, (RSA)rsaPrivateKey, options);
+                _manifestSigner.Sign(file, certificate, rsaPrivateKey, options);
 
                 return true;
             }

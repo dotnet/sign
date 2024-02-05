@@ -24,7 +24,7 @@ namespace Sign.Core
             _signingContext = signingContext;
             _document = new XmlDocument();
             var manager = new XmlNamespaceManager(_document.NameTable);
-            manager.AddNamespace("", OpcKnownUris.XmlDSig.AbsoluteUri);
+            manager.AddNamespace(prefix: "", OpcKnownUris.XmlDSig.AbsoluteUri);
             _signatureElement = CreateDSigElement("Signature");
         }
 
