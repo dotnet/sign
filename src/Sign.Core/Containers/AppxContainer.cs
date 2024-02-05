@@ -14,13 +14,13 @@ namespace Sign.Core
     {
         private readonly FileInfo _appx;
         private readonly IDirectoryService _directoryService;
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateProvider _certificateProvider;
         private readonly ILogger _logger;
         private readonly IMakeAppxCli _makeAppxCli;
 
         public AppxContainer(
             FileInfo appx,
-            IKeyVaultService keyVaultService,
+            ICertificateProvider certificateProvider,
             IDirectoryService directoryService,
             IFileMatcher fileMatcher,
             IMakeAppxCli makeAppxCli,
@@ -28,14 +28,14 @@ namespace Sign.Core
             : base(fileMatcher)
         {
             ArgumentNullException.ThrowIfNull(appx, nameof(appx));
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(directoryService, nameof(directoryService));
             ArgumentNullException.ThrowIfNull(makeAppxCli, nameof(makeAppxCli));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _appx = appx;
             _directoryService = directoryService;
-            _keyVaultService = keyVaultService;
+            _certificateProvider = certificateProvider;
             _makeAppxCli = makeAppxCli;
             _logger = logger;
         }
@@ -98,7 +98,7 @@ namespace Sign.Core
 
                 if (idElement is not null)
                 {
-                    using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
+                    using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
                     {
                         string publisher = certificate.SubjectName.Name;
 

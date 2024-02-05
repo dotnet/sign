@@ -16,14 +16,16 @@ namespace Sign.Core
         private readonly Lazy<IAggregatingSignatureProvider> _aggregatingSignatureProvider;
         private readonly IContainerProvider _containerProvider;
         private readonly IDirectoryService _directoryService;
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateProvider _certificateProvider;
+        private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly IMageCli _mageCli;
         private readonly IManifestSigner _manifestSigner;
         private readonly ParallelOptions _parallelOptions = new() { MaxDegreeOfParallelism = 4 };
 
         // Dependency injection requires a public constructor.
         public ClickOnceSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ISignatureAlgorithmProvider signatureAlgorithmProvider,
+            ICertificateProvider certificateProvider,
             IContainerProvider containerProvider,
             IServiceProvider serviceProvider,
             IDirectoryService directoryService,
@@ -32,14 +34,16 @@ namespace Sign.Core
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(containerProvider, nameof(containerProvider));
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
             ArgumentNullException.ThrowIfNull(directoryService, nameof(directoryService));
             ArgumentNullException.ThrowIfNull(mageCli, nameof(mageCli));
             ArgumentNullException.ThrowIfNull(manifestSigner, nameof(manifestSigner));
 
-            _keyVaultService = keyVaultService;
+            _signatureAlgorithmProvider = signatureAlgorithmProvider;
+            _certificateProvider = certificateProvider;
             _containerProvider = containerProvider;
             _directoryService = directoryService;
             _mageCli = mageCli;
@@ -71,8 +75,8 @@ namespace Sign.Core
 
             Uri? timeStampUrl = options.TimestampService;
 
-            using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsaPrivateKey = await _keyVaultService.GetRsaAsync())
+            using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
+            using (RSA rsaPrivateKey = await _signatureAlgorithmProvider.GetRsaAsync())
             {
                 // This outer loop is for a .clickonce file
                 await Parallel.ForEachAsync(files, _parallelOptions, async (file, state) =>

@@ -28,7 +28,8 @@ namespace Sign.Core
 
         internal static ServiceProvider CreateDefault(
             LogLevel logLevel = LogLevel.Information,
-            ILoggerProvider? loggerProvider = null)
+            ILoggerProvider? loggerProvider = null,
+            Action<IServiceCollection>? addServices = null)
         {
             IServiceCollection services = new ServiceCollection();
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
@@ -61,7 +62,6 @@ namespace Sign.Core
             services.AddSingleton<IContainerProvider, ContainerProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
-            services.AddSingleton<IKeyVaultService, KeyVaultService>();
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
             services.AddSingleton<ISignatureProvider, ClickOnceSignatureProvider>();
             services.AddSingleton<ISignatureProvider, VsixSignatureProvider>();
@@ -76,6 +76,11 @@ namespace Sign.Core
             services.AddSingleton<IOpenVsixSignTool, OpenVsixSignTool>();
             services.AddSingleton<ICertificateVerifier, CertificateVerifier>();
             services.AddSingleton<ISigner, Signer>();
+
+            if (addServices is not null)
+            {
+                addServices(services);
+            }
 
             return new ServiceProvider(services.BuildServiceProvider());
         }
