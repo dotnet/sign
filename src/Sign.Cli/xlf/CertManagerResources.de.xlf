@@ -3,18 +3,18 @@
   <file datatype="xml" source-language="en" target-language="de" original="../CertManagerResources.resx">
     <body>
       <trans-unit id="CSPOptionDescription">
-        <source>Cryptographic Service Provider name containing the private key container. Requires /k or /km</source>
-        <target state="new">Cryptographic Service Provider name containing the private key container. Requires /k or /km</target>
+        <source>Cryptographic Service Provider containing the private key container. Requires /k or /km</source>
+        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k or /km</target>
         <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
-        <source>Private key container name in a user store</source>
-        <target state="new">Private key container name in a user store</target>
+        <source>Private key container in the user store</source>
+        <target state="new">Private key container in the user store</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineKeyContainerOptionDescription">
-        <source>Private key container name in a machine store</source>
-        <target state="new">Private key container name in a machine store</target>
+        <source>Private key container in the machine store</source>
+        <target state="new">Private key container in the machine store</target>
         <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SHA1ThumbprintOptionDescription">
-        <source>SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX)</source>
-        <target state="new">SHA1 thumprint used to access a certificate in the Windows Certificate Manager store (VSIX)</target>
+        <source>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</source>
+        <target state="new">SHA1 thumprint used to access a certificate from a certificate store (VSIX)</target>
         <note />
       </trans-unit>
     </body>

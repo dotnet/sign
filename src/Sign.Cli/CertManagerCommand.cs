@@ -79,6 +79,15 @@ namespace Sign.Cli
                     return;
                 }
 
+                if (string.IsNullOrEmpty(sha1Thumbprint))
+                {
+                    context.Console.Error.WriteLine(
+                        FormatMessage(Resources.InvalidSha1ThumbrpintValue, SHA1ThumbprintOption));
+                    context.ExitCode = ExitCode.NoInputsFound;
+
+                    return;
+                }
+
                 // CSP requires either K or KM options but not both.
                 if (!string.IsNullOrEmpty(cryptoServiceProvider)
                     && string.IsNullOrEmpty(privateKeyContainer) == string.IsNullOrEmpty(privateMachineKeyContainer))
@@ -110,7 +119,23 @@ namespace Sign.Cli
                     return;
                 }
 
-                IServiceProvider serviceProvider = serviceProviderFactory.Create(verbosity);
+                IServiceProvider serviceProvider = serviceProviderFactory.Create(
+                    verbosity,
+                    addServices: (IServiceCollection services) =>
+                    {
+                        CertificateStoreServiceProvider certificateStoreServiceProvider = new(
+                            sha1Thumbprint,
+                            cryptoServiceProvider,
+                            privateKeyContainer: string.IsNullOrEmpty(privateKeyContainer) 
+                                ? privateMachineKeyContainer 
+                                : privateKeyContainer,
+                            isMachineKeyContainer: !string.IsNullOrEmpty(privateMachineKeyContainer));
+
+                        services.AddSingleton<ISignatureAlgorithmProvider>(
+                            (IServiceProvider serviceProvider) => certificateStoreServiceProvider.GetSignatureAlgorithmProvider(serviceProvider));
+                        services.AddSingleton<ICertificateProvider>(
+                            (IServiceProvider serviceProvider) => certificateStoreServiceProvider.GetCertificateProvider(serviceProvider));
+                    });
 
                 List<FileInfo> inputFiles;
 
@@ -193,15 +218,6 @@ namespace Sign.Cli
                     return;
                 }
 
-                if (string.IsNullOrEmpty(context.ParseResult.GetValueForOption(SHA1ThumbprintOption)))
-                {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(Resources.InvalidSha1ThumbrpintValue, SHA1ThumbprintOption));
-                    context.ExitCode = ExitCode.NoInputsFound;
-
-                    return;
-                }
-
                 ISigner signer = serviceProvider.GetRequiredService<ISigner>();
 
                 context.ExitCode = await signer.SignAsync(
@@ -216,13 +232,7 @@ namespace Sign.Cli
                     timestampUrl,
                     maxConcurrency,
                     fileHashAlgorithmName,
-                    timestampHashAlgorithmName,
-                    tokenCredential: null,
-                    keyVaultUrl: null,
-                    certificateName: null,
-                    SHA1Thumbprint: sha1Thumbprint!,
-                    cryptoServiceProvider,
-                    privateKeyContainer);
+                    timestampHashAlgorithmName);
             });
         }
 

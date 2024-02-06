@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
@@ -10,20 +12,35 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.Core
 {
-    internal sealed class CertificateStoreService : ICertificateStoreService
+    internal sealed class CertificateStoreService : ISignatureAlgorithmProvider, ICertificateProvider
     {
-        private string? _sha1Thumbprint;
-        private string? _cryptoServiceProvider;
-        private string? _privateKeyContainer;
-        private string? _privateMachineKeyContainer;
-        private readonly ILogger<ICertificateStoreService> _logger;
+        private readonly string? _sha1Thumbprint;
+        private readonly string? _cryptoServiceProvider;
+        private readonly string? _privateKeyContainer;
+        private readonly bool _isPrivateMachineKeyContainer;
+
+        private readonly Task<X509Certificate2>? _task;
+        private readonly ILogger<CertificateStoreService> _logger;
 
         // Dependency injection requires a public constructor.
-        public CertificateStoreService(ILogger<ICertificateStoreService> logger)
+        internal CertificateStoreService(
+            IServiceProvider serviceProvider,
+            string sha1Thumbprint,
+            string? cryptoServiceProvider,
+            string? privateKeyContainer,
+            bool isPrivateMachineKeyContainer
+            )
         {
-            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+            ArgumentNullException.ThrowIfNull(_sha1Thumbprint, nameof(_sha1Thumbprint));
 
-            _logger = logger;
+            _sha1Thumbprint = sha1Thumbprint;
+            _cryptoServiceProvider = cryptoServiceProvider;
+            _privateKeyContainer = privateKeyContainer;
+            _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
+
+            _logger = serviceProvider.GetRequiredService<ILogger<CertificateStoreService>>();
+
+            _task = GetStoreCertificateAsync(sha1Thumbprint);
         }
 
         /// <summary>
@@ -31,56 +48,40 @@ namespace Sign.Core
         /// </summary>
         /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Thumbprint.</returns>
         /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
-        public Task<X509Certificate2> GetCertificateAsync()
-        {
-            ThrowIfUninitialized();
-
-            if (TryFindCertificate(StoreLocation.LocalMachine, _sha1Thumbprint!, out X509Certificate2? certificate)
-                || TryFindCertificate(StoreLocation.CurrentUser, _sha1Thumbprint!, out certificate))
-            {
-                return Task.FromResult(certificate);
-            }
-
-            throw new ArgumentException(Resources.CertificateNotFound);
-        }
+        public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken) 
+            => await _task!;
 
 
         [SupportedOSPlatform("windows")] // CspParameters is Windows-only but project uses cross platform frameworks. Dotnet/Sign is Windows only
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            ThrowIfUninitialized();
-
             // Get RSA from a 3rd party cryptographic service provider
-            if (!string.IsNullOrEmpty(_privateMachineKeyContainer))
-            {
-                var cspOptions = new CspParameters();
-                cspOptions.ProviderName = _cryptoServiceProvider;
-                cspOptions.ProviderType = 1; // RSA = 1 DSA = 13
-                cspOptions.KeyContainerName = _privateMachineKeyContainer;
-                cspOptions.Flags = CspProviderFlags.UseMachineKeyStore;
-
-                RSACryptoServiceProvider.UseMachineKeyStore = true;
-
-                return new RSACryptoServiceProvider(cspOptions);
-            }
-            else if (!string.IsNullOrEmpty(_privateKeyContainer))
+            if (!string.IsNullOrEmpty(_privateKeyContainer))
             {
                 var cspOptions = new CspParameters();
 
                 cspOptions.ProviderName = _cryptoServiceProvider;
                 cspOptions.ProviderType = 1; // RSA = 1 DSA = 13
-
                 cspOptions.KeyContainerName = _privateKeyContainer;
-                cspOptions.Flags = CspProviderFlags.UseDefaultKeyContainer;
+
+                if (_isPrivateMachineKeyContainer)
+                {
+                    cspOptions.Flags = CspProviderFlags.UseMachineKeyStore;
+
+                    RSACryptoServiceProvider.UseMachineKeyStore = true;
+                }
+                else
+                {
+                    cspOptions.Flags = CspProviderFlags.UseDefaultKeyContainer;
+                }
 
                 return new RSACryptoServiceProvider(cspOptions);
             }
 
             // Try to retrieve the certificate's private key.
-            // EDCSA uses "1.2.840.10045.2.1";
             const string RSA = "1.2.840.113549.1.1.1";
 
-            var certificate = await GetCertificateAsync();
+            var certificate = await _task!;
             var keyAlgorithm = certificate.GetKeyAlgorithm();
 
             switch (keyAlgorithm)
@@ -91,48 +92,24 @@ namespace Sign.Core
                     throw new InvalidOperationException(Resources.UnsupportedPublicKeyAlgorithm);
             }
         }
-
-        public void Initialize(string sha1Thumbprint, string? cryptoServiceProvider, string? privateKeyContainer,
-            string? privateMachineKeyContainer)
+        private Task<X509Certificate2> GetStoreCertificateAsync(string sha1Thumbprint)
         {
-            // CSP requires either K or KM options but not both.
-            if (!string.IsNullOrEmpty(cryptoServiceProvider)
-                && string.IsNullOrEmpty(privateKeyContainer) == string.IsNullOrEmpty(privateMachineKeyContainer))
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            _logger.LogTrace(Resources.FetchingCertificate);
+
+            if (_isPrivateMachineKeyContainer
+                ? TryFindCertificate(StoreLocation.LocalMachine, _sha1Thumbprint!, out X509Certificate2? certificate)
+                : TryFindCertificate(StoreLocation.CurrentUser, _sha1Thumbprint!, out certificate))
             {
-                if (string.IsNullOrEmpty(privateKeyContainer) && string.IsNullOrEmpty(privateMachineKeyContainer))
-                {
-                    _logger.LogError(Resources.MultiplePrivateKeyContainersError);
-                    throw new ArgumentException(Resources.MultiplePrivateKeyContainersError);
-                }
-                else
-                {
-                    // Both were provided but can only use one.
-                    _logger.LogError(Resources.NoPrivateKeyContainerError);
-                    throw new ArgumentException(Resources.NoPrivateKeyContainerError);
-                }
-            }
-            
-            if (string.IsNullOrEmpty(sha1Thumbprint))
-            {
-                _logger.LogError(Resources.InvalidSha1ThumbrpintValue);
-                throw new ArgumentException(Resources.InvalidSha1ThumbrpintValue);
+                _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+
+                return Task.FromResult(certificate);
             }
 
-            _sha1Thumbprint = sha1Thumbprint;
-            _cryptoServiceProvider = cryptoServiceProvider;
-            _privateKeyContainer = privateKeyContainer;
-            _privateMachineKeyContainer = privateMachineKeyContainer;
-        }
+            _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
-        private void ThrowIfUninitialized()
-        {
-            ArgumentNullException.ThrowIfNull(_sha1Thumbprint, nameof(_sha1Thumbprint));
-
-            // Only SHA1 is required.
-            if (string.IsNullOrEmpty(_sha1Thumbprint))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(_sha1Thumbprint));
-            }
+            throw new ArgumentException(Resources.CertificateNotFound);
         }
 
         private static bool TryFindCertificate(StoreLocation storeLocation, string sha1Fingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)

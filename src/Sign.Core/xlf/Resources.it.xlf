@@ -7,11 +7,6 @@
         <target state="translated">Firma del processo SignTool con {count} file.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
-      <trans-unit id="CertificateECDsaNotFound">
-        <source>Unable to acquire ECDsa private key from the provided certificate.</source>
-        <target state="new">Unable to acquire ECDsa private key from the provided certificate.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CertificateIsExpired">
         <source>The certificate is expired.</source>
         <target state="translated">Il certificato è scaduto.</target>
@@ -23,18 +18,13 @@
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFound">
-        <source>Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store.</source>
-        <target state="new">Unable to acquire a certificate from Azure Key Vault or Windows Certificate Store.</target>
+        <source>Unable to find a matching certificate.</source>
+        <target state="new">Unable to find a matching certificate.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
-        <source>Unable to acquire RSA private key from the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key from the provided certificate.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateUnknownSignAlgoError">
-        <source>Unknown certificate signing algorithm.</source>
-        <target state="new">Unknown certificate signing algorithm.</target>
+        <source>Unable to acquire RSA private key for the provided certificate.</source>
+        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -97,9 +87,24 @@
         <target state="translated">Recupero certificato da Azure Key Vault in corso.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidSha1ThumbrpintValue">
+        <source>Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</source>
+        <target state="new">Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingSha1OrKeyVaultUrlError">
         <source>Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</source>
         <target state="new">Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MultiplePrivateKeyContainersError">
+        <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
+        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoPrivateKeyContainerError">
+        <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
+        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSignatureProvidersAvailableError">
@@ -181,6 +186,11 @@
         <source>Submitting {filePath} for signing.</source>
         <target state="translated">Invio {filePath} per la firma.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedPublicKeyAlgorithm">
+        <source>The certificate has an unsupported public key algorithm.</source>
+        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
         <source>The value cannot be an empty string.</source>

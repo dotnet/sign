@@ -5,7 +5,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using OpenVsixSignTool.Core;
 
 namespace Sign.Core
 {
@@ -13,13 +12,13 @@ namespace Sign.Core
     {
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
-        private readonly IOpenVsixSignTool _openVsixSignTool;
+        private readonly IVsixSignTool _VsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
-            IOpenVsixSignTool openVsixSignTool,
+            IVsixSignTool openVsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
@@ -29,7 +28,7 @@ namespace Sign.Core
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
-            _openVsixSignTool = openVsixSignTool;
+            _VsixSignTool = openVsixSignTool;
         }
 
         public bool CanSign(FileInfo file)
@@ -64,7 +63,7 @@ namespace Sign.Core
                 rsaPrivateKey,
                 certificate);
 
-            return await _openVsixSignTool.SignAsync(file, configuration, options);
+            return await _VsixSignTool.SignAsync(file, configuration, options);
         }
     }
 }
