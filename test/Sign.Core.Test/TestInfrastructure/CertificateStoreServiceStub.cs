@@ -4,11 +4,10 @@
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Azure.Core;
 
 namespace Sign.Core.Test
 {
-    internal sealed class CertificateManagerServiceStub : ICertificateStoreService, IDisposable
+    internal sealed class CertificateStoreServiceStub : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
         private RSA? _rsa;
         private X509Certificate2? _certificate;
@@ -21,15 +20,15 @@ namespace Sign.Core.Test
             GC.SuppressFinalize(this);
         }
 
-        public Task<X509Certificate2> GetCertificateAsync()
+        public Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(new X509Certificate2(_certificate!));
         }
 
-        public Task<AsymmetricAlgorithm> GetRsaAsync()
+        public Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
             RSAParameters parameters = _rsa!.ExportParameters(includePrivateParameters: true);
-            AsymmetricAlgorithm rsa = RSA.Create(parameters);
+            RSA rsa = RSA.Create(parameters);
 
             return Task.FromResult(rsa);
         }
