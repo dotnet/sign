@@ -25,7 +25,7 @@ CryptSIPDllVerifyIndirectData=NavSIPVerifyIndirectData
 '@
 
 if ($wintrustini -notmatch 'NavSip.dll') {
-    Write-Host "Adding NavSip.dll to Wintrust.ini - $WintrustIniPath"
+    Write-Host "Adding NavSip.dll to wintrust.dll.ini - $WintrustIniPath"
     $wintrustini += $navSipIni
     Set-Content -Path $WintrustIniPath -Value $wintrustini
 }
