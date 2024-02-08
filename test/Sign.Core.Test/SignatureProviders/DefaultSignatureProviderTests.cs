@@ -68,7 +68,8 @@ namespace Sign.Core.Test
 
             services.AddLogging();
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<IKeyVaultService>());
+            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Mock.Of<ICertificateProvider>());
             services.AddSingleton<ISignatureProvider>(mock.Object);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -114,7 +115,8 @@ namespace Sign.Core.Test
 
             services.AddLogging();
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<IKeyVaultService>());
+            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Mock.Of<ICertificateProvider>());
             services.AddSingleton<ISignatureProvider>(mock.Object);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -140,7 +142,8 @@ namespace Sign.Core.Test
 
             services.AddLogging();
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<IKeyVaultService>());
+            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Mock.Of<ICertificateProvider>());
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();

@@ -14,21 +14,36 @@ namespace Sign.Core.Test
         public NuGetSignatureProviderTests()
         {
             _provider = new NuGetSignatureProvider(
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ISignatureAlgorithmProvider>(),
+                Mock.Of<ICertificateProvider>(),
                 Mock.Of<INuGetSignTool>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
         [Fact]
-        public void Constructor_WhenKeyVaultServiceIsNull_Throws()
+        public void Constructor_WhenSignatureAlgorithmProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSignatureProvider(
-                    keyVaultService: null!,
+                    signatureAlgorithmProvider: null!,
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<INuGetSignTool>(),
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
-            Assert.Equal("keyVaultService", exception.ParamName);
+            Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenCertificateProviderIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new NuGetSignatureProvider(
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    certificateProvider: null!,
+                    Mock.Of<INuGetSignTool>(),
+                    Mock.Of<ILogger<ISignatureProvider>>()));
+
+            Assert.Equal("certificateProvider", exception.ParamName);
         }
 
         [Fact]
@@ -36,7 +51,8 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
                     nuGetSignTool: null!,
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
@@ -48,7 +64,8 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<INuGetSignTool>(),
                     logger: null!));
 

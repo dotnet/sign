@@ -11,20 +11,24 @@ namespace Sign.Core
 {
     internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateProvider _certificateProvider;
+        private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly IOpenVsixSignTool _openVsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ISignatureAlgorithmProvider signatureAlgorithmProvider,
+            ICertificateProvider certificateProvider,
             IOpenVsixSignTool openVsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(openVsixSignTool, nameof(openVsixSignTool));
 
-            _keyVaultService = keyVaultService;
+            _signatureAlgorithmProvider = signatureAlgorithmProvider;
+            _certificateProvider = certificateProvider;
             _openVsixSignTool = openVsixSignTool;
         }
 
@@ -42,8 +46,8 @@ namespace Sign.Core
 
             Logger.LogInformation(Resources.VsixSignatureProviderSigning, files.Count());
 
-            using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsa = await _keyVaultService.GetRsaAsync())
+            using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
+            using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
             {
                 IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 
