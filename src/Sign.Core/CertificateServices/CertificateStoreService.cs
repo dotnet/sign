@@ -17,6 +17,8 @@ namespace Sign.Core
         private readonly string? _sha1Thumbprint;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
+        private readonly string? _pfxFilePath;
+        private readonly string? _pfxFilePassword;
         private readonly bool _isPrivateMachineKeyContainer;
 
         private readonly Task<X509Certificate2>? _task;
@@ -28,15 +30,19 @@ namespace Sign.Core
             string sha1Thumbprint,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
+            string? pfxFilePath,
+            string? pfxFilePassword,
             bool isPrivateMachineKeyContainer
             )
         {
-            ArgumentNullException.ThrowIfNull(_sha1Thumbprint, nameof(_sha1Thumbprint));
+            ArgumentNullException.ThrowIfNull(sha1Thumbprint, nameof(sha1Thumbprint));
 
             _sha1Thumbprint = sha1Thumbprint;
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
+            _pfxFilePath = pfxFilePath;
+            _pfxFilePassword = pfxFilePassword;
 
             _logger = serviceProvider.GetRequiredService<ILogger<CertificateStoreService>>();
 
@@ -78,7 +84,7 @@ namespace Sign.Core
                 return new RSACryptoServiceProvider(cspOptions);
             }
 
-            // Try to retrieve the certificate's private key.
+            // Certificate wasn't in CSP. Attempt to extract from store or provided file.
             const string RSA = "1.2.840.113549.1.1.1";
 
             var certificate = await _task!;
@@ -105,6 +111,22 @@ namespace Sign.Core
                 _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
                 return Task.FromResult(certificate);
+            }
+
+            if (!string.IsNullOrEmpty(_pfxFilePath))
+            {
+                var certCollection = new X509Certificate2Collection();
+                certCollection.Import(_pfxFilePath, _pfxFilePassword, X509KeyStorageFlags.EphemeralKeySet);
+
+                foreach(var cert in certCollection)
+                {
+                    if (string.Equals(cert.Thumbprint, _sha1Thumbprint, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return Task.FromResult(new X509Certificate2(cert));
+                    }
+                }
+
+                throw new ArgumentException(Resources.CertificateNotFound);
             }
 
             _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);

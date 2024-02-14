@@ -22,6 +22,8 @@ namespace Sign.Cli
         private readonly CodeCommand _codeCommand;
 
         internal Option<string?> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertManagerResources.SHA1ThumbprintOptionDescription);
+        internal Option<string?> PfxFilePathOption { get; } = new(new[] { "-f", "--file" }, CertManagerResources.SHA1ThumbprintOptionDescription);
+        internal Option<string?> PfxFilePasswordOption { get; } = new(new[] { "-p", "--password" }, CertManagerResources.SHA1ThumbprintOptionDescription);
         internal Option<string?> CryptoServiceProvider { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertManagerResources.CSPOptionDescription);
         internal Option<string?> PrivateKeyContainer { get; } = new(new[] { "-k", "--key-container" }, CertManagerResources.KeyContainerOptionDescription);
         internal Option<string?> PrivateMachineKeyContainer { get; } = new(new[] { "-km", "--key-container-machine" }, CertManagerResources.MachineKeyContainerOptionDescription);
@@ -39,6 +41,8 @@ namespace Sign.Cli
             SHA1ThumbprintOption.IsRequired = true;
 
             AddOption(SHA1ThumbprintOption);
+            AddOption(PfxFilePathOption);
+            AddOption(PfxFilePasswordOption);
             AddOption(CryptoServiceProvider);
             AddOption(PrivateKeyContainer);
             AddOption(PrivateMachineKeyContainer);
@@ -66,6 +70,8 @@ namespace Sign.Cli
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
                 string? sha1Thumbprint = context.ParseResult.GetValueForOption(SHA1ThumbprintOption);
+                string? pfxFilePath = context.ParseResult.GetValueForOption(PfxFilePathOption);
+                string? pfxFilePassword = context.ParseResult.GetValueForOption(PfxFilePasswordOption);
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProvider);
                 string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainer);
                 string? privateMachineKeyContainer = context.ParseResult.GetValueForOption(PrivateMachineKeyContainer);
@@ -108,6 +114,11 @@ namespace Sign.Cli
                     }
                 }
 
+                if (!string.IsNullOrEmpty(cryptoServiceProvider) && !string.IsNullOrEmpty(pfxFilePath))
+                {
+                    // fails. Needs only one or the other.
+                }
+
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {
@@ -129,6 +140,8 @@ namespace Sign.Cli
                             privateKeyContainer: string.IsNullOrEmpty(privateKeyContainer) 
                                 ? privateMachineKeyContainer 
                                 : privateKeyContainer,
+                            pfxFilePath,
+                            pfxFilePassword,
                             isMachineKeyContainer: !string.IsNullOrEmpty(privateMachineKeyContainer));
 
                         services.AddSingleton<ISignatureAlgorithmProvider>(

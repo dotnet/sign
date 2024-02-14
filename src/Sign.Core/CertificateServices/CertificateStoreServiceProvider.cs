@@ -12,6 +12,8 @@ namespace Sign.Core
         private readonly string _sha1Thumbprint;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
+        private readonly string? _pfxFilePath;
+        private readonly string? _pfxFilePassword;
         private readonly bool _isMachineKeyContainer;
 
         private readonly object _lockObject = new();
@@ -29,6 +31,8 @@ namespace Sign.Core
             string sha1Thumbprint,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
+            string? pfxFilePath,
+            string? pfxFilePassword,
             bool isMachineKeyContainer)
         {
             ArgumentNullException.ThrowIfNull(sha1Thumbprint, nameof(sha1Thumbprint));
@@ -50,6 +54,8 @@ namespace Sign.Core
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isMachineKeyContainer = isMachineKeyContainer;
+            _pfxFilePath = pfxFilePath;
+            _pfxFilePassword = pfxFilePassword;
         }
 
         internal ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
@@ -80,7 +86,7 @@ namespace Sign.Core
                     return _certificateStoreService;
                 }
 
-                _certificateStoreService = new CertificateStoreService(serviceProvider,_sha1Thumbprint, _cryptoServiceProvider, _privateKeyContainer, _isMachineKeyContainer);
+                _certificateStoreService = new CertificateStoreService(serviceProvider,_sha1Thumbprint, _cryptoServiceProvider, _privateKeyContainer, _pfxFilePath, _pfxFilePassword, _isMachineKeyContainer);
             }
 
             return _certificateStoreService;
