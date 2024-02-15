@@ -114,11 +114,6 @@ namespace Sign.Cli
                     }
                 }
 
-                if (!string.IsNullOrEmpty(cryptoServiceProvider) && !string.IsNullOrEmpty(pfxFilePath))
-                {
-                    // fails. Needs only one or the other.
-                }
-
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {

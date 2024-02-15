@@ -131,6 +131,15 @@
   <data name="CertificateNotFound" xml:space="preserve">
     <value>Unable to find a matching certificate.</value>
   </data>
+  <data name="CertificateNotFoundInFile" xml:space="preserve">
+    <value>Unable to find a certificate with a matching SHA1 within {0}.</value>
+  </data>
+  <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
+    <value>Unable to find a matching certificate in machine certificate store.</value>
+  </data>
+  <data name="CertificateNotFoundInUserStore" xml:space="preserve">
+    <value>Unable to find a matching certificate in user certificate store.</value>
+  </data>
   <data name="CertificateRSANotFound" xml:space="preserve">
     <value>Unable to acquire RSA private key for the provided certificate.</value>
   </data>

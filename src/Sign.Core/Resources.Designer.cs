@@ -97,6 +97,33 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find a certificate with a matching SHA1 within {0}..
+        /// </summary>
+        internal static string CertificateNotFoundInFile {
+            get {
+                return ResourceManager.GetString("CertificateNotFoundInFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a matching certificate in machine certificate store..
+        /// </summary>
+        internal static string CertificateNotFoundInMachineStore {
+            get {
+                return ResourceManager.GetString("CertificateNotFoundInMachineStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a matching certificate in user certificate store..
+        /// </summary>
+        internal static string CertificateNotFoundInUserStore {
+            get {
+                return ResourceManager.GetString("CertificateNotFoundInUserStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to acquire RSA private key for the provided certificate..
         /// </summary>
         internal static string CertificateRSANotFound {
