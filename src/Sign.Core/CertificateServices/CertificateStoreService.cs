@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Resources;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -14,14 +15,13 @@ namespace Sign.Core
 {
     internal sealed class CertificateStoreService : ISignatureAlgorithmProvider, ICertificateProvider
     {
-        private readonly string? _sha1Thumbprint;
+        private readonly string _sha1Thumbprint;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
         private readonly string? _pfxFilePath;
         private readonly string? _pfxFilePassword;
         private readonly bool _isPrivateMachineKeyContainer;
 
-        private readonly Task<X509Certificate2>? _task;
         private readonly ILogger<CertificateStoreService> _logger;
 
         // Dependency injection requires a public constructor.
@@ -45,17 +45,7 @@ namespace Sign.Core
             _pfxFilePassword = pfxFilePassword;
 
             _logger = serviceProvider.GetRequiredService<ILogger<CertificateStoreService>>();
-
-            _task = GetStoreCertificateAsync(sha1Thumbprint);
         }
-
-        /// <summary>
-        /// Gets a certificate from either the machine or user certificate store using a SHA1 Thumbprint.
-        /// </summary>
-        /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Thumbprint.</returns>
-        /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
-        public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken) 
-            => await _task!;
 
 
         [SupportedOSPlatform("windows")] // CspParameters is Windows-only but project uses cross platform frameworks. Dotnet/Sign is Windows only
@@ -87,7 +77,7 @@ namespace Sign.Core
             // Certificate wasn't in CSP. Attempt to extract from store or provided file.
             const string RSA = "1.2.840.113549.1.1.1";
 
-            var certificate = await _task!;
+            var certificate = await GetStoreCertificateAsync();
             var keyAlgorithm = certificate.GetKeyAlgorithm();
 
             switch (keyAlgorithm)
@@ -98,40 +88,54 @@ namespace Sign.Core
                     throw new InvalidOperationException(Resources.UnsupportedPublicKeyAlgorithm);
             }
         }
-        private Task<X509Certificate2> GetStoreCertificateAsync(string sha1Thumbprint)
+
+        /// <summary>
+        /// Gets a certificate from a local (user or machine) certificate store or from a provided PFX file.
+        /// </summary>
+        /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Thumbprint.</returns>
+        /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
+        public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
+            => await GetStoreCertificateAsync();
+
+        private Task<X509Certificate2> GetStoreCertificateAsync()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             _logger.LogTrace(Resources.FetchingCertificate);
 
-            if (_isPrivateMachineKeyContainer
-                ? TryFindCertificate(StoreLocation.LocalMachine, _sha1Thumbprint!, out X509Certificate2? certificate)
-                : TryFindCertificate(StoreLocation.CurrentUser, _sha1Thumbprint!, out certificate))
+            // Check the provided file if any.
+            if (!string.IsNullOrEmpty(_pfxFilePath))
+            {
+                var certCollection = new X509Certificate2Collection();
+                certCollection.Import(_pfxFilePath, _pfxFilePassword, X509KeyStorageFlags.EphemeralKeySet);
+
+                foreach (var cert in certCollection)
+                {
+                    if (string.Equals(cert.Thumbprint, _sha1Thumbprint, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+
+                        return Task.FromResult(new X509Certificate2(cert));
+                    }
+                }
+
+                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, Path.GetFileName(_pfxFilePath)));
+            }
+
+            // Search User or Machine certificate stores.
+            if (!string.IsNullOrEmpty(_privateKeyContainer)
+                && _isPrivateMachineKeyContainer
+                    ? TryFindCertificate(StoreLocation.LocalMachine, _sha1Thumbprint!, out X509Certificate2? certificate)
+                    : TryFindCertificate(StoreLocation.CurrentUser, _sha1Thumbprint!, out certificate))
             {
                 _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
                 return Task.FromResult(certificate);
             }
 
-            if (!string.IsNullOrEmpty(_pfxFilePath))
-            {
-                var certCollection = new X509Certificate2Collection();
-                certCollection.Import(_pfxFilePath, _pfxFilePassword, X509KeyStorageFlags.EphemeralKeySet);
-
-                foreach(var cert in certCollection)
-                {
-                    if (string.Equals(cert.Thumbprint, _sha1Thumbprint, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        return Task.FromResult(new X509Certificate2(cert));
-                    }
-                }
-
-                throw new ArgumentException(Resources.CertificateNotFound);
-            }
-
             _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
-            throw new ArgumentException(Resources.CertificateNotFound);
+            throw new ArgumentException(_isPrivateMachineKeyContainer ? Resources.CertificateNotFoundInMachineStore : Resources.CertificateNotFoundInUserStore);
         }
 
         private static bool TryFindCertificate(StoreLocation storeLocation, string sha1Fingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
@@ -142,13 +146,18 @@ namespace Sign.Core
                 store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
                 var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, sha1Fingerprint, validOnly: false);
 
-                if (certificates.Count > 0)
+                foreach (var cert in certificates)
                 {
-                    certificate = certificates[0];
-                    return true;
+                    if (string.Equals(cert.Thumbprint, sha1Fingerprint, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        certificate = cert;
+
+                        return true;
+                    }
                 }
 
                 certificate = null;
+
                 return false;
             }
         }
