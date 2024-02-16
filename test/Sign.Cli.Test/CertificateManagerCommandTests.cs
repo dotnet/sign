@@ -12,13 +12,13 @@ namespace Sign.Cli.Test
 {
     public class CertificateManagerCommandTests
     {
-        private readonly CertManagerCommand _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
+        private readonly CertificateStoreCommand _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
 
         [Fact]
         public void Constructor_WhenCodeCommandIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertManagerCommand(codeCommand: null!, Mock.Of<IServiceProviderFactory>()));
+                () => new CertificateStoreCommand(codeCommand: null!, Mock.Of<IServiceProviderFactory>()));
 
             Assert.Equal("codeCommand", exception.ParamName);
         }
@@ -27,7 +27,7 @@ namespace Sign.Cli.Test
         public void Constructor_WhenServiceProviderFactoryIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertManagerCommand(new CodeCommand(), serviceProviderFactory: null!));
+                () => new CertificateStoreCommand(new CodeCommand(), serviceProviderFactory: null!));
 
             Assert.Equal("serviceProviderFactory", exception.ParamName);
         }
@@ -40,7 +40,7 @@ namespace Sign.Cli.Test
 
         public class ParserTests
         {
-            private readonly CertManagerCommand _command;
+            private readonly CertificateStoreCommand _command;
             private readonly Parser _parser;
 
             public ParserTests()

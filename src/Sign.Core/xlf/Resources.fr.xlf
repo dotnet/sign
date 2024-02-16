@@ -22,6 +22,21 @@
         <target state="new">Unable to find a matching certificate.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateNotFoundInFile">
+        <source>Unable to find a certificate with a matching SHA1 within {0}.</source>
+        <target state="new">Unable to find a certificate with a matching SHA1 within {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInMachineStore">
+        <source>Unable to find a matching certificate in machine certificate store.</source>
+        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInUserStore">
+        <source>Unable to find a matching certificate in user certificate store.</source>
+        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
         <target state="new">Unable to acquire RSA private key for the provided certificate.</target>

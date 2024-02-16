@@ -53,8 +53,8 @@
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidSha1ThumbrpintValue">
-        <source>Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</source>
-        <target state="new">Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</target>
+        <source>Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint.</source>
+        <target state="new">Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidUrlValue">

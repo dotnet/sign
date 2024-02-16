@@ -8,7 +8,6 @@ using System.CommandLine.IO;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
@@ -17,7 +16,7 @@ using Sign.Core;
 
 namespace Sign.Cli
 {
-    internal sealed class CertManagerCommand : Command
+    internal sealed class CertificateStoreCommand : Command
     {
         private readonly CodeCommand _codeCommand;
 
@@ -30,8 +29,8 @@ namespace Sign.Cli
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
 
-        internal CertManagerCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
-            : base("certificate-manager", Resources.LocalCommandDescription)
+        internal CertificateStoreCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
+            : base("certificate-store", Resources.LocalCommandDescription)
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
