@@ -297,7 +297,7 @@ namespace Sign.Core.Test
                         publisher = options.PublisherName;
                     }
 
-                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -appm \"{manifestFile.FullName}\" -pub \"{publisher}\"  -SupportURL https://description.test/";
+                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -appm \"{manifestFile.FullName}\" -SupportURL https://description.test/";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);
@@ -352,6 +352,112 @@ namespace Sign.Core.Test
                         file => Assert.Equal(
                             Path.Combine(jsonDeployFile.DirectoryName!, Path.GetFileNameWithoutExtension(jsonDeployFile.Name)),
                             file.FullName));
+
+                    mageCli.VerifyAll();
+                    manifestSigner.VerifyAll();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFilesIsClickOnceFileWithoutContent_Signs()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo applicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp.application");
+
+
+                SignOptions options = new(
+                    "ApplicationName",
+                    "PublisherName",
+                    "Description",
+                    new Uri("https://description.test"),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("http://timestamp.test"),
+                    matcher: null,
+                    antiMatcher: null);
+
+                using (X509Certificate2 certificate = CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(certificate);
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    Mock<IServiceProvider> serviceProvider = new();
+                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+
+                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
+                        .Returns(aggregatingSignatureProviderSpy);
+
+                    IDirectoryService directoryService = Mock.Of<IDirectoryService>();
+                    Mock<IMageCli> mageCli = new();
+
+                    string publisher;
+
+                    if (string.IsNullOrEmpty(options.PublisherName))
+                    {
+                        publisher = certificate.SubjectName.Name;
+                    }
+                    else
+                    {
+                        publisher = options.PublisherName;
+                    }
+
+                    string expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -SupportURL https://description.test/";
+                    mageCli.Setup(x => x.RunAsync(
+                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
+                        .ReturnsAsync(0);
+
+                    Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
+                    ClickOnceSignatureProvider provider = new(
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        serviceProvider.Object,
+                        directoryService,
+                        mageCli.Object,
+                        manifestSigner.Object,
+                        logger,
+                        fileMatcher.Object);
+
+                    await provider.SignAsync(new[] { applicationFile }, options);
+
+                    // Verify that files have been renamed back.
+                    foreach (FileInfo file in containerSpy.Files)
+                    {
+                        file.Refresh();
+
+                        Assert.True(file.Exists);
+                    }
+
+                    Assert.Empty(aggregatingSignatureProviderSpy.FilesSubmittedForSigning);
 
                     mageCli.VerifyAll();
                     manifestSigner.VerifyAll();

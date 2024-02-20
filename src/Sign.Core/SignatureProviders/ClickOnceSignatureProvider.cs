@@ -129,13 +129,13 @@ namespace Sign.Core
                     // at this point contentFiles has all deploy files renamed
 
                     // Inner files are now signed
-                    // now look for the manifest file and sign that
+                    // now look for the manifest file and sign that if we have one
 
-                    FileInfo manifestFile = filteredFiles.Single(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
+                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
 
                     string fileArgs = $@"-update ""{manifestFile}"" {args}";
 
-                    if (!await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
+                    if (manifestFile is not null && !await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
                     {
                         string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
 
@@ -149,11 +149,11 @@ namespace Sign.Core
                         string publisherName = certificate.SubjectName.Name;
  
                         // get the DN. it may be quoted
-                        publisherParam = $@"-pub ""{publisherName.Replace("\"", "")}"" ";
+                        publisherParam = $@"-pub ""{publisherName.Replace("\"", "")}""";
                     }
                     else
                     {
-                        publisherParam = $"-pub \"{options.PublisherName}\" ";
+                        publisherParam = $"-pub \"{options.PublisherName}\"";
                     }
 
                     // Now sign the inner vsto/clickonce file
@@ -168,7 +168,11 @@ namespace Sign.Core
 
                     foreach (FileInfo fileToSign in clickOnceFilesToSign)
                     {
-                        fileArgs = $@"-update ""{fileToSign.FullName}"" {args} -appm ""{manifestFile.FullName}"" {publisherParam}";
+                        fileArgs = $@"-update ""{fileToSign.FullName}"" {args} {publisherParam}";
+                        if (manifestFile is not null)
+                        {
+                            fileArgs += $@" -appm ""{manifestFile.FullName}""";
+                        }
                         if (options.DescriptionUrl is not null)
                         {
                             fileArgs += $@" -SupportURL {options.DescriptionUrl.AbsoluteUri}";
