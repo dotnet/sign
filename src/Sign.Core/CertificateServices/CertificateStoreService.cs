@@ -51,27 +51,28 @@ namespace Sign.Core
         [SupportedOSPlatform("windows")] // CspParameters is Windows-only but project uses cross platform frameworks. Dotnet/Sign is Windows only
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            // Get RSA from a 3rd party cryptographic service provider
-            if (!string.IsNullOrEmpty(_privateKeyContainer))
+            // Get RSA from a cryptographic service provider
+            if (!string.IsNullOrEmpty(_privateKeyContainer) && !string.IsNullOrEmpty(_cryptoServiceProvider))
             {
-                var cspOptions = new CspParameters();
-
-                cspOptions.ProviderName = _cryptoServiceProvider;
-                cspOptions.ProviderType = 1; // RSA = 1 DSA = 13
-                cspOptions.KeyContainerName = _privateKeyContainer;
+                var cngKeyFlags = CngKeyOpenOptions.Silent;
 
                 if (_isPrivateMachineKeyContainer)
                 {
-                    cspOptions.Flags = CspProviderFlags.UseMachineKeyStore;
+                    cngKeyFlags |= CngKeyOpenOptions.MachineKey;
 
                     RSACryptoServiceProvider.UseMachineKeyStore = true;
                 }
                 else
                 {
-                    cspOptions.Flags = CspProviderFlags.UseDefaultKeyContainer;
+                    cngKeyFlags |= CngKeyOpenOptions.UserKey;
                 }
 
-                return new RSACryptoServiceProvider(cspOptions);
+                using CngKey cngKey = CngKey.Open(
+                    _privateKeyContainer,
+                    new CngProvider(_cryptoServiceProvider), cngKeyFlags );
+
+                // Container type for RSA = 1 and DSA = 13
+                return new RSACng(cngKey);
             }
 
             // Certificate wasn't in CSP. Attempt to extract from store or provided file.
@@ -141,7 +142,7 @@ namespace Sign.Core
         private static bool TryFindCertificate(StoreLocation storeLocation, string sha1Fingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
         {
             // Check machine certificate store.
-            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            using (var store = new X509Store(StoreName.My, storeLocation))
             {
                 store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
                 var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, sha1Fingerprint, validOnly: false);
