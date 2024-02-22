@@ -119,7 +119,7 @@ namespace Sign.Core.Test
 
                 await SignAsync(temporaryDirectory, file, outputFile);
 
-                await VerifyMsixBundleFile(outputFile, temporaryDirectory);
+                await VerifyMsixBundleFileAsync(outputFile, temporaryDirectory);
             }
         }
 
@@ -130,8 +130,10 @@ namespace Sign.Core.Test
             {
                 FileInfo file = GetTestAsset(temporaryDirectory, "EmptyExtension.app");
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.app"));
-                
+
                 await SignAsync(temporaryDirectory, file, outputFile);
+
+                await VerifyAppSignatureAsync(file, outputFile, temporaryDirectory);
             }
         }
 
@@ -181,7 +183,7 @@ namespace Sign.Core.Test
             await VerifySignedCmsAsync(signedCms);
         }
 
-        private async Task VerifyMsixBundleFile(FileInfo outputFile, TemporaryDirectory temporaryDirectory)
+        private async Task VerifyMsixBundleFileAsync(FileInfo outputFile, TemporaryDirectory temporaryDirectory)
         {
             using (FileStream fileStream = outputFile.OpenRead())
             using (ZipArchive msixBundle = new(fileStream))
@@ -250,6 +252,52 @@ namespace Sign.Core.Test
             return file;
         }
 
+        private async Task VerifyAppSignatureAsync(FileInfo unsignedAppFile, FileInfo signedAppFile, TemporaryDirectory temporaryDirectory)
+        {
+            FileInfo signatureFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signature.p7s"));
+
+            if (await TryExtractSignatureBlockAsync(unsignedAppFile, signedAppFile, signatureFile))
+            {
+                SignedCms signedCms = GetSignedCms(signatureFile);
+
+                await VerifySignedCmsAsync(signedCms);
+            }
+            else
+            {
+                Assert.Fail("The file is not signed.");
+            }
+        }
+
+        private static async Task<bool> TryExtractSignatureBlockAsync(
+            FileInfo unsignedAppFile,
+            FileInfo signedAppFile,
+            FileInfo signatureFile)
+        {
+            // NAVX signature block marker
+            ReadOnlyMemory<byte> nxsb = Encoding.UTF8.GetBytes("NXSB");
+
+            long endOfUnsignedApp = unsignedAppFile.Length;
+
+            using (BinaryReader reader = new(signedAppFile.OpenRead()))
+            {
+                reader.BaseStream.Seek(endOfUnsignedApp, SeekOrigin.Begin);
+
+                byte[] bytes = reader.ReadBytes(nxsb.Length);
+
+                if (nxsb.Span.SequenceEqual(bytes))
+                {
+                    using (FileStream signatureStream = signatureFile.OpenWrite())
+                    {
+                        await reader.BaseStream.CopyToAsync(signatureStream);
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private async Task VerifyAppxSignatureAsync(ZipArchive msix)
         {
             ZipArchiveEntry? entry = msix.GetEntry("AppxSignature.p7x");
@@ -305,6 +353,16 @@ namespace Sign.Core.Test
 
             // The first 4 bytes are 0x504B4358 ("PKCX").
             signedCms.Decode(buffer[4..].Span);
+
+            return signedCms;
+        }
+
+        private static SignedCms GetSignedCms(FileInfo file)
+        {
+            byte[] bytes = File.ReadAllBytes(file.FullName);
+            SignedCms signedCms = new();
+
+            signedCms.Decode(bytes);
 
             return signedCms;
         }
@@ -451,7 +509,7 @@ namespace Sign.Core.Test
             return new ServiceProvider(services.BuildServiceProvider());
         }
 
-        private void RegisterSipsFromIniFile()
+        private static void RegisterSipsFromIniFile()
         {
             AppRootDirectoryLocator locator = new();
             DirectoryInfo appRootDirectory = locator.Directory;
