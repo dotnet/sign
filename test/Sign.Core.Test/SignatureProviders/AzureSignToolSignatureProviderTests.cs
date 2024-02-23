@@ -30,6 +30,7 @@ namespace Sign.Core.Test
         }
 
         [Theory]
+        [InlineData(".app")]
         [InlineData(".appx")]
         [InlineData(".appxbundle")]
         [InlineData(".cab")]
