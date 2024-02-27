@@ -91,7 +91,7 @@ namespace Sign.Core
                     // finally the top-level clickonce/vsto file
                     // It's possible that there might not actually be a .manifest file or any data files if the user just
                     // wants to re-sign an existing deployment manifest because e.g. the update URL has changed but nothing
-                    // else. In that case we don't need to touch the other files and we can just sign the deployment manifest.
+                    // else has. In that case we don't need to touch the other files and we can just sign the deployment manifest.
 
                     // Look for the data files first - these are .deploy files
                     // we need to rename them, sign, then restore the name
