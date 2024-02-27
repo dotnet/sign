@@ -7,6 +7,11 @@
         <target state="translated">Имя сертификата в Azure Key Vault.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClickOnceExtensionNotSupported">
+        <source>ClickOnce signing via the legacy .clickonce zip workaround is not supported anymore - pass the path to your deployment manifest directly instead.</source>
+        <target state="new">ClickOnce signing via the legacy .clickonce zip workaround is not supported anymore - pass the path to your deployment manifest directly instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure Key Vault.</source>
         <target state="translated">ИД клиента для проверки подлинности в Azure Key Vault.</target>
