@@ -14,11 +14,23 @@ While the current version is limited to RSA and Azure Key Vault, it is desirable
 
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.appx`, `.appxbundle`, `.msix`, `.msixbundle`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and any portable executable (PE) file (via [AzureSignTool](https://github.com/vcsjones/AzureSignTool))
 - `.vsix` via [OpenOpcSignTool](https://github.com/vcsjones/OpenOpcSignTool)
-- ClickOnce `.application` and `.vsto` (via `Mage`). Special instructions below.
+- ClickOnce `.application` and `.vsto` (via `Mage`). Notes below.
 - `.nupkg` via [NuGetKeyVaultSignTool](https://github.com/novotnyllc/NuGetKeyVaultSignTool)
 
 ## ClickOnce
-ClickOnce files can be signed with this tool, but it requires an extra step -- you must zip up the `publish` directory containing the `setup.exe`, `foo.application` or `foo.vsto` files along with the `Application Files` directory. The `Application Files` must only have a single subdirectory (version you want to sign). Zip these and then rename the extension to `.clickonce` before submitting to the tool. Once done, you can extract the signed files wherever you'd like for publication. If the `name` parameter is supplied, it's used in the `Mage` name to update the `Product` in the manifests. If the `descriptionUrl` parameter is supplied, it's used as the `supportUrl` in the manifests.
+There are a couple of possibilities for signing ClickOnce packages.
+
+Generally you will want to sign an entire package and all its contents i.e. the deployment manifest (`.application` or `.vsto`),
+application manifest (`.exe.manifest` or `.dll.manifest`) and the underlying `.exe` and `.dll` files themselves.
+To do this, ensure that the entire contents of the package are available (i.e. the whole `publish` folder from your build) and pass
+the deployment manifest as the file to sign - the rest of the files will be detected and signed in the proper order automatically.
+
+You can also re-sign just the deployment manifest in case you want to e.g. change the Deployment URL but leave the rest of the contents the
+same. To do this, pass the deployment manifest as the file to sign as in the case above, but just don't have the rest of the files
+present on-disk alongside it. This tool will detect that they're missing and just update the signature on the deployment manifest.
+Note that this is strictly for re-signing an already-signed deployment manifest - you cannot have a signed deployment manifest that
+points to an un-signed application manifest. You must also take care to sign all manifests with the same certificate otherwise the application
+will not install.
 
 You should also use the `filter` parameter with the file list to sign, something like this:
 ```
