@@ -5,7 +5,7 @@ namespace Sign.Core.Test
 {
     public class CertificateSigningContextTests
     {
-        private static string CertPath(string str) => Path.Combine("certs", str);
+        private static string CertPath(string str) => Path.Combine(".\\TestAssets\\certs", str);
 
         public static IEnumerable<object[]> RsaCertificates
         {
