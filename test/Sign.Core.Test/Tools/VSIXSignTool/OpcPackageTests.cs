@@ -105,7 +105,7 @@ namespace Sign.Core.Test
             {
                 var partToRemove = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToRemove);
-                part.Relationships.Add(new OpcRelationship(new Uri("/foo", UriKind.Relative), new Uri("http://foo.com", UriKind.Absolute)));
+                part!.Relationships.Add(new OpcRelationship(new Uri("/foo", UriKind.Relative), new Uri("http://foo.com", UriKind.Absolute)));
             }
             using (var package = OpcPackage.Open(path, OpcPackageFileMode.ReadWrite))
             {
@@ -113,7 +113,7 @@ namespace Sign.Core.Test
                 Assert.NotNull(package.GetPart(relationshipPartUri));
                 var partToRemove = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToRemove);
-                package.RemovePart(part);
+                package.RemovePart(part!);
                 Assert.False(package.HasPart(relationshipPartUri));
                 Assert.Null(package.GetPart(relationshipPartUri));
             }
@@ -127,7 +127,7 @@ namespace Sign.Core.Test
             {
                 var partToRemove = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToRemove);
-                part.Relationships.Add(new OpcRelationship(new Uri("/foo", UriKind.Relative), new Uri("http://foo.com", UriKind.Absolute)));
+                part!.Relationships.Add(new OpcRelationship(new Uri("/foo", UriKind.Relative), new Uri("http://foo.com", UriKind.Absolute)));
                 package.RemovePart(part);
             }
             using (var package = OpcPackage.Open(path))
