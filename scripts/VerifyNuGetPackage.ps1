@@ -71,6 +71,7 @@ If ($packageFilePaths.Count -ne 1)
     'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.mssign32.dll.manifest',
     'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.wintrust.dll.manifest',
     'tools/net6.0/any/tools/SDK/x64/mssign32.dll',
+    'tools/net6.0/any/tools/SDK/x64/NavSip.dll',
     'tools/net6.0/any/tools/SDK/x64/opcservices.dll',
     'tools/net6.0/any/tools/SDK/x64/SignTool.exe.manifest',
     'tools/net6.0/any/tools/SDK/x64/wintrust.dll',
