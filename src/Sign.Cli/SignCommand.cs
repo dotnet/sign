@@ -13,18 +13,19 @@ namespace Sign.Cli
             : base("sign", Resources.SignCommandDescription)
         {
             CodeCommand codeCommand = new();
+            serviceProviderFactory ??= new ServiceProviderFactory();
 
             AddCommand(codeCommand);
 
             AzureKeyVaultCommand azureKeyVaultCommand = new(
                 codeCommand,
-                serviceProviderFactory ?? new ServiceProviderFactory());
+                serviceProviderFactory);
 
             codeCommand.AddCommand(azureKeyVaultCommand);
 
             CertificateStoreCommand certManagerCommand = new(
                 codeCommand,
-                serviceProviderFactory ?? new ServiceProviderFactory());
+                serviceProviderFactory);
 
             codeCommand.AddCommand(certManagerCommand);
         }
