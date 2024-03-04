@@ -22,14 +22,14 @@ namespace Sign.Cli {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class CertManagerResources {
+    internal class CertificateStoreResources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal CertManagerResources() {
+        internal CertificateStoreResources() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Sign.Cli {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sign.Cli.CertManagerResources", typeof(CertManagerResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sign.Cli.CertificateStoreResources", typeof(CertificateStoreResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,7 +61,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cryptographic Service Provider containing the private key container. Requires /k or /km.
+        ///   Looks up a localized string similar to Cryptographic Service Provider containing the private key container. Requires /k or /km..
         /// </summary>
         internal static string CSPOptionDescription {
             get {
@@ -70,7 +70,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Private key container in the user store.
+        ///   Looks up a localized string similar to Private key container in the user store..
         /// </summary>
         internal static string KeyContainerOptionDescription {
             get {
@@ -79,7 +79,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Private key container in the machine store.
+        ///   Looks up a localized string similar to Private key container in the machine store..
         /// </summary>
         internal static string MachineKeyContainerOptionDescription {
             get {
@@ -88,7 +88,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple private key containers provided. Use either /k for user stores or /km for machine stores.
+        ///   Looks up a localized string similar to Multiple private key containers provided. Use either /k for user stores or /km for machine stores..
         /// </summary>
         internal static string MultiplePrivateKeyContainersError {
             get {
@@ -106,7 +106,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA1 thumprint used to access a certificate from a certificate store (VSIX).
+        ///   Looks up a localized string similar to SHA1 thumprint used to access a certificate from a certificate store..
         /// </summary>
         internal static string SHA1ThumbprintOptionDescription {
             get {

@@ -61,10 +61,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>AzureKeyVaultResources.resx</DependentUpon>
     </Compile>
-    <Compile Update="CertManagerResources.Designer.cs">
+    <Compile Update="CertificateStoreResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>CertManagerResources.resx</DependentUpon>
+      <DependentUpon>CertificateStoreResources.resx</DependentUpon>
     </Compile>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -78,9 +78,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>AzureKeyVaultResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="CertManagerResources.resx">
+    <EmbeddedResource Update="CertificateStoreResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>CertManagerResources.Designer.cs</LastGenOutput>
+      <LastGenOutput>CertificateStoreResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

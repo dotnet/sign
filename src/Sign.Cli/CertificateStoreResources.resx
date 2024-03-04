@@ -118,21 +118,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CSPOptionDescription" xml:space="preserve">
-    <value>Cryptographic Service Provider containing the private key container. Requires /k or /km</value>
+    <value>Cryptographic Service Provider containing the private key container. Requires /k or /km.</value>
   </data>
   <data name="KeyContainerOptionDescription" xml:space="preserve">
-    <value>Private key container in the user store</value>
+    <value>Private key container in the user store.</value>
   </data>
   <data name="MachineKeyContainerOptionDescription" xml:space="preserve">
-    <value>Private key container in the machine store</value>
+    <value>Private key container in the machine store.</value>
   </data>
   <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
-    <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores</value>
+    <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
   </data>
   <data name="NoPrivateKeyContainerError" xml:space="preserve">
     <value>Private key container missing while using /csp. Use /k or /km to provide a key container.</value>
   </data>
   <data name="SHA1ThumbprintOptionDescription" xml:space="preserve">
-    <value>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</value>
+    <value>SHA1 thumprint used to access a certificate from a certificate store.</value>
   </data>
 </root>

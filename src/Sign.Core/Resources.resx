@@ -133,6 +133,7 @@
   </data>
   <data name="CertificateNotFoundInFile" xml:space="preserve">
     <value>Unable to find a certificate with a matching SHA1 within {0}.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
   </data>
   <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
     <value>Unable to find a matching certificate in machine certificate store.</value>

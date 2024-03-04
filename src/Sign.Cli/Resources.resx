@@ -153,13 +153,14 @@
   </data>
   <data name="InvalidSha1ThumbrpintValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</comment>
   </data>
   <data name="InvalidUrlValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</value>
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</comment>
   </data>
   <data name="LocalCommandDescription" xml:space="preserve">
-    <value>Use Windows Certificate Mananger</value>
+    <value>Use Windows Certificate Manager</value>
   </data>
   <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
     <value>Maximum concurrency.</value>

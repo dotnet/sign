@@ -169,7 +169,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use Windows Certificate Mananger.
+        ///   Looks up a localized string similar to Use Windows Certificate Manager.
         /// </summary>
         internal static string LocalCommandDescription {
             get {
