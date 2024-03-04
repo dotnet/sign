@@ -10,7 +10,7 @@ using Sign.Core;
 
 namespace Sign.Cli.Test
 {
-    public class CertificateManagerCommandTests
+    public class CertificateStoreCommandTests
     {
         private readonly CertificateStoreCommand _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
 
@@ -50,10 +50,13 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("certificate-manager")]
-            [InlineData("certificate-manager a")]
-            [InlineData("certificate-manager -u")]
-            [InlineData("certificate-manager -u https://keyvault.test -d \"testCert\"")]
+            [InlineData("certificate-store")]
+            [InlineData("certificate-store a")]
+            [InlineData("certificate-store -u")]
+            [InlineData("certificate-store -u https://keyvault.test -d \"testCert\"")]
+            [InlineData("certificate-store -s TestingSha -d \"testCert\"")]
+            [InlineData("certificate-store -s TestingSha -f \"testCert.pfx\" -d \"testCert\"")]
+            [InlineData("certificate-store -s TestingSha -csp \"MyStore\" -k \"MyContainer\" -d \"testCert\" -u \"testDesc\"")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -62,7 +65,14 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("certificate-manager -s -u -d ")]
+            [InlineData("certificate-store -s -u -d")]
+            [InlineData("certificate-store -s -f -d")]
+            [InlineData("certificate-store -s -f -p -u -d")]
+            [InlineData("certificate-store -s -csp -k -u -d")]
+            [InlineData("certificate-store -s -csp -km -u -d")]
+            [InlineData("certificate-store -s -f -csp -k -u")]
+            [InlineData("certificate-store -s -f -p -csp -k -u -d")]
+            [InlineData("certificate-store -s -f -csp -km -u")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);
