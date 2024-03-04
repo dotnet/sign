@@ -12,8 +12,8 @@ namespace Sign.Core.Test
 {
     public class OpcPackageTests : IDisposable
     {
-        private static readonly string SamplePackage = Path.Combine("sample", "OpenVsixSignToolTest.vsix");
-        private static readonly string SamplePackageSigned = Path.Combine("sample", "OpenVsixSignToolTest-Signed.vsix");
+        private static readonly string SamplePackage = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest.vsix");
+        private static readonly string SamplePackageSigned = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest-Signed.vsix");
         private readonly List<string> _shadowFiles = new List<string>();
 
         [Fact]

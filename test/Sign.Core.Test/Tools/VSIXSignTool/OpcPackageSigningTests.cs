@@ -10,11 +10,11 @@ namespace Sign.Core.Test
 {
     public class OpcPackageSigningTests : IDisposable
     {
-        private static readonly string SamplePackage = Path.Combine("sample" , "OpenVsixSignToolTest.vsix");
-        private static readonly string SamplePackageSigned = Path.Combine("sample", "OpenVsixSignToolTest-Signed.vsix");
+        private static readonly string SamplePackage = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest.vsix");
+        private static readonly string SamplePackageSigned = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest-Signed.vsix");
         private readonly List<string> _shadowFiles = new List<string>();
 
-        private static string CertPath(string str) => Path.Combine("certs", str);
+        private static string CertPath(string str) => Path.Combine(".\\TestAssets\\certs", str);
 
 
         [Theory]
@@ -148,14 +148,14 @@ namespace Sign.Core.Test
             string path;
             using (var package = ShadowCopyPackage(SamplePackage, out path, OpcPackageFileMode.ReadWrite))
             {
-                var certificate = new X509Certificate2(CertPath("rsa-2048-sha1.pfx"), "test");
+                var certificate = new X509Certificate2(CertPath("rsa-2048-sha256.pfx"), "test");
                 var signerBuilder = package.CreateSignatureBuilder();
                 signerBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
                 signerBuilder.Sign(
                  new SignConfigurationSet(
                     publicCertificate: certificate,
-                    signatureDigestAlgorithm: HashAlgorithmName.SHA1,
-                    fileDigestAlgorithm: HashAlgorithmName.SHA1,
+                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
                     signingKey: certificate.GetRSAPrivateKey()!
                 ));
             }
