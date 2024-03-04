@@ -70,6 +70,24 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File(s) to sign..
+        /// </summary>
+        internal static string FileOptionDescription {
+            get {
+                return ResourceManager.GetString("FileOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for certificate file if required..
+        /// </summary>
+        internal static string FilePasswordOptionDescription {
+            get {
+                return ResourceManager.GetString("FilePasswordOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Private key container in the user store..
         /// </summary>
         internal static string KeyContainerOptionDescription {

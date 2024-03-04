@@ -153,9 +153,9 @@ namespace Sign.Cli {
         /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint..
         /// </summary>
-        internal static string InvalidSha1ThumbrpintValue {
+        internal static string InvalidSha1ThumbprintValue {
             get {
-                return ResourceManager.GetString("InvalidSha1ThumbrpintValue", resourceCulture);
+                return ResourceManager.GetString("InvalidSha1ThumbprintValue", resourceCulture);
             }
         }
         
@@ -169,7 +169,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use Windows Certificate Manager.
+        ///   Looks up a localized string similar to Use Windows Certificate Store..
         /// </summary>
         internal static string LocalCommandDescription {
             get {

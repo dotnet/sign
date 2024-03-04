@@ -120,6 +120,12 @@
   <data name="CSPOptionDescription" xml:space="preserve">
     <value>Cryptographic Service Provider containing the private key container. Requires /k or /km.</value>
   </data>
+  <data name="FileOptionDescription" xml:space="preserve">
+    <value>File(s) to sign.</value>
+  </data>
+  <data name="FilePasswordOptionDescription" xml:space="preserve">
+    <value>Password for certificate file if required.</value>
+  </data>
   <data name="KeyContainerOptionDescription" xml:space="preserve">
     <value>Private key container in the user store.</value>
   </data>
