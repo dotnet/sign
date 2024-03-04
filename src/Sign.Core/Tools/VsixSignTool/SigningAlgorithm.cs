@@ -7,7 +7,7 @@ namespace Sign.Core
     /// <summary>
     /// Indicates a signing algorithm.
     /// </summary>
-    public enum SigningAlgorithm
+    internal enum SigningAlgorithm
     {
         /// <summary>
         /// The signing algorithm is unknown.

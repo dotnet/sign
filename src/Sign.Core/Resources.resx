@@ -202,9 +202,6 @@
   <data name="NoPrivateKeyContainerError" xml:space="preserve">
     <value>Private key container missing while using /csp. Use /k or /km to provide a key container.</value>
   </data>
-  <data name="NoSignatureProvidersAvailableError" xml:space="preserve">
-    <value>Certificate Services failed to initialize.</value>
-  </data>
   <data name="OpeningContainer" xml:space="preserve">
     <value>Extracting container {ContainerFilePath} to {DirectoryPath}.</value>
     <comment>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</comment>
@@ -272,5 +269,15 @@
   <data name="VsixSignatureProviderSigning" xml:space="preserve">
     <value>Signing VsixSignTool job with {count} files.</value>
     <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
+  </data>
+  <data name="VSIXSignToolOpcContentTypeInvalid" xml:space="preserve">
+    <value>Specified {0} is invalid.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</comment>
+  </data>
+  <data name="VSIXSignToolUnkownSigningAlgorithm" xml:space="preserve">
+    <value>Unknown signing algorithm.</value>
+  </data>
+  <data name="VSIXSignToolUnsupportedAlgorithm" xml:space="preserve">
+    <value>The algorithm selected is not supported.</value>
   </data>
 </root>

@@ -75,7 +75,7 @@ namespace Sign.Core
                 case ECDsa ecdsa:
                     return ecdsa.SignHash(digest);
                 default:
-                    throw new InvalidOperationException("Unknown signing algorithm.");
+                    throw new InvalidOperationException(Resources.VSIXSignToolUnkownSigningAlgorithm);
             }
         }
 
@@ -101,7 +101,7 @@ namespace Sign.Core
                         return publicKey != null ? publicKey.VerifyHash(digest, signature) : false;
                     }
                 default:
-                    throw new InvalidOperationException("Unknown signing algorithm.");
+                    throw new InvalidOperationException(Resources.VSIXSignToolUnkownSigningAlgorithm);
             }
         }
     }

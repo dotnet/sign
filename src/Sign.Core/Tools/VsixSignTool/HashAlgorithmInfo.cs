@@ -42,7 +42,7 @@ namespace Sign.Core
             }
             else
             {
-                throw new NotSupportedException("The algorithm selected is not supported.");
+                throw new NotSupportedException(Resources.VSIXSignToolUnsupportedAlgorithm);
             }
         }
     }

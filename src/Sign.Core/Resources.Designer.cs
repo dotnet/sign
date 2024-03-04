@@ -277,15 +277,6 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate Services failed to initialize..
-        /// </summary>
-        internal static string NoSignatureProvidersAvailableError {
-            get {
-                return ResourceManager.GetString("NoSignatureProvidersAvailableError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Extracting container {ContainerFilePath} to {DirectoryPath}..
         /// </summary>
         internal static string OpeningContainer {
@@ -444,6 +435,33 @@ namespace Sign.Core {
         internal static string VsixSignatureProviderSigning {
             get {
                 return ResourceManager.GetString("VsixSignatureProviderSigning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specified {0} is invalid..
+        /// </summary>
+        internal static string VSIXSignToolOpcContentTypeInvalid {
+            get {
+                return ResourceManager.GetString("VSIXSignToolOpcContentTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown signing algorithm..
+        /// </summary>
+        internal static string VSIXSignToolUnkownSigningAlgorithm {
+            get {
+                return ResourceManager.GetString("VSIXSignToolUnkownSigningAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The algorithm selected is not supported..
+        /// </summary>
+        internal static string VSIXSignToolUnsupportedAlgorithm {
+            get {
+                return ResourceManager.GetString("VSIXSignToolUnsupportedAlgorithm", resourceCulture);
             }
         }
     }

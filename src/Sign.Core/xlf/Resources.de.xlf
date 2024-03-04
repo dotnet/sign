@@ -25,7 +25,7 @@
       <trans-unit id="CertificateNotFoundInFile">
         <source>Unable to find a certificate with a matching SHA1 within {0}.</source>
         <target state="new">Unable to find a certificate with a matching SHA1 within {0}.</target>
-        <note />
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
@@ -122,11 +122,6 @@
         <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoSignatureProvidersAvailableError">
-        <source>Certificate Services failed to initialize.</source>
-        <target state="new">Certificate Services failed to initialize.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OpeningContainer">
         <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
         <target state="translated">Der Container {ContainerFilePath} wird in {DirectoryPath} extrahiert.</target>
@@ -205,6 +200,21 @@
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
         <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
+        <source>Specified {0} is invalid.</source>
+        <target state="new">Specified {0} is invalid.</target>
+        <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
+      </trans-unit>
+      <trans-unit id="VSIXSignToolUnkownSigningAlgorithm">
+        <source>Unknown signing algorithm.</source>
+        <target state="new">Unknown signing algorithm.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
+        <source>The algorithm selected is not supported.</source>
+        <target state="new">The algorithm selected is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">

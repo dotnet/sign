@@ -128,7 +128,7 @@ namespace Sign.Core
                     case OpcContentTypeMode.Override:
                         return _opcContentTypeNamespace + "Override";
                     default:
-                        throw new ArgumentException($"Specified {nameof(OpcContentTypeMode)} is invalid.", nameof(mode));
+                        throw new ArgumentException(string.Format(Resources.VSIXSignToolOpcContentTypeInvalid, nameof(OpcContentTypeMode)), nameof(mode));
                 }
             }
 

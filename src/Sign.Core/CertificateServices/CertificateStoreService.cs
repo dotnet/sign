@@ -18,8 +18,8 @@ namespace Sign.Core
         private readonly string _sha1Thumbprint;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
-        private readonly string? _pfxFilePath;
-        private readonly string? _pfxFilePassword;
+        private readonly string? _certificatePath;
+        private readonly string? _certificatePassword;
         private readonly bool _isPrivateMachineKeyContainer;
 
         private readonly ILogger<CertificateStoreService> _logger;
@@ -30,8 +30,8 @@ namespace Sign.Core
             string sha1Thumbprint,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
-            string? pfxFilePath,
-            string? pfxFilePassword,
+            string? certificatePath,
+            string? certificatePassword,
             bool isPrivateMachineKeyContainer
             )
         {
@@ -41,8 +41,8 @@ namespace Sign.Core
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
-            _pfxFilePath = pfxFilePath;
-            _pfxFilePassword = pfxFilePassword;
+            _certificatePath = certificatePath;
+            _certificatePassword = certificatePassword;
 
             _logger = serviceProvider.GetRequiredService<ILogger<CertificateStoreService>>();
         }
@@ -91,7 +91,7 @@ namespace Sign.Core
         }
 
         /// <summary>
-        /// Gets a certificate from a local (user or machine) certificate store or from a provided PFX file.
+        /// Gets a certificate from a local (user or machine) certificate store or from a provided certificate file.
         /// </summary>
         /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Thumbprint.</returns>
         /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
@@ -105,10 +105,10 @@ namespace Sign.Core
             _logger.LogTrace(Resources.FetchingCertificate);
 
             // Check the provided file if any.
-            if (!string.IsNullOrEmpty(_pfxFilePath))
+            if (!string.IsNullOrEmpty(_certificatePath))
             {
                 var certCollection = new X509Certificate2Collection();
-                certCollection.Import(_pfxFilePath, _pfxFilePassword, X509KeyStorageFlags.EphemeralKeySet);
+                certCollection.Import(_certificatePath, _certificatePassword, X509KeyStorageFlags.EphemeralKeySet);
 
                 foreach (var cert in certCollection)
                 {
@@ -120,7 +120,7 @@ namespace Sign.Core
                     }
                 }
 
-                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, Path.GetFileName(_pfxFilePath)));
+                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, Path.GetFileName(_certificatePath)));
             }
 
             // Search User or Machine certificate stores.

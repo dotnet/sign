@@ -52,10 +52,10 @@
         <target state="translated">Nieprawidłowa wartość dla {0}. Wartość musi być większa lub równa 1.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
       </trans-unit>
-      <trans-unit id="InvalidSha1ThumbrpintValue">
+      <trans-unit id="InvalidSha1ThumbprintValue">
         <source>Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint.</source>
         <target state="new">Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint.</target>
-        <note />
+        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
@@ -63,8 +63,8 @@
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="LocalCommandDescription">
-        <source>Use Windows Certificate Mananger</source>
-        <target state="new">Use Windows Certificate Mananger</target>
+        <source>Use Windows Certificate Store.</source>
+        <target state="new">Use Windows Certificate Store.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
