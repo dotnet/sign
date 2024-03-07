@@ -465,6 +465,103 @@ namespace Sign.Core.Test
             }
         }
 
+        [Fact]
+        public void CopySigningDependencies_CopiesCorrectFiles()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo applicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp.application");
+                FileInfo dllDeployFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp_1_0_0_0", "MyApp.dll.deploy");
+
+                using (X509Certificate2 certificate = CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(certificate);
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    Mock<IServiceProvider> serviceProvider = new();
+                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+
+                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
+                        .Returns(aggregatingSignatureProviderSpy);
+
+                    IDirectoryService directoryService = Mock.Of<IDirectoryService>();
+                    Mock<IMageCli> mageCli = new();
+                    string publisher = certificate.SubjectName.Name;
+
+                    Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
+
+                    SignOptions options = new(
+                        "ApplicationName",
+                        "PublisherName",
+                        "Description",
+                        new Uri("https://description.test"),
+                        HashAlgorithmName.SHA256,
+                        HashAlgorithmName.SHA256,
+                        new Uri("http://timestamp.test"),
+                        matcher: null,
+                        antiMatcher: null
+                    );
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
+                    ClickOnceSignatureProvider provider = new(
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        serviceProvider.Object,
+                        directoryService,
+                        mageCli.Object,
+                        manifestSigner.Object,
+                        logger,
+                        fileMatcher.Object);
+
+                    using (TemporaryDirectory signingDirectory = new(_directoryService))
+                    {
+                        // ensure that we start with nothing
+                        Assert.Empty(signingDirectory.Directory.EnumerateFiles());
+                        Assert.Empty(signingDirectory.Directory.EnumerateDirectories());
+                        // tell the provider to copy what it needs into the signing directory
+                        provider.CopySigningDependencies(applicationFile, signingDirectory.Directory, options);
+                        // and make sure we got it. We expect only the DLL to be copied, and NOT the .application file itself.
+                        var copiedFiles = signingDirectory.Directory.EnumerateFiles("*", SearchOption.AllDirectories);
+                        var copiedDirectories = signingDirectory.Directory.EnumerateDirectories();
+                        Assert.Single(copiedFiles);
+                        Assert.Single(copiedDirectories);
+                        Assert.Contains(copiedDirectories, d => d.Name == "MyApp_1_0_0_0");
+                        Assert.Contains(copiedFiles, f => f.Name == "MyApp.dll.deploy");
+                    }
+                }
+            }
+        }
+
         private static FileInfo AddFile(
             ContainerSpy containerSpy,
             DirectoryInfo directory,
