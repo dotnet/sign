@@ -13,6 +13,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.Core
 {
+    /// <summary>
+    /// Creates an object used to access Certificate Stores and acquire certificates and RSA keys (if applicable).
+    /// </summary>
     internal sealed class CertificateStoreService : ISignatureAlgorithmProvider, ICertificateProvider
     {
         private readonly string _sha1Thumbprint;
@@ -24,7 +27,6 @@ namespace Sign.Core
 
         private readonly ILogger<CertificateStoreService> _logger;
 
-        // Dependency injection requires a public constructor.
         internal CertificateStoreService(
             IServiceProvider serviceProvider,
             string sha1Thumbprint,
@@ -35,7 +37,10 @@ namespace Sign.Core
             bool isPrivateMachineKeyContainer
             )
         {
-            ArgumentNullException.ThrowIfNull(sha1Thumbprint, nameof(sha1Thumbprint));
+            if (string.IsNullOrEmpty(sha1Thumbprint))
+            {
+                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(sha1Thumbprint));
+            }
 
             _sha1Thumbprint = sha1Thumbprint;
             _cryptoServiceProvider = cryptoServiceProvider;
@@ -48,6 +53,12 @@ namespace Sign.Core
         }
 
 
+        /// <summary>
+        /// Acquires the RSA private key from either a CSP registered in the machine or from the certificate provided by the user.
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token for this asynchronous task.</param>
+        /// <returns><see cref="RSA"/> algorithm object used to acquire the private key.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the provided key is not RSA.</exception>
         [SupportedOSPlatform("windows")] // CspParameters is Windows-only but project uses cross platform frameworks. Dotnet/Sign is Windows only
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
@@ -71,15 +82,14 @@ namespace Sign.Core
                     _privateKeyContainer,
                     new CngProvider(_cryptoServiceProvider), cngKeyFlags );
 
-                // Container type for RSA = 1 and DSA = 13
                 return new RSACng(cngKey);
             }
 
             // Certificate wasn't in CSP. Attempt to extract from store or provided file.
             const string RSA = "1.2.840.113549.1.1.1";
 
-            var certificate = await GetStoreCertificateAsync();
-            var keyAlgorithm = certificate.GetKeyAlgorithm();
+            using X509Certificate2 certificate = await GetStoreCertificateAsync();
+            string keyAlgorithm = certificate.GetKeyAlgorithm();
 
             switch (keyAlgorithm)
             {

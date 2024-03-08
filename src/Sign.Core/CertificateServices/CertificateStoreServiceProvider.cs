@@ -12,8 +12,8 @@ namespace Sign.Core
         private readonly string _sha1Thumbprint;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
-        private readonly string? _pfxFilePath;
-        private readonly string? _pfxFilePassword;
+        private readonly string? _certificateFilePath;
+        private readonly string? _certificateFilePassword;
         private readonly bool _isMachineKeyContainer;
 
         private readonly object _lockObject = new();
@@ -24,15 +24,17 @@ namespace Sign.Core
         /// </summary>
         /// <param name="sha1Thumbprint">Required thumbprint used to identify the certificate in the store.</param>
         /// <param name="cryptoServiceProvider">Optional Cryptographic service provider used to access 3rd party certificate stores.</param>
-        /// <param name="privateKeyContainer">Key Container stored in either the per-user or per-machine location.</param>
-        /// <param name="isMachineKeyContainer">Flag used to denote per-machine key container should be used.</param>
-        /// <exception cref="ArgumentException"></exception>
+        /// <param name="privateKeyContainer">Optional Key Container stored in either the per-user or per-machine location.</param>
+        /// <param name="certificateFilePath">Optional path to the PFX, P7B, or CER file with the certificate.</param>
+        /// <param name="certificateFilePassword">Optional password used to open the provided certificate.</param>
+        /// <param name="isMachineKeyContainer">Optional Flag used to denote per-machine key container should be used.</param>
+        /// <exception cref="ArgumentException">Thrown when a required argument is empty not valid.</exception>
         internal CertificateStoreServiceProvider(
             string sha1Thumbprint,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
-            string? pfxFilePath,
-            string? pfxFilePassword,
+            string? certificateFilePath,
+            string? certificateFilePassword,
             bool isMachineKeyContainer)
         {
             ArgumentNullException.ThrowIfNull(sha1Thumbprint, nameof(sha1Thumbprint));
@@ -54,8 +56,8 @@ namespace Sign.Core
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isMachineKeyContainer = isMachineKeyContainer;
-            _pfxFilePath = pfxFilePath;
-            _pfxFilePassword = pfxFilePassword;
+            _certificateFilePath = certificateFilePath;
+            _certificateFilePassword = certificateFilePassword;
         }
 
         internal ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
@@ -86,7 +88,7 @@ namespace Sign.Core
                     return _certificateStoreService;
                 }
 
-                _certificateStoreService = new CertificateStoreService(serviceProvider,_sha1Thumbprint, _cryptoServiceProvider, _privateKeyContainer, _pfxFilePath, _pfxFilePassword, _isMachineKeyContainer);
+                _certificateStoreService = new CertificateStoreService(serviceProvider,_sha1Thumbprint, _cryptoServiceProvider, _privateKeyContainer, _certificateFilePath, _certificateFilePassword, _isMachineKeyContainer);
             }
 
             return _certificateStoreService;
