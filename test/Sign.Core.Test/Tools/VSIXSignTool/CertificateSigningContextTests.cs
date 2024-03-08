@@ -5,13 +5,13 @@ namespace Sign.Core.Test
 {
     public class CertificateSigningContextTests
     {
-        private static string CertPath(string str) => Path.Combine(".\\TestAssets\\certs", str);
+        private static string CertPath(string str) => Path.Combine(".", "TestAssets", "certs", str);
 
         public static IEnumerable<object[]> RsaCertificates
         {
             get
             {
-                yield return new object[] { CertPath("rsa-2048-sha256.pfx") };
+                yield return new object[] { CertPath("rsa-2048-Sha256.pfx") };
                 yield return new object[] { CertPath("rsa-2048-sha1.pfx") };
             }
         }
@@ -34,7 +34,7 @@ namespace Sign.Core.Test
             {
                 var digest = hash.ComputeHash(new byte[] { 1, 2, 3 });
                 var signature = context.SignDigest(digest);
-                Assert.Equal(OpcKnownUris.SignatureAlgorithms.rsaSHA256, context.XmlDSigIdentifier);
+                Assert.Equal(OpcKnownUris.SignatureAlgorithms.RsaSHA256, context.XmlDSigIdentifier);
                 Assert.Equal(SigningAlgorithm.RSA, context.SignatureAlgorithm);
 
                 var roundtrips = context.VerifyDigest(digest, signature);

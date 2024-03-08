@@ -53,10 +53,10 @@ namespace Sign.Core.Test
                 () => new VsixSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    openVsixSignTool: null!,
+                    vsixSignTool: null!,
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
-            Assert.Equal("openVsixSignTool", exception.ParamName);
+            Assert.Equal("vsixSignTool", exception.ParamName);
         }
 
         [Fact]

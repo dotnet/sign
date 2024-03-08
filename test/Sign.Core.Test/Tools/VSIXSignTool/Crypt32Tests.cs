@@ -7,11 +7,22 @@ using System.Runtime.InteropServices;
 
 namespace Sign.Core.Test
 {
+    [Collection(SigningTestsCollection.Name)]
     public class Crypt32Tests
     {
+        private readonly CertificatesFixture _certificatesFixture;
+
+        public Crypt32Tests(CertificatesFixture certificatesFixture)
+        {
+            ArgumentNullException.ThrowIfNull(certificatesFixture, nameof(certificatesFixture));
+
+            _certificatesFixture = certificatesFixture;
+        }
+
         [Fact]
         public void ShouldTimestampData()
         {
+            System.Diagnostics.Debugger.Launch();
             var data = new byte[] { 1, 2, 3 };
             var parameters = new CRYPT_TIMESTAMP_PARA
             {
@@ -20,7 +31,7 @@ namespace Sign.Core.Test
                 pszTSAPolicyId = null
             };
 
-            var ok = Crypt32.CryptRetrieveTimeStamp("http://timestamp.digicert.com", CryptRetrieveTimeStampRetrievalFlags.NONE, 30 * 1000, "1.3.14.3.2.26", ref parameters, data, (uint)data.Length, out var pointer, IntPtr.Zero, IntPtr.Zero);
+            var ok = Crypt32.CryptRetrieveTimeStamp(_certificatesFixture.TimestampServiceUrl.AbsoluteUri, CryptRetrieveTimeStampRetrievalFlags.NONE, 30 * 1000, "1.2.840.113549.1.1.1", ref parameters, data, (uint)data.Length, out var pointer, IntPtr.Zero, IntPtr.Zero);
             Assert.True(ok);
             bool success = false;
             try

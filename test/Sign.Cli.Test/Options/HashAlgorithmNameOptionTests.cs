@@ -18,7 +18,7 @@ namespace Sign.Cli.Test
         }
 
         [Theory]
-        [InlineData("sha256")]
+        [InlineData("Sha256")]
         [InlineData("SHA256")]
         public void Option_WhenValueIsSha256_ParsesValue(string value)
         {
@@ -26,7 +26,7 @@ namespace Sign.Cli.Test
         }
 
         [Theory]
-        [InlineData("sha384")]
+        [InlineData("Sha384")]
         [InlineData("SHA384")]
         public void Option_WhenValueIsSha384_ParsesValue(string value)
         {
@@ -34,7 +34,7 @@ namespace Sign.Cli.Test
         }
 
         [Theory]
-        [InlineData("sha512")]
+        [InlineData("Sha512")]
         [InlineData("SHA512")]
         public void Option_WhenValueIsSha512_ParsesValue(string value)
         {
