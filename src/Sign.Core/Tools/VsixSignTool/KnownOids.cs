@@ -8,9 +8,9 @@ namespace Sign.Core
     {
         public static class HashAlgorithms
         {
-            public const string sha256 = "2.16.840.1.101.3.4.2.1";
-            public const string sha384 = "2.16.840.1.101.3.4.2.2";
-            public const string sha512 = "2.16.840.1.101.3.4.2.3";
+            public const string Sha256 = "2.16.840.1.101.3.4.2.1";
+            public const string Sha384 = "2.16.840.1.101.3.4.2.2";
+            public const string Sha512 = "2.16.840.1.101.3.4.2.3";
         }
     }
 }

@@ -48,7 +48,6 @@ namespace Sign.Core
                 switch (_configuration.SigningKey)
                 {
                     case RSA _: return SigningAlgorithm.RSA;
-                    case ECDsa _: return SigningAlgorithm.ECDSA;
                     default: return SigningAlgorithm.Unknown;
                 }
             }
@@ -75,7 +74,7 @@ namespace Sign.Core
                 case ECDsa ecdsa:
                     return ecdsa.SignHash(digest);
                 default:
-                    throw new InvalidOperationException(Resources.VSIXSignToolUnkownSigningAlgorithm);
+                    throw new InvalidOperationException(Resources.VSIXSignToolUnknownSigningAlgorithm);
             }
         }
 
@@ -95,13 +94,8 @@ namespace Sign.Core
                     {
                         return publicKey != null ? publicKey.VerifyHash(digest, signature, _configuration.SignatureDigestAlgorithm, RSASignaturePadding.Pkcs1) : false;
                     }
-                case SigningAlgorithm.ECDSA:
-                    using (var publicKey = Certificate.GetECDsaPublicKey())
-                    {
-                        return publicKey != null ? publicKey.VerifyHash(digest, signature) : false;
-                    }
                 default:
-                    throw new InvalidOperationException(Resources.VSIXSignToolUnkownSigningAlgorithm);
+                    throw new InvalidOperationException(Resources.VSIXSignToolUnknownSigningAlgorithm);
             }
         }
     }

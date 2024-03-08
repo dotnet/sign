@@ -13,11 +13,11 @@ namespace Sign.Core
             switch (signatureAlgorithm)
             {
                 case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA256.Name:
-                    return OpcKnownUris.SignatureAlgorithms.rsaSHA256;
+                    return OpcKnownUris.SignatureAlgorithms.RsaSHA256;
                 case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA384.Name:
-                    return OpcKnownUris.SignatureAlgorithms.rsaSHA384;
+                    return OpcKnownUris.SignatureAlgorithms.RsaSHA384;
                 case SigningAlgorithm.RSA when hashAlgorithmName.Name == HashAlgorithmName.SHA512.Name:
-                    return OpcKnownUris.SignatureAlgorithms.rsaSHA512;
+                    return OpcKnownUris.SignatureAlgorithms.RsaSHA512;
                 default:
                     throw new NotSupportedException("The algorithm specified is not supported.");
 

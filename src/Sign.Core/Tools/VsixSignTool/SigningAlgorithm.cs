@@ -18,10 +18,5 @@ namespace Sign.Core
         /// The signing algorithm is RSA.
         /// </summary>
         RSA,
-
-        /// <summary>
-        /// The signing algorithm is ECDSA.
-        /// </summary>
-        ECDSA
     }
 }

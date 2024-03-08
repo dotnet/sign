@@ -24,21 +24,21 @@ namespace Sign.Core
             
             if (name == HashAlgorithmName.SHA256)
             {
-                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.sha256DigestUri;
+                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.Sha256DigestUri;
                 Factory = SHA256.Create;
-                Oid = new Oid(KnownOids.HashAlgorithms.sha256);
+                Oid = new Oid(KnownOids.HashAlgorithms.Sha256);
             }
             else if (name == HashAlgorithmName.SHA384)
             {
-                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.sha384DigestUri;
+                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.Sha384DigestUri;
                 Factory = SHA384.Create;
-                Oid = new Oid(KnownOids.HashAlgorithms.sha384);
+                Oid = new Oid(KnownOids.HashAlgorithms.Sha384);
             }
             else if (name == HashAlgorithmName.SHA512)
             {
-                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.sha512DigestUri;
+                XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.Sha512DigestUri;
                 Factory = SHA512.Create;
-                Oid = new Oid(KnownOids.HashAlgorithms.sha512);
+                Oid = new Oid(KnownOids.HashAlgorithms.Sha512);
             }
             else
             {
