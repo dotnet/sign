@@ -97,7 +97,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find a certificate with a matching SHA1 within {0}..
+        ///   Looks up a localized string similar to Unable to find a certificate with a matching SHA-1 thumbprint in {0}..
         /// </summary>
         internal static string CertificateNotFoundInFile {
             get {
@@ -241,20 +241,11 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store..
         /// </summary>
         internal static string InvalidSha1ThumbrpintValue {
             get {
                 return ResourceManager.GetString("InvalidSha1ThumbrpintValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint.
-        /// </summary>
-        internal static string MissingSha1OrKeyVaultUrlError {
-            get {
-                return ResourceManager.GetString("MissingSha1OrKeyVaultUrlError", resourceCulture);
             }
         }
         
@@ -450,9 +441,9 @@ namespace Sign.Core {
         /// <summary>
         ///   Looks up a localized string similar to Unknown signing algorithm..
         /// </summary>
-        internal static string VSIXSignToolUnkownSigningAlgorithm {
+        internal static string VSIXSignToolUnknownSigningAlgorithm {
             get {
-                return ResourceManager.GetString("VSIXSignToolUnkownSigningAlgorithm", resourceCulture);
+                return ResourceManager.GetString("VSIXSignToolUnknownSigningAlgorithm", resourceCulture);
             }
         }
         

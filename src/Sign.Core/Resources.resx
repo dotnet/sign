@@ -132,7 +132,7 @@
     <value>Unable to find a matching certificate.</value>
   </data>
   <data name="CertificateNotFoundInFile" xml:space="preserve">
-    <value>Unable to find a certificate with a matching SHA1 within {0}.</value>
+    <value>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</value>
     <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
   </data>
   <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
@@ -191,10 +191,8 @@
     <value>Fetching certificate from Azure Key Vault.</value>
   </data>
   <data name="InvalidSha1ThumbrpintValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be a SHA1 thumbprint that points to the certificate under Windows Certificate  Manager.</value>
-  </data>
-  <data name="MissingSha1OrKeyVaultUrlError" xml:space="preserve">
-    <value>Failed to initialize certificate service due to a missing Key Vault Url, certificate name, or Sha1Thumbprint</value>
+    <value>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</comment>
   </data>
   <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
     <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
@@ -274,7 +272,7 @@
     <value>Specified {0} is invalid.</value>
     <comment>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</comment>
   </data>
-  <data name="VSIXSignToolUnkownSigningAlgorithm" xml:space="preserve">
+  <data name="VSIXSignToolUnknownSigningAlgorithm" xml:space="preserve">
     <value>Unknown signing algorithm.</value>
   </data>
   <data name="VSIXSignToolUnsupportedAlgorithm" xml:space="preserve">
