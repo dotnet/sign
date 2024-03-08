@@ -79,6 +79,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Use Windows Certificate Store or a local certificate file..
+        /// </summary>
+        internal static string CertificateStoreCommandDescription {
+            get {
+                return ResourceManager.GetString("CertificateStoreCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sign binaries and containers..
         /// </summary>
         internal static string CodeCommandDescription {
@@ -106,7 +115,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;sha256&apos;, &apos;sha384&apos;, and &apos;sha512&apos;..
+        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;Sha256&apos;, &apos;Sha384&apos;, and &apos;Sha512&apos;..
         /// </summary>
         internal static string FileDigestOptionDescription {
             get {
@@ -133,7 +142,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;Sha256&apos;, &apos;Sha384&apos;, or &apos;Sha512&apos;..
         /// </summary>
         internal static string InvalidDigestValue {
             get {
@@ -151,7 +160,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a SHA1 thumbprint that matches the certificate thumbprint..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-1 thumbprint..
         /// </summary>
         internal static string InvalidSha1ThumbprintValue {
             get {
@@ -165,15 +174,6 @@ namespace Sign.Cli {
         internal static string InvalidUrlValue {
             get {
                 return ResourceManager.GetString("InvalidUrlValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use Windows Certificate Store..
-        /// </summary>
-        internal static string LocalCommandDescription {
-            get {
-                return ResourceManager.GetString("LocalCommandDescription", resourceCulture);
             }
         }
         
@@ -214,7 +214,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512..
+        ///   Looks up a localized string similar to Digest algorithm for the RFC 3161 timestamp server. Allowed values are Sha256, Sha384, and Sha512..
         /// </summary>
         internal static string TimestampDigestOptionDescription {
             get {

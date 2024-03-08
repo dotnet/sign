@@ -121,7 +121,8 @@
     <value>Cryptographic Service Provider containing the private key container. Requires /k or /km.</value>
   </data>
   <data name="FileOptionDescription" xml:space="preserve">
-    <value>File(s) to sign.</value>
+    <value>PFX, P7B, or CER file containing a certificate and private key (if applicable).</value>
+    <comment>PFX, P7b, and CER are filetypes.</comment>
   </data>
   <data name="FilePasswordOptionDescription" xml:space="preserve">
     <value>Password for certificate file if required.</value>
@@ -132,13 +133,13 @@
   <data name="MachineKeyContainerOptionDescription" xml:space="preserve">
     <value>Private key container in the machine store.</value>
   </data>
-  <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
-    <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
+  <data name="MissingCSPContainersError" xml:space="preserve">
+    <value>Cryptographic Service Provider missing while using /csp. </value>
   </data>
-  <data name="NoPrivateKeyContainerError" xml:space="preserve">
-    <value>Private key container missing while using /csp. Use /k or /km to provide a key container.</value>
+  <data name="MissingPrivateKeyContainerError" xml:space="preserve">
+    <value>Private key container missing while using /csp. Use /k to provide a key container.</value>
   </data>
   <data name="SHA1ThumbprintOptionDescription" xml:space="preserve">
-    <value>SHA1 thumprint used to access a certificate from a certificate store.</value>
+    <value>SHA-1 thumbprint used to access a certificate from a certificate store.</value>
   </data>
 </root>

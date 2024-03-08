@@ -20,17 +20,17 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string?> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertificateStoreResources.SHA1ThumbprintOptionDescription);
-        internal Option<string?> CertificatePathOption { get; } = new(new[] { "-f", "--file" }, CertificateStoreResources.FileOptionDescription);
+        internal Option<string> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertificateStoreResources.SHA1ThumbprintOptionDescription);
+        internal Option<string?> CertificatePathOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.FileOptionDescription);
         internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.FilePasswordOptionDescription);
         internal Option<string?> CryptoServiceProvider { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CSPOptionDescription);
         internal Option<string?> PrivateKeyContainer { get; } = new(new[] { "-k", "--key-container" }, CertificateStoreResources.KeyContainerOptionDescription);
-        internal Option<string?> PrivateMachineKeyContainer { get; } = new(new[] { "-km", "--key-container-machine" }, CertificateStoreResources.MachineKeyContainerOptionDescription);
+        internal Option<bool> UseMachineKeyContainer { get; } = new(new[] { "-km", "--use-machine-key-container" }, getDefaultValue: () => false, description: CertificateStoreResources.MachineKeyContainerOptionDescription);
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
 
         internal CertificateStoreCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
-            : base("certificate-store", Resources.LocalCommandDescription)
+            : base("certificate-store", Resources.CertificateStoreCommandDescription)
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
@@ -44,7 +44,7 @@ namespace Sign.Cli
             AddOption(CertificatePasswordOption);
             AddOption(CryptoServiceProvider);
             AddOption(PrivateKeyContainer);
-            AddOption(PrivateMachineKeyContainer);
+            AddOption(UseMachineKeyContainer);
             AddArgument(FileArgument);
 
             this.SetHandler(async (InvocationContext context) =>
@@ -73,7 +73,7 @@ namespace Sign.Cli
                 string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProvider);
                 string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainer);
-                string? privateMachineKeyContainer = context.ParseResult.GetValueForOption(PrivateMachineKeyContainer);
+                bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainer);
 
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
 
@@ -84,6 +84,7 @@ namespace Sign.Cli
                     return;
                 }
 
+                // SHA-1 Thumbprint is required in case the provided certificate container contains multiple certificates.
                 if (string.IsNullOrEmpty(sha1Thumbprint))
                 {
                     context.Console.Error.WriteLine(
@@ -93,21 +94,18 @@ namespace Sign.Cli
                     return;
                 }
 
-                // CSP requires either K or KM options but not both.
-                if (!string.IsNullOrEmpty(cryptoServiceProvider)
-                    && string.IsNullOrEmpty(privateKeyContainer) == string.IsNullOrEmpty(privateMachineKeyContainer))
+                // CSP requires a private key container to function.
+                if (string.IsNullOrEmpty(cryptoServiceProvider) != string.IsNullOrEmpty(privateKeyContainer))
                 {
-                    if (string.IsNullOrEmpty(privateKeyContainer) && string.IsNullOrEmpty(privateMachineKeyContainer))
+                    if (string.IsNullOrEmpty(privateKeyContainer))
                     {
-                        // Both were empty and one is required.
-                        context.Console.Error.WriteLine(CertificateStoreResources.MultiplePrivateKeyContainersError);
+                        context.Console.Error.WriteLine(CertificateStoreResources.MissingPrivateKeyContainerError);
                         context.ExitCode = ExitCode.InvalidOptions;
                         return;
                     }
                     else
                     {
-                        // Both were provided but can only use one.
-                        context.Console.Error.WriteLine(CertificateStoreResources.NoPrivateKeyContainerError);
+                        context.Console.Error.WriteLine(CertificateStoreResources.MissingCSPContainersError);
                         context.ExitCode = ExitCode.InvalidOptions;
                         return;
                     }
@@ -131,12 +129,10 @@ namespace Sign.Cli
                         CertificateStoreServiceProvider certificateStoreServiceProvider = new(
                             sha1Thumbprint,
                             cryptoServiceProvider,
-                            privateKeyContainer: string.IsNullOrEmpty(privateKeyContainer) 
-                                ? privateMachineKeyContainer 
-                                : privateKeyContainer,
+                            privateKeyContainer,
                             certificatePath,
                             certificatePassword,
-                            isMachineKeyContainer: !string.IsNullOrEmpty(privateMachineKeyContainer));
+                            useMachineKeyContainer);
 
                         services.AddSingleton<ISignatureAlgorithmProvider>(
                             (IServiceProvider serviceProvider) => certificateStoreServiceProvider.GetSignatureAlgorithmProvider(serviceProvider));

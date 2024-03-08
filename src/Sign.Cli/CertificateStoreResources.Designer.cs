@@ -70,7 +70,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File(s) to sign..
+        ///   Looks up a localized string similar to PFX, P7B, or CER file containing a certificate and private key (if applicable)..
         /// </summary>
         internal static string FileOptionDescription {
             get {
@@ -106,25 +106,25 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple private key containers provided. Use either /k for user stores or /km for machine stores..
+        ///   Looks up a localized string similar to Cryptographic Service Provider missing while using /csp. .
         /// </summary>
-        internal static string MultiplePrivateKeyContainersError {
+        internal static string MissingCSPContainersError {
             get {
-                return ResourceManager.GetString("MultiplePrivateKeyContainersError", resourceCulture);
+                return ResourceManager.GetString("MissingCSPContainersError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Private key container missing while using /csp. Use /k or /km to provide a key container..
+        ///   Looks up a localized string similar to Private key container missing while using /csp. Use /k to provide a key container..
         /// </summary>
-        internal static string NoPrivateKeyContainerError {
+        internal static string MissingPrivateKeyContainerError {
             get {
-                return ResourceManager.GetString("NoPrivateKeyContainerError", resourceCulture);
+                return ResourceManager.GetString("MissingPrivateKeyContainerError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA1 thumprint used to access a certificate from a certificate store..
+        ///   Looks up a localized string similar to SHA-1 thumbprint used to access a certificate from a certificate store..
         /// </summary>
         internal static string SHA1ThumbprintOptionDescription {
             get {
