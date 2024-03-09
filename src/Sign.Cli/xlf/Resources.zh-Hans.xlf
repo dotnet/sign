@@ -33,7 +33,7 @@
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
-        <source>Path to file containing paths of files to sign within an archive or ClickOnce package.</source>
+        <source>Path to file containing paths of files to sign or to exclude from signing.</source>
         <target state="needs-review-translation">文件的路径，包含存档中要签名的文件的路径。</target>
         <note />
       </trans-unit>

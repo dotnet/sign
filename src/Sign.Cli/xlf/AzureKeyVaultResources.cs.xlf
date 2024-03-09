@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ClickOnceExtensionNotSupported">
-        <source>ClickOnce signing via the legacy .clickonce zip workaround is not supported anymore - pass the path to your deployment manifest directly instead.</source>
-        <target state="new">ClickOnce signing via the legacy .clickonce zip workaround is not supported anymore - pass the path to your deployment manifest directly instead.</target>
+        <source>ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</source>
+        <target state="new">ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientIdOptionDescription">

@@ -70,7 +70,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ClickOnce signing via the legacy .clickonce zip workaround is not supported anymore - see the documentation..
+        ///   Looks up a localized string similar to ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation..
         /// </summary>
         internal static string ClickOnceExtensionNotSupported {
             get {

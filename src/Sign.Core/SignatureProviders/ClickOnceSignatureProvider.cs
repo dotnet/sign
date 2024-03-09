@@ -5,7 +5,6 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,6 @@ namespace Sign.Core
     internal sealed class ClickOnceSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
         private readonly Lazy<IAggregatingSignatureProvider> _aggregatingSignatureProvider;
-        private readonly IDirectoryService _directoryService;
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly IMageCli _mageCli;
@@ -28,7 +26,6 @@ namespace Sign.Core
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
             IServiceProvider serviceProvider,
-            IDirectoryService directoryService,
             IMageCli mageCli,
             IManifestSigner manifestSigner,
             ILogger<ISignatureProvider> logger,
@@ -38,13 +35,12 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
             ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
-            ArgumentNullException.ThrowIfNull(directoryService, nameof(directoryService));
             ArgumentNullException.ThrowIfNull(mageCli, nameof(mageCli));
             ArgumentNullException.ThrowIfNull(manifestSigner, nameof(manifestSigner));
+            ArgumentNullException.ThrowIfNull(fileMatcher, nameof(fileMatcher));
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
-            _directoryService = directoryService;
             _mageCli = mageCli;
             _manifestSigner = manifestSigner;
             _fileMatcher = fileMatcher;
@@ -82,7 +78,7 @@ namespace Sign.Core
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
             using (RSA rsaPrivateKey = await _signatureAlgorithmProvider.GetRsaAsync())
             {
-                // This outer loop is for a single deployment manifest (.application/vsto).
+                // This outer loop is for a deployment manifest file (.application/.vsto).
                 await Parallel.ForEachAsync(files, _parallelOptions, async (file, state) =>
                 {
                     // We need to be explicit about the order these files are signed in. The data files must be signed first
@@ -156,9 +152,9 @@ namespace Sign.Core
                         publisherParam = $"-pub \"{options.PublisherName}\"";
                     }
 
-                    // Now sign the inner vsto/clickonce file
+                    // Now sign deployment manifest files (.application/.vsto).
                     // Order by desending length to put the inner one first
-                    List<FileInfo> clickOnceFilesToSign = filteredFiles
+                    List<FileInfo> deploymentManifestFiles = filteredFiles
                         .Where(f => ".vsto".Equals(f.Extension, StringComparison.OrdinalIgnoreCase) ||
                                     ".application".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
                         .Select(f => new { file = f, f.FullName.Length })
@@ -166,9 +162,9 @@ namespace Sign.Core
                         .Select(f => f.file)
                         .ToList();
 
-                    foreach (FileInfo fileToSign in clickOnceFilesToSign)
+                    foreach (FileInfo deploymentManifestFile in deploymentManifestFiles)
                     {
-                        fileArgs = $@"-update ""{fileToSign.FullName}"" {args} {publisherParam}";
+                        fileArgs = $@"-update ""{deploymentManifestFile.FullName}"" {args} {publisherParam}";
                         if (manifestFile is not null)
                         {
                             fileArgs += $@" -appm ""{manifestFile.FullName}""";
@@ -178,9 +174,9 @@ namespace Sign.Core
                             fileArgs += $@" -SupportURL {options.DescriptionUrl.AbsoluteUri}";
                         }
 
-                        if (!await SignAsync(fileArgs, fileToSign, rsaPrivateKey, certificate, options))
+                        if (!await SignAsync(fileArgs, deploymentManifestFile, rsaPrivateKey, certificate, options))
                         {
-                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, fileToSign.FullName);
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, deploymentManifestFile.FullName);
 
                             throw new Exception(message);
                         }
@@ -260,20 +256,20 @@ namespace Sign.Core
             return files;
         }
 
-        public void CopySigningDependencies(FileInfo file, DirectoryInfo destination, SignOptions signOptions)
+        public void CopySigningDependencies(FileInfo deploymentManifestFile, DirectoryInfo destination, SignOptions signOptions)
         {
             // copy _all_ files, ignoring matching options, because we need them to be available to generate
             // valid manifests.
-            foreach (var f in GetFiles(file.Directory!))
+            foreach (FileInfo file in GetFiles(deploymentManifestFile.Directory!))
             {
                 // don't copy the file itself because that's already taken care of (and we don't want a duplicate copy with the 'real' name)
                 // lying around since it'll get copied back and overwrite the signed one.
-                if (f.FullName != file.FullName)
+                if (file.FullName != deploymentManifestFile.FullName)
                 {
-                    var relativeDestPath = Path.GetRelativePath(file.Directory!.FullName, f.FullName);
-                    var fullDestPath = Path.Combine(destination.FullName, relativeDestPath);
+                    string relativeDestPath = Path.GetRelativePath(deploymentManifestFile.Directory!.FullName, file.FullName);
+                    string fullDestPath = Path.Combine(destination.FullName, relativeDestPath);
                     Directory.CreateDirectory(Path.GetDirectoryName(fullDestPath!)!);
-                    f.CopyTo(fullDestPath, overwrite: true);
+                    file.CopyTo(fullDestPath, overwrite: true);
                 }
             }
         }

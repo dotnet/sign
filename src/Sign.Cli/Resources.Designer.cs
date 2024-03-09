@@ -115,7 +115,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path to file containing paths of files to sign within an archive or ClickOnce package..
+        ///   Looks up a localized string similar to Path to file containing paths of files to sign or to exclude from signing..
         /// </summary>
         internal static string FileListOptionDescription {
             get {

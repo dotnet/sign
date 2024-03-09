@@ -20,7 +20,6 @@ namespace Sign.Core.Test
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
                 Mock.Of<IServiceProvider>(),
-                Mock.Of<IDirectoryService>(),
                 Mock.Of<IMageCli>(),
                 Mock.Of<IManifestSigner>(),
                 Mock.Of<ILogger<ISignatureProvider>>(),
@@ -40,7 +39,6 @@ namespace Sign.Core.Test
                     signatureAlgorithmProvider: null!,
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<ISignatureProvider>>(),
@@ -57,7 +55,6 @@ namespace Sign.Core.Test
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<ISignatureProvider>>(),
@@ -74,30 +71,12 @@ namespace Sign.Core.Test
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     serviceProvider: null!,
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<ISignatureProvider>>(),
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_WhenDirectoryServiceIsNull_Throws()
-        {
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IServiceProvider>(),
-                    directoryService: null!,
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>(),
-                    Mock.Of<IFileMatcher>()));
-
-            Assert.Equal("directoryService", exception.ParamName);
         }
 
         [Fact]
@@ -108,7 +87,6 @@ namespace Sign.Core.Test
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     mageCli: null!,
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<ISignatureProvider>>(),
@@ -125,7 +103,6 @@ namespace Sign.Core.Test
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     manifestSigner: null!,
                     Mock.Of<ILogger<ISignatureProvider>>(),
@@ -142,13 +119,28 @@ namespace Sign.Core.Test
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     logger: null!,
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenFileMatcherIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new ClickOnceSignatureProvider(
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
+                    Mock.Of<IServiceProvider>(),
+                    Mock.Of<IMageCli>(),
+                    Mock.Of<IManifestSigner>(),
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    fileMatcher: null!));
+
+            Assert.Equal("fileMatcher", exception.ParamName);
         }
 
         [Fact]
@@ -279,7 +271,6 @@ namespace Sign.Core.Test
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
                         .Returns(aggregatingSignatureProviderSpy);
 
-                    IDirectoryService directoryService = Mock.Of<IDirectoryService>();
                     Mock<IMageCli> mageCli = new();
                     string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
                     mageCli.Setup(x => x.RunAsync(
@@ -324,7 +315,6 @@ namespace Sign.Core.Test
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
                         serviceProvider.Object,
-                        directoryService,
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
@@ -377,7 +367,6 @@ namespace Sign.Core.Test
                     string.Empty,
                     "MyApp.application");
 
-
                 SignOptions options = new(
                     "ApplicationName",
                     "PublisherName",
@@ -407,7 +396,6 @@ namespace Sign.Core.Test
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
                         .Returns(aggregatingSignatureProviderSpy);
 
-                    IDirectoryService directoryService = Mock.Of<IDirectoryService>();
                     Mock<IMageCli> mageCli = new();
 
                     string publisher;
@@ -441,7 +429,6 @@ namespace Sign.Core.Test
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
                         serviceProvider.Object,
-                        directoryService,
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
@@ -506,7 +493,6 @@ namespace Sign.Core.Test
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
                         .Returns(aggregatingSignatureProviderSpy);
 
-                    IDirectoryService directoryService = Mock.Of<IDirectoryService>();
                     Mock<IMageCli> mageCli = new();
                     string publisher = certificate.SubjectName.Name;
 
@@ -537,7 +523,6 @@ namespace Sign.Core.Test
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
                         serviceProvider.Object,
-                        directoryService,
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
@@ -551,8 +536,8 @@ namespace Sign.Core.Test
                         // tell the provider to copy what it needs into the signing directory
                         provider.CopySigningDependencies(applicationFile, signingDirectory.Directory, options);
                         // and make sure we got it. We expect only the DLL to be copied, and NOT the .application file itself.
-                        var copiedFiles = signingDirectory.Directory.EnumerateFiles("*", SearchOption.AllDirectories);
-                        var copiedDirectories = signingDirectory.Directory.EnumerateDirectories();
+                        IEnumerable<FileInfo> copiedFiles = signingDirectory.Directory.EnumerateFiles("*", SearchOption.AllDirectories);
+                        IEnumerable<DirectoryInfo> copiedDirectories = signingDirectory.Directory.EnumerateDirectories();
                         Assert.Single(copiedFiles);
                         Assert.Single(copiedDirectories);
                         Assert.Contains(copiedDirectories, d => d.Name == "MyApp_1_0_0_0");

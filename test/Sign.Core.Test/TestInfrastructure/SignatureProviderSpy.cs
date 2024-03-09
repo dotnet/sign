@@ -21,7 +21,6 @@ namespace Sign.Core.Test
 
         internal SignatureProviderSpy()
         {
-            IDirectoryService directoryService = Mock.Of<IDirectoryService>();
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Mock.Of<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Mock.Of<ICertificateProvider>();
             ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
@@ -47,7 +46,6 @@ namespace Sign.Core.Test
                     signatureAlgorithmProvider,
                     certificateProvider,
                     serviceProvider,
-                    directoryService,
                     mageCli,
                     manifestSigner,
                     logger,

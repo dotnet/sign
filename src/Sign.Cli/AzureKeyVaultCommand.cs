@@ -84,7 +84,7 @@ namespace Sign.Cli
                 
                 // this check exists as a courtesy to users who may have been signing .clickonce files via the old workaround.
                 // at some point we should remove this check, probably once we hit v1.0
-                if (fileArgument.EndsWith(".clickonce"))
+                if (fileArgument.EndsWith(".clickonce", StringComparison.OrdinalIgnoreCase))
                 {
                     context.Console.Error.WriteLine(AzureKeyVaultResources.ClickOnceExtensionNotSupported);
                     context.ExitCode = ExitCode.InvalidOptions;
