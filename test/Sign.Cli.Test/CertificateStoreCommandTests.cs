@@ -38,6 +38,36 @@ namespace Sign.Cli.Test
             Assert.True(_command.SHA1ThumbprintOption.IsRequired);
         }
 
+        [Fact]
+        public void SHA1_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.SHA1ThumbprintOption.Arity);
+        }
+
+        [Fact]
+        public void Certificate_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificatePathOption.Arity);
+        }
+
+        [Fact]
+        public void CertificatePassword_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificatePasswordOption.Arity);
+        }
+
+        [Fact]
+        public void CryptoServiceProvider_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CryptoServiceProvider.Arity);
+        }
+
+        [Fact]
+        public void PrivateKeyContainer_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.PrivateKeyContainer.Arity);
+        }
+
         public class ParserTests
         {
             private readonly CertificateStoreCommand _command;
@@ -50,13 +80,14 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("certificate-store")]
             [InlineData("certificate-store a")]
-            [InlineData("certificate-store -u")]
-            [InlineData("certificate-store -u https://keyvault.test -d \"testCert\"")]
-            [InlineData("certificate-store -s TestingSha -d \"testCert\"")]
-            [InlineData("certificate-store -s TestingSha -f \"testCert.pfx\" -d \"testCert\"")]
-            [InlineData("certificate-store -s TestingSha -csp \"MyStore\" -k \"MyContainer\" -d \"testCert\" -u \"testDesc\"")]
+            [InlineData("certificate-store a -s")]
+            [InlineData("certificate-store a -s sha1 -cf")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -p")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -csp -k keyContainer")]
+            [InlineData("certificate-store a -s sha1 -csp -k keyContainer")]
+            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k")]
+            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k -km")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -65,14 +96,14 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("certificate-store -s -u -d")]
-            [InlineData("certificate-store -s -f -d")]
-            [InlineData("certificate-store -s -f -p -u -d")]
-            [InlineData("certificate-store -s -csp -k -u -d")]
-            [InlineData("certificate-store -s -csp -km -u -d")]
-            [InlineData("certificate-store -s -f -csp -k -u")]
-            [InlineData("certificate-store -s -f -p -csp -k -u -d")]
-            [InlineData("certificate-store -s -f -csp -km -u")]
+            [InlineData("certificate-store a -s sha1")]
+            [InlineData("certificate-store a -s sha1 -cf filePath")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -p password")]
+            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k keyContainer ")]
+            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k machineKeyContainer -km")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -csp sampleCSP -k keyContainer ")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -p password -csp sampleCSP -k keyContainer")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -csp sampleCSP -k keyContainer -km")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);
