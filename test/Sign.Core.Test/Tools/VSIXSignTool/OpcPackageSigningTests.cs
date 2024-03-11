@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.Core.Test
 {
+    [Collection(SigningTestsCollection.Name)]
     public class OpcPackageSigningTests : IDisposable
     {
         private static readonly string SamplePackage = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest.vsix");
@@ -16,6 +17,15 @@ namespace Sign.Core.Test
 
         private static string CertPath(string str) => Path.Combine(".\\TestAssets\\certs", str);
 
+
+        private readonly CertificatesFixture _certificatesFixture;
+
+        public OpcPackageSigningTests(CertificatesFixture certificatesFixture)
+        {
+            ArgumentNullException.ThrowIfNull(certificatesFixture, nameof(certificatesFixture));
+
+            _certificatesFixture = certificatesFixture;
+        }
 
         [Theory]
         [MemberData(nameof(RsaSigningTheories))]
@@ -68,7 +78,7 @@ namespace Sign.Core.Test
                         signingKey: rsaPrivateKey!
                 ));
                 var timestampBuilder = signature.CreateTimestampBuilder();
-                var result = await timestampBuilder.SignAsync(new Uri("http://timestamp.digicert.com"), timestampDigestAlgorithm);
+                var result = await timestampBuilder.SignAsync(_certificatesFixture.TimestampServiceUrl, timestampDigestAlgorithm);
                 Assert.Equal(TimestampResult.Success, result);
             }
         }
