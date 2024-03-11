@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="needs-review-translation">서명에 성공했습니다.</target>
+        <target state="new">Signing {filePath} succeeded.</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">

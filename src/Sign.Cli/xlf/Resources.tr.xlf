@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to file containing paths of files to sign or to exclude from signing.</source>
-        <target state="needs-review-translation">Bir arşivde imzalanacak dosyaların yollarını içeren dosya yolu.</target>
+        <target state="new">Path to file containing paths of files to sign or to exclude from signing.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
