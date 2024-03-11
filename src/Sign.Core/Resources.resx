@@ -223,6 +223,7 @@
   </data>
   <data name="SigningSucceeded" xml:space="preserve">
     <value>Signing {filePath} succeeded.</value>
+    <comment>{Placeholder="{filePath}"} is a file path.</comment>
   </data>
   <data name="SigningSucceededWithTimeElapsed" xml:space="preserve">
     <value>Completed in {millseconds} ms.</value>

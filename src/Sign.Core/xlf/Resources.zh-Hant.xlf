@@ -140,7 +140,7 @@
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
         <target state="needs-review-translation">簽署成功。</target>
-        <note />
+        <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Completed in {millseconds} ms.</source>
