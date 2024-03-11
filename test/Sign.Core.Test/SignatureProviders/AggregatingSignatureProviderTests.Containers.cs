@@ -164,7 +164,6 @@ namespace Sign.Core.Test
                 $"{AppxContainerName}/nestedcontainer0.zip/b.dll",
                 $"{AppxContainerName}/nestedcontainer0.zip/nestedcontainer1.zip/c.dll",
                 $"{AppxContainerName}/d.appinstaller",
-                $"{AppxContainerName}/e.clickonce",
                 $"{AppxContainerName}/nestedcontainer.nupkg/folder0/folder1/f.dll",
                 $"{AppxContainerName}/nestedcontainer.vsix/folder0/folder1/folder2/g.dll");
 
@@ -196,7 +195,6 @@ namespace Sign.Core.Test
                 signedFile => Assert.Equal("g.dll", signedFile.Name),
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("d.appinstaller", signedFile.Name),
-                signedFile => Assert.Equal("e.clickonce", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.nupkg", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.vsix", signedFile.Name),
                 signedFile => Assert.Equal("container.appx", signedFile.Name));
@@ -309,7 +307,6 @@ namespace Sign.Core.Test
                 $"{ZipContainerName}/nestedcontainer0.zip/b.dll",
                 $"{ZipContainerName}/nestedcontainer0.zip/nestedcontainer1.zip/c.dll",
                 $"{ZipContainerName}/d.appinstaller",
-                $"{ZipContainerName}/e.clickonce",
                 $"{ZipContainerName}/nestedcontainer.nupkg/folder0/folder1/f.dll",
                 $"{ZipContainerName}/nestedcontainer.vsix/folder0/folder1/folder2/g.dll");
 
@@ -341,7 +338,6 @@ namespace Sign.Core.Test
                 signedFile => Assert.Equal("g.dll", signedFile.Name),
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("d.appinstaller", signedFile.Name),
-                signedFile => Assert.Equal("e.clickonce", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.nupkg", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.vsix", signedFile.Name));
         }

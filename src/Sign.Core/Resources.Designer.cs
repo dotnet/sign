@@ -304,7 +304,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signing succeeded..
+        ///   Looks up a localized string similar to Signing {filePath} succeeded..
         /// </summary>
         internal static string SigningSucceeded {
             get {

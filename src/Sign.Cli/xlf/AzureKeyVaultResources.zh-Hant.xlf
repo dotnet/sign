@@ -7,6 +7,11 @@
         <target state="translated">Azure Key Vault 中的憑證名稱。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClickOnceExtensionNotSupported">
+        <source>ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</source>
+        <target state="new">ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure Key Vault.</source>
         <target state="translated">要向 Azure Key Vault 進行驗證的用戶端識別碼。</target>

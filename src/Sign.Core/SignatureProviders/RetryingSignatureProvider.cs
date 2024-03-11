@@ -39,7 +39,7 @@ namespace Sign.Core
 
                 if (await SignCoreAsync(args, file, rsaPrivateKey, publicCertificate, options))
                 {
-                    Logger.LogInformation(Resources.SigningSucceeded);
+                    Logger.LogInformation(Resources.SigningSucceeded, file.FullName);
                     return true;
                 }
 

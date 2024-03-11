@@ -70,6 +70,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation..
+        /// </summary>
+        internal static string ClickOnceExtensionNotSupported {
+            get {
+                return ResourceManager.GetString("ClickOnceExtensionNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client ID to authenticate to Azure Key Vault..
         /// </summary>
         internal static string ClientIdOptionDescription {

@@ -138,8 +138,8 @@
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
-        <source>Signing succeeded.</source>
-        <target state="translated">Подписывание выполнено успешно.</target>
+        <source>Signing {filePath} succeeded.</source>
+        <target state="needs-review-translation">Подписывание выполнено успешно.</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
