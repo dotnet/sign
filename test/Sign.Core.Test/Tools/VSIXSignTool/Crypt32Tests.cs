@@ -22,7 +22,6 @@ namespace Sign.Core.Test
         [Fact]
         public void ShouldTimestampData()
         {
-            System.Diagnostics.Debugger.Launch();
             var data = new byte[] { 1, 2, 3 };
             var parameters = new CRYPT_TIMESTAMP_PARA
             {

@@ -84,10 +84,10 @@ namespace Sign.Cli.Test
             [InlineData("certificate-store a -s")]
             [InlineData("certificate-store a -s sha1 -cf")]
             [InlineData("certificate-store a -s sha1 -cf filePath -p")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -csp -k keyContainer")]
-            [InlineData("certificate-store a -s sha1 -csp -k keyContainer")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -csp ")]
+            [InlineData("certificate-store a -s sha1 -cf filePath -csp sampleCSP -k")]
+            [InlineData("certificate-store a -s sha1 -csp")]
             [InlineData("certificate-store a -s sha1 -csp sampleCSP -k")]
-            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k -km")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
