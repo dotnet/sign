@@ -104,7 +104,7 @@ namespace Sign.Core
                     else
                     {
                         // if the output is specified, treat it as a directory, if not, overwrite the current file
-                        if (!string.IsNullOrWhiteSpace(outputFile))
+                        if (string.IsNullOrWhiteSpace(outputFile))
                         {
                             output = new FileInfo(input.FullName);
                         }
