@@ -15,17 +15,17 @@ namespace Sign.Core
 
         public static class SignatureAlgorithms
         {
-            public static readonly Uri RsaSHA256 = new Uri("http://www.w3.org/2001/04/xmldsig-more#rsa-Sha256", UriKind.Absolute);
-            public static readonly Uri RsaSHA384 = new Uri("http://www.w3.org/2001/04/xmldsig-more#rsa-Sha384", UriKind.Absolute);
-            public static readonly Uri RsaSHA512 = new Uri("http://www.w3.org/2001/04/xmldsig-more#rsa-Sha512", UriKind.Absolute);
+            public static readonly Uri RsaSHA256 = new Uri("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", UriKind.Absolute);
+            public static readonly Uri RsaSHA384 = new Uri("http://www.w3.org/2001/04/xmldsig-more#rsa-sha384", UriKind.Absolute);
+            public static readonly Uri RsaSHA512 = new Uri("http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", UriKind.Absolute);
         }
 
         public static class HashAlgorithms
         {
             //These are documented here. https://www.iana.org/assignments/xml-security-uris/xml-security-uris.xhtml
-            public static readonly Uri Sha256DigestUri = new Uri("http://www.w3.org/2001/04/xmlenc#Sha256", UriKind.Absolute);
-            public static readonly Uri Sha384DigestUri = new Uri("http://www.w3.org/2001/04/xmldsig-more#Sha384", UriKind.Absolute);
-            public static readonly Uri Sha512DigestUri = new Uri("http://www.w3.org/2001/04/xmlenc#Sha512", UriKind.Absolute);
+            public static readonly Uri Sha256DigestUri = new Uri("http://www.w3.org/2001/04/xmlenc#sha256", UriKind.Absolute);
+            public static readonly Uri Sha384DigestUri = new Uri("http://www.w3.org/2001/04/xmldsig-more#sha384", UriKind.Absolute);
+            public static readonly Uri Sha512DigestUri = new Uri("http://www.w3.org/2001/04/xmlenc#sha512", UriKind.Absolute);
         }
     }
 }
