@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Resources;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
@@ -34,8 +33,7 @@ namespace Sign.Core
             string? privateKeyContainer,
             string? certificatePath,
             string? certificatePassword,
-            bool isPrivateMachineKeyContainer
-            )
+            bool isPrivateMachineKeyContainer)
         {
             if (string.IsNullOrEmpty(sha1Thumbprint))
             {
@@ -80,7 +78,7 @@ namespace Sign.Core
 
                 using CngKey cngKey = CngKey.Open(
                     _privateKeyContainer,
-                    new CngProvider(_cryptoServiceProvider), cngKeyFlags );
+                    new CngProvider(_cryptoServiceProvider), cngKeyFlags);
 
                 return new RSACng(cngKey);
             }

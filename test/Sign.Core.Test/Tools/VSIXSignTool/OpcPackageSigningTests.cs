@@ -11,11 +11,10 @@ namespace Sign.Core.Test
     [Collection(SigningTestsCollection.Name)]
     public class OpcPackageSigningTests : IDisposable
     {
-        private static readonly string SamplePackage = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest.vsix");
-        private static readonly string SamplePackageSigned = Path.Combine(".\\TestAssets\\VSIXSamples", "OpenVsixSignToolTest-Signed.vsix");
+        private static readonly string SamplePackage = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest.vsix");
         private readonly List<string> _shadowFiles = new List<string>();
 
-        private static string CertPath(string str) => Path.Combine(".\\TestAssets\\certs", str);
+        private static string CertPath(string str) => Path.Combine(".", "TestAssets", "certs", str);
 
 
         private readonly CertificatesFixture _certificatesFixture;
@@ -40,12 +39,11 @@ namespace Sign.Core.Test
                 using var certificate = new X509Certificate2(pfxPath, "test");
                 using var rsaPrivateKey = certificate.GetRSAPrivateKey();
                 var result = builder.Sign(
-                 new SignConfigurationSet(
-                    publicCertificate: certificate,
-                    signatureDigestAlgorithm: fileDigestAlgorithm,
-                    fileDigestAlgorithm: fileDigestAlgorithm,
-                    signingKey: rsaPrivateKey!
-                ));
+                    new SignConfigurationSet(
+                        publicCertificate: certificate,
+                        signatureDigestAlgorithm: fileDigestAlgorithm,
+                        fileDigestAlgorithm: fileDigestAlgorithm,
+                        signingKey: rsaPrivateKey!                ));
                 Assert.NotNull(result);
             }
         }
@@ -94,24 +92,22 @@ namespace Sign.Core.Test
                 var signerBuilder = package.CreateSignatureBuilder();
                 signerBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
                 signerBuilder.Sign(
-                 new SignConfigurationSet(
-                    publicCertificate: certificate,
-                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
-                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
-                    signingKey: rsaPrivateKey!
-                ));
+                    new SignConfigurationSet(
+                        publicCertificate: certificate,
+                        signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                        fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                        signingKey: rsaPrivateKey!));
             }
             using (var package = OpcPackage.Open(path, OpcPackageFileMode.ReadWrite))
             {
                 var signerBuilder = package.CreateSignatureBuilder();
                 signerBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
                 signerBuilder.Sign(
-                 new SignConfigurationSet(
-                    publicCertificate: certificate,
-                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
-                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
-                    signingKey: rsaPrivateKey!
-                ));
+                    new SignConfigurationSet(
+                        publicCertificate: certificate,
+                        signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                        fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                        signingKey: rsaPrivateKey!));
             }
             using (var netfxPackage = OpcPackage.Open(path))
             {
@@ -130,12 +126,11 @@ namespace Sign.Core.Test
                 using var rsaSha1Cert = new X509Certificate2(CertPath("rsa-2048-sha1.pfx"), "test");
                 using var rsaPrivateKey = rsaSha1Cert.GetRSAPrivateKey();
                 signerBuilder.Sign(
-                 new SignConfigurationSet(
-                    publicCertificate: rsaSha1Cert,
-                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
-                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
-                    signingKey: rsaPrivateKey!
-                ));
+                    new SignConfigurationSet(
+                        publicCertificate: rsaSha1Cert,
+                        signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                        fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                        signingKey: rsaPrivateKey!));
             }
             using (var package = OpcPackage.Open(path, OpcPackageFileMode.ReadWrite))
             {
@@ -144,12 +139,11 @@ namespace Sign.Core.Test
                 using var rsaSha256Cert = new X509Certificate2(CertPath("rsa-2048-Sha256.pfx"), "test");
                 using var rsaPrivateKey = rsaSha256Cert.GetRSAPrivateKey();
                 signerBuilder.Sign(
-                 new SignConfigurationSet(
-                    publicCertificate: rsaSha256Cert,
-                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
-                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
-                    signingKey: rsaPrivateKey!
-                ));
+                    new SignConfigurationSet(
+                        publicCertificate: rsaSha256Cert,
+                        signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                        fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                        signingKey: rsaPrivateKey!));
             }
             using (var netfxPackage = OpcPackage.Open(path))
             {
@@ -168,12 +162,11 @@ namespace Sign.Core.Test
                 var signerBuilder = package.CreateSignatureBuilder();
                 signerBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
                 signerBuilder.Sign(
-                 new SignConfigurationSet(
-                    publicCertificate: certificate,
-                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
-                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
-                    signingKey: rsaPrivateKey!
-                ));
+                    new SignConfigurationSet(
+                        publicCertificate: certificate,
+                        signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                        fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                        signingKey: rsaPrivateKey!));
             }
             using (var package = OpcPackage.Open(path, OpcPackageFileMode.ReadWrite))
             {

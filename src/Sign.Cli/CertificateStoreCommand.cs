@@ -20,12 +20,12 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> SHA1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertificateStoreResources.SHA1ThumbprintOptionDescription);
-        internal Option<string?> CertificatePathOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.FileOptionDescription);
-        internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.FilePasswordOptionDescription);
-        internal Option<string?> CryptoServiceProvider { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CSPOptionDescription);
-        internal Option<string?> PrivateKeyContainer { get; } = new(new[] { "-k", "--key-container" }, CertificateStoreResources.KeyContainerOptionDescription);
-        internal Option<bool> UseMachineKeyContainer { get; } = new(new[] { "-km", "--use-machine-key-container" }, getDefaultValue: () => false, description: CertificateStoreResources.MachineKeyContainerOptionDescription);
+        internal Option<string> Sha1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertificateStoreResources.Sha1ThumbprintOptionDescription);
+        internal Option<string?> CertificateFileOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.CertificateFileOptionDescription);
+        internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.CertificatePasswordOptionDescription);
+        internal Option<string?> CryptoServiceProviderOption { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CspOptionDescription);
+        internal Option<string?> PrivateKeyContainerOption { get; } = new(new[] { "-k", "--key-container" }, CertificateStoreResources.KeyContainerOptionDescription);
+        internal Option<bool> UseMachineKeyContainerOption { get; } = new(new[] { "-km", "--use-machine-key-container" }, getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
 
@@ -37,14 +37,14 @@ namespace Sign.Cli
 
             _codeCommand = codeCommand;
 
-            SHA1ThumbprintOption.IsRequired = true;
+            Sha1ThumbprintOption.IsRequired = true;
 
-            AddOption(SHA1ThumbprintOption);
-            AddOption(CertificatePathOption);
+            AddOption(Sha1ThumbprintOption);
+            AddOption(CertificateFileOption);
             AddOption(CertificatePasswordOption);
-            AddOption(CryptoServiceProvider);
-            AddOption(PrivateKeyContainer);
-            AddOption(UseMachineKeyContainer);
+            AddOption(CryptoServiceProviderOption);
+            AddOption(PrivateKeyContainerOption);
+            AddOption(UseMachineKeyContainerOption);
             AddArgument(FileArgument);
 
             this.SetHandler(async (InvocationContext context) =>
@@ -68,12 +68,12 @@ namespace Sign.Cli
                 string? output = context.ParseResult.GetValueForOption(_codeCommand.OutputOption);
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
-                string? sha1Thumbprint = context.ParseResult.GetValueForOption(SHA1ThumbprintOption);
-                string? certificatePath = context.ParseResult.GetValueForOption(CertificatePathOption);
+                string? sha1Thumbprint = context.ParseResult.GetValueForOption(Sha1ThumbprintOption);
+                string? certificatePath = context.ParseResult.GetValueForOption(CertificateFileOption);
                 string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
-                string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProvider);
-                string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainer);
-                bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainer);
+                string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
+                string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainerOption);
+                bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainerOption);
 
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
 
@@ -88,7 +88,7 @@ namespace Sign.Cli
                 if (string.IsNullOrEmpty(sha1Thumbprint))
                 {
                     context.Console.Error.WriteLine(
-                        FormatMessage(Resources.InvalidSha1ThumbprintValue, SHA1ThumbprintOption));
+                        FormatMessage(Resources.InvalidSha1ThumbprintValue, Sha1ThumbprintOption));
                     context.ExitCode = ExitCode.NoInputsFound;
 
                     return;
@@ -105,7 +105,7 @@ namespace Sign.Cli
                     }
                     else
                     {
-                        context.Console.Error.WriteLine(CertificateStoreResources.MissingCSPContainersError);
+                        context.Console.Error.WriteLine(CertificateStoreResources.MissingCspError);
                         context.ExitCode = ExitCode.InvalidOptions;
                         return;
                     }
