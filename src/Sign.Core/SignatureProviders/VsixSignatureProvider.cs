@@ -5,7 +5,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using OpenVsixSignTool.Core;
 
 namespace Sign.Core
 {
@@ -13,23 +12,23 @@ namespace Sign.Core
     {
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
-        private readonly IOpenVsixSignTool _openVsixSignTool;
+        private readonly IVsixSignTool _vsixSignTool;
 
         // Dependency injection requires a public constructor.
         public VsixSignatureProvider(
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
-            IOpenVsixSignTool openVsixSignTool,
+            IVsixSignTool vsixSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
             ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
-            ArgumentNullException.ThrowIfNull(openVsixSignTool, nameof(openVsixSignTool));
+            ArgumentNullException.ThrowIfNull(vsixSignTool, nameof(vsixSignTool));
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
-            _openVsixSignTool = openVsixSignTool;
+            _vsixSignTool = vsixSignTool;
         }
 
         public bool CanSign(FileInfo file)
@@ -57,14 +56,14 @@ namespace Sign.Core
 
         protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
-            // Dual isn't supported, use sha256
+            // Dual isn't supported, use Sha256
             SignConfigurationSet configuration = new(
                 options.FileHashAlgorithm,
                 options.FileHashAlgorithm,
                 rsaPrivateKey,
                 certificate);
 
-            return await _openVsixSignTool.SignAsync(file, configuration, options);
+            return await _vsixSignTool.SignAsync(file, configuration, options);
         }
     }
 }

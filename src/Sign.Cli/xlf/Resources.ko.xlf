@@ -12,6 +12,11 @@
         <target state="translated">파일의 기본 디렉터리입니다. 현재 작업 디렉터리를 재정의합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateStoreCommandDescription">
+        <source>Use Windows Certificate Store or a local certificate file.</source>
+        <target state="new">Use Windows Certificate Store or a local certificate file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
         <target state="translated">이진 파일 및 컨테이너에 서명합니다.</target>
@@ -51,6 +56,11 @@
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 1보다 크거나 같은 숫자 값이어야 합니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidSha1ThumbprintValue">
+        <source>Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</source>
+        <target state="new">Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</target>
+        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>

@@ -27,7 +27,7 @@ namespace Sign.Core.Test
             IMageCli mageCli = Mock.Of<IMageCli>();
             IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();
             INuGetSignTool nuGetSignTool = Mock.Of<INuGetSignTool>();
-            IOpenVsixSignTool openVsixSignTool = Mock.Of<IOpenVsixSignTool>();
+            IVsixSignTool openVsixSignTool = Mock.Of<IVsixSignTool>();
             IServiceProvider serviceProvider = Mock.Of<IServiceProvider>();
             IToolConfigurationProvider toolConfigurationProvider = Mock.Of<IToolConfigurationProvider>();
             IFileMatcher fileMatcher = Mock.Of<IFileMatcher>();

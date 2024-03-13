@@ -17,7 +17,6 @@
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="NuGetKeyVaultSignTool.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
-    <PackageReference Include="OpenVsixSignTool.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="RSAKeyVaultProvider" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Security.Cryptography.Xml" PrivateAssets="analyzers;build;compile;contentfiles" />

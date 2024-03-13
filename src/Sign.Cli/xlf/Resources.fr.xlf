@@ -12,6 +12,11 @@
         <target state="translated">Répertoire de base pour les fichiers. Remplace le répertoire de travail actuel.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateStoreCommandDescription">
+        <source>Use Windows Certificate Store or a local certificate file.</source>
+        <target state="new">Use Windows Certificate Store or a local certificate file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
         <target state="translated">Signer les fichiers binaires et les conteneurs.</target>
@@ -51,6 +56,11 @@
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">Valeur non valide pour {0}. La valeur doit être une valeur numérique supérieure ou égale à 1.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidSha1ThumbprintValue">
+        <source>Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</source>
+        <target state="new">Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</target>
+        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>

@@ -88,6 +88,51 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find a matching certificate..
+        /// </summary>
+        internal static string CertificateNotFound {
+            get {
+                return ResourceManager.GetString("CertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a certificate with a matching SHA-1 thumbprint in {0}..
+        /// </summary>
+        internal static string CertificateNotFoundInFile {
+            get {
+                return ResourceManager.GetString("CertificateNotFoundInFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a matching certificate in machine certificate store..
+        /// </summary>
+        internal static string CertificateNotFoundInMachineStore {
+            get {
+                return ResourceManager.GetString("CertificateNotFoundInMachineStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find a matching certificate in user certificate store..
+        /// </summary>
+        internal static string CertificateNotFoundInUserStore {
+            get {
+                return ResourceManager.GetString("CertificateNotFoundInUserStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to acquire RSA private key for the provided certificate..
+        /// </summary>
+        internal static string CertificateRSANotFound {
+            get {
+                return ResourceManager.GetString("CertificateRSANotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signing Mage job with {count} files..
         /// </summary>
         internal static string ClickOnceSignatureProviderSigning {
@@ -192,6 +237,33 @@ namespace Sign.Core {
         internal static string FetchingCertificate {
             get {
                 return ResourceManager.GetString("FetchingCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store..
+        /// </summary>
+        internal static string InvalidSha1ThumbrpintValue {
+            get {
+                return ResourceManager.GetString("InvalidSha1ThumbrpintValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple private key containers provided. Use either /k for user stores or /km for machine stores..
+        /// </summary>
+        internal static string MultiplePrivateKeyContainersError {
+            get {
+                return ResourceManager.GetString("MultiplePrivateKeyContainersError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Private key container missing while using /csp. Use /k or /km to provide a key container..
+        /// </summary>
+        internal static string NoPrivateKeyContainerError {
+            get {
+                return ResourceManager.GetString("NoPrivateKeyContainerError", resourceCulture);
             }
         }
         
@@ -331,6 +403,15 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The certificate has an unsupported public key algorithm..
+        /// </summary>
+        internal static string UnsupportedPublicKeyAlgorithm {
+            get {
+                return ResourceManager.GetString("UnsupportedPublicKeyAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The value cannot be an empty string..
         /// </summary>
         internal static string ValueCannotBeEmptyString {
@@ -340,11 +421,38 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Signing OpenVsixSignTool job with {count} files..
+        ///   Looks up a localized string similar to Signing VsixSignTool job with {count} files..
         /// </summary>
         internal static string VsixSignatureProviderSigning {
             get {
                 return ResourceManager.GetString("VsixSignatureProviderSigning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specified {0} is invalid..
+        /// </summary>
+        internal static string VSIXSignToolOpcContentTypeInvalid {
+            get {
+                return ResourceManager.GetString("VSIXSignToolOpcContentTypeInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown signing algorithm..
+        /// </summary>
+        internal static string VSIXSignToolUnknownSigningAlgorithm {
+            get {
+                return ResourceManager.GetString("VSIXSignToolUnknownSigningAlgorithm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The algorithm selected is not supported..
+        /// </summary>
+        internal static string VSIXSignToolUnsupportedAlgorithm {
+            get {
+                return ResourceManager.GetString("VSIXSignToolUnsupportedAlgorithm", resourceCulture);
             }
         }
     }

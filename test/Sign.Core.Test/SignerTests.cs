@@ -606,7 +606,7 @@ namespace Sign.Core.Test
             services.AddSingleton<IMageCli, MageCli>();
             services.AddSingleton<IMakeAppxCli, MakeAppxCli>();
             services.AddSingleton<INuGetSignTool, NuGetSignTool>();
-            services.AddSingleton<IOpenVsixSignTool, OpenVsixSignTool>();
+            services.AddSingleton<IVsixSignTool, VsixSignTool>();
             services.AddSingleton<ICertificateVerifier, CertificateVerifier>();
             services.AddSingleton<ISigner, Signer>();
 

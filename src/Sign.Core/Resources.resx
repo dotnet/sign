@@ -128,6 +128,22 @@
     <value>The certificate is not yet time valid.</value>
     <comment>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</comment>
   </data>
+  <data name="CertificateNotFound" xml:space="preserve">
+    <value>Unable to find a matching certificate.</value>
+  </data>
+  <data name="CertificateNotFoundInFile" xml:space="preserve">
+    <value>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
+  </data>
+  <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
+    <value>Unable to find a matching certificate in machine certificate store.</value>
+  </data>
+  <data name="CertificateNotFoundInUserStore" xml:space="preserve">
+    <value>Unable to find a matching certificate in user certificate store.</value>
+  </data>
+  <data name="CertificateRSANotFound" xml:space="preserve">
+    <value>Unable to acquire RSA private key for the provided certificate.</value>
+  </data>
   <data name="ClickOnceSignatureProviderSigning" xml:space="preserve">
     <value>Signing Mage job with {count} files.</value>
     <comment>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</comment>
@@ -173,6 +189,16 @@
   </data>
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
+  </data>
+  <data name="InvalidSha1ThumbrpintValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</comment>
+  </data>
+  <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
+    <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
+  </data>
+  <data name="NoPrivateKeyContainerError" xml:space="preserve">
+    <value>Private key container missing while using /csp. Use /k or /km to provide a key container.</value>
   </data>
   <data name="OpeningContainer" xml:space="preserve">
     <value>Extracting container {ContainerFilePath} to {DirectoryPath}.</value>
@@ -233,11 +259,24 @@
     <value>Submitting {filePath} for signing.</value>
     <comment>{Placeholder="{filePath}"} is a file path.</comment>
   </data>
+  <data name="UnsupportedPublicKeyAlgorithm" xml:space="preserve">
+    <value>The certificate has an unsupported public key algorithm.</value>
+  </data>
   <data name="ValueCannotBeEmptyString" xml:space="preserve">
     <value>The value cannot be an empty string.</value>
   </data>
   <data name="VsixSignatureProviderSigning" xml:space="preserve">
-    <value>Signing OpenVsixSignTool job with {count} files.</value>
+    <value>Signing VsixSignTool job with {count} files.</value>
     <comment>{Placeholder="{count}"} is the number of files to be signed.</comment>
+  </data>
+  <data name="VSIXSignToolOpcContentTypeInvalid" xml:space="preserve">
+    <value>Specified {0} is invalid.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</comment>
+  </data>
+  <data name="VSIXSignToolUnknownSigningAlgorithm" xml:space="preserve">
+    <value>Unknown signing algorithm.</value>
+  </data>
+  <data name="VSIXSignToolUnsupportedAlgorithm" xml:space="preserve">
+    <value>The algorithm selected is not supported.</value>
   </data>
 </root>

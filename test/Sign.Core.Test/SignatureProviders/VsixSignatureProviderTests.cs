@@ -16,7 +16,7 @@ namespace Sign.Core.Test
             _provider = new VsixSignatureProvider(
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
-                Mock.Of<IOpenVsixSignTool>(),
+                Mock.Of<IVsixSignTool>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
         }
 
@@ -27,7 +27,7 @@ namespace Sign.Core.Test
                 () => new VsixSignatureProvider(
                     signatureAlgorithmProvider: null!,
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IOpenVsixSignTool>(),
+                    Mock.Of<IVsixSignTool>(),
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
@@ -40,7 +40,7 @@ namespace Sign.Core.Test
                 () => new VsixSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
-                    Mock.Of<IOpenVsixSignTool>(),
+                    Mock.Of<IVsixSignTool>(),
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
@@ -53,10 +53,10 @@ namespace Sign.Core.Test
                 () => new VsixSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    openVsixSignTool: null!,
+                    vsixSignTool: null!,
                     Mock.Of<ILogger<ISignatureProvider>>()));
 
-            Assert.Equal("openVsixSignTool", exception.ParamName);
+            Assert.Equal("vsixSignTool", exception.ParamName);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Sign.Core.Test
                 () => new VsixSignatureProvider(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IOpenVsixSignTool>(),
+                    Mock.Of<IVsixSignTool>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
