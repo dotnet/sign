@@ -120,6 +120,9 @@
   <data name="CertificateOptionDescription" xml:space="preserve">
     <value>Name of the certificate in Azure Key Vault.</value>
   </data>
+  <data name="ClickOnceExtensionNotSupported" xml:space="preserve">
+    <value>ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</value>
+  </data>
   <data name="ClientIdOptionDescription" xml:space="preserve">
     <value>Client ID to authenticate to Azure Key Vault.</value>
   </data>

@@ -178,9 +178,9 @@
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">
-        <source>Signing succeeded.</source>
-        <target state="translated">署名に成功しました。</target>
-        <note />
+        <source>Signing {filePath} succeeded.</source>
+        <target state="new">Signing {filePath} succeeded.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
         <source>Completed in {millseconds} ms.</source>

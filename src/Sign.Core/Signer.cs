@@ -104,7 +104,7 @@ namespace Sign.Core
                     else
                     {
                         // if the output is specified, treat it as a directory, if not, overwrite the current file
-                        if (!string.IsNullOrWhiteSpace(outputFile))
+                        if (string.IsNullOrWhiteSpace(outputFile))
                         {
                             output = new FileInfo(input.FullName);
                         }
@@ -146,13 +146,18 @@ namespace Sign.Core
                         if (input.Length > 0)
                         {
                             input.CopyTo(inputFileName, overwrite: true);
+                            // for things like clickonce we will need additional files from the source location
+                            // in order to fully sign everything, so ask the signature provider to do it for us.
+                            signatureProvider.CopySigningDependencies(input, temporaryDirectory.Directory, signOptions);
                         }
 
                         FileInfo fi = new(inputFileName);
 
                         await signatureProvider.SignAsync(new[] { fi }, signOptions);
 
+                        // copy everything back
                         fi.CopyTo(output.FullName, overwrite: true);
+                        signatureProvider.CopySigningDependencies(fi, output.Directory!, signOptions);
                     }
 
                     _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
