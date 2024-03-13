@@ -20,25 +20,27 @@ namespace Sign.Core.Test
         [MemberData(nameof(RsaCertificates))]
         public void ShouldSignABlobOfDataWithRsaSha256(string pfxPath)
         {
-            var certificate = new X509Certificate2(pfxPath, "test");
-            var config = new SignConfigurationSet
-            (
-                publicCertificate: certificate,
-                signatureDigestAlgorithm: HashAlgorithmName.SHA256,
-                fileDigestAlgorithm: HashAlgorithmName.SHA256,
-                signingKey: certificate.GetRSAPrivateKey()!
-            );
-
-            var context = new SigningContext(config);
-            using (var hash = SHA256.Create())
+            using (var certificate = new X509Certificate2(pfxPath, "test"))
             {
-                var digest = hash.ComputeHash(new byte[] { 1, 2, 3 });
-                var signature = context.SignDigest(digest);
-                Assert.Equal(OpcKnownUris.SignatureAlgorithms.RsaSHA256, context.XmlDSigIdentifier);
-                Assert.Equal(SigningAlgorithm.RSA, context.SignatureAlgorithm);
+                var config = new SignConfigurationSet
+                (
+                    publicCertificate: certificate,
+                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                    signingKey: certificate.GetRSAPrivateKey()!
+                );
 
-                var roundtrips = context.VerifyDigest(digest, signature);
-                Assert.True(roundtrips);
+                var context = new SigningContext(config);
+                using (var hash = SHA256.Create())
+                {
+                    var digest = hash.ComputeHash(new byte[] { 1, 2, 3 });
+                    var signature = context.SignDigest(digest);
+                    Assert.Equal(OpcKnownUris.SignatureAlgorithms.RsaSHA256, context.XmlDSigIdentifier);
+                    Assert.Equal(SigningAlgorithm.RSA, context.SignatureAlgorithm);
+
+                    var roundtrips = context.VerifyDigest(digest, signature);
+                    Assert.True(roundtrips);
+                }
             }
         }
     }

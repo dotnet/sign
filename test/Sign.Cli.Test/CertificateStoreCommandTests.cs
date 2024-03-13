@@ -33,39 +33,39 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void SHA1ThumbprintOptionOption_Always_IsRequired()
+        public void Sha1ThumbprintOption_Always_IsRequired()
         {
-            Assert.True(_command.SHA1ThumbprintOption.IsRequired);
+            Assert.True(_command.Sha1ThumbprintOption.IsRequired);
         }
 
         [Fact]
-        public void SHA1_Always_HasArityOfExactlyOne()
+        public void Sha1ThumbprintOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.SHA1ThumbprintOption.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.Sha1ThumbprintOption.Arity);
         }
 
         [Fact]
-        public void Certificate_Always_HasArityOfExactlyOne()
+        public void CertificateFileOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificatePathOption.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateFileOption.Arity);
         }
 
         [Fact]
-        public void CertificatePassword_Always_HasArityOfExactlyOne()
+        public void CertificatePasswordOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificatePasswordOption.Arity);
         }
 
         [Fact]
-        public void CryptoServiceProvider_Always_HasArityOfExactlyOne()
+        public void CryptoServiceProviderOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.CryptoServiceProvider.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CryptoServiceProviderOption.Arity);
         }
 
         [Fact]
-        public void PrivateKeyContainer_Always_HasArityOfExactlyOne()
+        public void PrivateKeyContainerOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.PrivateKeyContainer.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.PrivateKeyContainerOption.Arity);
         }
 
         public class ParserTests
@@ -75,7 +75,7 @@ namespace Sign.Cli.Test
 
             public ParserTests()
             {
-                _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
+                _command = new CertificateStoreCommand(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
                 _parser = new CommandLineBuilder(_command).Build();
             }
 

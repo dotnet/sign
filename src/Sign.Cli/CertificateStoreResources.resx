@@ -117,29 +117,33 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CSPOptionDescription" xml:space="preserve">
-    <value>Cryptographic Service Provider containing the private key container. Requires /k or /km.</value>
+  <data name="CertificateFileOptionDescription" xml:space="preserve">
+    <value>PFX, P7B, or CER file containing a certificate and potentially a private key.</value>
+    <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
   </data>
-  <data name="FileOptionDescription" xml:space="preserve">
-    <value>PFX, P7B, or CER file containing a certificate and private key (if applicable).</value>
-    <comment>PFX, P7b, and CER are filetypes.</comment>
+  <data name="CertificatePasswordOptionDescription" xml:space="preserve">
+    <value>Password for certificate file.</value>
   </data>
-  <data name="FilePasswordOptionDescription" xml:space="preserve">
-    <value>Password for certificate file if required.</value>
+  <data name="CspOptionDescription" xml:space="preserve">
+    <value>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</value>
+    <comment>{Locked="/k", "/km"} are command line options.</comment>
   </data>
   <data name="KeyContainerOptionDescription" xml:space="preserve">
-    <value>Private key container in the user store.</value>
+    <value>Private key container name.</value>
   </data>
-  <data name="MachineKeyContainerOptionDescription" xml:space="preserve">
-    <value>Private key container in the machine store.</value>
-  </data>
-  <data name="MissingCSPContainersError" xml:space="preserve">
-    <value>Cryptographic Service Provider missing while using /csp. </value>
+  <data name="MissingCspError" xml:space="preserve">
+    <value>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</value>
+    <comment>{Locked="/csp"} is a command line option.</comment>
   </data>
   <data name="MissingPrivateKeyContainerError" xml:space="preserve">
-    <value>Private key container missing while using /csp. Use /k to provide a key container.</value>
+    <value>Private key container name missing. Use /k to specify a key container name.</value>
+    <comment>{Locked="/k"} is a command line option.</comment>
   </data>
-  <data name="SHA1ThumbprintOptionDescription" xml:space="preserve">
-    <value>SHA-1 thumbprint used to access a certificate from a certificate store.</value>
+  <data name="Sha1ThumbprintOptionDescription" xml:space="preserve">
+    <value>SHA-1 thumbprint used to identify a certificate.</value>
+    <comment>{Locked="SHA-1"} is a cryptographic algorithm.</comment>
+  </data>
+  <data name="UseMachineKeyContainerOptionDescription" xml:space="preserve">
+    <value>Use a machine-level private key container.  (The default is user-level.)</value>
   </data>
 </root>

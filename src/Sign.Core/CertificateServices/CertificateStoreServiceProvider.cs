@@ -88,7 +88,7 @@ namespace Sign.Core
                     return _certificateStoreService;
                 }
 
-                _certificateStoreService = new CertificateStoreService(serviceProvider,_sha1Thumbprint, _cryptoServiceProvider, _privateKeyContainer, _certificateFilePath, _certificateFilePassword, _isMachineKeyContainer);
+                _certificateStoreService = new CertificateStoreService(serviceProvider, _sha1Thumbprint, _cryptoServiceProvider, _privateKeyContainer, _certificateFilePath, _certificateFilePassword, _isMachineKeyContainer);
             }
 
             return _certificateStoreService;

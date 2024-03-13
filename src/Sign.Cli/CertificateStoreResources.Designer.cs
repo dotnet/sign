@@ -61,34 +61,34 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cryptographic Service Provider containing the private key container. Requires /k or /km..
+        ///   Looks up a localized string similar to PFX, P7B, or CER file containing a certificate and potentially a private key..
         /// </summary>
-        internal static string CSPOptionDescription {
+        internal static string CertificateFileOptionDescription {
             get {
-                return ResourceManager.GetString("CSPOptionDescription", resourceCulture);
+                return ResourceManager.GetString("CertificateFileOptionDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PFX, P7B, or CER file containing a certificate and private key (if applicable)..
+        ///   Looks up a localized string similar to Password for certificate file..
         /// </summary>
-        internal static string FileOptionDescription {
+        internal static string CertificatePasswordOptionDescription {
             get {
-                return ResourceManager.GetString("FileOptionDescription", resourceCulture);
+                return ResourceManager.GetString("CertificatePasswordOptionDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password for certificate file if required..
+        ///   Looks up a localized string similar to Cryptographic Service Provider containing the private key container. Requires /k and optionally /km..
         /// </summary>
-        internal static string FilePasswordOptionDescription {
+        internal static string CspOptionDescription {
             get {
-                return ResourceManager.GetString("FilePasswordOptionDescription", resourceCulture);
+                return ResourceManager.GetString("CspOptionDescription", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Private key container in the user store..
+        ///   Looks up a localized string similar to Private key container name..
         /// </summary>
         internal static string KeyContainerOptionDescription {
             get {
@@ -97,25 +97,16 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Private key container in the machine store..
+        ///   Looks up a localized string similar to Cryptographic Service Provider missing.  Use /csp to specify a CSP..
         /// </summary>
-        internal static string MachineKeyContainerOptionDescription {
+        internal static string MissingCspError {
             get {
-                return ResourceManager.GetString("MachineKeyContainerOptionDescription", resourceCulture);
+                return ResourceManager.GetString("MissingCspError", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cryptographic Service Provider missing while using /csp. .
-        /// </summary>
-        internal static string MissingCSPContainersError {
-            get {
-                return ResourceManager.GetString("MissingCSPContainersError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Private key container missing while using /csp. Use /k to provide a key container..
+        ///   Looks up a localized string similar to Private key container name missing. Use /k to specify a key container name..
         /// </summary>
         internal static string MissingPrivateKeyContainerError {
             get {
@@ -124,11 +115,20 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA-1 thumbprint used to access a certificate from a certificate store..
+        ///   Looks up a localized string similar to SHA-1 thumbprint used to identify a certificate..
         /// </summary>
-        internal static string SHA1ThumbprintOptionDescription {
+        internal static string Sha1ThumbprintOptionDescription {
             get {
-                return ResourceManager.GetString("SHA1ThumbprintOptionDescription", resourceCulture);
+                return ResourceManager.GetString("Sha1ThumbprintOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use a machine-level private key container.  (The default is user-level.).
+        /// </summary>
+        internal static string UseMachineKeyContainerOptionDescription {
+            get {
+                return ResourceManager.GetString("UseMachineKeyContainerOptionDescription", resourceCulture);
             }
         }
     }
