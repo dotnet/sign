@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="needs-review-translation">{count} 파일로 OpenVsixSignTool 작업에 서명하는 중입니다.</target>
+        <target state="new">Signing VsixSignTool job with {count} files.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>
