@@ -7,7 +7,8 @@ namespace Sign.Core.Test
     [CollectionDefinition(Name)]
     public sealed class SigningTestsCollection :
         ICollectionFixture<CertificatesFixture>,
-        ICollectionFixture<TestServerFixture>
+        ICollectionFixture<TestServerFixture>,
+        ICollectionFixture<PfxFilesFixture>
     {
         internal const string Name = nameof(SigningTestsCollection);
 
