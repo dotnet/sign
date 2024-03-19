@@ -40,7 +40,7 @@
       <ScriptFilePath Condition=" '$(ScriptFilePath)' == '' ">$(RepositoryRootDirectory)\scripts\UpdateWintrust.ps1</ScriptFilePath>
     </PropertyGroup>
 
-    <Exec Command="$(PowerShellFilePath) -NonInteractive -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(OutputPath)\tools\SDK\x64\wintrust.dll.ini' } &quot;" LogStandardErrorAsError="true" />
+    <Exec Command="$(PowerShellFilePath) -NonInteractive -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(OutputPath)tools\SDK\x64\wintrust.dll.ini' } &quot;" LogStandardErrorAsError="true" />
   </Target>
 
   <ItemGroup>

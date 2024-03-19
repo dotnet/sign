@@ -52,7 +52,7 @@ namespace Sign.Core
 
                 keyInfoElement = BuildKeyInfoElement();
                 Stream signerInfoCanonicalStream;
-                (signerInfoCanonicalStream, signedInfo) = 
+                (signerInfoCanonicalStream, signedInfo) =
                     BuildSignedInfoElement(
                         (_objectElement, objectElementHash, info.XmlDSigIdentifier.AbsoluteUri, canonicalizationMethodObjectId)
                     );
@@ -87,19 +87,25 @@ namespace Sign.Core
         {
             //The canonicalization transformer can't reasonable do just an element. It
             //seems content to do an entire XmlDocument.
+
             var transformer = new XmlDsigC14NTransform(false);
-            setCanonicalization?.Invoke(transformer.Algorithm);
+            string? algorithm = transformer.Algorithm;
 
-            var newDocument = new XmlDocument(_document.NameTable);
-            newDocument.LoadXml(element.OuterXml);
-            
-            transformer.LoadInput(newDocument);
-
-            var result = transformer.GetOutput(typeof(Stream));
-            canonicalizationMethodUri = transformer.Algorithm;
-            if (result is Stream s)
+            if (!string.IsNullOrEmpty(algorithm))
             {
-                return s;
+                setCanonicalization?.Invoke(algorithm);
+
+                var newDocument = new XmlDocument(_document.NameTable);
+                newDocument.LoadXml(element.OuterXml);
+
+                transformer.LoadInput(newDocument);
+
+                var result = transformer.GetOutput(typeof(Stream));
+                canonicalizationMethodUri = algorithm;
+                if (result is Stream s)
+                {
+                    return s;
+                }
             }
 
             throw new NotSupportedException("Unable to canonicalize element.");
@@ -122,7 +128,7 @@ namespace Sign.Core
             signedInfoElement.AppendChild(canonicalizationMethodElement);
             signedInfoElement.AppendChild(signatureMethodElement);
 
-            foreach(var (element, digest, digestAlgorithm, method) in objects)
+            foreach (var (element, digest, digestAlgorithm, method) in objects)
             {
                 var idFromElement = element.GetAttribute("Id");
                 var reference = "#" + idFromElement;

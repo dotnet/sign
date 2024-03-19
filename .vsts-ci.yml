@@ -104,7 +104,7 @@ stages:
               InputType: Basic
               Function: analyze
               TargetPattern: binskimPattern
-              AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net6.0\win10-x64\publish\*.dll
+              AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net8.0\win-x64\publish\*.dll
               AnalyzeSymPath: 'SRV*https://symweb'
             condition: succeededOrFailed()
           - task: PublishTestResults@2
