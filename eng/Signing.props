@@ -16,7 +16,6 @@
     <FileSignInfo Include="AzureSign.Core.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="NuGetKeyVaultSignTool.Core.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="OpenVsixSignTool.Core.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="RSAKeyVaultProvider.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>

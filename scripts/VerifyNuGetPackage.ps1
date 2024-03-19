@@ -61,22 +61,22 @@ If ($packageFilePaths.Count -ne 1)
 [System.IO.File]::Copy($sourcePackageFilePath, $destinationFile.FullName, $overwrite)
 
 [string[]] $expectedEntryFullNames =
-    'tools/net6.0/any/tools/SDK/x64/appxpackaging.dll',
-    'tools/net6.0/any/tools/SDK/x64/appxsip.dll',
-    'tools/net6.0/any/tools/SDK/x64/makeappx.exe',
-    'tools/net6.0/any/tools/SDK/x64/makepri.exe',
-    'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest',
-    'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxSip.dll.manifest',
-    'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.OpcServices.dll.manifest',
-    'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.mssign32.dll.manifest',
-    'tools/net6.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.wintrust.dll.manifest',
-    'tools/net6.0/any/tools/SDK/x64/mssign32.dll',
-    'tools/net6.0/any/tools/SDK/x64/NavSip.dll',
-    'tools/net6.0/any/tools/SDK/x64/opcservices.dll',
-    'tools/net6.0/any/tools/SDK/x64/SignTool.exe.manifest',
-    'tools/net6.0/any/tools/SDK/x64/wintrust.dll',
-    'tools/net6.0/any/tools/SDK/x64/wintrust.dll.ini',
-    'tools/net6.0/any/tools/SDK/x86/mage.exe'
+    'tools/net8.0/any/tools/SDK/x64/appxpackaging.dll',
+    'tools/net8.0/any/tools/SDK/x64/appxsip.dll',
+    'tools/net8.0/any/tools/SDK/x64/makeappx.exe',
+    'tools/net8.0/any/tools/SDK/x64/makepri.exe',
+    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest',
+    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxSip.dll.manifest',
+    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.OpcServices.dll.manifest',
+    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.mssign32.dll.manifest',
+    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.wintrust.dll.manifest',
+    'tools/net8.0/any/tools/SDK/x64/mssign32.dll',
+    'tools/net8.0/any/tools/SDK/x64/NavSip.dll',
+    'tools/net8.0/any/tools/SDK/x64/opcservices.dll',
+    'tools/net8.0/any/tools/SDK/x64/SignTool.exe.manifest',
+    'tools/net8.0/any/tools/SDK/x64/wintrust.dll',
+    'tools/net8.0/any/tools/SDK/x64/wintrust.dll.ini',
+    'tools/net8.0/any/tools/SDK/x86/mage.exe'
 
 Try
 {
