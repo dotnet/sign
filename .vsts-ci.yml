@@ -144,4 +144,5 @@ stages:
         -TsaRepositoryName dotnet-sign
         -TsaCodebaseName dotnet-sign
         -TsaOnboard $True
-        -TsaPublish $True'
+        -TsaPublish $True
+        -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
