@@ -10,6 +10,7 @@ variables:
   - name: Codeql.TSAEnabled
     value: true
   - group: DotNet-Sign-SDLValidation-Params
+  - template: /eng/common/templates-official/variables/pool-providers.yml
 
 trigger:
   batch: true
