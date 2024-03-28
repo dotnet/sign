@@ -6,13 +6,11 @@ variables:
   - name: Build.Repository.Clean
     value: true
   - name: Codeql.Enabled
-    value: ${{ eq(variables['System.TeamProject'], 'internal') }}
+    value: true
   - name: Codeql.TSAEnabled
-    value: ${{ eq(variables['System.TeamProject'], 'internal') }}
-  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-    - group: DotNet-Sign-SDLValidation-Params
+    value: true
+  - group: DotNet-Sign-SDLValidation-Params
 
-# CI and PR triggers
 trigger:
   batch: true
   branches:
@@ -28,123 +26,132 @@ pr:
     include:
     - '*'
 
-# Build
-stages:
-- stage: Build_Windows
-  displayName: Build Windows
-  jobs:
-  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
-    - template: /eng/common/templates/job/onelocbuild.yml
-      parameters:
-        LclSource: lclFilesfromPackage
-        LclPackageId: 'LCL-JUNO-PROD-SIGNCLI'
-        MirrorRepo: sign
+resources:
+  repositories:
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enablePublishBuildArtifacts: true
-      enablePublishBuildAssets: true
-      enablePublishUsingPipelines: true
-      enableTelemetry: true
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    sdl:
+      sourceAnalysisPool:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - stage: Build_Windows
+      displayName: Build Windows
       jobs:
-      - job: Windows
-        pool: # See https://helix.dot.net/ for VM names.
-          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-            name: NetCore1ESPool-Internal
-            demands: ImageOverride -equals windows.vs2022preview.amd64
-          ${{ else }}:
-            name: NetCore-Public
-            demands: ImageOverride -equals windows.vs2022preview.amd64.open
-        variables:
-        # Only enable publishing in official builds.
-        - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
-          - group: Publish-Build-Assets
-          - name: _SignType
-            value: real
-          - name: _OfficialBuildArgs
-            value: /p:DotNetPublishUsingPipelines=true
-                   /p:DotNetSignType=$(_SignType)
-                   /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-                   /p:TeamName=$(_TeamName)
-        - ${{ else }}:
-          - name: _SignType
-            value: test
-          - name: _OfficialBuildArgs
-            value: ''
-        strategy:
-          matrix:
-            Release:
-              _BuildConfig: Release
-        steps:
-        - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-          - task: CodeQL3000Init@0
-            displayName: Initialize CodeQL
-            condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
-        - script: eng\common\CIBuild.cmd
-            -configuration $(_BuildConfig)
-            -prepareMachine
-            $(_OfficialBuildArgs)
-          name: Build
-          displayName: Build and run tests
-          condition: succeeded()
-        - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-          - task: CodeQL3000Finalize@0
-            displayName: Finalize CodeQL
-            condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
-          # Guardian requires npm.
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '18.x'
-          # Validates compiler/linker settings and other security-related binary characteristics.
-          # https://github.com/Microsoft/binskim
-          # YAML reference: https://eng.ms/docs/security-compliance-identity-and-management-scim/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/sdl-azdo-extension/binskim-build-task#v4
-          - task: BinSkim@4
-            displayName: Run BinSkim
-            inputs:
-              InputType: Basic
-              Function: analyze
-              TargetPattern: binskimPattern
-              AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net8.0\win-x64\publish\*.dll
-              AnalyzeSymPath: 'SRV*https://symweb'
-            condition: succeededOrFailed()
-          - task: PublishTestResults@2
-            displayName: 'Publish Unit Test Results'
-            inputs:
-              testResultsFormat: xUnit
-              testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/**/*.xml'
-              mergeTestResults: true
-              searchFolder: $(System.DefaultWorkingDirectory)
-              testRunTitle: sign unit tests - $(Agent.JobName)
-            condition: succeededOrFailed()
-          - task: ComponentGovernanceComponentDetection@0
-            displayName: Component Governance scan
-            inputs:
-              ignoreDirectories: '$(Build.SourcesDirectory)/.packages,$(Build.SourcesDirectory)/artifacts/obj/Sign.Cli'
+      - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
+        - template: /eng/common/templates-official/job/onelocbuild.yml@self
+          parameters:
+            LclSource: lclFilesfromPackage
+            LclPackageId: 'LCL-JUNO-PROD-SIGNCLI'
+            MirrorRepo: sign
 
-- ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-  - template: eng\common\templates\post-build\post-build.yml
-    parameters:
-      publishingInfraVersion: 3
-      enableSymbolValidation: true
-      enableSourceLinkValidation: true
-      validateDependsOn:
-      - Build_Windows
-      publishDependsOn:
-      - Validate
-      # This is to enable SDL runs part of Post-Build Validation Stage
-      SDLValidationParameters:
-        enable: true
-        params: ' -SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL $(_TsaInstanceURL)
-        -TsaProjectName $(_TsaProjectName)
-        -TsaNotificationEmail $(_TsaNotificationEmail)
-        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
-        -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName dotnet-sign
-        -TsaCodebaseName dotnet-sign
-        -TsaOnboard $True
-        -TsaPublish $True
-        -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          enableMicrobuild: true
+          enablePublishBuildArtifacts: true
+          enablePublishBuildAssets: true
+          enablePublishUsingPipelines: true
+          enableTelemetry: true
+          jobs:
+          - job: Windows
+            pool: # See https://helix.dot.net/ for VM names.
+              name: NetCore1ESPool-Internal
+              demands: ImageOverride -equals windows.vs2022preview.amd64
+            variables:
+            # Only enable publishing in official builds.
+            - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              # Publish-Build-Assets provides: MaestroAccessToken, BotAccount-dotnet-maestro-bot-PAT
+              - group: Publish-Build-Assets
+              - name: _SignType
+                value: real
+              - name: _OfficialBuildArgs
+                value: /p:DotNetPublishUsingPipelines=true
+                      /p:DotNetSignType=$(_SignType)
+                      /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+                      /p:TeamName=$(_TeamName)
+            - ${{ else }}:
+              - name: _SignType
+                value: test
+              - name: _OfficialBuildArgs
+                value: ''
+            strategy:
+              matrix:
+                Release:
+                  _BuildConfig: Release
+            steps:
+            - task: CodeQL3000Init@0
+              displayName: Initialize CodeQL
+              condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
+            - script: eng\common\CIBuild.cmd
+                -configuration $(_BuildConfig)
+                -prepareMachine
+                $(_OfficialBuildArgs)
+              name: Build
+              displayName: Build and run tests
+              condition: succeeded()
+            - task: CodeQL3000Finalize@0
+              displayName: Finalize CodeQL
+              condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
+            # Guardian requires npm.
+            - task: NodeTool@0
+              inputs:
+                versionSpec: '18.x'
+            # Validates compiler/linker settings and other security-related binary characteristics.
+            # https://github.com/Microsoft/binskim
+            # YAML reference: https://eng.ms/docs/security-compliance-identity-and-management-scim/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/sdl-azdo-extension/binskim-build-task#v4
+            - task: BinSkim@4
+              displayName: Run BinSkim
+              inputs:
+                InputType: Basic
+                Function: analyze
+                TargetPattern: binskimPattern
+                AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net8.0\win-x64\publish\*.dll
+                AnalyzeSymPath: 'SRV*https://symweb'
+              condition: succeededOrFailed()
+            - task: PublishTestResults@2
+              displayName: 'Publish Unit Test Results'
+              inputs:
+                testResultsFormat: xUnit
+                testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/**/*.xml'
+                mergeTestResults: true
+                searchFolder: $(System.DefaultWorkingDirectory)
+                testRunTitle: sign unit tests - $(Agent.JobName)
+              condition: succeededOrFailed()
+            - task: ComponentGovernanceComponentDetection@0
+              displayName: Component Governance scan
+              inputs:
+                ignoreDirectories: '$(Build.SourcesDirectory)/.packages,$(Build.SourcesDirectory)/artifacts/obj/Sign.Cli'
+
+    - template: /eng/common/templates-official/post-build/post-build.yml@self
+      parameters:
+        publishingInfraVersion: 3
+        enableSymbolValidation: true
+        enableSourceLinkValidation: true
+        validateDependsOn:
+        - Build_Windows
+        publishDependsOn:
+        - Validate
+        # This is to enable SDL runs part of Post-Build Validation Stage
+        SDLValidationParameters:
+          enable: true
+          params: ' -SourceToolsList @("policheck","credscan")
+          -TsaInstanceURL $(_TsaInstanceURL)
+          -TsaProjectName $(_TsaProjectName)
+          -TsaNotificationEmail $(_TsaNotificationEmail)
+          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+          -TsaBugAreaPath $(_TsaBugAreaPath)
+          -TsaIterationPath $(_TsaIterationPath)
+          -TsaRepositoryName dotnet-sign
+          -TsaCodebaseName dotnet-sign
+          -TsaOnboard $True
+          -TsaPublish $True
+          -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
