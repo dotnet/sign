@@ -1,4 +1,4 @@
-# Pipeline: https://dnceng.visualstudio.com/internal/_build?definitionId=1190
+# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=231
 
 variables:
   - name: _TeamName
