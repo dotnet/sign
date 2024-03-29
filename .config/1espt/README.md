@@ -1,0 +1,3 @@
+Do not merge changes to PipelineAutobaseliningConfig.yml in the internal Azure DevOps repository, as it would break commit mirroring from the public GitHub repository.  Instead, merge the changes into the public GitHub repository.
+
+See https://dev.azure.com/dnceng/internal/_wiki/wikis/DNCEng%20Services%20Wiki/1214/1ES-Pipeline-Template-Migration-FAQ?anchor=should-i-accept-these-automated-prs-into-my-repo-that-is-mirrored-from-github-to-fix-cg/security-issues%3F for guidance.
