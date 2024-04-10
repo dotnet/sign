@@ -86,7 +86,8 @@ namespace Sign.Core.Test
             HashSet<FileInfo> looseFiles = new(FileInfoComparer.Instance);
             AzureSignToolSignatureProvider azureSignToolSignatureProvider = new(
                 Mock.Of<IToolConfigurationProvider>(),
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ISignatureAlgorithmProvider>(),
+                Mock.Of<ICertificateProvider>(),
                 Mock.Of<ILogger<ISignatureProvider>>());
             FileMetadataServiceStub fileMetadataService = new();
 
@@ -130,6 +131,7 @@ namespace Sign.Core.Test
                     if (!isDirectory &&
                         (_containerProvider.IsAppxBundleContainer(file) ||
                         _containerProvider.IsAppxContainer(file) ||
+                        _containerProvider.IsNuGetContainer(file) ||
                         _containerProvider.IsZipContainer(file)))
                     {
                         files.Add(file);

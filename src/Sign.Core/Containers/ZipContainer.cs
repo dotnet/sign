@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class ZipContainer : Container
+    internal class ZipContainer : Container
     {
         private readonly IDirectoryService _directoryService;
         private readonly ILogger _logger;
@@ -39,7 +39,7 @@ namespace Sign.Core
             TemporaryDirectory = new TemporaryDirectory(_directoryService);
 
             _logger.LogInformation(
-                "Extracting container file {ZipFilePath} to {DirectoryPath}.",
+                Resources.OpeningContainer,
                 _zipFile.FullName,
                 TemporaryDirectory.Directory.FullName);
 
@@ -56,7 +56,7 @@ namespace Sign.Core
             }
 
             _logger.LogInformation(
-                "Rebuilding container {ZipFilePath} from {DirectoryPath}.",
+                Resources.SavingContainer,
                 _zipFile.FullName,
                 TemporaryDirectory.Directory.FullName);
 

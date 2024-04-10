@@ -10,8 +10,8 @@ namespace Sign.Cli.Test
     {
         private static readonly DirectoryInfo ExpectedValue = new(Path.GetTempPath());
 
-        protected DirectoryInfoOptionTests(Option<DirectoryInfo> option, string shortOption, string longOption, bool isRequired)
-            : base(option, shortOption, longOption, ExpectedValue, isRequired)
+        protected DirectoryInfoOptionTests(Option<DirectoryInfo> option, string shortOption, string longOption)
+            : base(option, shortOption, longOption, ExpectedValue)
         {
         }
 

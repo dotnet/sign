@@ -10,20 +10,24 @@ namespace Sign.Core
 {
     internal sealed class NuGetSignatureProvider : RetryingSignatureProvider, ISignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateProvider _certificateProvider;
+        private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly INuGetSignTool _nuGetSignTool;
 
         // Dependency injection requires a public constructor.
         public NuGetSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ISignatureAlgorithmProvider signatureAlgorithmProvider,
+            ICertificateProvider certificateProvider,
             INuGetSignTool nuGetSignTool,
             ILogger<ISignatureProvider> logger)
             : base(logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(nuGetSignTool, nameof(nuGetSignTool));
 
-            _keyVaultService = keyVaultService;
+            _signatureAlgorithmProvider = signatureAlgorithmProvider;
+            _certificateProvider = certificateProvider;
             _nuGetSignTool = nuGetSignTool;
         }
 
@@ -40,8 +44,8 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync())
-            using (RSA rsa = await _keyVaultService.GetRsaAsync())
+            using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
+            using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
             {
                 IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
 

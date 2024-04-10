@@ -2,13 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.FileSystemGlobbing;
+
 namespace Sign.Core.Test
 {
     public partial class AggregatingSignatureProviderTests
     {
-        private static readonly string AppxBundleContainerName = "container.appxbundle";
-        private static readonly string AppxContainerName = "container.appx";
-        private static readonly string ZipContainerName = "container.zip";
+        private const string AppxBundleContainerName = "container.appxbundle";
+        private const string AppxContainerName = "container.appx";
+        private const string ZipContainerName = "container.zip";
 
         [Fact]
         public async Task SignAsync_WhenFileIsEmptyAppxBundleContainer_SignsNothing()
@@ -53,6 +57,56 @@ namespace Sign.Core.Test
                 signedFile => Assert.Equal("b.dll", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.appx", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.msix", signedFile.Name),
+                signedFile => Assert.Equal(AppxBundleContainerName, signedFile.Name));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileIsAppxBundleContainerAndGlobAndAntiGlobPatternsAreUsed_SignsOnlyMatchingFiles()
+        {
+            const string fileListContents =
+@"**/*.dll
+**/*.exe
+!**/*.txt
+!**/DoNotSign/**/*";
+            ReadFileList(fileListContents, out Matcher matcher, out Matcher antiMatcher);
+
+            SignOptions options = new(
+                applicationName: "a",
+                publisherName: "b",
+                description: "c",
+                new Uri("https://description.test"),
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"),
+                matcher,
+                antiMatcher);
+
+            AggregatingSignatureProviderTest test = new(
+                $"{AppxBundleContainerName}/a.dll",
+                $"{AppxBundleContainerName}/b.DLL",
+                $"{AppxBundleContainerName}/c.txt",
+                $"{AppxBundleContainerName}/d.exe",
+                $"{AppxBundleContainerName}/e.EXE",
+                $"{AppxBundleContainerName}/f/g.dll",
+                $"{AppxBundleContainerName}/f/h.txt",
+                $"{AppxBundleContainerName}/f/i.exe",
+                $"{AppxBundleContainerName}/DoNotSign/j.dll",
+                $"{AppxBundleContainerName}/DoNotSign/k.txt",
+                $"{AppxBundleContainerName}/DoNotSign/l/m.txt",
+                $"{AppxBundleContainerName}/DoNotSign/l/n.exe");
+
+            await test.Provider.SignAsync(test.Files, options);
+
+            ContainerSpy container = test.Containers[AppxBundleContainerName];
+
+            Assert.Equal(1, container.OpenAsync_CallCount);
+            Assert.Equal(0, container.GetFiles_CallCount);
+            Assert.Equal(1, container.GetFilesWithMatcher_CallCount);
+            Assert.Equal(0, container.SaveAsync_CallCount);
+            Assert.Equal(1, container.Dispose_CallCount);
+
+            Assert.Collection(
+                test.SignatureProviderSpy.SignedFiles,
                 signedFile => Assert.Equal(AppxBundleContainerName, signedFile.Name));
         }
 
@@ -110,7 +164,6 @@ namespace Sign.Core.Test
                 $"{AppxContainerName}/nestedcontainer0.zip/b.dll",
                 $"{AppxContainerName}/nestedcontainer0.zip/nestedcontainer1.zip/c.dll",
                 $"{AppxContainerName}/d.appinstaller",
-                $"{AppxContainerName}/e.clickonce",
                 $"{AppxContainerName}/nestedcontainer.nupkg/folder0/folder1/f.dll",
                 $"{AppxContainerName}/nestedcontainer.vsix/folder0/folder1/folder2/g.dll");
 
@@ -142,10 +195,65 @@ namespace Sign.Core.Test
                 signedFile => Assert.Equal("g.dll", signedFile.Name),
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("d.appinstaller", signedFile.Name),
-                signedFile => Assert.Equal("e.clickonce", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.nupkg", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.vsix", signedFile.Name),
                 signedFile => Assert.Equal("container.appx", signedFile.Name));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileIsAppxContainerAndGlobAndAntiGlobPatternsAreUsed_SignsOnlyMatchingFiles()
+        {
+            const string fileListContents =
+@"**/*.dll
+**/*.exe
+!**/*.txt
+!**/DoNotSign/**/*";
+            ReadFileList(fileListContents, out Matcher matcher, out Matcher antiMatcher);
+
+            SignOptions options = new(
+                applicationName: "a",
+                publisherName: "b",
+                description: "c",
+                new Uri("https://description.test"),
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"),
+                matcher,
+                antiMatcher);
+
+            AggregatingSignatureProviderTest test = new(
+                $"{AppxContainerName}/a.dll",
+                $"{AppxContainerName}/b.DLL",
+                $"{AppxContainerName}/c.txt",
+                $"{AppxContainerName}/d.exe",
+                $"{AppxContainerName}/e.EXE",
+                $"{AppxContainerName}/f/g.dll",
+                $"{AppxContainerName}/f/h.txt",
+                $"{AppxContainerName}/f/i.exe",
+                $"{AppxContainerName}/DoNotSign/j.dll",
+                $"{AppxContainerName}/DoNotSign/k.txt",
+                $"{AppxContainerName}/DoNotSign/l/m.txt",
+                $"{AppxContainerName}/DoNotSign/l/n.exe");
+
+            await test.Provider.SignAsync(test.Files, options);
+
+            ContainerSpy container = test.Containers[AppxContainerName];
+
+            Assert.Equal(1, container.OpenAsync_CallCount);
+            Assert.Equal(0, container.GetFiles_CallCount);
+            Assert.Equal(2, container.GetFilesWithMatcher_CallCount);
+            Assert.Equal(1, container.SaveAsync_CallCount);
+            Assert.Equal(1, container.Dispose_CallCount);
+
+            Assert.Collection(
+                test.SignatureProviderSpy.SignedFiles,
+                signedFile => Assert.Equal("a.dll", signedFile.Name),
+                signedFile => Assert.Equal("b.DLL", signedFile.Name),
+                signedFile => Assert.Equal("d.exe", signedFile.Name),
+                signedFile => Assert.Equal("e.EXE", signedFile.Name),
+                signedFile => Assert.Equal("g.dll", signedFile.Name),
+                signedFile => Assert.Equal("i.exe", signedFile.Name),
+                signedFile => Assert.Equal(AppxContainerName, signedFile.Name));
         }
 
         [Fact]
@@ -199,7 +307,6 @@ namespace Sign.Core.Test
                 $"{ZipContainerName}/nestedcontainer0.zip/b.dll",
                 $"{ZipContainerName}/nestedcontainer0.zip/nestedcontainer1.zip/c.dll",
                 $"{ZipContainerName}/d.appinstaller",
-                $"{ZipContainerName}/e.clickonce",
                 $"{ZipContainerName}/nestedcontainer.nupkg/folder0/folder1/f.dll",
                 $"{ZipContainerName}/nestedcontainer.vsix/folder0/folder1/folder2/g.dll");
 
@@ -231,9 +338,75 @@ namespace Sign.Core.Test
                 signedFile => Assert.Equal("g.dll", signedFile.Name),
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("d.appinstaller", signedFile.Name),
-                signedFile => Assert.Equal("e.clickonce", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.nupkg", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.vsix", signedFile.Name));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileIsZipContainerAndGlobAndAntiGlobPatternsAreUsed_SignsOnlyMatchingFiles()
+        {
+            const string fileListContents = 
+@"**/*.dll
+**/*.exe
+!**/*.txt
+!**/DoNotSign/**/*";
+            ReadFileList(fileListContents, out Matcher matcher, out Matcher antiMatcher);
+
+            SignOptions options = new(
+                applicationName: "a",
+                publisherName: "b",
+                description: "c",
+                new Uri("https://description.test"),
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"),
+                matcher,
+                antiMatcher);
+
+            AggregatingSignatureProviderTest test = new(
+                $"{ZipContainerName}/a.dll",
+                $"{ZipContainerName}/b.DLL",
+                $"{ZipContainerName}/c.txt",
+                $"{ZipContainerName}/d.exe",
+                $"{ZipContainerName}/e.EXE",
+                $"{ZipContainerName}/f/g.dll",
+                $"{ZipContainerName}/f/h.txt",
+                $"{ZipContainerName}/f/i.exe",
+                $"{ZipContainerName}/DoNotSign/j.dll",
+                $"{ZipContainerName}/DoNotSign/k.txt",
+                $"{ZipContainerName}/DoNotSign/l/m.txt",
+                $"{ZipContainerName}/DoNotSign/l/n.exe");
+
+            await test.Provider.SignAsync(test.Files, options);
+
+            ContainerSpy container = test.Containers[ZipContainerName];
+
+            Assert.Equal(1, container.OpenAsync_CallCount);
+            Assert.Equal(0, container.GetFiles_CallCount);
+            Assert.Equal(2, container.GetFilesWithMatcher_CallCount);
+            Assert.Equal(1, container.SaveAsync_CallCount);
+            Assert.Equal(1, container.Dispose_CallCount);
+
+            Assert.Collection(
+                test.SignatureProviderSpy.SignedFiles,
+                signedFile => Assert.Equal("a.dll", signedFile.Name),
+                signedFile => Assert.Equal("b.DLL", signedFile.Name),
+                signedFile => Assert.Equal("d.exe", signedFile.Name),
+                signedFile => Assert.Equal("e.EXE", signedFile.Name),
+                signedFile => Assert.Equal("g.dll", signedFile.Name),
+                signedFile => Assert.Equal("i.exe", signedFile.Name));
+        }
+
+        private static void ReadFileList(string contents, out Matcher matcher, out Matcher antiMatcher)
+        {
+            MatcherFactory matcherFactory = new();
+            FileListReader fileListReader = new(matcherFactory);
+
+            using (MemoryStream stream = new(Encoding.UTF8.GetBytes(contents)))
+            using (StreamReader reader = new(stream))
+            {
+                fileListReader.Read(reader, out matcher, out antiMatcher);
+            }
         }
     }
 }

@@ -21,33 +21,37 @@ namespace Sign.Core.Test
 
         internal SignatureProviderSpy()
         {
-            IContainerProvider containerProvider = Mock.Of<IContainerProvider>();
-            IDirectoryService directoryService = Mock.Of<IDirectoryService>();
-            IKeyVaultService keyVaultService = Mock.Of<IKeyVaultService>();
+            ISignatureAlgorithmProvider signatureAlgorithmProvider = Mock.Of<ISignatureAlgorithmProvider>();
+            ICertificateProvider certificateProvider = Mock.Of<ICertificateProvider>();
             ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
             IMageCli mageCli = Mock.Of<IMageCli>();
             IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();
             INuGetSignTool nuGetSignTool = Mock.Of<INuGetSignTool>();
-            IOpenVsixSignTool openVsixSignTool = Mock.Of<IOpenVsixSignTool>();
+            IVsixSignTool openVsixSignTool = Mock.Of<IVsixSignTool>();
             IServiceProvider serviceProvider = Mock.Of<IServiceProvider>();
             IToolConfigurationProvider toolConfigurationProvider = Mock.Of<IToolConfigurationProvider>();
+            IFileMatcher fileMatcher = Mock.Of<IFileMatcher>();
 
-            SignatureProvider = new AzureSignToolSignatureProvider(toolConfigurationProvider, keyVaultService, logger);
+            SignatureProvider = new AzureSignToolSignatureProvider(
+                toolConfigurationProvider,
+                signatureAlgorithmProvider,
+                certificateProvider,
+                logger);
 
             _providers = new List<ISignatureProvider>()
             {
-                new AppInstallerServiceSignatureProvider(keyVaultService, logger),
+                new AppInstallerServiceSignatureProvider(certificateProvider, logger),
                 SignatureProvider,
                 new ClickOnceSignatureProvider(
-                    keyVaultService,
-                    containerProvider,
+                    signatureAlgorithmProvider,
+                    certificateProvider,
                     serviceProvider,
-                    directoryService,
                     mageCli,
                     manifestSigner,
-                    logger),
-                new NuGetSignatureProvider(keyVaultService, nuGetSignTool, logger),
-                new VsixSignatureProvider(keyVaultService, openVsixSignTool, logger)
+                    logger,
+                    fileMatcher),
+                new NuGetSignatureProvider(signatureAlgorithmProvider, certificateProvider, nuGetSignTool, logger),
+                new VsixSignatureProvider(signatureAlgorithmProvider, certificateProvider, openVsixSignTool, logger)
             };
         }
 

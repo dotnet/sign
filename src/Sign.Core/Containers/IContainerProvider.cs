@@ -8,6 +8,7 @@ namespace Sign.Core
     {
         bool IsAppxBundleContainer(FileInfo file);
         bool IsAppxContainer(FileInfo file);
+        bool IsNuGetContainer(FileInfo file);
         bool IsZipContainer(FileInfo file);
         IContainer? GetContainer(FileInfo file);
     }

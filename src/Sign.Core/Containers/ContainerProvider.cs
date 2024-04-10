@@ -12,26 +12,27 @@ namespace Sign.Core
         private readonly HashSet<string> _appxExtensions;
         private readonly IDirectoryService _directoryService;
         private readonly IFileMatcher _fileMatcher;
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateProvider _certificateProvider;
         private readonly ILogger _logger;
         private readonly IMakeAppxCli _makeAppxCli;
+        private readonly HashSet<string> _nuGetExtensions;
         private readonly HashSet<string> _zipExtensions;
 
         // Dependency injection requires a public constructor.
         public ContainerProvider(
-            IKeyVaultService keyVaultService,
+            ICertificateProvider certificateProvider,
             IDirectoryService directoryService,
             IFileMatcher fileMatcher,
             IMakeAppxCli makeAppxCli,
             ILogger<IDirectoryService> logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(directoryService, nameof(directoryService));
             ArgumentNullException.ThrowIfNull(fileMatcher, nameof(fileMatcher));
             ArgumentNullException.ThrowIfNull(makeAppxCli, nameof(makeAppxCli));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-            _keyVaultService = keyVaultService;
+            _certificateProvider = certificateProvider;
             _directoryService = directoryService;
             _fileMatcher = fileMatcher;
             _makeAppxCli = makeAppxCli;
@@ -53,13 +54,17 @@ namespace Sign.Core
                 ".msix"
             };
 
+            _nuGetExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".nupkg",
+                ".snupkg"
+            };
+
             _zipExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".appxupload",
                 ".clickonce",
                 ".msixupload",
-                ".nupkg",
-                ".snupkg",
                 ".vsix",
                 ".zip"
             };
@@ -77,6 +82,13 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
             return _appxExtensions.Contains(file.Extension);
+        }
+
+        public bool IsNuGetContainer(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return _nuGetExtensions.Contains(file.Extension);
         }
 
         public bool IsZipContainer(FileInfo file)
@@ -97,12 +109,17 @@ namespace Sign.Core
 
             if (IsAppxContainer(file))
             {
-                return new AppxContainer(file, _keyVaultService, _directoryService, _fileMatcher, _makeAppxCli, _logger);
+                return new AppxContainer(file, _certificateProvider, _directoryService, _fileMatcher, _makeAppxCli, _logger);
             }
 
             if (IsZipContainer(file))
             {
                 return new ZipContainer(file, _directoryService, _fileMatcher, _logger);
+            }
+
+            if (IsNuGetContainer(file))
+            {
+                return new NuGetContainer(file, _directoryService, _fileMatcher, _logger);
             }
 
             return null;

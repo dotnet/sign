@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Azure.Core;
@@ -21,18 +22,19 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, "Name of the certificate in Azure Key Vault.");
-        internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, "Client ID to authenticate to Azure Key Vault.");
-        internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, "Client secret to authenticate to Azure Key Vault.");
-        internal Argument<string?> FileArgument { get; } = new("file(s)", "File to sign.");
-        internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, "Managed identity to authenticate to Azure Key Vault.");
-        internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, "Tenant ID to authenticate to Azure Key Vault.");
-        internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, "URL to an Azure Key Vault.");
+        internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, AzureKeyVaultResources.CertificateOptionDescription);
+        internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, AzureKeyVaultResources.ClientIdOptionDescription);
+        internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, AzureKeyVaultResources.ClientSecretOptionDescription);
+        internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
+        internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
+        internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, AzureKeyVaultResources.TenantIdOptionDescription);
+        internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, AzureKeyVaultResources.UrlOptionDescription);
 
-        internal AzureKeyVaultCommand(CodeCommand codeCommand)
-            : base("azure-key-vault", "Use Azure Key Vault.")
+        internal AzureKeyVaultCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
+            : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
+            ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
             _codeCommand = codeCommand;
 
@@ -53,13 +55,20 @@ namespace Sign.Cli
             this.SetHandler(async (InvocationContext context) =>
             {
                 DirectoryInfo baseDirectory = context.ParseResult.GetValueForOption(_codeCommand.BaseDirectoryOption)!;
+                string? applicationName = context.ParseResult.GetValueForOption(_codeCommand.ApplicationNameOption);
                 string? publisherName = context.ParseResult.GetValueForOption(_codeCommand.PublisherNameOption);
                 string? description = context.ParseResult.GetValueForOption(_codeCommand.DescriptionOption);
-                Uri? descriptionUrl = context.ParseResult.GetValueForOption(_codeCommand.DescriptionUrlOption);
+                // This option is required.  If its value fails to parse we won't have reached here,
+                // and after successful parsing its value will never be null.
+                // Non-null is already guaranteed; the null-forgiving operator (!) just simplifies code.
+                Uri descriptionUrl = context.ParseResult.GetValueForOption(_codeCommand.DescriptionUrlOption)!;
                 string? fileListFilePath = context.ParseResult.GetValueForOption(_codeCommand.FileListOption);
                 HashAlgorithmName fileHashAlgorithmName = context.ParseResult.GetValueForOption(_codeCommand.FileDigestOption);
                 HashAlgorithmName timestampHashAlgorithmName = context.ParseResult.GetValueForOption(_codeCommand.TimestampDigestOption);
-                Uri? timestampUrl = context.ParseResult.GetValueForOption(_codeCommand.TimestampUrlOption);
+                // This option is optional but has a default value.  If its value fails to parse we won't have
+                // reached here, and after successful parsing its value will never be null.
+                // Non-null is already guaranteed; the null-forgiving operator (!) just simplifies code.
+                Uri timestampUrl = context.ParseResult.GetValueForOption(_codeCommand.TimestampUrlOption)!;
                 LogLevel verbosity = context.ParseResult.GetValueForOption(_codeCommand.VerbosityOption);
                 string? output = context.ParseResult.GetValueForOption(_codeCommand.OutputOption);
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
@@ -68,7 +77,16 @@ namespace Sign.Cli
 
                 if (string.IsNullOrEmpty(fileArgument))
                 {
-                    context.Console.Error.WriteLine("A file or glob is required.");
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.MissingFileValue);
+                    context.ExitCode = ExitCode.InvalidOptions;
+                    return;
+                }
+                
+                // this check exists as a courtesy to users who may have been signing .clickonce files via the old workaround.
+                // at some point we should remove this check, probably once we hit v1.0
+                if (fileArgument.EndsWith(".clickonce", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.ClickOnceExtensionNotSupported);
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
@@ -80,15 +98,54 @@ namespace Sign.Cli
                 string? certificateId = context.ParseResult.GetValueForOption(CertificateOption);
                 bool useManagedIdentity = context.ParseResult.GetValueForOption(ManagedIdentityOption);
 
+                TokenCredential? credential = null;
+
+                if (useManagedIdentity)
+                {
+                    credential = new DefaultAzureCredential();
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(tenantId) ||
+                        string.IsNullOrEmpty(clientId) ||
+                        string.IsNullOrEmpty(secret))
+                    {
+                        context.Console.Error.WriteLine(
+                            FormatMessage(
+                                AzureKeyVaultResources.InvalidClientSecretCredential,
+                                TenantIdOption,
+                                ClientIdOption,
+                                ClientSecretOption));
+                        context.ExitCode = ExitCode.NoInputsFound;
+
+                        return;
+                    }
+
+                    credential = new ClientSecretCredential(tenantId!, clientId!, secret!);
+                }
+
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {
-                    context.Console.Error.WriteLine("--base-directory parameter must be rooted if specified");
+                    context.Console.Error.WriteLine(
+                        FormatMessage(
+                            AzureKeyVaultResources.InvalidBaseDirectoryValue,
+                            _codeCommand.BaseDirectoryOption));
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
 
-                Core.ServiceProvider serviceProvider = Core.ServiceProvider.CreateDefault();
+                IServiceProvider serviceProvider = serviceProviderFactory.Create(
+                    verbosity,
+                    addServices: (IServiceCollection services) =>
+                    {
+                        KeyVaultServiceProvider keyVaultServiceProvider = new(credential, url!, certificateId!);
+
+                        services.AddSingleton<ISignatureAlgorithmProvider>(
+                            (IServiceProvider serviceProvider) => keyVaultServiceProvider.GetSignatureAlgorithmProvider(serviceProvider));
+                        services.AddSingleton<ICertificateProvider>(
+                            (IServiceProvider serviceProvider) => keyVaultServiceProvider.GetCertificateProvider(serviceProvider));
+                    });
 
                 List<FileInfo> inputFiles;
 
@@ -100,7 +157,7 @@ namespace Sign.Cli
                 {
                     if (Path.IsPathRooted(fileArgument))
                     {
-                        context.Console.Error.WriteLine("The file path cannot be rooted when using a glob. Use a path relative to the working directory.");
+                        context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidFileValue);
                         context.ExitCode = ExitCode.InvalidOptions;
 
                         return;
@@ -150,14 +207,17 @@ namespace Sign.Cli
 
                 if (inputFiles.Count == 0)
                 {
-                    context.Console.Error.WriteLine("No inputs found to sign.");
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.NoFilesToSign);
                     context.ExitCode = ExitCode.NoInputsFound;
                     return;
                 }
 
                 if (inputFiles.Any(file => !file.Exists))
                 {
-                    context.Console.Error.WriteLine("Some files do not exist.  Try using a different --base-directory or a fully qualified file path.");
+                    context.Console.Error.WriteLine(
+                        FormatMessage(
+                            AzureKeyVaultResources.SomeFilesDoNotExist,
+                            _codeCommand.BaseDirectoryOption));
 
                     foreach (FileInfo file in inputFiles.Where(file => !file.Exists))
                     {
@@ -168,27 +228,6 @@ namespace Sign.Cli
                     return;
                 }
 
-                TokenCredential? credential = null;
-
-                if (useManagedIdentity)
-                {
-                    credential = new DefaultAzureCredential();
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(tenantId) ||
-                        string.IsNullOrEmpty(clientId) ||
-                        string.IsNullOrEmpty(secret))
-                    {
-                        context.Console.Error.WriteLine("If not using managed identity, all of the options are required: --azure-key-vault-tenant-id, --azure-key-vault-client-id, --azure-key-vault-secret.");
-                        context.ExitCode = ExitCode.NoInputsFound;
-
-                        return;
-                    }
-
-                    credential = new ClientSecretCredential(tenantId!, clientId!, secret!);
-                }
-
                 ISigner signer = serviceProvider.GetRequiredService<ISigner>();
 
                 context.ExitCode = await signer.SignAsync(
@@ -196,16 +235,14 @@ namespace Sign.Cli
                     output,
                     fileList,
                     baseDirectory,
+                    applicationName,
                     publisherName,
                     description,
                     descriptionUrl,
                     timestampUrl,
                     maxConcurrency,
                     fileHashAlgorithmName,
-                    timestampHashAlgorithmName,
-                    credential,
-                    url!,
-                    certificateId!);
+                    timestampHashAlgorithmName);
             });
         }
 
@@ -217,6 +254,15 @@ namespace Sign.Cli
             }
 
             return Path.Combine(baseDirectory.FullName, file);
+        }
+
+        private static string FormatMessage(string format, params IdentifierSymbol[] symbols)
+        {
+            string[] formattedSymbols = symbols
+                .Select(symbol => $"--{symbol.Name}")
+                .ToArray();
+
+            return string.Format(CultureInfo.CurrentCulture, format, formattedSymbols);
         }
     }
 }

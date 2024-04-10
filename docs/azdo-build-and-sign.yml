@@ -1,0 +1,97 @@
+trigger:
+- main
+- rel/*
+
+pr:
+- main
+- rel/*
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: ubuntu-latest
+    variables:
+      BuildConfiguration: Release
+
+    steps:
+
+    # Build steps  
+    - task: UseDotNet@2
+      displayName: 'Use .NET SDK 6.x'
+      inputs:
+        version: 6.x
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: pack
+        packagesToPack: src/AClassLibrary/AClassLibrary.csproj
+        configuration: $(BuildConfiguration)
+        packDirectory: $(Build.ArtifactStagingDirectory)/Packages    
+        verbosityPack: Minimal
+      displayName: Build Package
+
+    # Publish the artifacts to sign and the file list, if any, as artifacts for the signing stage
+    - publish: $(Build.ArtifactStagingDirectory)/Packages   
+      displayName: Publish Build Artifacts  
+      artifact: BuildPackages
+
+    - publish: config
+      displayName: Publish signing file list
+      artifact: config
+
+- stage: CodeSign
+  dependsOn: Build
+  condition: and(succeeded('Build'), not(eq(variables['build.reason'], 'PullRequest'))) # Only run this stage on pushes to the main branch
+  jobs:
+  - job: CodeSign
+    displayName: Code Signing
+    pool:
+      vmImage: windows-latest # Code signing must run on a Windows agent for Authenticode signing (dll/exe)
+    variables:
+    - group: Sign Client Credentials # This is a variable group with secrets in it 
+
+    steps:
+
+    # Retreive unsigned artifacts and file list
+    - download: current
+      artifact: config
+      displayName: Download signing file list
+
+    - download: current
+      artifact: BuildPackages
+      displayName: Download build artifacts
+
+    - task: UseDotNet@2
+      displayName: 'Use .NET SDK 6.x'
+      inputs:
+        version: 6.x
+
+    # Install the code signing tool
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install --tool-path . sign --version 0.9.0-beta.23127.3
+      displayName: Install SignTool tool
+
+    # Run the signing command
+    - pwsh: |
+        .\sign code azure-key-vault `
+        "**/*.nupkg" `
+        --base-directory "$(Pipeline.Workspace)\BuildPackages" `
+        --file-list "$(Pipeline.Workspace)\config\filelist.txt" `
+        --publisher-name "Contoso" `
+        --description "One Sign CLI demo" `
+        --description-url "https://github.com/dotnet/sign" `
+        --azure-key-vault-tenant-id "$(SignTenantId)" `
+        --azure-key-vault-client-id "$(SignClientId)" `
+        --azure-key-vault-client-secret '$(SignClientSecret)' `
+        --azure-key-vault-certificate "$(SignKeyVaultCertificate)" `
+        --azure-key-vault-url "$(SignKeyVaultUrl)"
+      displayName: Sign packages
+    
+    # Publish the signed packages
+    - publish: $(Pipeline.Workspace)/BuildPackages
+      displayName: Publish Signed Packages
+      artifact: SignedPackages

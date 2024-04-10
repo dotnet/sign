@@ -4,25 +4,24 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
 
 namespace Sign.Cli.Test
 {
     public abstract class OptionTests<T>
     {
         private readonly T? _expectedValue;
-        private readonly bool _isRequired;
 
         protected Option<T> Option { get; }
         protected string LongOption { get; }
         protected string ShortOption { get; }
 
-        protected OptionTests(Option<T> option, string shortOption, string longOption, T? expectedValue, bool isRequired)
+        protected OptionTests(Option<T> option, string shortOption, string longOption, T? expectedValue)
         {
             Option = option;
             ShortOption = shortOption;
             LongOption = longOption;
             _expectedValue = expectedValue;
-            _isRequired = isRequired;
         }
 
         [Fact]
@@ -34,19 +33,31 @@ namespace Sign.Cli.Test
         [Fact]
         public void Option_WithOnlyValue_HasParseErrors()
         {
-            VerifyHasError("x");
+            const string value = "x";
+
+            if (Option.IsRequired)
+            {
+                VerifyHasErrors(
+                    value,
+                    GetOptionIsRequiredMessage(ShortOption),
+                    GetUnrecognizedCommandOrArgumentMessage(value));
+            }
+            else
+            {
+                VerifyHasErrors(value, GetUnrecognizedCommandOrArgumentMessage(value));
+            }
         }
 
         [Fact]
         public void Option_WithShortOptionAndMissingValue_HasParseErrors()
         {
-            VerifyHasError(ShortOption);
+            VerifyHasErrors(ShortOption, GetRequiredArgumentMissingMessage(ShortOption));
         }
 
         [Fact]
         public void Option_WithLongOptionAndMissingValue_HasParseErrors()
         {
-            VerifyHasError(LongOption);
+            VerifyHasErrors(LongOption, GetRequiredArgumentMissingMessage(LongOption));
         }
 
         [Fact]
@@ -63,7 +74,7 @@ namespace Sign.Cli.Test
             }
             else
             {
-                VerifyHasError(commandLine);
+                VerifyHasErrors(commandLine, GetUnrecognizedCommandOrArgumentMessage(commandLine));
             }
         }
 
@@ -100,20 +111,29 @@ namespace Sign.Cli.Test
             Assert.Equal(expectedValue, actualValue);
         }
 
-        protected void VerifyHasError(string commandLine)
+        protected void VerifyHasErrors(string commandLine, params string[] expectedErrorMessages)
         {
             ParseResult result = Parse(commandLine);
+            HashSet<string> expectedMessages = new(expectedErrorMessages, StringComparer.Ordinal);
+            HashSet<string> actualMessages = result.Errors
+                .Select(error => error.Message)
+                .ToHashSet(StringComparer.Ordinal);
 
-            Assert.NotEmpty(result.Errors);
+            Assert.NotEmpty(actualMessages);
+            Assert.Equal(expectedMessages, actualMessages);
         }
 
         private void VerifyIsRequired()
         {
             ParseResult result = Parse();
 
-            if (_isRequired)
+            if (Option.IsRequired)
             {
-                Assert.NotEmpty(result.Errors);
+                ParseError parseError = Assert.Single(result.Errors);
+                string actualMessage = parseError.Message;
+                string expectedMessage = GetOptionIsRequiredMessage(ShortOption);
+
+                Assert.Equal(expectedMessage, actualMessage);
             }
             else
             {
@@ -126,6 +146,35 @@ namespace Sign.Cli.Test
             RootCommand rootCommand = new() { Option };
 
             return rootCommand.Parse(commandLine);
+        }
+
+        protected static string GetFormattedResourceString(string resourceString, params string[] arguments)
+        {
+            return string.Format(CultureInfo.CurrentCulture, resourceString, arguments);
+        }
+
+        private static string GetRequiredArgumentMissingMessage(string argumentName)
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "Required argument missing for option: '{0}'.",
+                argumentName);
+        }
+
+        protected static string GetOptionIsRequiredMessage(string optionName)
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "Option '{0}' is required.",
+                optionName);
+        }
+
+        protected static string GetUnrecognizedCommandOrArgumentMessage(string name)
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                "Unrecognized command or argument '{0}'.",
+                name);
         }
     }
 }

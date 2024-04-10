@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../Resources.resx">
+    <body>
+      <trans-unit id="AzureSignToolSignatureProviderSigning">
+        <source>Signing SignTool job with {count} files.</source>
+        <target state="translated">{count} 파일로 SignTool 작업에 서명하는 중입니다.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+      <trans-unit id="CertificateIsExpired">
+        <source>The certificate is expired.</source>
+        <target state="translated">인증서가 만료되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateIsNotYetTimeValid">
+        <source>The certificate is not yet time valid.</source>
+        <target state="translated">인증서가 아직 유효하지 않습니다.</target>
+        <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
+      </trans-unit>
+      <trans-unit id="CertificateNotFound">
+        <source>Unable to find a matching certificate.</source>
+        <target state="new">Unable to find a matching certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInFile">
+        <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
+        <target state="new">Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInMachineStore">
+        <source>Unable to find a matching certificate in machine certificate store.</source>
+        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInUserStore">
+        <source>Unable to find a matching certificate in user certificate store.</source>
+        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateRSANotFound">
+        <source>Unable to acquire RSA private key for the provided certificate.</source>
+        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CliStandardError">
+        <source>{fileName} returned the error {error}</source>
+        <target state="translated">{fileName}에서 {error} 오류를 반환했습니다.</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</note>
+      </trans-unit>
+      <trans-unit id="CliStandardOutput">
+        <source>{fileName} returned the output {output}</source>
+        <target state="translated">{fileName}에서 출력 {output}을(를) 반환했습니다.</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceSignatureProviderSigning">
+        <source>Signing Mage job with {count} files.</source>
+        <target state="translated">{count} 파일로 Mage 작업에 서명하는 중입니다.</target>
+        <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+      <trans-unit id="CreatingDirectory">
+        <source>Creating directory {path}.</source>
+        <target state="translated">디렉터리 {path}을(를) 생성하는 중입니다.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="DeletedDirectory">
+        <source>Directory {path} deleted.</source>
+        <target state="translated">디렉터리 {path}이(가) 삭제되었습니다.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="DeletingDirectory">
+        <source>Deleting directory {path}.</source>
+        <target state="translated">디렉터리 {path}을(를) 삭제하는 중입니다.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="DirectoryNotDeleted">
+        <source>Directory {path} still exists.</source>
+        <target state="translated">디렉터리 {path}이(가) 여전히 존재합니다.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="EditingAppInstaller">
+        <source>Editing AppInstaller job with {count} files.</source>
+        <target state="translated">{count} 파일로 AppInstaller 작업을 편집하는 중입니다.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+      <trans-unit id="ErrorSigningVsix">
+        <source>An unspecified error occurred during VSIX signing.</source>
+        <target state="translated">VSIX 서명 중에 지정되지 않은 오류가 발생했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionWhileDeletingDirectory">
+        <source>An exception occurred while attempting to delete directory {path}.</source>
+        <target state="translated">디렉터리 {path}을(를) 삭제하려고 시도하는 동안 예외가 발생했습니다.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="FetchedCertificate">
+        <source>Fetched certificate. [{milliseconds} ms]</source>
+        <target state="translated">인증서를 가져왔습니다. [{milliseconds}ms]</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+      </trans-unit>
+      <trans-unit id="FetchingCertificate">
+        <source>Fetching certificate from Azure Key Vault.</source>
+        <target state="translated">Azure Key Vault에서 인증서를 가져오는 중입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidSha1ThumbrpintValue">
+        <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
+        <target state="new">Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</target>
+        <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
+      </trans-unit>
+      <trans-unit id="MultiplePrivateKeyContainersError">
+        <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
+        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoPrivateKeyContainerError">
+        <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
+        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OpeningContainer">
+        <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
+        <target state="translated">컨테이너 {ContainerFilePath}을(를) {DirectoryPath}(으)로 추출하는 중입니다.</target>
+        <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="ProcessCouldNotBeKilled">
+        <source>{0} timed out and could not be killed.</source>
+        <target state="translated">{0}이(가) 시간 초과되어 종료할 수 없습니다.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="ProcessDidNotExitInTime">
+        <source>{fileName} took too long to respond. The process exit code is {exitCode}.</source>
+        <target state="translated">{fileName}이(가) 응답하는 데 너무 오래 걸렸습니다. 프로세스 종료 코드는 {exitCode}입니다.</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{exitCode}"} is a number representing the error code returned from a process.</note>
+      </trans-unit>
+      <trans-unit id="ProcessDidNotExitInTimeWithArguments">
+        <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
+        <target state="translated">{0} 응답하는 데 너무 오래 걸렸습니다. 프로세스 종료 코드는 {1}입니다. 인수: {2}</target>
+        <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
+      </trans-unit>
+      <trans-unit id="RunningCli">
+        <source>Running {fileName} with parameters: '{args}'.</source>
+        <target state="translated">매개 변수 '{args}'을(를) 사용하여 {fileName}을(를) 실행 중입니다.</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</note>
+      </trans-unit>
+      <trans-unit id="SavingContainer">
+        <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
+        <target state="translated">{DirectoryPath}에서 컨테이너 {ContainerFilePath}을(를) 다시 빌드하는 중입니다.</target>
+        <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="SignAsyncCalled">
+        <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
+        <target state="translated">{filePath}에 대해 SignAsync가 호출되었습니다. 로컬에서 {localFilePath}을(를) 사용하고 있습니다.</target>
+        <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
+      </trans-unit>
+      <trans-unit id="SigningAttempt">
+        <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
+        <target state="translated">{seconds}초 후에 {maxAttempts}회 시도 중 #{attempt}을(를) 시도하는 중입니다.</target>
+        <note>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</note>
+      </trans-unit>
+      <trans-unit id="SigningFailed">
+        <source>Could not sign {0}.</source>
+        <target state="translated">{0}에 서명할 수 없습니다.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningFailedAfterAllAttempts">
+        <source>Failed to sign. Attempts exceeded.</source>
+        <target state="translated">서명하지 못했습니다. 시도 횟수를 초과했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SigningFailedWithError">
+        <source>Signing failed with error {errorCode}.</source>
+        <target state="translated">오류 {errorCode}(으)로 인해 서명에 실패했습니다.</target>
+        <note>{Placeholder="{errorCode}"} is an error code.</note>
+      </trans-unit>
+      <trans-unit id="SigningFile">
+        <source>Signing {filePath}.</source>
+        <target state="translated">{filePath}에 서명하는 중입니다.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningSucceeded">
+        <source>Signing {filePath} succeeded.</source>
+        <target state="new">Signing {filePath} succeeded.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningSucceededWithTimeElapsed">
+        <source>Completed in {millseconds} ms.</source>
+        <target state="translated">{millseconds} 밀리초 후에 완료되었습니다.</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+      </trans-unit>
+      <trans-unit id="SubmittingFileForSigning">
+        <source>Submitting {filePath} for signing.</source>
+        <target state="translated">서명을 위해 {filePath}을(를) 제출하는 중입니다.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedPublicKeyAlgorithm">
+        <source>The certificate has an unsupported public key algorithm.</source>
+        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
+        <source>Specified {0} is invalid.</source>
+        <target state="new">Specified {0} is invalid.</target>
+        <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
+      </trans-unit>
+      <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
+        <source>Unknown signing algorithm.</source>
+        <target state="new">Unknown signing algorithm.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
+        <source>The algorithm selected is not supported.</source>
+        <target state="new">The algorithm selected is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValueCannotBeEmptyString">
+        <source>The value cannot be an empty string.</source>
+        <target state="translated">값은 빈 문자열일 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VsixSignatureProviderSigning">
+        <source>Signing VsixSignTool job with {count} files.</source>
+        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

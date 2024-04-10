@@ -1,0 +1,43 @@
+# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=231
+
+variables:
+  - name: _TeamName
+    value: DotNetCore
+  - name: Build.Repository.Clean
+    value: true
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - "*.md"
+
+stages:
+- stage: Build_Windows
+  displayName: Build Windows
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      jobs:
+      - job: Windows
+        pool: # See https://helix.dot.net/ for VM names.
+          name: NetCore-Public
+          demands: ImageOverride -equals windows.vs2022preview.amd64.open
+        variables:
+          - name: _SignType
+            value: test
+        strategy:
+          matrix:
+            Release:
+              _BuildConfig: Release
+        steps:
+        - script: eng\common\CIBuild.cmd
+            -configuration $(_BuildConfig)
+            -prepareMachine
+          name: Build
+          displayName: Build and run tests
+          condition: succeeded()

@@ -22,7 +22,7 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(file, nameof(file));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            Logger.LogInformation("Signing using {fileName}", file.FullName);
+            Logger.LogInformation(Resources.SigningFile, file.FullName);
 
             SignCommand signCommand = new(Logger);
 

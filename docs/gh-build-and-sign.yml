@@ -1,0 +1,98 @@
+name: Build and Sign
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:    
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Build steps  
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.x
+        
+    - name: Build Package
+      run: dotnet pack --configuration Release src/AClassLibrary/AClassLibrary.csproj
+    
+    # Publish the artifacts to sign and the file list, if any, as artifacts for the signing stage
+    - name: Upload signing file list
+      uses: actions/upload-artifact@v3
+      with:
+        name: config
+        path: config
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: BuildArtifacts
+        path: src/AClassLibrary/bin/Release/**/*.nupkg
+    
+  sign:
+    needs: build
+    runs-on: windows-latest # Code signing must run on a Windows agent for Authenticode signing (dll/exe)
+    if: ${{ github.ref == 'refs/heads/main' }} # Only run this job on pushes to the main branch
+    permissions:
+      id-token: write # Required for requesting the JWT
+      
+    steps:
+
+    # Download signing configuration and artifacts
+    - name: Download signing config
+      uses: actions/download-artifact@v3
+      with:
+        name: config
+        path: config
+        
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: BuildArtifacts
+        path: BuildArtifacts
+    
+    # .NET is required on the agent for the tool to run
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.x
+
+    # Install the code signing tool    
+    - name: Install Sign CLI tool
+      run: dotnet tool install --tool-path . sign --version 0.9.0-beta.23127.3
+    
+    # Login to Azure using a ServicePrincipal configured to authenticate agaist a GitHub Action
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        allow-no-subscriptions: true
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    # Run the signing command
+    - name: Sign artifacts
+      shell: pwsh
+      run: >
+        ./sign code azure-key-vault
+        **/*.nupkg
+        --base-directory "${{ github.workspace }}/BuildArtifacts"
+        --file-list "${{ github.workspace }}/config/filelist.txt"
+        --publisher-name "Contoso"
+        --description "One Sign CLI demo"
+        --description-url "https://github.com/dotnet/sign"
+        --azure-key-vault-managed-identity true
+        --azure-key-vault-url "${{ secrets.KEY_VAULT_URL }}"
+        --azure-key-vault-certificate "${{ secrets.KEY_VAULT_CERTIFICATE_ID }}"
+    
+    # Publish the signed packages
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: SignedArtifacts
+        path: BuildArtifacts

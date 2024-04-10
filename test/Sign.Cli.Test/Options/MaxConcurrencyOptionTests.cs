@@ -9,14 +9,16 @@ namespace Sign.Cli.Test
     public class MaxConcurrencyOptionTests : Int32OptionTests
     {
         public MaxConcurrencyOptionTests()
-            : base(new CodeCommand().MaxConcurrencyOption, "-m", "--max-concurrency", isRequired: false)
+            : base(new CodeCommand().MaxConcurrencyOption, "-m", "--max-concurrency")
         {
         }
 
         [Fact]
         public void Option_WhenValueFailsToParse_HasError()
         {
-            VerifyHasError("x");
+            const string value = "x";
+
+            VerifyHasErrors(value, GetUnrecognizedCommandOrArgumentMessage(value));
         }
 
         [Fact]
@@ -33,7 +35,9 @@ namespace Sign.Cli.Test
         [InlineData(-1)]
         public void Option_WhenValueIsLessThanOne_HasError(int value)
         {
-            VerifyHasError($"{LongOption} {value}");
+            VerifyHasErrors(
+                $"{LongOption} {value}",
+                GetFormattedResourceString(Resources.InvalidMaxConcurrencyValue, LongOption));
         }
     }
 }

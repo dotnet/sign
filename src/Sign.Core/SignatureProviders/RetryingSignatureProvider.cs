@@ -25,27 +25,29 @@ namespace Sign.Core
         protected async Task<bool> SignAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 publicCertificate, SignOptions options)
         {
             var retry = TimeSpan.FromSeconds(5);
+            const int maxAttempts = 3;
             var attempt = 1;
+
             do
             {
                 if (attempt > 1)
                 {
-                    Logger.LogInformation("Performing attempt #{attempt} of 3 attempts after {seconds}s", attempt, retry.TotalSeconds);
+                    Logger.LogInformation(Resources.SigningAttempt, attempt, maxAttempts, retry.TotalSeconds);
                     await Task.Delay(retry);
                     retry = TimeSpan.FromSeconds(Math.Pow(retry.TotalSeconds, 1.5));
                 }
 
                 if (await SignCoreAsync(args, file, rsaPrivateKey, publicCertificate, options))
                 {
-                    Logger.LogInformation($"Signed successfully");
+                    Logger.LogInformation(Resources.SigningSucceeded, file.FullName);
                     return true;
                 }
 
                 attempt++;
 
-            } while (attempt <= 3);
+            } while (attempt <= maxAttempts);
 
-            Logger.LogError($"Failed to sign. Attempts exceeded");
+            Logger.LogError(Resources.SigningFailedAfterAllAttempts);
 
             return false;
         }

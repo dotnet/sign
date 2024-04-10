@@ -10,8 +10,8 @@ namespace Sign.Cli.Test
     {
         private const int ExpectedValue = 3;
 
-        protected Int32OptionTests(Option<int> option, string shortOption, string longOption, bool isRequired)
-            : base(option, shortOption, longOption, ExpectedValue, isRequired)
+        protected Int32OptionTests(Option<int> option, string shortOption, string longOption)
+            : base(option, shortOption, longOption, ExpectedValue)
         {
         }
     }

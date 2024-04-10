@@ -3,7 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
-using Azure.Core;
 
 namespace Sign.Core
 {
@@ -14,15 +13,13 @@ namespace Sign.Core
             string? outputFile,
             FileInfo? fileList,
             DirectoryInfo baseDirectory,
+            string? applicationName,
             string? publisherName,
             string? description,
             Uri? descriptionUrl,
-            Uri? timestampUrl,
+            Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential tokenCredential,
-            Uri keyVaultUrl,
-            string certificateName);
+            HashAlgorithmName timestampHashAlgorithm);
     }
 }

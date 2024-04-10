@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="pt-BR" original="../Resources.resx">
+    <body>
+      <trans-unit id="AzureSignToolSignatureProviderSigning">
+        <source>Signing SignTool job with {count} files.</source>
+        <target state="translated">Autenticando o trabalho SignTool com {count} arquivos.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+      <trans-unit id="CertificateIsExpired">
+        <source>The certificate is expired.</source>
+        <target state="translated">O certificado expirou.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateIsNotYetTimeValid">
+        <source>The certificate is not yet time valid.</source>
+        <target state="translated">O certificado ainda não é válido.</target>
+        <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
+      </trans-unit>
+      <trans-unit id="CertificateNotFound">
+        <source>Unable to find a matching certificate.</source>
+        <target state="new">Unable to find a matching certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInFile">
+        <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
+        <target state="new">Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInMachineStore">
+        <source>Unable to find a matching certificate in machine certificate store.</source>
+        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInUserStore">
+        <source>Unable to find a matching certificate in user certificate store.</source>
+        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateRSANotFound">
+        <source>Unable to acquire RSA private key for the provided certificate.</source>
+        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CliStandardError">
+        <source>{fileName} returned the error {error}</source>
+        <target state="translated">{fileName} retornou o erro {error}</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</note>
+      </trans-unit>
+      <trans-unit id="CliStandardOutput">
+        <source>{fileName} returned the output {output}</source>
+        <target state="translated">{fileName} retornou a saída {output}</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceSignatureProviderSigning">
+        <source>Signing Mage job with {count} files.</source>
+        <target state="translated">Autenticando o trabalho Mage com {count} arquivos.</target>
+        <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+      <trans-unit id="CreatingDirectory">
+        <source>Creating directory {path}.</source>
+        <target state="translated">Criando o diretório {path}.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="DeletedDirectory">
+        <source>Directory {path} deleted.</source>
+        <target state="translated">Diretório {path} excluído.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="DeletingDirectory">
+        <source>Deleting directory {path}.</source>
+        <target state="translated">Excluindo o diretório {path}.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="DirectoryNotDeleted">
+        <source>Directory {path} still exists.</source>
+        <target state="translated">O diretório {path} ainda existe.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="EditingAppInstaller">
+        <source>Editing AppInstaller job with {count} files.</source>
+        <target state="translated">Editando o trabalho do AppInstaller com {count} arquivos.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+      <trans-unit id="ErrorSigningVsix">
+        <source>An unspecified error occurred during VSIX signing.</source>
+        <target state="translated">Ocorreu um erro não especificado durante a autenticação do VSIX.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExceptionWhileDeletingDirectory">
+        <source>An exception occurred while attempting to delete directory {path}.</source>
+        <target state="translated">Ocorreu uma exceção ao tentar excluir o diretório {path}.</target>
+        <note>{Placeholder="{path}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="FetchedCertificate">
+        <source>Fetched certificate. [{milliseconds} ms]</source>
+        <target state="translated">Certificado buscado. [{milliseconds} ms]</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+      </trans-unit>
+      <trans-unit id="FetchingCertificate">
+        <source>Fetching certificate from Azure Key Vault.</source>
+        <target state="translated">Buscando certificado no Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidSha1ThumbrpintValue">
+        <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
+        <target state="new">Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</target>
+        <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
+      </trans-unit>
+      <trans-unit id="MultiplePrivateKeyContainersError">
+        <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
+        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoPrivateKeyContainerError">
+        <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
+        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OpeningContainer">
+        <source>Extracting container {ContainerFilePath} to {DirectoryPath}.</source>
+        <target state="translated">Extraindo o contêiner {ContainerFilePath} para {DirectoryPath}.</target>
+        <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="ProcessCouldNotBeKilled">
+        <source>{0} timed out and could not be killed.</source>
+        <target state="translated">{0} atingiu o tempo limite e não pôde ser eliminado.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="ProcessDidNotExitInTime">
+        <source>{fileName} took too long to respond. The process exit code is {exitCode}.</source>
+        <target state="translated">{fileName} demorou muito para responder. O código de saída do processo é {exitCode}.</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{exitCode}"} is a number representing the error code returned from a process.</note>
+      </trans-unit>
+      <trans-unit id="ProcessDidNotExitInTimeWithArguments">
+        <source>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</source>
+        <target state="translated">{0} demorou muito para responder. O código de saída do processo {1}. Argumentos: {2}</target>
+        <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
+      </trans-unit>
+      <trans-unit id="RunningCli">
+        <source>Running {fileName} with parameters: '{args}'.</source>
+        <target state="translated">Executando {fileName} com parâmetros: '{args}'.</target>
+        <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</note>
+      </trans-unit>
+      <trans-unit id="SavingContainer">
+        <source>Rebuilding container {ContainerFilePath} from {DirectoryPath}.</source>
+        <target state="translated">Recriando o contêiner {ContainerFilePath} a partir do {DirectoryPath}.</target>
+        <note>{Placeholder="{ContainerFilePath}"} is a file path, and {Placeholder="{DirectoryPath}"} is a directory path.</note>
+      </trans-unit>
+      <trans-unit id="SignAsyncCalled">
+        <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
+        <target state="translated">SignAsync chamado para {filePath}. Usando {localFilePath} localmente.</target>
+        <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
+      </trans-unit>
+      <trans-unit id="SigningAttempt">
+        <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
+        <target state="translated">Executando a tentativa #{attempt} de {maxAttempts} tentativas após {seconds} s.</target>
+        <note>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</note>
+      </trans-unit>
+      <trans-unit id="SigningFailed">
+        <source>Could not sign {0}.</source>
+        <target state="translated">Não foi possível autenticar {0}.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningFailedAfterAllAttempts">
+        <source>Failed to sign. Attempts exceeded.</source>
+        <target state="translated">Falha ao autenticar. Tentativas excedidas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SigningFailedWithError">
+        <source>Signing failed with error {errorCode}.</source>
+        <target state="translated">Falha na autenticação com o erro {errorCode}.</target>
+        <note>{Placeholder="{errorCode}"} is an error code.</note>
+      </trans-unit>
+      <trans-unit id="SigningFile">
+        <source>Signing {filePath}.</source>
+        <target state="translated">Autenticando {filePath}.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningSucceeded">
+        <source>Signing {filePath} succeeded.</source>
+        <target state="new">Signing {filePath} succeeded.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningSucceededWithTimeElapsed">
+        <source>Completed in {millseconds} ms.</source>
+        <target state="translated">Concluído em {millseconds} ms.</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+      </trans-unit>
+      <trans-unit id="SubmittingFileForSigning">
+        <source>Submitting {filePath} for signing.</source>
+        <target state="translated">Enviando {filePath} para autenticação.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedPublicKeyAlgorithm">
+        <source>The certificate has an unsupported public key algorithm.</source>
+        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
+        <source>Specified {0} is invalid.</source>
+        <target state="new">Specified {0} is invalid.</target>
+        <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
+      </trans-unit>
+      <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
+        <source>Unknown signing algorithm.</source>
+        <target state="new">Unknown signing algorithm.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
+        <source>The algorithm selected is not supported.</source>
+        <target state="new">The algorithm selected is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValueCannotBeEmptyString">
+        <source>The value cannot be an empty string.</source>
+        <target state="translated">O valor não pode ser uma cadeia de caracteres vazia.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VsixSignatureProviderSigning">
+        <source>Signing VsixSignTool job with {count} files.</source>
+        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <note>{Placeholder="{count}"} is the number of files to be signed.</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

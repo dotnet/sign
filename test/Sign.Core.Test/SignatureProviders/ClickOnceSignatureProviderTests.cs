@@ -17,13 +17,13 @@ namespace Sign.Core.Test
         public ClickOnceSignatureProviderTests()
         {
             _provider = new ClickOnceSignatureProvider(
-                Mock.Of<IKeyVaultService>(),
-                Mock.Of<IContainerProvider>(),
+                Mock.Of<ISignatureAlgorithmProvider>(),
+                Mock.Of<ICertificateProvider>(),
                 Mock.Of<IServiceProvider>(),
-                Mock.Of<IDirectoryService>(),
                 Mock.Of<IMageCli>(),
                 Mock.Of<IManifestSigner>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<ISignatureProvider>>(),
+                Mock.Of<IFileMatcher>());
         }
 
         public void Dispose()
@@ -32,35 +32,35 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void Constructor_WhenKeyVaultServiceIsNull_Throws()
+        public void Constructor_WhenSignatureAlgorithmProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    keyVaultService: null!,
-                    Mock.Of<IContainerProvider>(),
+                    signatureAlgorithmProvider: null!,
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
-            Assert.Equal("keyVaultService", exception.ParamName);
+            Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenContainerProviderIsNull_Throws()
+        public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    containerProvider: null!,
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    certificateProvider: null!,
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
-            Assert.Equal("containerProvider", exception.ParamName);
+            Assert.Equal("certificateProvider", exception.ParamName);
         }
 
         [Fact]
@@ -68,31 +68,15 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    Mock.Of<IContainerProvider>(),
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
                     serviceProvider: null!,
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
-        }
-
-        [Fact]
-        public void Constructor_WhenDirectoryServiceIsNull_Throws()
-        {
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    Mock.Of<IContainerProvider>(),
-                    Mock.Of<IServiceProvider>(),
-                    directoryService: null!,
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
-
-            Assert.Equal("directoryService", exception.ParamName);
         }
 
         [Fact]
@@ -100,13 +84,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    Mock.Of<IContainerProvider>(),
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     mageCli: null!,
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("mageCli", exception.ParamName);
         }
@@ -116,13 +100,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    Mock.Of<IContainerProvider>(),
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     manifestSigner: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("manifestSigner", exception.ParamName);
         }
@@ -132,15 +116,31 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSignatureProvider(
-                    Mock.Of<IKeyVaultService>(),
-                    Mock.Of<IContainerProvider>(),
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
-                    Mock.Of<IDirectoryService>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    logger: null!));
+                    logger: null!,
+                    Mock.Of<IFileMatcher>()));
 
             Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenFileMatcherIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new ClickOnceSignatureProvider(
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
+                    Mock.Of<IServiceProvider>(),
+                    Mock.Of<IMageCli>(),
+                    Mock.Of<IManifestSigner>(),
+                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    fileMatcher: null!));
+
+            Assert.Equal("fileMatcher", exception.ParamName);
         }
 
         [Fact]
@@ -153,8 +153,9 @@ namespace Sign.Core.Test
         }
 
         [Theory]
-        [InlineData(".clickonce")]
-        [InlineData(".CLICKONCE")] // test case insensitivity
+        [InlineData(".application")]
+        [InlineData(".APPLICATION")] // test case insensitivity
+        [InlineData(".vsto")]
         public void CanSign_WhenFileExtensionMatches_ReturnsTrue(string extension)
         {
             FileInfo file = new($"file{extension}");
@@ -164,8 +165,8 @@ namespace Sign.Core.Test
 
         [Theory]
         [InlineData(".txt")]
-        [InlineData(".clİckonce")] // Turkish İ (U+0130)
-        [InlineData(".clıckonce")] // Turkish ı (U+0131)
+        [InlineData(".applİcation")] // Turkish İ (U+0130)
+        [InlineData(".applıcation")] // Turkish ı (U+0131)
         public void CanSign_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
         {
             FileInfo file = new($"file{extension}");
@@ -179,7 +180,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => _provider.SignAsync(
                     files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256)));
+                    new SignOptions(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"))));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -195,9 +196,13 @@ namespace Sign.Core.Test
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact]
-        public async Task SignAsync_WhenFilesIsClickOnceFile_Signs()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("PublisherName")]
+        public async Task SignAsync_WhenFilesIsClickOnceFile_Signs(string publisherName)
         {
+            const string commonName = "Test certificate (DO NOT TRUST)";
+
             using (TemporaryDirectory temporaryDirectory = new(_directoryService))
             {
                 FileInfo clickOnceFile = new(
@@ -221,9 +226,9 @@ namespace Sign.Core.Test
                 FileInfo manifestFile = AddFile(
                     containerSpy,
                     temporaryDirectory.Directory,
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+                    @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
-  <publisherIdentity name=""CN=Test certificate (DO NOT TRUST), O=unit.test"" />
+  <publisherIdentity name=""CN={commonName}, O=unit.test"" />
 </asmv1:assembly>",
                     "MyApp_1_0_0_0", "MyApp.dll.manifest");
                 FileInfo exeDeployFile = AddFile(
@@ -238,7 +243,8 @@ namespace Sign.Core.Test
                     "MyApp_1_0_0_0", "MyApp.json.deploy");
 
                 SignOptions options = new(
-                    "PublisherName",
+                    "ApplicationName",
+                    publisherName,
                     "Description",
                     new Uri("https://description.test"),
                     HashAlgorithmName.SHA256,
@@ -250,18 +256,14 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<IKeyVaultService> keyVaultService = new();
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
 
-                    keyVaultService.Setup(x => x.GetCertificateAsync())
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
                         .ReturnsAsync(certificate);
 
-                    keyVaultService.Setup(x => x.GetRsaAsync())
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
                         .ReturnsAsync(privateKey);
-
-                    Mock<IContainerProvider> containerProvider = new();
-
-                    containerProvider.Setup(x => x.GetContainer(It.IsAny<FileInfo>()))
-                        .Returns(containerSpy);
 
                     Mock<IServiceProvider> serviceProvider = new();
                     AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
@@ -269,51 +271,56 @@ namespace Sign.Core.Test
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
                         .Returns(aggregatingSignatureProviderSpy);
 
-                    IDirectoryService directoryService = Mock.Of<IDirectoryService>();
                     Mock<IMageCli> mageCli = new();
-                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.PublisherName}\"";
+                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);
 
-                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.PublisherName}\" -appm \"{manifestFile.FullName}\" -pub \"Test certificate (DO NOT TRUST)\"  -SupportURL https://description.test/";
+                    string publisher;
+
+                    if (string.IsNullOrEmpty(options.PublisherName))
+                    {
+                        publisher = certificate.SubjectName.Name;
+                    }
+                    else
+                    {
+                        publisher = options.PublisherName;
+                    }
+
+                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -appm \"{manifestFile.FullName}\" -SupportURL https://description.test/";
                     mageCli.Setup(x => x.RunAsync(
                             It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
                         .ReturnsAsync(0);
 
                     Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
 
                     manifestSigner.Setup(
                         x => x.Sign(
-                            It.Is<FileInfo>(fi => ReferenceEquals(manifestFile, fi)),
+                            It.Is<FileInfo>(fi => fi.Name == manifestFile.Name),
                             It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
 
                     manifestSigner.Setup(
                         x => x.Sign(
-                            It.Is<FileInfo>(fi => ReferenceEquals(applicationFile, fi)),
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
                             It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
 
                     ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
                     ClickOnceSignatureProvider provider = new(
-                        keyVaultService.Object,
-                        containerProvider.Object,
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
                         serviceProvider.Object,
-                        directoryService,
                         mageCli.Object,
                         manifestSigner.Object,
-                        logger);
+                        logger,
+                        fileMatcher.Object);
 
-                    await provider.SignAsync(new[] { clickOnceFile }, options);
-
-                    Assert.Equal(1, containerSpy.OpenAsync_CallCount);
-                    Assert.Equal(0, containerSpy.GetFilesWithMatcher_CallCount);
-                    Assert.Equal(2, containerSpy.GetFiles_CallCount);
-                    Assert.Equal(1, containerSpy.SaveAsync_CallCount);
-                    Assert.Equal(1, containerSpy.Dispose_CallCount);
+                    await provider.SignAsync(new[] { applicationFile }, options);
 
                     // Verify that files have been renamed back.
                     foreach (FileInfo file in containerSpy.Files)
@@ -338,6 +345,204 @@ namespace Sign.Core.Test
 
                     mageCli.VerifyAll();
                     manifestSigner.VerifyAll();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFilesIsClickOnceFileWithoutContent_Signs()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo applicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp.application");
+
+                SignOptions options = new(
+                    "ApplicationName",
+                    "PublisherName",
+                    "Description",
+                    new Uri("https://description.test"),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("http://timestamp.test"),
+                    matcher: null,
+                    antiMatcher: null);
+
+                using (X509Certificate2 certificate = CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(certificate);
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    Mock<IServiceProvider> serviceProvider = new();
+                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+
+                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
+                        .Returns(aggregatingSignatureProviderSpy);
+
+                    Mock<IMageCli> mageCli = new();
+
+                    string publisher;
+
+                    if (string.IsNullOrEmpty(options.PublisherName))
+                    {
+                        publisher = certificate.SubjectName.Name;
+                    }
+                    else
+                    {
+                        publisher = options.PublisherName;
+                    }
+
+                    string expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -SupportURL https://description.test/";
+                    mageCli.Setup(x => x.RunAsync(
+                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
+                        .ReturnsAsync(0);
+
+                    Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
+                    ClickOnceSignatureProvider provider = new(
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        serviceProvider.Object,
+                        mageCli.Object,
+                        manifestSigner.Object,
+                        logger,
+                        fileMatcher.Object);
+
+                    await provider.SignAsync(new[] { applicationFile }, options);
+
+                    // Verify that files have been renamed back.
+                    foreach (FileInfo file in containerSpy.Files)
+                    {
+                        file.Refresh();
+
+                        Assert.True(file.Exists);
+                    }
+
+                    Assert.Empty(aggregatingSignatureProviderSpy.FilesSubmittedForSigning);
+
+                    mageCli.VerifyAll();
+                    manifestSigner.VerifyAll();
+                }
+            }
+        }
+
+        [Fact]
+        public void CopySigningDependencies_CopiesCorrectFiles()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo applicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp.application");
+                FileInfo dllDeployFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp_1_0_0_0", "MyApp.dll.deploy");
+
+                using (X509Certificate2 certificate = CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(certificate);
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    Mock<IServiceProvider> serviceProvider = new();
+                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+
+                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
+                        .Returns(aggregatingSignatureProviderSpy);
+
+                    Mock<IMageCli> mageCli = new();
+                    string publisher = certificate.SubjectName.Name;
+
+                    Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
+
+                    SignOptions options = new(
+                        "ApplicationName",
+                        "PublisherName",
+                        "Description",
+                        new Uri("https://description.test"),
+                        HashAlgorithmName.SHA256,
+                        HashAlgorithmName.SHA256,
+                        new Uri("http://timestamp.test"),
+                        matcher: null,
+                        antiMatcher: null
+                    );
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
+                    ClickOnceSignatureProvider provider = new(
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        serviceProvider.Object,
+                        mageCli.Object,
+                        manifestSigner.Object,
+                        logger,
+                        fileMatcher.Object);
+
+                    using (TemporaryDirectory signingDirectory = new(_directoryService))
+                    {
+                        // ensure that we start with nothing
+                        Assert.Empty(signingDirectory.Directory.EnumerateFiles());
+                        Assert.Empty(signingDirectory.Directory.EnumerateDirectories());
+                        // tell the provider to copy what it needs into the signing directory
+                        provider.CopySigningDependencies(applicationFile, signingDirectory.Directory, options);
+                        // and make sure we got it. We expect only the DLL to be copied, and NOT the .application file itself.
+                        IEnumerable<FileInfo> copiedFiles = signingDirectory.Directory.EnumerateFiles("*", SearchOption.AllDirectories);
+                        IEnumerable<DirectoryInfo> copiedDirectories = signingDirectory.Directory.EnumerateDirectories();
+                        Assert.Single(copiedFiles);
+                        Assert.Single(copiedDirectories);
+                        Assert.Contains(copiedDirectories, d => d.Name == "MyApp_1_0_0_0");
+                        Assert.Contains(copiedFiles, f => f.Name == "MyApp.dll.deploy");
+                    }
                 }
             }
         }

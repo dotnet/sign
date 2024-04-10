@@ -9,7 +9,7 @@ namespace Sign.Cli.Test
         private const string? ExpectedValue = "peach";
 
         public PublisherNameOptionTests()
-            : base(new CodeCommand().PublisherNameOption, "-pn", "--publisher-name", ExpectedValue, isRequired: false)
+            : base(new CodeCommand().PublisherNameOption, "-pn", "--publisher-name", ExpectedValue)
         {
         }
     }

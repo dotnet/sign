@@ -10,6 +10,8 @@ namespace Sign.Core.Test
 {
     public class DefaultSignatureProviderTests
     {
+        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"));
+
         [Fact]
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
@@ -66,7 +68,8 @@ namespace Sign.Core.Test
 
             services.AddLogging();
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<IKeyVaultService>());
+            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Mock.Of<ICertificateProvider>());
             services.AddSingleton<ISignatureProvider>(mock.Object);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -84,9 +87,7 @@ namespace Sign.Core.Test
             DefaultSignatureProvider provider = CreateWithAzureSignTool();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(
-                    files: null!,
-                    new SignOptions(HashAlgorithmName.SHA256)));
+                () => provider.SignAsync(files: null!, _options));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -97,9 +98,8 @@ namespace Sign.Core.Test
             DefaultSignatureProvider provider = CreateWithAzureSignTool();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(
-                    Enumerable.Empty<FileInfo>(),
-                    options: null!));
+                () => provider.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
+
             Assert.Equal("options", exception.ParamName);
         }
 
@@ -115,16 +115,15 @@ namespace Sign.Core.Test
 
             services.AddLogging();
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<IKeyVaultService>());
+            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Mock.Of<ICertificateProvider>());
             services.AddSingleton<ISignatureProvider>(mock.Object);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
             DefaultSignatureProvider provider = new(serviceProvider);
 
-            await provider.SignAsync(
-                Enumerable.Empty<FileInfo>(),
-                new SignOptions(HashAlgorithmName.SHA256));
+            await provider.SignAsync(Enumerable.Empty<FileInfo>(), _options);
 
             mock.VerifyAll();
         }
@@ -143,7 +142,8 @@ namespace Sign.Core.Test
 
             services.AddLogging();
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<IKeyVaultService>());
+            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Mock.Of<ICertificateProvider>());
             services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();

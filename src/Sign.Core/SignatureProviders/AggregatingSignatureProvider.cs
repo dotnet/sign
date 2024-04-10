@@ -64,7 +64,7 @@ namespace Sign.Core
 
             // See if any of them are archives
             List<FileInfo> archives = (from file in files
-                                       where _containerProvider.IsZipContainer(file)
+                                       where _containerProvider.IsZipContainer(file) || _containerProvider.IsNuGetContainer(file)
                                        select file).ToList();
 
             // expand the archives and sign recursively first
@@ -202,6 +202,18 @@ namespace Sign.Core
             }
 
             await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
+        }
+
+        public void CopySigningDependencies(FileInfo file, DirectoryInfo destination, SignOptions options)
+        {
+            // pass the handling for this down to the actual implementations
+            foreach (ISignatureProvider signatureProvider in _signatureProviders)
+            {
+                if (signatureProvider.CanSign(file))
+                {
+                    signatureProvider.CopySigningDependencies(file, destination, options);
+                }
+            }
         }
 
         private static IEnumerable<FileInfo> GetFiles(IContainer container, SignOptions options)

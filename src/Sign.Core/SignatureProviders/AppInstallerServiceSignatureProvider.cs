@@ -12,18 +12,18 @@ namespace Sign.Core
     // correct publisher information
     internal sealed class AppInstallerServiceSignatureProvider : ISignatureProvider
     {
-        private readonly IKeyVaultService _keyVaultService;
+        private readonly ICertificateProvider _certificateProvider;
         private readonly ILogger _logger;
 
         // Dependency injection requires a public constructor.
         public AppInstallerServiceSignatureProvider(
-            IKeyVaultService keyVaultService,
+            ICertificateProvider certificateProvider,
             ILogger<ISignatureProvider> logger)
         {
-            ArgumentNullException.ThrowIfNull(keyVaultService, nameof(keyVaultService));
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-            _keyVaultService = keyVaultService;
+            _certificateProvider = certificateProvider;
             _logger = logger;
         }
 
@@ -39,9 +39,9 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            _logger.LogInformation("Editing AppInstaller job with {count} files", files.Count());
+            _logger.LogInformation(Resources.EditingAppInstaller, files.Count());
 
-            using (X509Certificate2 certificate = await _keyVaultService.GetCertificateAsync().ConfigureAwait(false))
+            using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync().ConfigureAwait(false))
             {
                 // We need to open the files, and update the publisher value
                 foreach (FileInfo file in files)

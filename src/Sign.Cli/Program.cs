@@ -13,50 +13,55 @@ namespace Sign.Cli
     {
         internal static async Task<int> Main(string[] args)
         {
-            if (!Environment.Is64BitProcess)
+            using (new TemporaryConsoleEncoding())
             {
-                Console.Error.WriteLine("Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.");
+                if (!Environment.Is64BitProcess)
+                {
+                    Console.Error.WriteLine(Resources.x86NotSupported);
 
-                return ExitCode.Failed;
-            }
+                    return ExitCode.Failed;
+                }
 
-            string directory = Path.GetDirectoryName(Environment.ProcessPath!)!;
-            string baseDirectory = Path.Combine(directory, "tools", "SDK", "x64");
+                AppRootDirectoryLocator locator = new();
+                DirectoryInfo appRootDirectory = locator.Directory;
 
-            //
-            // Ensure we invoke wintrust!DllMain before we get too far.
-            // This will call wintrust!RegisterSipsFromIniFile and read in wintrust.dll.ini
-            // to swap out some local SIPs. Internally, wintrust will call LoadLibraryW
-            // on each DLL= entry, so we need to also adjust our DLL search path or we'll
-            // load unwanted system-provided copies.
-            //
-            Kernel32.SetDllDirectoryW(baseDirectory);
-            Kernel32.LoadLibraryW($@"{baseDirectory}\wintrust.dll");
-            Kernel32.LoadLibraryW($@"{baseDirectory}\mssign32.dll");
+                string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", "x64");
 
-            // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken             
-            string windir = Environment.GetEnvironmentVariable("windir")!;
-            string netfxDir = $@"{windir}\Microsoft.NET\Framework64\v4.0.30319";
+                //
+                // Ensure we invoke wintrust!DllMain before we get too far.
+                // This will call wintrust!RegisterSipsFromIniFile and read in wintrust.dll.ini
+                // to swap out some local SIPs. Internally, wintrust will call LoadLibraryW
+                // on each DLL= entry, so we need to also adjust our DLL search path or we'll
+                // load unwanted system-provided copies.
+                //
+                Kernel32.SetDllDirectoryW(baseDirectory);
+                Kernel32.LoadLibraryW($@"{baseDirectory}\wintrust.dll");
+                Kernel32.LoadLibraryW($@"{baseDirectory}\mssign32.dll");
 
-            AddEnvironmentPath(netfxDir);
+                // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken.
+                string windir = Environment.GetEnvironmentVariable("windir")!;
+                string netfxDir = $@"{windir}\Microsoft.NET\Framework64\v4.0.30319";
 
-            try
-            {
-                Parser parser = CreateParser();
+                AddEnvironmentPath(netfxDir);
 
-                return await parser.InvokeAsync(args);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                try
+                {
+                    Parser parser = CreateParser();
 
-                return ExitCode.Failed;
+                    return await parser.InvokeAsync(args);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+
+                    return ExitCode.Failed;
+                }
             }
         }
 
-        internal static Parser CreateParser(IServiceProvider? serviceProvider = null)
+        internal static Parser CreateParser(IServiceProviderFactory? serviceProviderFactory = null)
         {
-            SignCommand command = new();
+            SignCommand command = new(serviceProviderFactory);
 
             return new CommandLineBuilder(command)
                 .UseVersionOption()
@@ -67,10 +72,12 @@ namespace Sign.Cli
 
         private static void AddEnvironmentPath(string path)
         {
-            string paths = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-            string newPaths = string.Join(Path.PathSeparator.ToString(), paths, path);
+            const string name = "PATH";
 
-            Environment.SetEnvironmentVariable("PATH", newPaths);
+            string paths = Environment.GetEnvironmentVariable(name) ?? string.Empty;
+            string newPaths = string.Join(Path.PathSeparator, paths, path);
+
+            Environment.SetEnvironmentVariable(name, newPaths);
         }
     }
 }

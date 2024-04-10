@@ -11,7 +11,7 @@ namespace Sign.Cli.Test
         private const LogLevel ExpectedValue = LogLevel.Debug;
 
         public VerbosityOptionTests()
-            : base(new CodeCommand().VerbosityOption, "-v", "--verbosity", ExpectedValue, isRequired: false)
+            : base(new CodeCommand().VerbosityOption, "-v", "--verbosity", ExpectedValue)
         {
         }
 

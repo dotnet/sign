@@ -16,7 +16,7 @@ namespace Sign.Core.Test
         internal ContainerProviderStub()
         {
             _containerProvider = new ContainerProvider(
-                Mock.Of<IKeyVaultService>(),
+                Mock.Of<ICertificateProvider>(),
                 Mock.Of<IDirectoryService>(),
                 Mock.Of<IFileMatcher>(),
                 Mock.Of<IMakeAppxCli>(),
@@ -31,6 +31,11 @@ namespace Sign.Core.Test
         public bool IsAppxContainer(FileInfo file)
         {
             return _containerProvider.IsAppxContainer(file);
+        }
+
+        public bool IsNuGetContainer(FileInfo file)
+        {
+            return _containerProvider.IsNuGetContainer(file);
         }
 
         public bool IsZipContainer(FileInfo file)

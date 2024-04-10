@@ -16,13 +16,16 @@ namespace Sign.Core
     internal sealed class Signer : ISigner
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ISigner> _logger;
 
         // Dependency injection requires a public constructor.
-        public Signer(IServiceProvider serviceProvider)
+        public Signer(IServiceProvider serviceProvider, ILogger<ISigner> logger)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         public async Task<int> SignAsync(
@@ -30,19 +33,16 @@ namespace Sign.Core
             string? outputFile,
             FileInfo? fileList,
             DirectoryInfo baseDirectory,
+            string? applicationName,
             string? publisherName,
             string? description,
             Uri? descriptionUrl,
-            Uri? timestampUrl,
+            Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm,
-            TokenCredential tokenCredential,
-            Uri keyVaultUrl,
-            string certificateName)
+            HashAlgorithmName timestampHashAlgorithm)
         {
             IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
-            ILogger<Signer> logger = _serviceProvider.GetRequiredService<ILogger<Signer>>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
             ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxConcurrency };
 
@@ -60,11 +60,10 @@ namespace Sign.Core
                 }
             }
 
-            IKeyVaultService keyVaultService = _serviceProvider.GetRequiredService<IKeyVaultService>();
-
-            keyVaultService.Initialize(keyVaultUrl, tokenCredential, certificateName);
+            ICertificateProvider certificateProvider = _serviceProvider.GetRequiredService<ICertificateProvider>();
 
             SignOptions signOptions = new(
+                applicationName,
                 publisherName,
                 description,
                 descriptionUrl,
@@ -76,7 +75,7 @@ namespace Sign.Core
 
             try
             {
-                using (X509Certificate2 certificate = await keyVaultService.GetCertificateAsync())
+                using (X509Certificate2 certificate = await certificateProvider.GetCertificateAsync())
                 {
                     ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
 
@@ -105,7 +104,7 @@ namespace Sign.Core
                     else
                     {
                         // if the output is specified, treat it as a directory, if not, overwrite the current file
-                        if (!string.IsNullOrWhiteSpace(outputFile))
+                        if (string.IsNullOrWhiteSpace(outputFile))
                         {
                             output = new FileInfo(input.FullName);
                         }
@@ -128,15 +127,13 @@ namespace Sign.Core
 
                     //Do action
 
-                    // HttpResponseMessage response;
-
-                    logger.LogInformation($"Submitting '{input.FullName}' for signing.");
+                    _logger.LogInformation(Resources.SubmittingFileForSigning, input.FullName);
 
                     // this might have two files, one containing the file list
                     // The first will be the package and the second is the filter
                     using (TemporaryDirectory temporaryDirectory = new(directoryService))
                     {
-                        var inputFileName = Path.Combine(temporaryDirectory.Directory.FullName, Path.GetRandomFileName());
+                        string inputFileName = Path.Combine(temporaryDirectory.Directory.FullName, Path.GetRandomFileName());
                         // However check its extension as it might be important (e.g. zip, bundle, etc)
                         if (signatureProvider.CanSign(input))
                         {
@@ -144,32 +141,36 @@ namespace Sign.Core
                             inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
                         }
 
-                        logger.LogInformation("SignAsync called for {source}. Using {inputFileName} locally.", input.FullName, inputFileName);
+                        _logger.LogInformation(Resources.SignAsyncCalled, input.FullName, inputFileName);
 
                         if (input.Length > 0)
                         {
                             input.CopyTo(inputFileName, overwrite: true);
+                            // for things like clickonce we will need additional files from the source location
+                            // in order to fully sign everything, so ask the signature provider to do it for us.
+                            signatureProvider.CopySigningDependencies(input, temporaryDirectory.Directory, signOptions);
                         }
 
                         FileInfo fi = new(inputFileName);
 
                         await signatureProvider.SignAsync(new[] { fi }, signOptions);
 
+                        // copy everything back
                         fi.CopyTo(output.FullName, overwrite: true);
+                        signatureProvider.CopySigningDependencies(fi, output.Directory!, signOptions);
                     }
 
-                    logger.LogInformation("Successfully signed '{filePath}' in {millseconds} ms", output.FullName, sw.ElapsedMilliseconds);
+                    _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
                 });
-
             }
             catch (AuthenticationException e)
             {
-                logger.LogError(e, e.Message);
+                _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
             catch (Exception e)
             {
-                logger.LogError(e, e.Message);
+                _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
 

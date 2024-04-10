@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../Resources.resx">
+    <body>
+      <trans-unit id="ApplicationNameOptionDescription">
+        <source>Application name (ClickOnce).</source>
+        <target state="translated">应用程序名称(ClickOnce)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BaseDirectoryOptionDescription">
+        <source>Base directory for files.  Overrides the current working directory.</source>
+        <target state="translated">文件的基目录。替代当前工作目录。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateStoreCommandDescription">
+        <source>Use Windows Certificate Store or a local certificate file.</source>
+        <target state="new">Use Windows Certificate Store or a local certificate file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CodeCommandDescription">
+        <source>Sign binaries and containers.</source>
+        <target state="translated">对二进制文件和容器进行签名。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DescriptionOptionDescription">
+        <source>Description of the signing certificate.</source>
+        <target state="translated">签名证书的说明。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DescriptionUrlOptionDescription">
+        <source>Description URL of the signing certificate.</source>
+        <target state="translated">签名证书的说明 URL。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileDigestOptionDescription">
+        <source>Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
+        <target state="translated">用于对文件进行哈希处理的摘要算法。允许的值为 "sha256"、"sha384" 和 "sha512"。</target>
+        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="FileListOptionDescription">
+        <source>Path to file containing paths of files to sign or to exclude from signing.</source>
+        <target state="new">Path to file containing paths of files to sign or to exclude from signing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidBaseDirectoryValue">
+        <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
+        <target state="translated">{0} 的值无效。该值必须是完整的根目录路径。</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidDigestValue">
+        <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
+        <target state="translated">{0} 的值无效。值必须为 "sha256"、"sha384" 或 "sha512"。</target>
+        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.  {NumberedPlaceholder="{0}"} is an option name (e.g.:  --file-digest) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidMaxConcurrencyValue">
+        <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
+        <target state="translated">{0} 的值无效。该值必须是大于或等于 1 的数值。</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidSha1ThumbprintValue">
+        <source>Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</source>
+        <target state="new">Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</target>
+        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidUrlValue">
+        <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
+        <target state="translated">{0} 的值无效。值必须是绝对 HTTP 或 HTTPS URL。</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="MaxConcurrencyOptionDescription">
+        <source>Maximum concurrency.</source>
+        <target state="translated">最大并发。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OutputOptionDescription">
+        <source>Output file or directory. If omitted, input files will be overwritten.</source>
+        <target state="translated">输出文件或目录。如果省略，则输入文件将被覆盖。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublisherNameOptionDescription">
+        <source>Publisher name (ClickOnce).</source>
+        <target state="translated">发布服务器名称(ClickOnce)。</target>
+        <note>ClickOnce is a Microsoft deployment technology.</note>
+      </trans-unit>
+      <trans-unit id="SignCommandDescription">
+        <source>Sign CLI</source>
+        <target state="translated">对 CLI 进行签名</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TimestampDigestOptionDescription">
+        <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>
+        <target state="translated">RFC 3161 时间戳服务器的摘要算法。允许的值为 sha256、sha384 和 sha512。</target>
+        <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161), and {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="TimestampUrlOptionDescription">
+        <source>RFC 3161 timestamp server URL.</source>
+        <target state="translated">RFC 3161 时间戳服务器 URL。</target>
+        <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="VerbosityOptionDescription">
+        <source>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</source>
+        <target state="translated">设置详细级别。允许的值为 "none"、"critical"、"error"、"warning"、"information"、"debug" 和 "trace"。</target>
+        <note>{Locked="none", "critical", "error", "warning", "information", "debug", "trace"} are option values and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="x86NotSupported">
+        <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
+        <target state="translated">目前仅支持 Windows x64。有关 Windows x86 支持，请参阅 https://github.com/dotnet/sign/issues/474。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
