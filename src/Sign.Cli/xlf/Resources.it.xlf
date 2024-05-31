@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CertificateStoreCommandDescription">
         <source>Use Windows Certificate Store or a local certificate file.</source>
-        <target state="new">Use Windows Certificate Store or a local certificate file.</target>
+        <target state="translated">Utilizzare l'archivio certificati di Windows o un file di certificato locale.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to file containing paths of files to sign or to exclude from signing.</source>
-        <target state="new">Path to file containing paths of files to sign or to exclude from signing.</target>
+        <target state="translated">Percorso del file contenente i percorsi dei file da firmare o escludere dalla firma.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="InvalidSha1ThumbprintValue">
         <source>Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</source>
-        <target state="new">Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</target>
+        <target state="translated">Valore non valido per {0}. Il valore deve essere l'identificazione personale SHA-1 del certificato.</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidUrlValue">

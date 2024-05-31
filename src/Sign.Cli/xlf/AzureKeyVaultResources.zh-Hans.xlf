@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="ClickOnceExtensionNotSupported">
         <source>ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</source>
-        <target state="new">ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</target>
+        <target state="translated">不再支持通过旧版 .clickonce ZIP 解决方法进行 ClickOnce 签名。参阅文档。</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientIdOptionDescription">

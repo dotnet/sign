@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="CSPOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k or /km</source>
-        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k or /km</target>
+        <target state="translated">秘密キー コンテナーを含む暗号化サービス プロバイダー。/k または /km が必要です</target>
         <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container in the user store</source>
-        <target state="new">Private key container in the user store</target>
+        <target state="translated">ユーザー ストア内の秘密キー コンテナー</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineKeyContainerOptionDescription">
         <source>Private key container in the machine store</source>
-        <target state="new">Private key container in the machine store</target>
+        <target state="translated">コンピューター ストア内の秘密キー コンテナー</target>
         <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores</target>
+        <target state="translated">複数の秘密キー コンテナーが提供されています。ユーザー ストアには /k、コンピューター ストアの場合は /km を使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">/csp の使用中に秘密キー コンテナーが見つかりません。キー コンテナーを指定するには、/k または /km を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="SHA1ThumbprintOptionDescription">
         <source>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</source>
-        <target state="new">SHA1 thumprint used to access a certificate from a certificate store (VSIX)</target>
+        <target state="translated">証明書ストア (VSIX) から証明書にアクセスするために使用される SHA1 拇印</target>
         <note />
       </trans-unit>
     </body>

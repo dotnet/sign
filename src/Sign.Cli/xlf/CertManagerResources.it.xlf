@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="CSPOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k or /km</source>
-        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k or /km</target>
+        <target state="translated">Provider del servizio di crittografia contenente il contenitore di chiavi private. Richiede /k o /km</target>
         <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container in the user store</source>
-        <target state="new">Private key container in the user store</target>
+        <target state="translated">Contenitore di chiavi private nell'archivio utenti</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineKeyContainerOptionDescription">
         <source>Private key container in the machine store</source>
-        <target state="new">Private key container in the machine store</target>
+        <target state="translated">Contenitore di chiavi private nell'archivio computer</target>
         <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores</target>
+        <target state="translated">Sono stati specificati più contenitori di chiavi private. Utilizzare /k per gli archivi utente o /km per gli archivi computer</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">Contenitore di chiavi private mancante durante l'utilizzo di /csp. Usare /k o /km per specificare un contenitore di chiavi.</target>
         <note />
       </trans-unit>
       <trans-unit id="SHA1ThumbprintOptionDescription">
         <source>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</source>
-        <target state="new">SHA1 thumprint used to access a certificate from a certificate store (VSIX)</target>
+        <target state="translated">Identificazione personale SHA1 usata per accedere a un certificato da un archivio certificati (VSIX)</target>
         <note />
       </trans-unit>
     </body>
