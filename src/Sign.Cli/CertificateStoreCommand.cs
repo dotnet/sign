@@ -19,7 +19,8 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> Sha1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertificateStoreResources.Sha1ThumbprintOptionDescription);
+        internal Option<string> CertificateThumbprintOption { get; } = new(new[] { "-cfp", "--certificate-fingerprint" }, CertificateStoreResources.CertificateThumbprintOptionDescription);
+        internal Option<string> CertificateThumbprintAlgorithmOption { get; } = new(new[] { "-cfpa", "--certificate-fingerprint-algorithm" }, getDefaultValue:() => "SHA-256", CertificateStoreResources.CertificateThumbprintAlgorithmOptionDescription);
         internal Option<string?> CertificateFileOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.CertificateFileOptionDescription);
         internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.CertificatePasswordOptionDescription);
         internal Option<string?> CryptoServiceProviderOption { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CspOptionDescription);
@@ -36,9 +37,10 @@ namespace Sign.Cli
 
             _codeCommand = codeCommand;
 
-            Sha1ThumbprintOption.IsRequired = true;
+            CertificateThumbprintOption.IsRequired = true;
 
-            AddOption(Sha1ThumbprintOption);
+            AddOption(CertificateThumbprintOption);
+            AddOption(CertificateThumbprintAlgorithmOption);
             AddOption(CertificateFileOption);
             AddOption(CertificatePasswordOption);
             AddOption(CryptoServiceProviderOption);
@@ -67,7 +69,8 @@ namespace Sign.Cli
                 string? output = context.ParseResult.GetValueForOption(_codeCommand.OutputOption);
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
-                string? sha1Thumbprint = context.ParseResult.GetValueForOption(Sha1ThumbprintOption);
+                string? certificateThumbprint = context.ParseResult.GetValueForOption(CertificateThumbprintOption);
+                string? unparsedCertificateThumbprintAlgorithm = context.ParseResult.GetValueForOption(CertificateThumbprintAlgorithmOption);
                 string? certificatePath = context.ParseResult.GetValueForOption(CertificateFileOption);
                 string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
@@ -75,6 +78,7 @@ namespace Sign.Cli
                 bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainerOption);
 
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
+                HashAlgorithmName certificateThumbprintAlgorithm = HashAlgorithmName.SHA256;
 
                 if (string.IsNullOrEmpty(fileArgument))
                 {
@@ -83,12 +87,23 @@ namespace Sign.Cli
                     return;
                 }
 
-                // SHA-1 Thumbprint is required in case the provided certificate container contains multiple certificates.
-                if (string.IsNullOrEmpty(sha1Thumbprint))
+                // Certificate Thumbprint is required in case the provided certificate container contains multiple certificates.
+                if (string.IsNullOrEmpty(certificateThumbprint))
                 {
                     context.Console.Error.WriteFormattedLine(
-                        Resources.InvalidSha1ThumbprintValue,
-                        Sha1ThumbprintOption);
+                        Resources.InvalidCertificateThumbprintValue,
+                        CertificateThumbprintOption);
+                    context.ExitCode = ExitCode.NoInputsFound;
+
+                    return;
+                }
+
+                // Certificate Thumbprint algorithm defaults to SHA-256 and can only be SHA-256, SHA-384, or SHA-512.
+                if (Enum.TryParse<HashAlgorithmName>(unparsedCertificateThumbprintAlgorithm, ignoreCase: true, out certificateThumbprintAlgorithm))
+                {
+                    context.Console.Error.WriteFormattedLine(
+                        Resources.InvalidCertificateThumbprintAlgorithmValue,
+                        CertificateThumbprintAlgorithmOption);
                     context.ExitCode = ExitCode.NoInputsFound;
                     return;
                 }
@@ -125,7 +140,8 @@ namespace Sign.Cli
                     addServices: (IServiceCollection services) =>
                     {
                         CertificateStoreServiceProvider certificateStoreServiceProvider = new(
-                            sha1Thumbprint,
+                            certificateThumbprint,
+                            certificateThumbprintAlgorithm,
                             cryptoServiceProvider,
                             privateKeyContainer,
                             certificatePath,

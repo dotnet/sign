@@ -4,42 +4,47 @@
     <body>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
-        <target state="translated">Bir sertifika ve potansiyel olarak özel anahtar içeren PFX, P7B veya CER dosyası.</target>
+        <target state="new">PFX, P7B, or CER file containing a certificate and potentially a private key.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
-        <target state="translated">Sertifika dosyasının parolası.</target>
+        <target state="new">Password for certificate file.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CertificateThumbprintAlgorithmOptionDescription">
+        <source>SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</source>
+        <target state="new">SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</target>
+        <note>{Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic algorithms.</note>
+      </trans-unit>
+      <trans-unit id="CertificateThumbprintOptionDescription">
+        <source>SHA thumbprint used to identify a certificate.</source>
+        <target state="new">SHA thumbprint used to identify a certificate.</target>
+        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
-        <target state="translated">Özel anahtar kapsayıcısını içeren Şifreleme Hizmeti Sağlayıcısı. /k ve alternatif olarak /km gerektirir.</target>
+        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
-        <target state="translated">Özel anahtar kapsayıcısı adı.</target>
+        <target state="new">Private key container name.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingCspError">
         <source>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</source>
-        <target state="translated">Şifreleme Hizmeti Sağlayıcısı eksik.  CSP belirtmek için /csp kullanın.</target>
+        <target state="new">Cryptographic Service Provider missing.  Use /csp to specify a CSP.</target>
         <note>{Locked="/csp"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="MissingPrivateKeyContainerError">
         <source>Private key container name missing. Use /k to specify a key container name.</source>
-        <target state="translated">Özel anahtar kapsayıcısı adı eksik. Anahtar kapsayıcısı adı belirtmek için /k kullanın.</target>
+        <target state="new">Private key container name missing. Use /k to specify a key container name.</target>
         <note>{Locked="/k"} is a command line option.</note>
-      </trans-unit>
-      <trans-unit id="Sha1ThumbprintOptionDescription">
-        <source>SHA-1 thumbprint used to identify a certificate.</source>
-        <target state="translated">Sertifikayı tanımlamak için kullanılan SHA-1 parmak izi.</target>
-        <note>{Locked="SHA-1"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
-        <target state="translated">Makine düzeyinde özel anahtar kapsayıcısı kullanın.  (Varsayılan, kullanıcı düzeyidir.)</target>
+        <target state="new">Use a machine-level private key container.  (The default is user-level.)</target>
         <note />
       </trans-unit>
     </body>

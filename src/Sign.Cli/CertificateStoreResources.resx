@@ -124,6 +124,14 @@
   <data name="CertificatePasswordOptionDescription" xml:space="preserve">
     <value>Password for certificate file.</value>
   </data>
+  <data name="CertificateThumbprintAlgorithmOptionDescription" xml:space="preserve">
+    <value>SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</value>
+    <comment>{Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic algorithms.</comment>
+  </data>
+  <data name="CertificateThumbprintOptionDescription" xml:space="preserve">
+    <value>SHA thumbprint used to identify a certificate.</value>
+    <comment>{Locked="SHA"} is a cryptographic algorithm.</comment>
+  </data>
   <data name="CspOptionDescription" xml:space="preserve">
     <value>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</value>
     <comment>{Locked="/k", "/km"} are command line options.</comment>
@@ -138,10 +146,6 @@
   <data name="MissingPrivateKeyContainerError" xml:space="preserve">
     <value>Private key container name missing. Use /k to specify a key container name.</value>
     <comment>{Locked="/k"} is a command line option.</comment>
-  </data>
-  <data name="Sha1ThumbprintOptionDescription" xml:space="preserve">
-    <value>SHA-1 thumbprint used to identify a certificate.</value>
-    <comment>{Locked="SHA-1"} is a cryptographic algorithm.</comment>
   </data>
   <data name="UseMachineKeyContainerOptionDescription" xml:space="preserve">
     <value>Use a machine-level private key container.  (The default is user-level.)</value>
