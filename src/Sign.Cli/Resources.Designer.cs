@@ -115,7 +115,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;Sha256&apos;, &apos;Sha384&apos;, and &apos;Sha512&apos;..
+        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;sha256&apos;, &apos;sha384&apos;, and &apos;sha512&apos;..
         /// </summary>
         internal static string FileDigestOptionDescription {
             get {
@@ -142,7 +142,25 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;Sha256&apos;, &apos;Sha384&apos;, or &apos;Sha512&apos;..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
+        /// </summary>
+        internal static string InvalidCertificateThumbprintAlgorithmValue {
+            get {
+                return ResourceManager.GetString("InvalidCertificateThumbprintAlgorithmValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-256, SHA-384, or SHA-512 thumbprint..
+        /// </summary>
+        internal static string InvalidCertificateThumbprintValue {
+            get {
+                return ResourceManager.GetString("InvalidCertificateThumbprintValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
         /// </summary>
         internal static string InvalidDigestValue {
             get {
@@ -156,15 +174,6 @@ namespace Sign.Cli {
         internal static string InvalidMaxConcurrencyValue {
             get {
                 return ResourceManager.GetString("InvalidMaxConcurrencyValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-1 thumbprint..
-        /// </summary>
-        internal static string InvalidSha1ThumbprintValue {
-            get {
-                return ResourceManager.GetString("InvalidSha1ThumbprintValue", resourceCulture);
             }
         }
         
@@ -214,7 +223,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm for the RFC 3161 timestamp server. Allowed values are Sha256, Sha384, and Sha512..
+        ///   Looks up a localized string similar to Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512..
         /// </summary>
         internal static string TimestampDigestOptionDescription {
             get {

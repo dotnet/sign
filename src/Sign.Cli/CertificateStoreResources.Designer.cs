@@ -79,6 +79,24 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512.
+        /// </summary>
+        internal static string CertificateThumbprintAlgorithmOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateThumbprintAlgorithmOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SHA thumbprint used to identify a certificate..
+        /// </summary>
+        internal static string CertificateThumbprintOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateThumbprintOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cryptographic Service Provider containing the private key container. Requires /k and optionally /km..
         /// </summary>
         internal static string CspOptionDescription {
@@ -111,15 +129,6 @@ namespace Sign.Cli {
         internal static string MissingPrivateKeyContainerError {
             get {
                 return ResourceManager.GetString("MissingPrivateKeyContainerError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SHA-1 thumbprint used to identify a certificate..
-        /// </summary>
-        internal static string Sha1ThumbprintOptionDescription {
-            get {
-                return ResourceManager.GetString("Sha1ThumbprintOptionDescription", resourceCulture);
             }
         }
         
