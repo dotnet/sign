@@ -52,14 +52,14 @@
         <target state="translated">Valor no válido para {0}. El valor debe ser una ruta de acceso de directorio totalmente raíz.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
-      <trans-unit id="InvalidCertificateThumbprintAlgorithmValue">
+      <trans-unit id="InvalidCertificateFingerprintAlgorithmValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
         <target state="new">Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidCertificateThumbprintValue">
-        <source>Invalid value for {0}. The value must be the certificate's SHA-256, SHA-384, or SHA-512 thumbprint.</source>
-        <target state="new">Invalid value for {0}. The value must be the certificate's SHA-256, SHA-384, or SHA-512 thumbprint.</target>
+      <trans-unit id="InvalidCertificateFingerprintValue">
+        <source>Invalid value for {0}. The value must be the certificate's SHA-256, SHA-384, or SHA-512 fingerprint.</source>
+        <target state="new">Invalid value for {0}. The value must be the certificate's SHA-256, SHA-384, or SHA-512 fingerprint.</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">

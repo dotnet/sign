@@ -7,20 +7,20 @@
         <target state="new">PFX, P7B, or CER file containing a certificate and potentially a private key.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
+      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
+        <source>SHA fingerprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</source>
+        <target state="new">SHA fingerprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</target>
+        <note>{Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic algorithms.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintOptionDescription">
+        <source>SHA fingerprint used to identify a certificate.</source>
+        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
+      </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
         <target state="new">Password for certificate file.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="CertificateThumbprintAlgorithmOptionDescription">
-        <source>SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</source>
-        <target state="new">SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</target>
-        <note>{Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic algorithms.</note>
-      </trans-unit>
-      <trans-unit id="CertificateThumbprintOptionDescription">
-        <source>SHA thumbprint used to identify a certificate.</source>
-        <target state="new">SHA thumbprint used to identify a certificate.</target>
-        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>

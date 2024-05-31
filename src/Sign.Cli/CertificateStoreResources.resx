@@ -121,16 +121,16 @@
     <value>PFX, P7B, or CER file containing a certificate and potentially a private key.</value>
     <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
   </data>
-  <data name="CertificatePasswordOptionDescription" xml:space="preserve">
-    <value>Password for certificate file.</value>
-  </data>
-  <data name="CertificateThumbprintAlgorithmOptionDescription" xml:space="preserve">
-    <value>SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</value>
+  <data name="CertificateFingerprintAlgorithmOptionDescription" xml:space="preserve">
+    <value>SHA fingerprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</value>
     <comment>{Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic algorithms.</comment>
   </data>
-  <data name="CertificateThumbprintOptionDescription" xml:space="preserve">
-    <value>SHA thumbprint used to identify a certificate.</value>
+  <data name="CertificateFingerprintOptionDescription" xml:space="preserve">
+    <value>SHA fingerprint used to identify a certificate.</value>
     <comment>{Locked="SHA"} is a cryptographic algorithm.</comment>
+  </data>
+  <data name="CertificatePasswordOptionDescription" xml:space="preserve">
+    <value>Password for certificate file.</value>
   </data>
   <data name="CspOptionDescription" xml:space="preserve">
     <value>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</value>

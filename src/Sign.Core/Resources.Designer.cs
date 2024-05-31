@@ -97,7 +97,7 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find a certificate with a matching SHA-1 thumbprint in {0}..
+        ///   Looks up a localized string similar to Unable to find a certificate with a matching {0} fingerprint in {1}..
         /// </summary>
         internal static string CertificateNotFoundInFile {
             get {
@@ -241,11 +241,11 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store..
         /// </summary>
-        internal static string InvalidSha1ThumbrpintValue {
+        internal static string InvalidCertificateFingerprintValue {
             get {
-                return ResourceManager.GetString("InvalidSha1ThumbrpintValue", resourceCulture);
+                return ResourceManager.GetString("InvalidCertificateFingerprintValue", resourceCulture);
             }
         }
         

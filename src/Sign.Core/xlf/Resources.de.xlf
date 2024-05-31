@@ -19,27 +19,27 @@
       </trans-unit>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="translated">Es wurde kein übereinstimmendes Zertifikat gefunden.</target>
+        <target state="new">Unable to find a matching certificate.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
-        <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
-        <target state="translated">Es wurde kein Zertifikat mit einem übereinstimmenden SHA-1-Fingerabdruck in {0} gefunden.</target>
+        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
+        <target state="new">Unable to find a certificate with a matching {0} fingerprint in {1}.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="translated">Im Computerzertifikatspeicher wurde kein übereinstimmendes Zertifikat gefunden.</target>
+        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="translated">Im Benutzerzertifikatspeicher wurde kein übereinstimmendes Zertifikat gefunden.</target>
+        <target state="new">Unable to find a matching certificate in user certificate store.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="translated">Der private RSA-Schlüssel für das angegebene Zertifikat kann nicht abgerufen werden.</target>
+        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -102,19 +102,19 @@
         <target state="translated">Zertifikat wird von Azure Key Vault abgerufen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidSha1ThumbrpintValue">
-        <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
-        <target state="translated">Ungültiger Wert für {0}. Der Wert muss der SHA-1-Fingerabdruck eines Zertifikats in einem Windows-Zertifikatspeicher sein.</target>
+      <trans-unit id="InvalidCertificateFingerprintValue">
+        <source>Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</source>
+        <target state="new">Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</target>
         <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
-        <target state="translated">Es wurden mehrere Container mit privatem Schlüssel bereitgestellt. Verwenden Sie entweder "/k" für Benutzerspeicher oder "/km" für Computerspeicher.</target>
+        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="translated">Der Container für den privaten Schlüssel fehlt bei Verwendung von "/csp". Verwenden Sie "/k" oder "/km", um einen Schlüsselcontainer bereitzustellen.</target>
+        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="translated">Signieren von {filePath} erfolgreich.</target>
+        <target state="new">Signing {filePath} succeeded.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
@@ -194,22 +194,22 @@
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="translated">Das Zertifikat verfügt über einen nicht unterstützten Algorithmus für öffentliche Schlüssel.</target>
+        <target state="new">The certificate has an unsupported public key algorithm.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
-        <target state="translated">Der angegebene {0} ist ungültig.</target>
+        <target state="new">Specified {0} is invalid.</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
-        <target state="translated">Unbekannter Signaturalgorithmus.</target>
+        <target state="new">Unknown signing algorithm.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
-        <target state="translated">Der ausgewählte Algorithmus wird nicht unterstützt.</target>
+        <target state="new">The algorithm selected is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="translated">VsixSignTool-Auftrag wird mit {count} Dateien signiert.</target>
+        <target state="new">Signing VsixSignTool job with {count} files.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>

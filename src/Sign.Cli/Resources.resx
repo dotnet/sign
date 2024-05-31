@@ -149,11 +149,11 @@
     <value>Invalid value for {0}. The value must be a fully rooted directory path.</value>
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</comment>
   </data>
-  <data name="InvalidCertificateThumbprintAlgorithmValue" xml:space="preserve">
+  <data name="InvalidCertificateFingerprintAlgorithmValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</value>
   </data>
-  <data name="InvalidCertificateThumbprintValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be the certificate's SHA-256, SHA-384, or SHA-512 thumbprint.</value>
+  <data name="InvalidCertificateFingerprintValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be the certificate's SHA-256, SHA-384, or SHA-512 fingerprint.</value>
     <comment>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</comment>
   </data>
   <data name="InvalidDigestValue" xml:space="preserve">

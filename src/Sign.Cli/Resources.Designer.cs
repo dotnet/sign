@@ -153,18 +153,18 @@ namespace Sign.Cli {
         /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
         /// </summary>
-        internal static string InvalidCertificateThumbprintAlgorithmValue {
+        internal static string InvalidCertificateFingerprintAlgorithmValue {
             get {
-                return ResourceManager.GetString("InvalidCertificateThumbprintAlgorithmValue", resourceCulture);
+                return ResourceManager.GetString("InvalidCertificateFingerprintAlgorithmValue", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-256, SHA-384, or SHA-512 thumbprint..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-256, SHA-384, or SHA-512 fingerprint..
         /// </summary>
-        internal static string InvalidCertificateThumbprintValue {
+        internal static string InvalidCertificateFingerprintValue {
             get {
-                return ResourceManager.GetString("InvalidCertificateThumbprintValue", resourceCulture);
+                return ResourceManager.GetString("InvalidCertificateFingerprintValue", resourceCulture);
             }
         }
         

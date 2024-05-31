@@ -70,29 +70,29 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SHA fingerprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512.
+        /// </summary>
+        internal static string CertificateFingerprintAlgorithmOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateFingerprintAlgorithmOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SHA fingerprint used to identify a certificate..
+        /// </summary>
+        internal static string CertificateFingerprintOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateFingerprintOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password for certificate file..
         /// </summary>
         internal static string CertificatePasswordOptionDescription {
             get {
                 return ResourceManager.GetString("CertificatePasswordOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SHA thumbprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512.
-        /// </summary>
-        internal static string CertificateThumbprintAlgorithmOptionDescription {
-            get {
-                return ResourceManager.GetString("CertificateThumbprintAlgorithmOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SHA thumbprint used to identify a certificate..
-        /// </summary>
-        internal static string CertificateThumbprintOptionDescription {
-            get {
-                return ResourceManager.GetString("CertificateThumbprintOptionDescription", resourceCulture);
             }
         }
         
