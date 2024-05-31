@@ -23,8 +23,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
-        <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
-        <target state="new">Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</target>
+        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
+        <target state="new">Unable to find a certificate with a matching {0} fingerprint in {1}.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
@@ -102,9 +102,9 @@
         <target state="translated">Идет получение сертификата из Azure Key Vault.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidSha1ThumbrpintValue">
-        <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
-        <target state="new">Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</target>
+      <trans-unit id="InvalidCertificateFingerprintValue">
+        <source>Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</source>
+        <target state="new">Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</target>
         <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">

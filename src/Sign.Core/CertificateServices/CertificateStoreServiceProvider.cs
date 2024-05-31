@@ -11,8 +11,8 @@ namespace Sign.Core
     /// </summary>
     internal class CertificateStoreServiceProvider
     {
-        private readonly string _certificateThumbprint;
-        private readonly HashAlgorithmName _certificateThumbprintAlgorithm;
+        private readonly string _certificateFingerprint;
+        private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
         private readonly string? _certificateFilePath;
@@ -25,8 +25,8 @@ namespace Sign.Core
         /// <summary>
         /// Creates a new service provider for accessing certificates within a store.
         /// </summary>
-        /// <param name="certificateThumbprint">Required thumbprint used to identify the certificate in the store.</param>
-        /// <param name="certificateThumbprintAlgorithm">Thumbprint algorithm used to identify the algorithm type of the thumbprint.</param>
+        /// <param name="certificateFingerprint">Required fingerprint used to identify the certificate in the store.</param>
+        /// <param name="certificateFingerprintAlgorithm">Fingerprint algorithm used to identify the algorithm type of the fingerprint.</param>
         /// <param name="cryptoServiceProvider">Optional Cryptographic service provider used to access 3rd party certificate stores.</param>
         /// <param name="privateKeyContainer">Optional Key Container stored in either the per-user or per-machine location.</param>
         /// <param name="certificateFilePath">Optional path to the PFX, P7B, or CER file with the certificate.</param>
@@ -34,19 +34,19 @@ namespace Sign.Core
         /// <param name="isMachineKeyContainer">Optional Flag used to denote per-machine key container should be used.</param>
         /// <exception cref="ArgumentException">Thrown when a required argument is empty not valid.</exception>
         internal CertificateStoreServiceProvider(
-            string certificateThumbprint,
-            HashAlgorithmName certificateThumbprintAlgorithm,
+            string certificateFingerprint,
+            HashAlgorithmName certificateFingerprintAlgorithm,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
             string? certificateFilePath,
             string? certificateFilePassword,
             bool isMachineKeyContainer)
         {
-            ArgumentNullException.ThrowIfNull(certificateThumbprint, nameof(certificateThumbprint));
+            ArgumentNullException.ThrowIfNull(certificateFingerprint, nameof(certificateFingerprint));
 
-            if (string.IsNullOrEmpty(certificateThumbprint))
+            if (string.IsNullOrEmpty(certificateFingerprint))
             {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateThumbprint));
+                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateFingerprint));
             }
 
             // Both or neither can be provided when accessing a certificate.
@@ -57,8 +57,8 @@ namespace Sign.Core
                     string.IsNullOrEmpty(cryptoServiceProvider) ? nameof(cryptoServiceProvider) : nameof(privateKeyContainer));
             }
 
-            _certificateThumbprint = certificateThumbprint;
-            _certificateThumbprintAlgorithm = certificateThumbprintAlgorithm;
+            _certificateFingerprint = certificateFingerprint;
+            _certificateFingerprintAlgorithm = certificateFingerprintAlgorithm;
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isMachineKeyContainer = isMachineKeyContainer;
@@ -96,8 +96,8 @@ namespace Sign.Core
 
                 _certificateStoreService = new CertificateStoreService(
                                             serviceProvider,
-                                            _certificateThumbprint,
-                                            _certificateThumbprintAlgorithm,
+                                            _certificateFingerprint,
+                                            _certificateFingerprintAlgorithm,
                                             _cryptoServiceProvider,
                                             _privateKeyContainer,
                                             _certificateFilePath,

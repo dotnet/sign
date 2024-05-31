@@ -33,21 +33,21 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CertificateThumbprintOption_Always_IsRequired()
+        public void CertificateFingerprintOption_Always_IsRequired()
         {
-            Assert.True(_command.CertificateThumbprintOption.IsRequired);
+            Assert.True(_command.CertificateFingerprintOption.IsRequired);
         }
 
         [Fact]
-        public void CertificateThumbprintOption_Always_HasArityOfExactlyOne()
+        public void CertificateFingerprintOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateThumbprintOption.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateFingerprintOption.Arity);
         }
 
         [Fact]
-        public void CertificateThumbprintAlgorithmOption_Always_HasArityOfExactlyOne()
+        public void CertificateFingerprintAlgorithmOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateThumbprintAlgorithmOption.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateFingerprintAlgorithmOption.Arity);
         }
 
         [Fact]

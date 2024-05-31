@@ -17,8 +17,8 @@ namespace Sign.Core
     /// </summary>
     internal sealed class CertificateStoreService : ISignatureAlgorithmProvider, ICertificateProvider
     {
-        private readonly string _certificateThumbprint;
-        private readonly HashAlgorithmName _certificateThumbprintAlgorithm;
+        private readonly string _certificateFingerprint;
+        private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
         private readonly string? _certificatePath;
@@ -29,21 +29,21 @@ namespace Sign.Core
 
         internal CertificateStoreService(
             IServiceProvider serviceProvider,
-            string certificateThumbprint,
-            HashAlgorithmName certificateThumbprintAlgorithm,
+            string certificateFingerprint,
+            HashAlgorithmName certificateFingerprintAlgorithm,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
             string? certificatePath,
             string? certificatePassword,
             bool isPrivateMachineKeyContainer)
         {
-            if (string.IsNullOrEmpty(certificateThumbprint))
+            if (string.IsNullOrEmpty(certificateFingerprint))
             {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateThumbprint));
+                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateFingerprint));
             }
 
-            _certificateThumbprint = certificateThumbprint;
-            _certificateThumbprintAlgorithm = certificateThumbprintAlgorithm;
+            _certificateFingerprint = certificateFingerprint;
+            _certificateFingerprintAlgorithm = certificateFingerprintAlgorithm;
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
@@ -104,8 +104,8 @@ namespace Sign.Core
         /// <summary>
         /// Gets a certificate from a local (user or machine) certificate store or from a provided certificate file.
         /// </summary>
-        /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Thumbprint.</returns>
-        /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
+        /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Fingerprint.</returns>
+        /// <exception cref="ArgumentException">Thrown when the SHA1 fingerprint wasn't found in any store.</exception>
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
             => await GetStoreCertificateAsync();
 
@@ -123,7 +123,7 @@ namespace Sign.Core
 
                 foreach (var cert in certCollection)
                 {
-                    if (string.Equals(cert.GetCertHashString(_certificateThumbprintAlgorithm), _certificateThumbprint, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(cert.GetCertHashString(_certificateFingerprintAlgorithm), _certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
@@ -137,8 +137,8 @@ namespace Sign.Core
             // Search User or Machine certificate stores.
             if (!string.IsNullOrEmpty(_privateKeyContainer)
                 && _isPrivateMachineKeyContainer
-                    ? TryFindCertificate(StoreLocation.LocalMachine, _certificateThumbprint!, out X509Certificate2? certificate)
-                    : TryFindCertificate(StoreLocation.CurrentUser, _certificateThumbprint!, out certificate))
+                    ? TryFindCertificate(StoreLocation.LocalMachine, _certificateFingerprint!, out X509Certificate2? certificate)
+                    : TryFindCertificate(StoreLocation.CurrentUser, _certificateFingerprint!, out certificate))
             {
                 _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
@@ -160,7 +160,7 @@ namespace Sign.Core
 
                 foreach (var cert in certificates)
                 {
-                    if (string.Equals(cert.GetCertHashString(_certificateThumbprintAlgorithm), certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(cert.GetCertHashString(_certificateFingerprintAlgorithm), certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
                         certificate = cert;
 

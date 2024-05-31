@@ -132,7 +132,7 @@
     <value>Unable to find a matching certificate.</value>
   </data>
   <data name="CertificateNotFoundInFile" xml:space="preserve">
-    <value>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</value>
+    <value>Unable to find a certificate with a matching {0} fingerprint in {1}.</value>
     <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
   </data>
   <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
@@ -190,8 +190,8 @@
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
   </data>
-  <data name="InvalidSha1ThumbrpintValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</value>
+  <data name="InvalidCertificateFingerprintValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</value>
     <comment>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</comment>
   </data>
   <data name="MultiplePrivateKeyContainersError" xml:space="preserve">

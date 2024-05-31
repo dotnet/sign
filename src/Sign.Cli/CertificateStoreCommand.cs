@@ -20,8 +20,8 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> CertificateThumbprintOption { get; } = new(new[] { "-cfp", "--certificate-fingerprint" }, CertificateStoreResources.CertificateThumbprintOptionDescription);
-        internal Option<string> CertificateThumbprintAlgorithmOption { get; } = new(new[] { "-cfpa", "--certificate-fingerprint-algorithm" }, getDefaultValue:() => "SHA-256", CertificateStoreResources.CertificateThumbprintAlgorithmOptionDescription);
+        internal Option<string> CertificateFingerprintOption { get; } = new(new[] { "-cfp", "--certificate-fingerprint" }, CertificateStoreResources.CertificateFingerprintOptionDescription);
+        internal Option<string> CertificateFingerprintAlgorithmOption { get; } = new(new[] { "-cfpa", "--certificate-fingerprint-algorithm" }, getDefaultValue:() => "SHA-256", CertificateStoreResources.CertificateFingerprintAlgorithmOptionDescription);
         internal Option<string?> CertificateFileOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.CertificateFileOptionDescription);
         internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.CertificatePasswordOptionDescription);
         internal Option<string?> CryptoServiceProviderOption { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CspOptionDescription);
@@ -38,10 +38,10 @@ namespace Sign.Cli
 
             _codeCommand = codeCommand;
 
-            CertificateThumbprintOption.IsRequired = true;
+            CertificateFingerprintOption.IsRequired = true;
 
-            AddOption(CertificateThumbprintOption);
-            AddOption(CertificateThumbprintAlgorithmOption);
+            AddOption(CertificateFingerprintOption);
+            AddOption(CertificateFingerprintAlgorithmOption);
             AddOption(CertificateFileOption);
             AddOption(CertificatePasswordOption);
             AddOption(CryptoServiceProviderOption);
@@ -70,8 +70,8 @@ namespace Sign.Cli
                 string? output = context.ParseResult.GetValueForOption(_codeCommand.OutputOption);
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
-                string? certificateThumbprint = context.ParseResult.GetValueForOption(CertificateThumbprintOption);
-                string? unparsedCertificateThumbprintAlgorithm = context.ParseResult.GetValueForOption(CertificateThumbprintAlgorithmOption);
+                string? certificateFingerprint = context.ParseResult.GetValueForOption(CertificateFingerprintOption);
+                string? unparsedCertificateFingerprintAlgorithm = context.ParseResult.GetValueForOption(CertificateFingerprintAlgorithmOption);
                 string? certificatePath = context.ParseResult.GetValueForOption(CertificateFileOption);
                 string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
@@ -79,7 +79,7 @@ namespace Sign.Cli
                 bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainerOption);
 
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
-                HashAlgorithmName certificateThumbprintAlgorithm = HashAlgorithmName.SHA256;
+                HashAlgorithmName certificateFingerprintAlgorithm = HashAlgorithmName.SHA256;
 
                 if (string.IsNullOrEmpty(fileArgument))
                 {
@@ -88,21 +88,21 @@ namespace Sign.Cli
                     return;
                 }
 
-                // Certificate Thumbprint is required in case the provided certificate container contains multiple certificates.
-                if (string.IsNullOrEmpty(certificateThumbprint))
+                // Certificate Fingerprint is required in case the provided certificate container contains multiple certificates.
+                if (string.IsNullOrEmpty(certificateFingerprint))
                 {
                     context.Console.Error.WriteLine(
-                        FormatMessage(Resources.InvalidCertificateThumbprintValue, CertificateThumbprintOption));
+                        FormatMessage(Resources.InvalidCertificateFingerprintValue, CertificateFingerprintOption));
                     context.ExitCode = ExitCode.NoInputsFound;
 
                     return;
                 }
 
-                // Certificate Thumbprint algorithm defaults to SHA-256 and can only be SHA-256, SHA-384, or SHA-512.
-                if (Enum.TryParse<HashAlgorithmName>(unparsedCertificateThumbprintAlgorithm, ignoreCase: true, out certificateThumbprintAlgorithm))
+                // Certificate Fingerprint algorithm defaults to SHA-256 and can only be SHA-256, SHA-384, or SHA-512.
+                if (Enum.TryParse<HashAlgorithmName>(unparsedCertificateFingerprintAlgorithm, ignoreCase: true, out certificateFingerprintAlgorithm))
                 {
                     context.Console.Error.WriteLine(
-                        FormatMessage(Resources.InvalidCertificateThumbprintAlgorithmValue, CertificateThumbprintAlgorithmOption));
+                        FormatMessage(Resources.InvalidCertificateFingerprintAlgorithmValue, CertificateFingerprintAlgorithmOption));
                     context.ExitCode = ExitCode.NoInputsFound;
 
                     return;
@@ -141,8 +141,8 @@ namespace Sign.Cli
                     addServices: (IServiceCollection services) =>
                     {
                         CertificateStoreServiceProvider certificateStoreServiceProvider = new(
-                            certificateThumbprint,
-                            certificateThumbprintAlgorithm,
+                            certificateFingerprint,
+                            certificateFingerprintAlgorithm,
                             cryptoServiceProvider,
                             privateKeyContainer,
                             certificatePath,
