@@ -19,27 +19,27 @@
       </trans-unit>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="new">Unable to find a matching certificate.</target>
+        <target state="translated">Не удается найти соответствующий сертификат.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
         <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
-        <target state="new">Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</target>
+        <target state="translated">Не удалось найти сертификат с соответствующим отпечатком SHA-1 в {0}.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <target state="translated">Не удается найти соответствующий сертификат в хранилище сертификатов компьютера.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <target state="translated">Не удается найти соответствующий сертификат в хранилище сертификатов пользователя.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <target state="translated">Не удалось получить закрытый ключ RSA для предоставленного сертификата.</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -104,17 +104,17 @@
       </trans-unit>
       <trans-unit id="InvalidSha1ThumbrpintValue">
         <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
-        <target state="new">Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</target>
+        <target state="translated">Недопустимое значение для {0}. Значение должно быть отпечатком SHA-1 сертификата в хранилище сертификатов Windows.</target>
         <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <target state="translated">Предоставлено несколько контейнеров закрытых ключей. Используйте /k для хранилищ пользователей или /km для хранилищ компьютеров.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">Отсутствует контейнер закрытого ключа при использовании /csp. Используйте /k или /km для предоставления контейнера ключей.</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="new">Signing {filePath} succeeded.</target>
+        <target state="translated">Подписание {filePath} выполнено.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
@@ -194,22 +194,22 @@
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <target state="translated">Сертификат содержит неподдерживаемый алгоритм открытого ключа.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
-        <target state="new">Specified {0} is invalid.</target>
+        <target state="translated">Указанный параметр ({0}) недопустим.</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
-        <target state="new">Unknown signing algorithm.</target>
+        <target state="translated">Неизвестный алгоритм подписывания.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
-        <target state="new">The algorithm selected is not supported.</target>
+        <target state="translated">Выбранный алгоритм не поддерживается.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <target state="translated">Подписывание задания VsixSignTool с несколькими файлами ({count}).</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>

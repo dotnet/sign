@@ -19,27 +19,27 @@
       </trans-unit>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="new">Unable to find a matching certificate.</target>
+        <target state="translated">找不到匹配的证书。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
         <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
-        <target state="new">Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</target>
+        <target state="translated">在 {0} 中找不到具有匹配 SHA-1 指纹的证书。</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <target state="translated">在计算机证书存储中找不到匹配的证书。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <target state="translated">在用户证书存储中找不到匹配的证书。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <target state="translated">无法获取所提供的证书的 RSA 私钥。</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -104,17 +104,17 @@
       </trans-unit>
       <trans-unit id="InvalidSha1ThumbrpintValue">
         <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
-        <target state="new">Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</target>
+        <target state="translated">{0} 的值无效。该值必须是 Windows 证书存储中证书的 SHA-1 指纹。</target>
         <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <target state="translated">提供了多个私钥容器。对用户存储使用 /k，或者对计算机存储使用 /km。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">使用 /csp 时缺少私钥容器。使用 /k 或 /km 提供密钥容器。</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="new">Signing {filePath} succeeded.</target>
+        <target state="translated">已成功对 {filePath} 签名。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
@@ -194,22 +194,22 @@
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <target state="translated">证书具有不受支持的公钥算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
-        <target state="new">Specified {0} is invalid.</target>
+        <target state="translated">指定的 {0} 无效。</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
-        <target state="new">Unknown signing algorithm.</target>
+        <target state="translated">未知签名算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
-        <target state="new">The algorithm selected is not supported.</target>
+        <target state="translated">不支持所选算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <target state="translated">正在对包含 {count} 个文件的 VsixSignTool 作业进行签名。</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>
