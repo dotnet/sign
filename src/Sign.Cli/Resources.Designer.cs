@@ -151,7 +151,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-256, SHA-384, or SHA-512 fingerprint..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s fingerprint (in hexadecimal)..
         /// </summary>
         internal static string InvalidCertificateFingerprintValue {
             get {
