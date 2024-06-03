@@ -79,7 +79,6 @@ namespace Sign.Cli
                 bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainerOption);
 
                 string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
-                HashAlgorithmName certificateFingerprintAlgorithm = HashAlgorithmName.SHA256;
 
                 if (string.IsNullOrEmpty(fileArgument))
                 {
@@ -98,14 +97,26 @@ namespace Sign.Cli
                     return;
                 }
 
-                // Certificate Fingerprint algorithm defaults to SHA-256 and can only be SHA-256, SHA-384, or SHA-512.
-                if (Enum.TryParse<HashAlgorithmName>(unparsedCertificateFingerprintAlgorithm, ignoreCase: true, out certificateFingerprintAlgorithm))
-                {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(Resources.InvalidCertificateFingerprintAlgorithmValue, CertificateFingerprintAlgorithmOption));
-                    context.ExitCode = ExitCode.NoInputsFound;
+                HashAlgorithmName certificateFingerprintAlgorithm = HashAlgorithmName.SHA256;
 
-                    return;
+                // CertificateFingerprintAlgorithm defaults to SHA-256, but one could pass in an empty argument through PowerShell scripts.
+                if (unparsedCertificateFingerprintAlgorithm != null)
+                {
+                    // Remove "-" from the unparsed entry to match with HashAlgorithmName.
+                    unparsedCertificateFingerprintAlgorithm = string.Join(string.Empty, unparsedCertificateFingerprintAlgorithm.Split('-'));
+
+                    // We only accept SHA256, SHA384, and SHA512 as valid fingerprint algorithms.
+                    if (!Enum.TryParse<HashAlgorithmName>(unparsedCertificateFingerprintAlgorithm, ignoreCase: true, out certificateFingerprintAlgorithm)
+                        && (certificateFingerprintAlgorithm != HashAlgorithmName.SHA256
+                            || certificateFingerprintAlgorithm != HashAlgorithmName.SHA384
+                            || certificateFingerprintAlgorithm != HashAlgorithmName.SHA512))
+                    {
+                        context.Console.Error.WriteLine(
+                            FormatMessage(Resources.InvalidCertificateFingerprintAlgorithmValue, CertificateFingerprintAlgorithmOption));
+                        context.ExitCode = ExitCode.NoInputsFound;
+
+                        return;
+                    }
                 }
 
                 // CSP requires a private key container to function.
