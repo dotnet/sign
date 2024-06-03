@@ -122,8 +122,8 @@
     <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
   </data>
   <data name="CertificateFingerprintAlgorithmOptionDescription" xml:space="preserve">
-    <value>SHA fingerprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512</value>
-    <comment>{Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic algorithms.</comment>
+    <value>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</value>
+    <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</comment>
   </data>
   <data name="CertificateFingerprintOptionDescription" xml:space="preserve">
     <value>SHA fingerprint used to identify a certificate.</value>
