@@ -27,45 +27,15 @@
         <target state="translated">使用 Azure Key Vault。</target>
         <note />
       </trans-unit>
-      <trans-unit id="FilesArgumentDescription">
-        <source>File(s) to sign.</source>
-        <target state="translated">要签名的文件。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidBaseDirectoryValue">
-        <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="translated">{0} 的值无效。该值必须是完整的根目录路径。</target>
-        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
-      </trans-unit>
       <trans-unit id="InvalidClientSecretCredential">
         <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
         <target state="translated">如果不使用托管标识，则需要以下所有选项: {0}、{1} 和 {2}。</target>
         <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
       </trans-unit>
-      <trans-unit id="InvalidFileValue">
-        <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="translated">使用 glob 时，文件路径不能为根路径。请使用相对于工作目录(或基目录，如果使用)的路径。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key Vault.</source>
         <target state="translated">要向 Azure Key Vault 进行身份验证的托管标识。</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingFileValue">
-        <source>A file or glob is required.</source>
-        <target state="translated">文件或 glob 是必需的。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoFilesToSign">
-        <source>No inputs found to sign.</source>
-        <target state="translated">找不到要签名的输入。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SomeFilesDoNotExist">
-        <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="translated">某些文件不存在。请尝试使用其他 {0} 值或完全限定的文件路径。</target>
-        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">
         <source>Tenant ID to authenticate to Azure Key Vault.</source>

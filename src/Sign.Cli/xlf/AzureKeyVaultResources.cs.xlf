@@ -27,45 +27,15 @@
         <target state="translated">Použijte Azure Key Vault.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FilesArgumentDescription">
-        <source>File(s) to sign.</source>
-        <target state="translated">Soubor nebo soubory, které se mají podepsat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidBaseDirectoryValue">
-        <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
-        <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být plně kořenová cesta k adresáři.</target>
-        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
-      </trans-unit>
       <trans-unit id="InvalidClientSecretCredential">
         <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
         <target state="translated">Pokud se nepoužívá spravovaná identita, vyžadují se všechny tyto možnosti: {0}, {1}a {2}.</target>
         <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
       </trans-unit>
-      <trans-unit id="InvalidFileValue">
-        <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="translated">Cestu k souboru nelze při použití glob zakořenit. Použijte relativní cestu k pracovnímu adresáři (nebo základnímu adresáři, pokud se používá).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key Vault.</source>
         <target state="translated">Spravovaná identita pro ověření pro Azure Key Vault.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="MissingFileValue">
-        <source>A file or glob is required.</source>
-        <target state="translated">Vyžaduje se soubor nebo glob.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoFilesToSign">
-        <source>No inputs found to sign.</source>
-        <target state="translated">Nenašly se žádné vstupy, které by bylo možné podepsat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SomeFilesDoNotExist">
-        <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="translated">Některé soubory neexistují.  Zkuste použít jinou hodnotu {0} nebo plně kvalifikovanou cestu k souboru.</target>
-        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">
         <source>Tenant ID to authenticate to Azure Key Vault.</source>

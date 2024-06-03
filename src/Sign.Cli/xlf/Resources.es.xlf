@@ -42,6 +42,11 @@
         <target state="new">Path to file containing paths of files to sign or to exclude from signing.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FilesArgumentDescription">
+        <source>File(s) to sign.</source>
+        <target state="translated">Archivos para firmar.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
         <source>Invalid value for {0}. The value must be a fully rooted directory path.</source>
         <target state="translated">Valor no válido para {0}. El valor debe ser una ruta de acceso de directorio totalmente raíz.</target>
@@ -51,6 +56,11 @@
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
         <target state="translated">Valor no válido para {0}. El valor debe ser 'sha256', 'sha384' o 'sha512'.</target>
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.  {NumberedPlaceholder="{0}"} is an option name (e.g.:  --file-digest) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="InvalidFileValue">
+        <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
+        <target state="translated">La ruta de acceso del archivo no se puede rootear cuando se usa un glob. Use una ruta de acceso relativa al directorio de trabajo (o directorio base, si se usa).</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
@@ -72,6 +82,16 @@
         <target state="translated">Simultaneidad máxima.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingFileValue">
+        <source>A file or glob is required.</source>
+        <target state="translated">Se requiere un archivo o glob.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoFilesToSign">
+        <source>No inputs found to sign.</source>
+        <target state="translated">No se encontraron entradas para firmar.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>
         <target state="translated">Archivo o directorio de salida. Si se omite, se sobrescribirán los archivos de entrada.</target>
@@ -86,6 +106,11 @@
         <source>Sign CLI</source>
         <target state="translated">Firma de la CLI</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SomeFilesDoNotExist">
+        <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
+        <target state="translated">Algunos archivos no existen.  Pruebe a usar otro valor {0} o una ruta de acceso de archivo completa.</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>

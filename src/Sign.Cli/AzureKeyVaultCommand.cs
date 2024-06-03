@@ -25,7 +25,7 @@ namespace Sign.Cli
         internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, AzureKeyVaultResources.CertificateOptionDescription);
         internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, AzureKeyVaultResources.ClientIdOptionDescription);
         internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, AzureKeyVaultResources.ClientSecretOptionDescription);
-        internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
+        internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
         internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
         internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, AzureKeyVaultResources.TenantIdOptionDescription);
         internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, AzureKeyVaultResources.UrlOptionDescription);
@@ -77,7 +77,7 @@ namespace Sign.Cli
 
                 if (string.IsNullOrEmpty(fileArgument))
                 {
-                    context.Console.Error.WriteLine(AzureKeyVaultResources.MissingFileValue);
+                    context.Console.Error.WriteLine(Resources.MissingFileValue);
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
@@ -129,7 +129,7 @@ namespace Sign.Cli
                 {
                     context.Console.Error.WriteLine(
                         FormatMessage(
-                            AzureKeyVaultResources.InvalidBaseDirectoryValue,
+                            Resources.InvalidBaseDirectoryValue,
                             _codeCommand.BaseDirectoryOption));
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
@@ -157,7 +157,7 @@ namespace Sign.Cli
                 {
                     if (Path.IsPathRooted(fileArgument))
                     {
-                        context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidFileValue);
+                        context.Console.Error.WriteLine(Resources.InvalidFileValue);
                         context.ExitCode = ExitCode.InvalidOptions;
 
                         return;
@@ -207,7 +207,7 @@ namespace Sign.Cli
 
                 if (inputFiles.Count == 0)
                 {
-                    context.Console.Error.WriteLine(AzureKeyVaultResources.NoFilesToSign);
+                    context.Console.Error.WriteLine(Resources.NoFilesToSign);
                     context.ExitCode = ExitCode.NoInputsFound;
                     return;
                 }
@@ -216,7 +216,7 @@ namespace Sign.Cli
                 {
                     context.Console.Error.WriteLine(
                         FormatMessage(
-                            AzureKeyVaultResources.SomeFilesDoNotExist,
+                            Resources.SomeFilesDoNotExist,
                             _codeCommand.BaseDirectoryOption));
 
                     foreach (FileInfo file in inputFiles.Where(file => !file.Exists))

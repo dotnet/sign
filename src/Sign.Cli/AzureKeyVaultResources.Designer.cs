@@ -106,24 +106,6 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File(s) to sign..
-        /// </summary>
-        internal static string FilesArgumentDescription {
-            get {
-                return ResourceManager.GetString("FilesArgumentDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a fully rooted directory path..
-        /// </summary>
-        internal static string InvalidBaseDirectoryValue {
-            get {
-                return ResourceManager.GetString("InvalidBaseDirectoryValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to If not using a managed identity, all of these options are required: {0}, {1}, and {2}..
         /// </summary>
         internal static string InvalidClientSecretCredential {
@@ -133,47 +115,11 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used)..
-        /// </summary>
-        internal static string InvalidFileValue {
-            get {
-                return ResourceManager.GetString("InvalidFileValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Managed identity to authenticate to Azure Key Vault..
         /// </summary>
         internal static string ManagedIdentityOptionDescription {
             get {
                 return ResourceManager.GetString("ManagedIdentityOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A file or glob is required..
-        /// </summary>
-        internal static string MissingFileValue {
-            get {
-                return ResourceManager.GetString("MissingFileValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No inputs found to sign..
-        /// </summary>
-        internal static string NoFilesToSign {
-            get {
-                return ResourceManager.GetString("NoFilesToSign", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Some files do not exist.  Try using a different {0} value or a fully qualified file path..
-        /// </summary>
-        internal static string SomeFilesDoNotExist {
-            get {
-                return ResourceManager.GetString("SomeFilesDoNotExist", resourceCulture);
             }
         }
         
