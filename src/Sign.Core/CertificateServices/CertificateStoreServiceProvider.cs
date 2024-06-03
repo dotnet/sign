@@ -95,14 +95,14 @@ namespace Sign.Core
                 }
 
                 _certificateStoreService = new CertificateStoreService(
-                                            serviceProvider,
-                                            _certificateFingerprint,
-                                            _certificateFingerprintAlgorithm,
-                                            _cryptoServiceProvider,
-                                            _privateKeyContainer,
-                                            _certificateFilePath,
-                                            _certificateFilePassword,
-                                            _isMachineKeyContainer);
+                    serviceProvider,
+                    _certificateFingerprint,
+                    _certificateFingerprintAlgorithm,
+                    _cryptoServiceProvider,
+                    _privateKeyContainer,
+                    _certificateFilePath,
+                    _certificateFilePassword,
+                    _isMachineKeyContainer);
             }
 
             return _certificateStoreService;
