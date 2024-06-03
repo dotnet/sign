@@ -20,13 +20,13 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> CertificateFingerprintOption { get; } = new(new[] { "-cfp", "--certificate-fingerprint" }, CertificateStoreResources.CertificateFingerprintOptionDescription);
-        internal Option<string> CertificateFingerprintAlgorithmOption { get; } = new(new[] { "-cfpa", "--certificate-fingerprint-algorithm" }, getDefaultValue:() => "SHA-256", CertificateStoreResources.CertificateFingerprintAlgorithmOptionDescription);
-        internal Option<string?> CertificateFileOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.CertificateFileOptionDescription);
-        internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.CertificatePasswordOptionDescription);
-        internal Option<string?> CryptoServiceProviderOption { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CspOptionDescription);
-        internal Option<string?> PrivateKeyContainerOption { get; } = new(new[] { "-k", "--key-container" }, CertificateStoreResources.KeyContainerOptionDescription);
-        internal Option<bool> UseMachineKeyContainerOption { get; } = new(new[] { "-km", "--use-machine-key-container" }, getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
+        internal Option<string> CertificateFingerprintOption { get; } = new(["-cfp", "--certificate-fingerprint"], CertificateStoreResources.CertificateFingerprintOptionDescription);
+        internal Option<HashAlgorithmName> CertificateFingerprintAlgorithmOption { get; } = new([ "-cfpa", "--certificate-fingerprint-algorithm" ], HashAlgorithmParser.ParseHashAlgorithmName, description: CertificateStoreResources.CertificateFingerprintAlgorithmOptionDescription);
+        internal Option<string?> CertificateFileOption { get; } = new(["-cf", "--certificate-file"], CertificateStoreResources.CertificateFileOptionDescription);
+        internal Option<string?> CertificatePasswordOption { get; } = new(["-p", "--password"], CertificateStoreResources.CertificatePasswordOptionDescription);
+        internal Option<string?> CryptoServiceProviderOption { get; } = new(["-csp", "--crypto-service-provider"], CertificateStoreResources.CspOptionDescription);
+        internal Option<string?> PrivateKeyContainerOption { get; } = new(["-k", "--key-container"], CertificateStoreResources.KeyContainerOptionDescription);
+        internal Option<bool> UseMachineKeyContainerOption { get; } = new(["-km", "--use-machine-key-container"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
 
@@ -39,6 +39,8 @@ namespace Sign.Cli
             _codeCommand = codeCommand;
 
             CertificateFingerprintOption.IsRequired = true;
+
+            CertificateFingerprintAlgorithmOption.SetDefaultValue(HashAlgorithmName.SHA256);
 
             AddOption(CertificateFingerprintOption);
             AddOption(CertificateFingerprintAlgorithmOption);
@@ -71,7 +73,7 @@ namespace Sign.Cli
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
                 string? certificateFingerprint = context.ParseResult.GetValueForOption(CertificateFingerprintOption);
-                string? unparsedCertificateFingerprintAlgorithm = context.ParseResult.GetValueForOption(CertificateFingerprintAlgorithmOption);
+                HashAlgorithmName certificateFingerprintAlgorithm = context.ParseResult.GetValueForOption(CertificateFingerprintAlgorithmOption);
                 string? certificatePath = context.ParseResult.GetValueForOption(CertificateFileOption);
                 string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
@@ -95,28 +97,6 @@ namespace Sign.Cli
                     context.ExitCode = ExitCode.NoInputsFound;
 
                     return;
-                }
-
-                HashAlgorithmName certificateFingerprintAlgorithm = HashAlgorithmName.SHA256;
-
-                // CertificateFingerprintAlgorithm defaults to SHA-256, but one could pass in an empty argument through PowerShell scripts.
-                if (unparsedCertificateFingerprintAlgorithm != null)
-                {
-                    // Remove "-" from the unparsed entry to match with HashAlgorithmName.
-                    unparsedCertificateFingerprintAlgorithm = string.Join(string.Empty, unparsedCertificateFingerprintAlgorithm.Split('-'));
-
-                    // We only accept SHA256, SHA384, and SHA512 as valid fingerprint algorithms.
-                    if (!Enum.TryParse<HashAlgorithmName>(unparsedCertificateFingerprintAlgorithm, ignoreCase: true, out certificateFingerprintAlgorithm)
-                        && (certificateFingerprintAlgorithm != HashAlgorithmName.SHA256
-                            || certificateFingerprintAlgorithm != HashAlgorithmName.SHA384
-                            || certificateFingerprintAlgorithm != HashAlgorithmName.SHA512))
-                    {
-                        context.Console.Error.WriteLine(
-                            FormatMessage(Resources.InvalidCertificateFingerprintAlgorithmValue, CertificateFingerprintAlgorithmOption));
-                        context.ExitCode = ExitCode.NoInputsFound;
-
-                        return;
-                    }
                 }
 
                 // CSP requires a private key container to function.
