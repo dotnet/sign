@@ -22,13 +22,13 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> CertificateOption { get; } = new(new[] { "-kvc", "--azure-key-vault-certificate" }, AzureKeyVaultResources.CertificateOptionDescription);
-        internal Option<string?> ClientIdOption { get; } = new(new[] { "-kvi", "--azure-key-vault-client-id" }, AzureKeyVaultResources.ClientIdOptionDescription);
-        internal Option<string?> ClientSecretOption { get; } = new(new[] { "-kvs", "--azure-key-vault-client-secret" }, AzureKeyVaultResources.ClientSecretOptionDescription);
+        internal Option<string> CertificateOption { get; } = new(["-kvc", "--azure-key-vault-certificate"], AzureKeyVaultResources.CertificateOptionDescription);
+        internal Option<string?> ClientIdOption { get; } = new(["-kvi", "--azure-key-vault-client-id"], AzureKeyVaultResources.ClientIdOptionDescription);
+        internal Option<string?> ClientSecretOption { get; } = new(["-kvs", "--azure-key-vault-client-secret"], AzureKeyVaultResources.ClientSecretOptionDescription);
         internal Argument<string?> FileArgument { get; } = new("file(s)", AzureKeyVaultResources.FilesArgumentDescription);
-        internal Option<bool> ManagedIdentityOption { get; } = new(new[] { "-kvm", "--azure-key-vault-managed-identity" }, getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
-        internal Option<string?> TenantIdOption { get; } = new(new[] { "-kvt", "--azure-key-vault-tenant-id" }, AzureKeyVaultResources.TenantIdOptionDescription);
-        internal Option<Uri> UrlOption { get; } = new(new[] { "-kvu", "--azure-key-vault-url" }, AzureKeyVaultResources.UrlOptionDescription);
+        internal Option<bool> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
+        internal Option<string?> TenantIdOption { get; } = new(["-kvt", "--azure-key-vault-tenant-id"], AzureKeyVaultResources.TenantIdOptionDescription);
+        internal Option<Uri> UrlOption { get; } = new(["-kvu", "--azure-key-vault-url"], AzureKeyVaultResources.UrlOptionDescription);
 
         internal AzureKeyVaultCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
