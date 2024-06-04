@@ -19,6 +19,7 @@ namespace Sign.Core
     {
         private readonly string _certificateFingerprint;
         private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
+        private readonly HashAlgorithm _hasher;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
         private readonly string? _certificatePath;
@@ -46,6 +47,15 @@ namespace Sign.Core
             _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
             _certificatePath = certificatePath;
             _certificatePassword = certificatePassword;
+
+            _hasher = _certificateFingerprintAlgorithm.Name switch
+            {
+                "SHA256" => SHA256.Create(),
+                "SHA384" => SHA384.Create(),
+                "SHA512" => SHA512.Create(),
+
+                _ => throw new NotSupportedException(Resources.VSIXSignToolUnsupportedAlgorithm)
+            };
 
             _logger = serviceProvider.GetRequiredService<ILogger<CertificateStoreService>>();
         }
@@ -120,7 +130,8 @@ namespace Sign.Core
 
                 foreach (var cert in certCollection)
                 {
-                    if (string.Equals(cert.GetCertHashString(_certificateFingerprintAlgorithm), _certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
+                    // X509Certificate2 only exposes a SHA-1 thumbprint. To circumvent this, generate a hash that matches the specified algorithm name from the raw certificate bytes.
+                    if (string.Equals(CalculateHashFromRawData(cert.GetRawCertData()), _certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
@@ -153,11 +164,11 @@ namespace Sign.Core
             using (var store = new X509Store(StoreName.My, storeLocation))
             {
                 store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
-                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, certificateFingerprint, validOnly: false);
 
-                foreach (var cert in certificates)
+                foreach (var cert in store.Certificates)
                 {
-                    if (string.Equals(cert.GetCertHashString(_certificateFingerprintAlgorithm), certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
+                    // X509Certificate2 only exposes a SHA-1 thumbprint. To circumvent this, generate a hash that matches the specified algorithm name from the raw certificate bytes.
+                    if (string.Equals(CalculateHashFromRawData(cert.GetRawCertData()), certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
                         certificate = cert;
 
@@ -170,6 +181,13 @@ namespace Sign.Core
                 return false;
             }
         }
+
+        /// <summary>
+        /// Calculate a certificate hash using <see cref="_hasher"/>.
+        /// </summary>
+        /// <param name="rawCertData">Raw data from a <see cref="X509Certificate2"/> certificate</param>
+        /// <returns>Parsed certificate hash in lowercase with all '-' removed.</returns>
+        private string CalculateHashFromRawData(byte[] rawCertData) => _hasher.ComputeHash(rawCertData).Aggregate(string.Empty, (str, hashByte) => str + hashByte.ToString("x2"));
 
     }
 }
