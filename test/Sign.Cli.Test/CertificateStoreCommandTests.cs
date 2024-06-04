@@ -92,10 +92,10 @@ namespace Sign.Cli.Test
             [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf")]
             [InlineData("certificate-store a -cfp fingerprint -cfpa sha-333 -cf")]
             [InlineData("certificate-store a -cfp fingerprint -cfpa -cf filePath -p")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -cf filePath -csp")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -cf filePath -csp sampleCSP -k")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -csp")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -csp sampleCSP -k")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp sampleCSP -k")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp sampleCSP -k")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -104,14 +104,14 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-384 -cf filePath")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-512 -cf filePath -p password")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -csp sampleCSP -k keyContainer ")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -csp sampleCSP -k machineKeyContainer -km")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -cf filePath -csp sampleCSP -k keyContainer ")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -cf filePath -p password -csp sampleCSP -k keyContainer")]
-            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-256 -cf filePath -csp sampleCSP -k keyContainer -km")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha384 -cf filePath")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha512 -cf filePath -p password")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp sampleCSP -k keyContainer ")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp sampleCSP -k machineKeyContainer -km")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp sampleCSP -k keyContainer ")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -p password -csp sampleCSP -k keyContainer")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp sampleCSP -k keyContainer -km")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);
