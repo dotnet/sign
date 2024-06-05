@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="CSPOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k or /km</source>
-        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k or /km</target>
+        <target state="translated">包含私密金鑰容器的加密服務提供者。需要 /k 或 /km</target>
         <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container in the user store</source>
-        <target state="new">Private key container in the user store</target>
+        <target state="translated">使用者存放區中的私密金鑰</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineKeyContainerOptionDescription">
         <source>Private key container in the machine store</source>
-        <target state="new">Private key container in the machine store</target>
+        <target state="translated">機器存放區中的私密金鑰</target>
         <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores</target>
+        <target state="translated">已提供多個私密金鑰。使用者存放區使用 /k，機器存放區則使用 /km</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">使用 /csp 時遺漏私密金鑰容器。使用 /k 或 /km 來提供金鑰容器。</target>
         <note />
       </trans-unit>
       <trans-unit id="SHA1ThumbprintOptionDescription">
         <source>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</source>
-        <target state="new">SHA1 thumprint used to access a certificate from a certificate store (VSIX)</target>
+        <target state="translated">用以從憑證存放區 (VSIX) 存取憑證的 SHA1 指紋</target>
         <note />
       </trans-unit>
     </body>

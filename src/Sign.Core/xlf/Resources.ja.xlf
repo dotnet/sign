@@ -19,27 +19,27 @@
       </trans-unit>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="new">Unable to find a matching certificate.</target>
+        <target state="translated">一致する証明書が見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
         <source>Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</source>
-        <target state="new">Unable to find a certificate with a matching SHA-1 thumbprint in {0}.</target>
+        <target state="translated">{0} で SHA-1 拇印が一致する証明書が見つかりません。</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <target state="translated">コンピューター証明書ストアに一致する証明書が見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <target state="translated">ユーザー証明書ストアに一致する証明書が見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <target state="translated">指定された証明書の RSA 秘密キーを取得できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -104,17 +104,17 @@
       </trans-unit>
       <trans-unit id="InvalidSha1ThumbrpintValue">
         <source>Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</source>
-        <target state="new">Invalid value for {0}. The value must be the SHA-1 thumbprint of a certificate in a Windows Certificate Store.</target>
+        <target state="translated">{0} の値が無効です。値は、Windows 証明書ストア内の証明書の SHA-1 拇印である必要があります。</target>
         <note>{NumberedPlaceholder="{0}"} is a a SHA-1 thumbprint and shouldn't be translated.</note>
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <target state="translated">複数の秘密キー コンテナーが提供されています。ユーザー ストアの場合は /k、コンピューター ストアの場合は /km を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">/csp の使用中に秘密キー コンテナーが見つかりません。キー コンテナーを指定するには、/k または /km を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
@@ -179,7 +179,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="new">Signing {filePath} succeeded.</target>
+        <target state="translated">{filePath} の署名に成功しました。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
@@ -194,22 +194,22 @@
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <target state="translated">証明書にサポートされていない公開キー アルゴリズムがあります。</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
-        <target state="new">Specified {0} is invalid.</target>
+        <target state="translated">指定された {0} は無効です。</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
-        <target state="new">Unknown signing algorithm.</target>
+        <target state="translated">不明な署名アルゴリズムです。</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
-        <target state="new">The algorithm selected is not supported.</target>
+        <target state="translated">選択したアルゴリズムはサポートされていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <target state="translated">{count} 個のファイルを使用して VsixSignTool ジョブに署名しています。</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>

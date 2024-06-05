@@ -4,32 +4,32 @@
     <body>
       <trans-unit id="CSPOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k or /km</source>
-        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k or /km</target>
+        <target state="translated">Zprostředkovatel kryptografických služeb obsahující kontejner privátního klíče. Vyžaduje se /k nebo /km.</target>
         <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container in the user store</source>
-        <target state="new">Private key container in the user store</target>
+        <target state="translated">Kontejner privátního klíče v úložišti uživatele.</target>
         <note />
       </trans-unit>
       <trans-unit id="MachineKeyContainerOptionDescription">
         <source>Private key container in the machine store</source>
-        <target state="new">Private key container in the machine store</target>
+        <target state="translated">Kontejner privátního klíče v úložišti počítače.</target>
         <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores</target>
+        <target state="translated">Poskytlo se několik kontejnerů privátních klíčů. Pro úložiště uživatele použijte /k a pro úložiště počítače použijte /km.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">Při použití /csp chybí kontejner privátního klíče. K poskytnutí kontejneru klíčů použijte /k nebo /km.</target>
         <note />
       </trans-unit>
       <trans-unit id="SHA1ThumbprintOptionDescription">
         <source>SHA1 thumprint used to access a certificate from a certificate store (VSIX)</source>
-        <target state="new">SHA1 thumprint used to access a certificate from a certificate store (VSIX)</target>
+        <target state="translated">Kryptografický otisk SHA1 použitý pro přístup k certifikátu z úložiště certifikátů (VSIX).</target>
         <note />
       </trans-unit>
     </body>
