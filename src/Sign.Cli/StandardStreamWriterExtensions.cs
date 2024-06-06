@@ -16,7 +16,7 @@ namespace Sign.Cli
                 .Select(symbol => $"--{symbol.Name}")
                 .ToArray();
 
-            writer.WriteLine(string.Format(CultureInfo.CurrentCulture, format, formattedSymbols));
+            writer.WriteLine(string.Format(CultureInfo.InvariantCulture, format, formattedSymbols));
         }
     }
 }
