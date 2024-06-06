@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
         <source>File(s) to sign.</source>
-        <target state="translated">要签名的文件。</target>
+        <target state="new">File(s) to sign.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="InvalidFileValue">
         <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="translated">使用 glob 时，文件路径不能为根路径。请使用相对于工作目录(或基目录，如果使用)的路径。</target>
+        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="MissingFileValue">
         <source>A file or glob is required.</source>
-        <target state="translated">文件或 glob 是必需的。</target>
+        <target state="new">A file or glob is required.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
-        <target state="translated">找不到要签名的输入。</target>
+        <target state="new">No inputs found to sign.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="SomeFilesDoNotExist">
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="translated">某些文件不存在。请尝试使用其他 {0} 值或完全限定的文件路径。</target>
+        <target state="new">Some files do not exist.  Try using a different {0} value or a fully qualified file path.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
