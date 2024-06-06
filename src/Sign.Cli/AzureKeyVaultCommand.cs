@@ -5,7 +5,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Azure.Core;
@@ -82,7 +81,7 @@ namespace Sign.Cli
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
-                
+
                 // this check exists as a courtesy to users who may have been signing .clickonce files via the old workaround.
                 // at some point we should remove this check, probably once we hit v1.0
                 if (fileArgument.EndsWith(".clickonce", StringComparison.OrdinalIgnoreCase))
@@ -111,14 +110,12 @@ namespace Sign.Cli
                         string.IsNullOrEmpty(clientId) ||
                         string.IsNullOrEmpty(secret))
                     {
-                        context.Console.Error.WriteLine(
-                            FormatMessage(
-                                AzureKeyVaultResources.InvalidClientSecretCredential,
-                                TenantIdOption,
-                                ClientIdOption,
-                                ClientSecretOption));
+                        context.Console.Error.WriteFormattedLine(
+                            AzureKeyVaultResources.InvalidClientSecretCredential,
+                            TenantIdOption,
+                            ClientIdOption,
+                            ClientSecretOption);
                         context.ExitCode = ExitCode.NoInputsFound;
-
                         return;
                     }
 
@@ -128,10 +125,9 @@ namespace Sign.Cli
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(
-                            Resources.InvalidBaseDirectoryValue,
-                            _codeCommand.BaseDirectoryOption));
+                    context.Console.Error.WriteFormattedLine(
+                        Resources.InvalidBaseDirectoryValue,
+                        _codeCommand.BaseDirectoryOption);
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
@@ -160,7 +156,6 @@ namespace Sign.Cli
                     {
                         context.Console.Error.WriteLine(Resources.InvalidFileValue);
                         context.ExitCode = ExitCode.InvalidOptions;
-
                         return;
                     }
 
@@ -215,10 +210,9 @@ namespace Sign.Cli
 
                 if (inputFiles.Any(file => !file.Exists))
                 {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(
-                            Resources.SomeFilesDoNotExist,
-                            _codeCommand.BaseDirectoryOption));
+                    context.Console.Error.WriteFormattedLine(
+                        Resources.SomeFilesDoNotExist,
+                        _codeCommand.BaseDirectoryOption);
 
                     foreach (FileInfo file in inputFiles.Where(file => !file.Exists))
                     {
@@ -255,15 +249,6 @@ namespace Sign.Cli
             }
 
             return Path.Combine(baseDirectory.FullName, file);
-        }
-
-        private static string FormatMessage(string format, params IdentifierSymbol[] symbols)
-        {
-            string[] formattedSymbols = symbols
-                .Select(symbol => $"--{symbol.Name}")
-                .ToArray();
-
-            return string.Format(CultureInfo.CurrentCulture, format, formattedSymbols);
         }
     }
 }

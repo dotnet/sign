@@ -5,7 +5,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -87,10 +86,10 @@ namespace Sign.Cli
                 // SHA-1 Thumbprint is required in case the provided certificate container contains multiple certificates.
                 if (string.IsNullOrEmpty(sha1Thumbprint))
                 {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(Resources.InvalidSha1ThumbprintValue, Sha1ThumbprintOption));
+                    context.Console.Error.WriteFormattedLine(
+                        Resources.InvalidSha1ThumbprintValue,
+                        Sha1ThumbprintOption);
                     context.ExitCode = ExitCode.NoInputsFound;
-
                     return;
                 }
 
@@ -114,10 +113,9 @@ namespace Sign.Cli
                 // Make sure this is rooted
                 if (!Path.IsPathRooted(baseDirectory.FullName))
                 {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(
-                            Resources.InvalidBaseDirectoryValue,
-                            _codeCommand.BaseDirectoryOption));
+                    context.Console.Error.WriteFormattedLine(
+                        Resources.InvalidBaseDirectoryValue,
+                        _codeCommand.BaseDirectoryOption);
                     context.ExitCode = ExitCode.InvalidOptions;
                     return;
                 }
@@ -152,7 +150,6 @@ namespace Sign.Cli
                     {
                         context.Console.Error.WriteLine(Resources.InvalidFileValue);
                         context.ExitCode = ExitCode.InvalidOptions;
-
                         return;
                     }
 
@@ -207,10 +204,9 @@ namespace Sign.Cli
 
                 if (inputFiles.Any(file => !file.Exists))
                 {
-                    context.Console.Error.WriteLine(
-                        FormatMessage(
-                            Resources.SomeFilesDoNotExist,
-                            _codeCommand.BaseDirectoryOption));
+                    context.Console.Error.WriteFormattedLine(
+                        Resources.SomeFilesDoNotExist,
+                        _codeCommand.BaseDirectoryOption);
 
                     foreach (FileInfo file in inputFiles.Where(file => !file.Exists))
                     {
@@ -247,15 +243,6 @@ namespace Sign.Cli
             }
 
             return Path.Combine(baseDirectory.FullName, file);
-        }
-
-        private static string FormatMessage(string format, params IdentifierSymbol[] symbols)
-        {
-            string[] formattedSymbols = symbols
-                .Select(symbol => $"--{symbol.Name}")
-                .ToArray();
-
-            return string.Format(CultureInfo.CurrentCulture, format, formattedSymbols);
         }
     }
 }
