@@ -115,7 +115,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;Sha256&apos;, &apos;Sha384&apos;, and &apos;Sha512&apos;..
+        ///   Looks up a localized string similar to Digest algorithm to hash files with. Allowed values are &apos;sha256&apos;, &apos;sha384&apos;, and &apos;sha512&apos;..
         /// </summary>
         internal static string FileDigestOptionDescription {
             get {
@@ -133,6 +133,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File(s) to sign..
+        /// </summary>
+        internal static string FilesArgumentDescription {
+            get {
+                return ResourceManager.GetString("FilesArgumentDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be a fully rooted directory path..
         /// </summary>
         internal static string InvalidBaseDirectoryValue {
@@ -142,11 +151,20 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;Sha256&apos;, &apos;Sha384&apos;, or &apos;Sha512&apos;..
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
         /// </summary>
         internal static string InvalidDigestValue {
             get {
                 return ResourceManager.GetString("InvalidDigestValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used)..
+        /// </summary>
+        internal static string InvalidFileValue {
+            get {
+                return ResourceManager.GetString("InvalidFileValue", resourceCulture);
             }
         }
         
@@ -187,6 +205,24 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A file or glob is required..
+        /// </summary>
+        internal static string MissingFileValue {
+            get {
+                return ResourceManager.GetString("MissingFileValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No inputs found to sign..
+        /// </summary>
+        internal static string NoFilesToSign {
+            get {
+                return ResourceManager.GetString("NoFilesToSign", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Output file or directory. If omitted, input files will be overwritten..
         /// </summary>
         internal static string OutputOptionDescription {
@@ -214,7 +250,16 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Digest algorithm for the RFC 3161 timestamp server. Allowed values are Sha256, Sha384, and Sha512..
+        ///   Looks up a localized string similar to Some files do not exist.  Try using a different {0} value or a fully qualified file path..
+        /// </summary>
+        internal static string SomeFilesDoNotExist {
+            get {
+                return ResourceManager.GetString("SomeFilesDoNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512..
         /// </summary>
         internal static string TimestampDigestOptionDescription {
             get {
