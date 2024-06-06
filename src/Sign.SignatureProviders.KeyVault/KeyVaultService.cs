@@ -11,8 +11,9 @@ using Azure.Security.KeyVault.Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RSAKeyVaultProvider;
+using Sign.Core;
 
-namespace Sign.Core
+namespace Sign.SignatureProviders.KeyVault
 {
     internal sealed class KeyVaultService : ISignatureAlgorithmProvider, ICertificateProvider
     {
@@ -26,16 +27,6 @@ namespace Sign.Core
             Uri keyVaultUrl,
             string certificateName)
         {
-            ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
-            ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
-            ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
-            ArgumentNullException.ThrowIfNull(certificateName, nameof(certificateName));
-
-            if (string.IsNullOrEmpty(certificateName))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateName));
-            }
-
             _tokenCredential = tokenCredential;
             _logger = serviceProvider.GetRequiredService<ILogger<KeyVaultService>>();
 

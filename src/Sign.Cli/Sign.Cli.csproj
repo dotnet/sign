@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepositoryRootDirectory)\SdkTools.props" />
 
   <PropertyGroup>
@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
+    <ProjectReference Include="..\Sign.SignatureProviders.KeyVault\Sign.SignatureProviders.KeyVault.csproj" />
   </ItemGroup>
 
   <ItemGroup>
