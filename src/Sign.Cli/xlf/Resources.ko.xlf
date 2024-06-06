@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
         <source>File(s) to sign.</source>
-        <target state="translated">서명할 파일입니다.</target>
+        <target state="new">File(s) to sign.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="InvalidFileValue">
         <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="translated">glob을 사용할 때 파일 경로를 루팅할 수 없습니다. 작업 디렉터리(또는 사용되는 경우 기본 디렉터리)에 상대적인 경로를 사용하세요.</target>
+        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="MissingFileValue">
         <source>A file or glob is required.</source>
-        <target state="translated">파일 또는 글로브가 필요합니다.</target>
+        <target state="new">A file or glob is required.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
-        <target state="translated">서명할 입력이 없습니다.</target>
+        <target state="new">No inputs found to sign.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="SomeFilesDoNotExist">
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="translated">Niektóre pliki nie istnieją.  Spróbuj użyć innej wartości {0} lub w pełni kwalifikowanej ścieżki pliku.</target>
+        <target state="new">Some files do not exist.  Try using a different {0} value or a fully qualified file path.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">

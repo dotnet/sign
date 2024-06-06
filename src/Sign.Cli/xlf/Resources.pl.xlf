@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
         <source>File(s) to sign.</source>
-        <target state="translated">Pliki do podpisania.</target>
+        <target state="new">File(s) to sign.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="InvalidFileValue">
         <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="translated">Ścieżka pliku nie może być z dostępem do konta root, gdy jest używany element globalny. Użyj ścieżki odnoszącej się do katalogu roboczego (lub katalogu podstawowego, jeśli jest używany).</target>
+        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="MissingFileValue">
         <source>A file or glob is required.</source>
-        <target state="translated">Wymagany jest plik lub element globalny.</target>
+        <target state="new">A file or glob is required.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
-        <target state="translated">Nie znaleziono danych wejściowych do podpisania.</target>
+        <target state="new">No inputs found to sign.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
