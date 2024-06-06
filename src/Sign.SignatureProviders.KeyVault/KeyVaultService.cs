@@ -27,6 +27,11 @@ namespace Sign.SignatureProviders.KeyVault
             Uri keyVaultUrl,
             string certificateName)
         {
+            ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
+            ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
+            ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
+            ArgumentException.ThrowIfNullOrEmpty(certificateName, nameof(certificateName));
+
             _tokenCredential = tokenCredential;
             _logger = serviceProvider.GetRequiredService<ILogger<KeyVaultService>>();
 
