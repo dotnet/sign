@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using Moq;
 using NuGet.Packaging;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {

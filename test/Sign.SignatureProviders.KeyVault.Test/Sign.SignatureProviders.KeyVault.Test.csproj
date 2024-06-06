@@ -5,7 +5,6 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <IsUnitTestProject>true</IsUnitTestProject>
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,21 +12,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <!-- Microsoft.AspNetCore.Server.Kestrel is old and requires an older version of Microsoft.Extensions.Primitives to function. -->
-    <PackageReference Include="Microsoft.Extensions.Primitives" VersionOverride="2.2.0" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sign.Core\Sign.Core.csproj" />
+    <ProjectReference Include="..\..\src\Sign.SignatureProviders.KeyVault\Sign.SignatureProviders.KeyVault.csproj" />
     <ProjectReference Include="..\Sign.TestInfrastructure\Sign.TestInfrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestAssets\**\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

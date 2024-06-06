@@ -5,13 +5,13 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
-namespace Sign.Core.Test
+namespace Sign.TestInfrastructure
 {
-    internal sealed class TestLogger<T> : ILogger<T>
+    public sealed class TestLogger<T> : ILogger<T>
     {
         private readonly ConcurrentQueue<TestLogEntry> _entries = new();
 
-        internal IEnumerable<TestLogEntry> Entries
+        public IEnumerable<TestLogEntry> Entries
         {
             get => _entries;
         }

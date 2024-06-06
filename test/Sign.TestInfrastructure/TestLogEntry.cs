@@ -4,12 +4,12 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Sign.Core.Test
+namespace Sign.TestInfrastructure
 {
-    internal sealed class TestLogEntry
+    public sealed class TestLogEntry
     {
-        internal LogLevel LogLevel { get; }
-        internal string Message { get; }
+        public LogLevel LogLevel { get; }
+        public string Message { get; }
 
         internal TestLogEntry(LogLevel logLevel, string message)
         {

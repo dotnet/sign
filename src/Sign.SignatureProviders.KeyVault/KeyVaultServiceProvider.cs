@@ -3,8 +3,9 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Azure.Core;
+using Sign.Core;
 
-namespace Sign.Core
+namespace Sign.SignatureProviders.KeyVault
 {
     internal sealed class KeyVaultServiceProvider
     {
@@ -21,12 +22,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
             ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
-            ArgumentNullException.ThrowIfNull(certificateName, nameof(certificateName));
-
-            if (string.IsNullOrEmpty(certificateName))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateName));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(certificateName, nameof(certificateName));
 
             _tokenCredential = tokenCredential;
             _keyVaultUrl = keyVaultUrl;
