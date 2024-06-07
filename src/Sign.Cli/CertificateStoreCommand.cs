@@ -92,34 +92,11 @@ namespace Sign.Cli
                 if (string.IsNullOrEmpty(certificateFingerprint))
                 {
                     context.Console.Error.WriteFormattedLine(
-                        Resources.InvalidCertificateThumbprintValue,
-                        CertificateThumbprintOption);
+                        Resources.InvalidCertificateFingerprintValue,
+                        CertificateFingerprintOption);
                     context.ExitCode = ExitCode.NoInputsFound;
 
                     return;
-                }
-
-                HashAlgorithmName certificateFingerprintAlgorithm = HashAlgorithmName.SHA256;
-
-                // CertificateFingerprintAlgorithm defaults to SHA-256, but one could pass in an empty argument through PowerShell scripts.
-                if (unparsedCertificateFingerprintAlgorithm != null)
-                {
-                    // Remove "-" from the unparsed entry to match with HashAlgorithmName.
-                    unparsedCertificateFingerprintAlgorithm = string.Join(string.Empty, unparsedCertificateFingerprintAlgorithm.Split('-'));
-
-                    // We only accept SHA256, SHA384, and SHA512 as valid fingerprint algorithms.
-                    if (!Enum.TryParse<HashAlgorithmName>(unparsedCertificateFingerprintAlgorithm, ignoreCase: true, out certificateFingerprintAlgorithm)
-                        && (certificateFingerprintAlgorithm != HashAlgorithmName.SHA256
-                            || certificateFingerprintAlgorithm != HashAlgorithmName.SHA384
-                            || certificateFingerprintAlgorithm != HashAlgorithmName.SHA512))
-                    {
-                        context.Console.Error.WriteFormattedLine(
-                            Resources.InvalidCertificateFingerprintAlgorithmValue,
-                            CertificateFingerprintAlgorithmOption);
-                        context.ExitCode = ExitCode.NoInputsFound;
-
-                        return;
-                    }
                 }
 
                 // CSP requires a private key container to function.
