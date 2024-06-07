@@ -70,7 +70,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA fingerprint algorithm. Only accepts SHA-256, SHA-384, or SHA-512.
+        ///   Looks up a localized string similar to Certificate fingerprint algorithm. Allowed values are &apos;sha256&apos;, &apos;sha384&apos;, and &apos;sha512&apos;..
         /// </summary>
         internal static string CertificateFingerprintAlgorithmOptionDescription {
             get {
