@@ -7,24 +7,24 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class AppInstallerServiceSignatureProviderTests
+    public class AppInstallerServiceSignerTests
     {
-        private readonly AppInstallerServiceSignatureProvider _provider;
+        private readonly AppInstallerServiceSigner _signer;
 
-        public AppInstallerServiceSignatureProviderTests()
+        public AppInstallerServiceSignerTests()
         {
-            _provider = new AppInstallerServiceSignatureProvider(
+            _signer = new AppInstallerServiceSigner(
                 Mock.Of<ICertificateProvider>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
         public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AppInstallerServiceSignatureProvider(
+                () => new AppInstallerServiceSigner(
                     certificateProvider: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -33,7 +33,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AppInstallerServiceSignatureProvider(
+                () => new AppInstallerServiceSigner(
                     Mock.Of<ICertificateProvider>(),
                     logger: null!));
 
@@ -44,7 +44,7 @@ namespace Sign.Core.Test
         public void CanSign_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => _provider.CanSign(file: null!));
+                () => _signer.CanSign(file: null!));
 
             Assert.Equal("file", exception.ParamName);
         }
@@ -56,7 +56,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.True(_provider.CanSign(file));
+            Assert.True(_signer.CanSign(file));
         }
 
         [Theory]
@@ -67,7 +67,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.False(_provider.CanSign(file));
+            Assert.False(_signer.CanSign(file));
         }
     }
 }

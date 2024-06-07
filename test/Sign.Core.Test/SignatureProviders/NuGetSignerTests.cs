@@ -7,28 +7,28 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class NuGetSignatureProviderTests
+    public class NuGetSignerTests
     {
-        private readonly NuGetSignatureProvider _provider;
+        private readonly NuGetSigner _signer;
 
-        public NuGetSignatureProviderTests()
+        public NuGetSignerTests()
         {
-            _provider = new NuGetSignatureProvider(
+            _signer = new NuGetSigner(
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
                 Mock.Of<INuGetSignTool>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
         public void Constructor_WhenSignatureAlgorithmProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new NuGetSigner(
                     signatureAlgorithmProvider: null!,
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<INuGetSignTool>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -37,11 +37,11 @@ namespace Sign.Core.Test
         public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new NuGetSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
                     Mock.Of<INuGetSignTool>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -50,11 +50,11 @@ namespace Sign.Core.Test
         public void Constructor_WhenNuGetSignToolIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new NuGetSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     nuGetSignTool: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("nuGetSignTool", exception.ParamName);
         }
@@ -63,7 +63,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new NuGetSignatureProvider(
+                () => new NuGetSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<INuGetSignTool>(),
@@ -76,7 +76,7 @@ namespace Sign.Core.Test
         public void CanSign_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => _provider.CanSign(file: null!));
+                () => _signer.CanSign(file: null!));
 
             Assert.Equal("file", exception.ParamName);
         }
@@ -89,7 +89,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.True(_provider.CanSign(file));
+            Assert.True(_signer.CanSign(file));
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new("file.txt");
 
-            Assert.False(_provider.CanSign(file));
+            Assert.False(_signer.CanSign(file));
         }
     }
 }

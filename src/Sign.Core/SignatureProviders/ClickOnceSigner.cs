@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class ClickOnceSignatureProvider : RetryingSignatureProvider, ISignatureProvider
+    internal sealed class ClickOnceSigner : RetryingSigner, IDataFormatSigner
     {
-        private readonly Lazy<IAggregatingSignatureProvider> _aggregatingSignatureProvider;
+        private readonly Lazy<IAggregatingDataFormatSigner> _aggregatingSigner;
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly IMageCli _mageCli;
@@ -22,13 +22,13 @@ namespace Sign.Core
         private readonly IFileMatcher _fileMatcher;
 
         // Dependency injection requires a public constructor.
-        public ClickOnceSignatureProvider(
+        public ClickOnceSigner(
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
             IServiceProvider serviceProvider,
             IMageCli mageCli,
             IManifestSigner manifestSigner,
-            ILogger<ISignatureProvider> logger,
+            ILogger<IDataFormatSigner> logger,
             IFileMatcher fileMatcher)
             : base(logger)
         {
@@ -46,7 +46,7 @@ namespace Sign.Core
             _fileMatcher = fileMatcher;
 
             // Need to delay this as it'd create a dependency loop if directly in the ctor
-            _aggregatingSignatureProvider = new Lazy<IAggregatingSignatureProvider>(() => serviceProvider.GetService<IAggregatingSignatureProvider>()!);
+            _aggregatingSigner = new Lazy<IAggregatingDataFormatSigner>(() => serviceProvider.GetService<IAggregatingDataFormatSigner>()!);
         }
 
         public bool CanSign(FileInfo file)
@@ -110,7 +110,7 @@ namespace Sign.Core
                     filesToSign.AddRange(setupExe);
 
                     // sign the inner files
-                    await _aggregatingSignatureProvider.Value.SignAsync(filesToSign!, options);
+                    await _aggregatingSigner.Value.SignAsync(filesToSign!, options);
 
                     // rename the rest of the deploy files since signing the manifest will need them.
                     // this uses the overload of GetFiles() that ignores file matching options because we

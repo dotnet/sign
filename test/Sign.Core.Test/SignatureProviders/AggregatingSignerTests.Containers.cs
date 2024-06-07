@@ -8,7 +8,7 @@ using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Sign.Core.Test
 {
-    public partial class AggregatingSignatureProviderTests
+    public partial class AggregatingSignerTests
     {
         private const string AppxBundleContainerName = "container.appxbundle";
         private const string AppxContainerName = "container.appx";
@@ -17,9 +17,9 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFileIsEmptyAppxBundleContainer_SignsNothing()
         {
-            AggregatingSignatureProviderTest test = new(AppxBundleContainerName);
+            AggregatingSignerTest test = new(AppxBundleContainerName);
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             ContainerSpy container = test.Containers[AppxBundleContainerName];
 
@@ -30,18 +30,18 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal(AppxBundleContainerName, signedFile.Name));
         }
 
         [Fact]
         public async Task SignAsync_WhenFileIsAppxBundleContainer_SignsNestedAppxAndMsixFiles()
         {
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{AppxBundleContainerName}/nestedcontainer.appx/a.dll",
                 $"{AppxBundleContainerName}/nestedcontainer.msix/b.dll");
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             ContainerSpy container = test.Containers[AppxBundleContainerName];
 
@@ -52,7 +52,7 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.dll", signedFile.Name),
                 signedFile => Assert.Equal("nestedcontainer.appx", signedFile.Name),
@@ -81,7 +81,7 @@ namespace Sign.Core.Test
                 matcher,
                 antiMatcher);
 
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{AppxBundleContainerName}/a.dll",
                 $"{AppxBundleContainerName}/b.DLL",
                 $"{AppxBundleContainerName}/c.txt",
@@ -95,7 +95,7 @@ namespace Sign.Core.Test
                 $"{AppxBundleContainerName}/DoNotSign/l/m.txt",
                 $"{AppxBundleContainerName}/DoNotSign/l/n.exe");
 
-            await test.Provider.SignAsync(test.Files, options);
+            await test.Signer.SignAsync(test.Files, options);
 
             ContainerSpy container = test.Containers[AppxBundleContainerName];
 
@@ -106,16 +106,16 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal(AppxBundleContainerName, signedFile.Name));
         }
 
         [Fact]
         public async Task SignAsync_WhenFileIsEmptyAppxContainer_SignsNothing()
         {
-            AggregatingSignatureProviderTest test = new(AppxContainerName);
+            AggregatingSignerTest test = new(AppxContainerName);
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             ContainerSpy container = test.Containers[AppxContainerName];
 
@@ -126,19 +126,19 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal(AppxContainerName, signedFile.Name));
         }
 
         [Fact]
         public async Task SignAsync_WhenFileIsAppxContainer_SignsPortableExecutableFiles()
         {
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{AppxContainerName}/a.dll",
                 $"{AppxContainerName}/b.exe",
                 $"{AppxContainerName}/c/d.dll");
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             ContainerSpy container = test.Containers[AppxContainerName];
 
@@ -149,7 +149,7 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.exe", signedFile.Name),
                 signedFile => Assert.Equal("d.dll", signedFile.Name),
@@ -159,7 +159,7 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFileIsAppxContainerWithNestedContentAndContainers_SignsContentInsideOut()
         {
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{AppxContainerName}/a.dll",
                 $"{AppxContainerName}/nestedcontainer0.zip/b.dll",
                 $"{AppxContainerName}/nestedcontainer0.zip/nestedcontainer1.zip/c.dll",
@@ -167,7 +167,7 @@ namespace Sign.Core.Test
                 $"{AppxContainerName}/nestedcontainer.nupkg/folder0/folder1/f.dll",
                 $"{AppxContainerName}/nestedcontainer.vsix/folder0/folder1/folder2/g.dll");
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             foreach (string containerName in new[]
             {
@@ -188,7 +188,7 @@ namespace Sign.Core.Test
             }
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("c.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.dll", signedFile.Name),
                 signedFile => Assert.Equal("f.dll", signedFile.Name),
@@ -221,7 +221,7 @@ namespace Sign.Core.Test
                 matcher,
                 antiMatcher);
 
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{AppxContainerName}/a.dll",
                 $"{AppxContainerName}/b.DLL",
                 $"{AppxContainerName}/c.txt",
@@ -235,7 +235,7 @@ namespace Sign.Core.Test
                 $"{AppxContainerName}/DoNotSign/l/m.txt",
                 $"{AppxContainerName}/DoNotSign/l/n.exe");
 
-            await test.Provider.SignAsync(test.Files, options);
+            await test.Signer.SignAsync(test.Files, options);
 
             ContainerSpy container = test.Containers[AppxContainerName];
 
@@ -246,7 +246,7 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.DLL", signedFile.Name),
                 signedFile => Assert.Equal("d.exe", signedFile.Name),
@@ -259,9 +259,9 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFileIsEmptyZipContainer_SignsNothing()
         {
-            AggregatingSignatureProviderTest test = new(ZipContainerName);
+            AggregatingSignerTest test = new(ZipContainerName);
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             ContainerSpy container = test.Containers[ZipContainerName];
 
@@ -271,18 +271,18 @@ namespace Sign.Core.Test
             Assert.Equal(0, container.SaveAsync_CallCount);
             Assert.Equal(1, container.Dispose_CallCount);
 
-            Assert.Empty(test.SignatureProviderSpy.SignedFiles);
+            Assert.Empty(test.SignerSpy.SignedFiles);
         }
 
         [Fact]
         public async Task SignAsync_WhenFileIsZipContainer_SignsPortableExecutableFiles()
         {
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{ZipContainerName}/a.dll",
                 $"{ZipContainerName}/b.exe",
                 $"{ZipContainerName}/c/d.dll");
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             ContainerSpy container = test.Containers[ZipContainerName];
 
@@ -293,7 +293,7 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.exe", signedFile.Name),
                 signedFile => Assert.Equal("d.dll", signedFile.Name));
@@ -302,7 +302,7 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFileIsZipContainerWithNestedContentAndContainers_SignsContentInsideOut()
         {
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{ZipContainerName}/a.dll",
                 $"{ZipContainerName}/nestedcontainer0.zip/b.dll",
                 $"{ZipContainerName}/nestedcontainer0.zip/nestedcontainer1.zip/c.dll",
@@ -310,7 +310,7 @@ namespace Sign.Core.Test
                 $"{ZipContainerName}/nestedcontainer.nupkg/folder0/folder1/f.dll",
                 $"{ZipContainerName}/nestedcontainer.vsix/folder0/folder1/folder2/g.dll");
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             foreach (string containerName in new[]
             {
@@ -331,7 +331,7 @@ namespace Sign.Core.Test
             }
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("c.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.dll", signedFile.Name),
                 signedFile => Assert.Equal("f.dll", signedFile.Name),
@@ -363,7 +363,7 @@ namespace Sign.Core.Test
                 matcher,
                 antiMatcher);
 
-            AggregatingSignatureProviderTest test = new(
+            AggregatingSignerTest test = new(
                 $"{ZipContainerName}/a.dll",
                 $"{ZipContainerName}/b.DLL",
                 $"{ZipContainerName}/c.txt",
@@ -377,7 +377,7 @@ namespace Sign.Core.Test
                 $"{ZipContainerName}/DoNotSign/l/m.txt",
                 $"{ZipContainerName}/DoNotSign/l/n.exe");
 
-            await test.Provider.SignAsync(test.Files, options);
+            await test.Signer.SignAsync(test.Files, options);
 
             ContainerSpy container = test.Containers[ZipContainerName];
 
@@ -388,7 +388,7 @@ namespace Sign.Core.Test
             Assert.Equal(1, container.Dispose_CallCount);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.DLL", signedFile.Name),
                 signedFile => Assert.Equal("d.exe", signedFile.Name),

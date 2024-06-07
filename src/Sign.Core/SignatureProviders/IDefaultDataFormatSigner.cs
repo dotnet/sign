@@ -4,8 +4,8 @@
 
 namespace Sign.Core
 {
-    internal interface IDefaultSignatureProvider
+    internal interface IDefaultDataFormatSigner
     {
-        ISignatureProvider SignatureProvider { get; }
+        IDataFormatSigner Signer { get; }
     }
 }

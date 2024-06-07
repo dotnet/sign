@@ -7,24 +7,24 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class AzureSignToolSignatureProviderTests
+    public class AzureSignToolSignerTests
     {
-        private readonly AzureSignToolSignatureProvider _provider;
+        private readonly AzureSignToolSigner _signer;
 
-        public AzureSignToolSignatureProviderTests()
+        public AzureSignToolSignerTests()
         {
-            _provider = new AzureSignToolSignatureProvider(
+            _signer = new AzureSignToolSigner(
                 Mock.Of<IToolConfigurationProvider>(),
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
         public void CanSign_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => _provider.CanSign(file: null!));
+                () => _signer.CanSign(file: null!));
 
             Assert.Equal("file", exception.ParamName);
         }
@@ -59,7 +59,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.True(_provider.CanSign(file));
+            Assert.True(_signer.CanSign(file));
         }
 
         [Theory]
@@ -70,7 +70,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.False(_provider.CanSign(file));
+            Assert.False(_signer.CanSign(file));
         }
     }
 }

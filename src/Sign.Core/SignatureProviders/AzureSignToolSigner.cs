@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class AzureSignToolSignatureProvider : IAzureSignToolSignatureProvider
+    internal sealed class AzureSignToolSigner : IAzureSignToolDataFormatSigner
     {
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
@@ -19,11 +19,11 @@ namespace Sign.Core
         private readonly IToolConfigurationProvider _toolConfigurationProvider;
 
         // Dependency injection requires a public constructor.
-        public AzureSignToolSignatureProvider(
+        public AzureSignToolSigner(
             IToolConfigurationProvider toolConfigurationProvider,
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
-            ILogger<ISignatureProvider> logger)
+            ILogger<IDataFormatSigner> logger)
         {
             ArgumentNullException.ThrowIfNull(toolConfigurationProvider, nameof(toolConfigurationProvider));
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));

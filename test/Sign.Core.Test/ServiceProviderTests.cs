@@ -44,13 +44,13 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<ISignatureAlgorithmProvider>());
             Assert.NotNull(serviceProvider.GetRequiredService<ICertificateProvider>());
 
-            IDefaultSignatureProvider defaultSignatureProvider = serviceProvider.GetRequiredService<IDefaultSignatureProvider>();
-            Assert.IsType<AzureSignToolSignatureProvider>(defaultSignatureProvider.SignatureProvider);
+            IDefaultDataFormatSigner signer = serviceProvider.GetRequiredService<IDefaultDataFormatSigner>();
+            Assert.IsType<AzureSignToolSigner>(signer.Signer);
 
-            IEnumerable<ISignatureProvider> signatureProviders = serviceProvider.GetServices<ISignatureProvider>();
-            Assert.Equal(5, signatureProviders.Count());
+            IEnumerable<IDataFormatSigner> signers = serviceProvider.GetServices<IDataFormatSigner>();
+            Assert.Equal(5, signers.Count());
 
-            Assert.NotNull(serviceProvider.GetRequiredService<IAggregatingSignatureProvider>());
+            Assert.NotNull(serviceProvider.GetRequiredService<IAggregatingDataFormatSigner>());
 
             Assert.NotNull(serviceProvider.GetRequiredService<IManifestSigner>());
             Assert.NotNull(serviceProvider.GetRequiredService<IMageCli>());

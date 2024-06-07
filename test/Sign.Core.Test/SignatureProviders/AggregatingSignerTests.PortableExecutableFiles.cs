@@ -4,7 +4,7 @@
 
 namespace Sign.Core.Test
 {
-    public partial class AggregatingSignatureProviderTests
+    public partial class AggregatingSignerTests
     {
         [Fact]
         public async Task SignAsync_WhenFilesAreLoosePortableExecutableFiles_SignsAllFiles()
@@ -17,14 +17,14 @@ namespace Sign.Core.Test
                 "directory2/c.dll"
             };
 
-            AggregatingSignatureProviderTest test = new(files);
+            AggregatingSignerTest test = new(files);
 
-            await test.Provider.SignAsync(test.Files, _options);
+            await test.Signer.SignAsync(test.Files, _options);
 
             Assert.Empty(test.Containers);
 
             Assert.Collection(
-                test.SignatureProviderSpy.SignedFiles,
+                test.SignerSpy.SignedFiles,
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("a.dll", signedFile.Name),
                 signedFile => Assert.Equal("b.dll", signedFile.Name),

@@ -7,28 +7,28 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class VsixSignatureProviderTests
+    public class VsixSignerTests
     {
-        private readonly VsixSignatureProvider _provider;
+        private readonly VsixSigner _signer;
 
-        public VsixSignatureProviderTests()
+        public VsixSignerTests()
         {
-            _provider = new VsixSignatureProvider(
+            _signer = new VsixSigner(
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
                 Mock.Of<IVsixSignTool>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
         public void Constructor_WhenSignatureAlgorithmProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new VsixSignatureProvider(
+                () => new VsixSigner(
                     signatureAlgorithmProvider: null!,
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IVsixSignTool>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -37,11 +37,11 @@ namespace Sign.Core.Test
         public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new VsixSignatureProvider(
+                () => new VsixSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
                     Mock.Of<IVsixSignTool>(),
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -50,11 +50,11 @@ namespace Sign.Core.Test
         public void Constructor_WhenNuGetSignToolIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new VsixSignatureProvider(
+                () => new VsixSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     vsixSignTool: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>()));
+                    Mock.Of<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("vsixSignTool", exception.ParamName);
         }
@@ -63,7 +63,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new VsixSignatureProvider(
+                () => new VsixSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IVsixSignTool>(),
@@ -76,7 +76,7 @@ namespace Sign.Core.Test
         public void CanSign_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => _provider.CanSign(file: null!));
+                () => _signer.CanSign(file: null!));
 
             Assert.Equal("file", exception.ParamName);
         }
@@ -88,7 +88,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.True(_provider.CanSign(file));
+            Assert.True(_signer.CanSign(file));
         }
 
         [Theory]
@@ -99,7 +99,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.False(_provider.CanSign(file));
+            Assert.False(_signer.CanSign(file));
         }
     }
 }

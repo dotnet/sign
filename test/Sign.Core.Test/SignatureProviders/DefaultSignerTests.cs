@@ -8,7 +8,7 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public class DefaultSignatureProviderTests
+    public class DefaultSignerTests
     {
         private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"));
 
@@ -16,50 +16,50 @@ namespace Sign.Core.Test
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultSignatureProvider(serviceProvider: null!));
+                () => new DefaultSigner(serviceProvider: null!));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
 
         [Fact]
-        public void SignatureProvider_WhenAzureSignToolSignatureProviderIsUnavailable_IsFallback()
+        public void Signer_WhenAzureSignToolSignerIsUnavailable_IsFallback()
         {
-            DefaultSignatureProvider provider = CreateWithoutAzureSignTool();
+            DefaultSigner signer = CreateWithoutAzureSignTool();
 
-            Assert.Null(provider.SignatureProvider as IAzureSignToolSignatureProvider);
-            Assert.False(provider.CanSign(new FileInfo("file.dll")));
+            Assert.Null(signer.Signer as IAzureSignToolDataFormatSigner);
+            Assert.False(signer.CanSign(new FileInfo("file.dll")));
         }
 
         [Fact]
-        public void SignatureProvider_WhenAzureSignToolSignatureProviderIsAvailable_IsFallback()
+        public void Signer_WhenAzureSignToolSignerIsAvailable_IsFallback()
         {
-            DefaultSignatureProvider provider = CreateWithAzureSignTool();
+            DefaultSigner signer = CreateWithAzureSignTool();
 
-            Assert.IsAssignableFrom<IAzureSignToolSignatureProvider>(provider.SignatureProvider);
+            Assert.IsAssignableFrom<IAzureSignToolDataFormatSigner>(signer.Signer);
         }
 
         [Fact]
-        public void CanSign_WhenAzureSignToolSignatureProviderIsUnavailable_ReturnsFalse()
+        public void CanSign_WhenAzureSignToolSignerIsUnavailable_ReturnsFalse()
         {
-            DefaultSignatureProvider provider = CreateWithoutAzureSignTool();
+            DefaultSigner signer = CreateWithoutAzureSignTool();
 
-            Assert.False(provider.CanSign(new FileInfo("file.dll")));
+            Assert.False(signer.CanSign(new FileInfo("file.dll")));
         }
 
         [Fact]
-        public void CanSign_WhenAzureSignToolSignatureProviderIsAvailable_ReturnsTrue()
+        public void CanSign_WhenAzureSignToolSignerIsAvailable_ReturnsTrue()
         {
-            DefaultSignatureProvider provider = CreateWithAzureSignTool();
+            DefaultSigner signer = CreateWithAzureSignTool();
 
-            Assert.True(provider.CanSign(new FileInfo("file.dll")));
+            Assert.True(signer.CanSign(new FileInfo("file.dll")));
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void CanSign_WhenIAzureSignToolSignatureProviderIsAvailable_ReturnsTrue(bool expectedValue)
+        public void CanSign_WhenIAzureSignToolSignerIsAvailable_ReturnsTrue(bool expectedValue)
         {
-            Mock<IAzureSignToolSignatureProvider> mock = new(MockBehavior.Strict);
+            Mock<IAzureSignToolDataFormatSigner> mock = new(MockBehavior.Strict);
 
             mock.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
                 .Returns(expectedValue);
@@ -70,13 +70,13 @@ namespace Sign.Core.Test
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
             services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
             services.AddSingleton(Mock.Of<ICertificateProvider>());
-            services.AddSingleton<ISignatureProvider>(mock.Object);
+            services.AddSingleton<IDataFormatSigner>(mock.Object);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            DefaultSignatureProvider provider = new(serviceProvider);
+            DefaultSigner signer = new(serviceProvider);
 
-            Assert.Equal(expectedValue, provider.CanSign(new FileInfo("file.dll")));
+            Assert.Equal(expectedValue, signer.CanSign(new FileInfo("file.dll")));
 
             mock.VerifyAll();
         }
@@ -84,10 +84,10 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFilesIsNull_Throws()
         {
-            DefaultSignatureProvider provider = CreateWithAzureSignTool();
+            DefaultSigner signer = CreateWithAzureSignTool();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(files: null!, _options));
+                () => signer.SignAsync(files: null!, _options));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -95,18 +95,18 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenOptionsIsNull_Throws()
         {
-            DefaultSignatureProvider provider = CreateWithAzureSignTool();
+            DefaultSigner signer = CreateWithAzureSignTool();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
+                () => signer.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
 
             Assert.Equal("options", exception.ParamName);
         }
 
         [Fact]
-        public async Task SignAsync_WhenIAzureSignToolSignatureProviderIsAvailable_InvokesInnerProvider()
+        public async Task SignAsync_WhenIAzureSignToolSignerIsAvailable_InvokesInnerProvider()
         {
-            Mock<IAzureSignToolSignatureProvider> mock = new(MockBehavior.Strict);
+            Mock<IAzureSignToolDataFormatSigner> mock = new(MockBehavior.Strict);
 
             mock.Setup(x => x.SignAsync(It.IsAny<IEnumerable<FileInfo>>(), It.IsAny<SignOptions>()))
                 .Returns(Task.CompletedTask);
@@ -117,26 +117,26 @@ namespace Sign.Core.Test
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
             services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
             services.AddSingleton(Mock.Of<ICertificateProvider>());
-            services.AddSingleton<ISignatureProvider>(mock.Object);
+            services.AddSingleton<IDataFormatSigner>(mock.Object);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            DefaultSignatureProvider provider = new(serviceProvider);
+            DefaultSigner signer = new(serviceProvider);
 
-            await provider.SignAsync(Enumerable.Empty<FileInfo>(), _options);
+            await signer.SignAsync(Enumerable.Empty<FileInfo>(), _options);
 
             mock.VerifyAll();
         }
 
-        private static DefaultSignatureProvider CreateWithoutAzureSignTool()
+        private static DefaultSigner CreateWithoutAzureSignTool()
         {
             IServiceCollection services = new ServiceCollection();
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            return new DefaultSignatureProvider(serviceProvider);
+            return new DefaultSigner(serviceProvider);
         }
 
-        private static DefaultSignatureProvider CreateWithAzureSignTool()
+        private static DefaultSigner CreateWithAzureSignTool()
         {
             IServiceCollection services = new ServiceCollection();
 
@@ -144,11 +144,11 @@ namespace Sign.Core.Test
             services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
             services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
             services.AddSingleton(Mock.Of<ICertificateProvider>());
-            services.AddSingleton<ISignatureProvider, AzureSignToolSignatureProvider>();
+            services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            return new DefaultSignatureProvider(serviceProvider);
+            return new DefaultSigner(serviceProvider);
         }
     }
 }
