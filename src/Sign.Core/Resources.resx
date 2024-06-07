@@ -133,7 +133,7 @@
   </data>
   <data name="CertificateNotFoundInFile" xml:space="preserve">
     <value>Unable to find a certificate with a matching {0} fingerprint in {1}.</value>
-    <comment>{NumberedPlaceholder="{0}"} is a certificate fingerprint.  {NumberedPlaceholder="{1}"} is a file path.</comment>
+    <comment>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</comment>
   </data>
   <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
     <value>Unable to find a matching certificate in machine certificate store.</value>
