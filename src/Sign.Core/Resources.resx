@@ -190,10 +190,6 @@
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
   </data>
-  <data name="InvalidCertificateFingerprintValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</value>
-    <comment>{NumberedPlaceholder="{0}"} is a certificate fingerprint, and {NumberedPlaceholder="{1}"} is a cryptographic hash algorithm.</comment>
-  </data>
   <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
     <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
   </data>

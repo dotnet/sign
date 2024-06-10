@@ -102,11 +102,6 @@
         <target state="translated">Pobieranie certyfikatu z usługi Azure Key Vault.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidCertificateFingerprintValue">
-        <source>Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</source>
-        <target state="new">Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store.</target>
-        <note>{NumberedPlaceholder="{0}"} is a certificate fingerprint, and {NumberedPlaceholder="{1}"} is a cryptographic hash algorithm.</note>
-      </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
         <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>

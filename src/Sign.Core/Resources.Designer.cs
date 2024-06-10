@@ -241,15 +241,6 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be a {1} fingerprint of a certificate in a Windows Certificate Store..
-        /// </summary>
-        internal static string InvalidCertificateFingerprintValue {
-            get {
-                return ResourceManager.GetString("InvalidCertificateFingerprintValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Multiple private key containers provided. Use either /k for user stores or /km for machine stores..
         /// </summary>
         internal static string MultiplePrivateKeyContainersError {
