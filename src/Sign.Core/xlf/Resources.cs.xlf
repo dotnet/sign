@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="new">Unable to find a matching certificate.</target>
+        <target state="translated">Nepovedlo se najít odpovídající certifikát.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <target state="translated">V úložišti certifikátů počítače nebylo možné najít odpovídající certifikát.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <target state="translated">V úložišti certifikátů uživatele nebylo možné najít odpovídající certifikát.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <target state="translated">Pro poskytnutý certifikát se nepovedlo získat privátní klíč RSA.</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -104,12 +104,12 @@
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <target state="translated">Poskytlo se několik kontejnerů privátních klíčů. Pro úložiště uživatele použijte /k a pro úložiště počítače použijte /km.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">Při použití /csp chybí kontejner privátního klíče. K poskytnutí kontejneru klíčů použijte /k nebo /km.</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="new">Signing {filePath} succeeded.</target>
+        <target state="translated">Podepisování souboru {filePath} proběhlo úspěšně.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
@@ -189,22 +189,22 @@
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <target state="translated">Certifikát má nepodporovaný algoritmus veřejného klíče.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
-        <target state="new">Specified {0} is invalid.</target>
+        <target state="translated">Zadaný režim {0} je neplatný.</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
-        <target state="new">Unknown signing algorithm.</target>
+        <target state="translated">Neznámý podpisový algoritmus.</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
-        <target state="new">The algorithm selected is not supported.</target>
+        <target state="translated">Vybraný algoritmus se nepodporuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <target state="translated">Podepisování úlohy VsixSignTool pomocí tohoto počtu souborů: {count}.</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>
