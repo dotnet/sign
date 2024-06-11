@@ -63,8 +63,4 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="CertificateServices\" />
-  </ItemGroup>
-
 </Project>

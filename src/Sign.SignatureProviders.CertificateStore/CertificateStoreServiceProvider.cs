@@ -43,12 +43,7 @@ namespace Sign.SignatureProviders.CertificateStore
             string? certificateFilePassword,
             bool isMachineKeyContainer)
         {
-            ArgumentNullException.ThrowIfNull(certificateFingerprint, nameof(certificateFingerprint));
-
-            if (string.IsNullOrEmpty(certificateFingerprint))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateFingerprint));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
 
             // Both or neither can be provided when accessing a certificate.
             if (!string.IsNullOrEmpty(cryptoServiceProvider) == string.IsNullOrEmpty(privateKeyContainer))
