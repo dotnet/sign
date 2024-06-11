@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="new">Unable to find a matching certificate.</target>
+        <target state="translated">找不到相符的憑證。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
@@ -29,17 +29,17 @@
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <target state="translated">無法在機器憑證存放區中找到相符的憑證。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <target state="translated">無法在使用者憑證存放區中找到相符的憑證。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <target state="translated">無法取得所提供憑證的 RSA 私密金鑰。</target>
         <note />
       </trans-unit>
       <trans-unit id="CliStandardError">
@@ -104,12 +104,12 @@
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
-        <target state="new">Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</target>
+        <target state="translated">已提供多個私密金鑰。使用者存放區使用 /k，機器存放區則使用 /km。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoPrivateKeyContainerError">
         <source>Private key container missing while using /csp. Use /k or /km to provide a key container.</source>
-        <target state="new">Private key container missing while using /csp. Use /k or /km to provide a key container.</target>
+        <target state="translated">使用 /csp 時遺漏私密金鑰容器。使用 /k 或 /km 來提供金鑰容器。</target>
         <note />
       </trans-unit>
       <trans-unit id="OpeningContainer">
@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="SigningSucceeded">
         <source>Signing {filePath} succeeded.</source>
-        <target state="new">Signing {filePath} succeeded.</target>
+        <target state="translated">簽署 {filePath} 成功。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceededWithTimeElapsed">
@@ -189,22 +189,22 @@
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <target state="translated">憑證具有不支援的公開金鑰演算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
-        <target state="new">Specified {0} is invalid.</target>
+        <target state="translated">指定的 {0} 無效。</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
-        <target state="new">Unknown signing algorithm.</target>
+        <target state="translated">未知的簽署演算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
-        <target state="new">The algorithm selected is not supported.</target>
+        <target state="translated">不支持選取的演算法。</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueCannotBeEmptyString">
@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
         <source>Signing VsixSignTool job with {count} files.</source>
-        <target state="new">Signing VsixSignTool job with {count} files.</target>
+        <target state="translated">正在簽署具有 {count} 個檔案的 OpenVsixSignTool 工作。</target>
         <note>{Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
     </body>

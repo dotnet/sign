@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
-        <target state="new">PFX, P7B, or CER file containing a certificate and potentially a private key.</target>
+        <target state="translated">Fichier PFX, P7B ou CER contenant un certificat et éventuellement une clé privée.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
       <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
@@ -19,32 +19,32 @@
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
-        <target state="new">Password for certificate file.</target>
+        <target state="translated">Mot de passe du fichier du certificat.</target>
         <note />
       </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
-        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</target>
+        <target state="translated">Fournisseur de services de chiffrement contenant le conteneur de clé privée. Nécessite /k et éventuellement /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
-        <target state="new">Private key container name.</target>
+        <target state="translated">Nom de conteneur de clé privée.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingCspError">
         <source>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</source>
-        <target state="new">Cryptographic Service Provider missing.  Use /csp to specify a CSP.</target>
+        <target state="translated">Le fournisseur de services de chiffrement est manquant.  Utilisez /csp pour spécifier un fournisseur de solutions Cloud.</target>
         <note>{Locked="/csp"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="MissingPrivateKeyContainerError">
         <source>Private key container name missing. Use /k to specify a key container name.</source>
-        <target state="new">Private key container name missing. Use /k to specify a key container name.</target>
+        <target state="translated">Le nom de conteneur de clé privée est manquant. Utilisez /k pour spécifier un nom de conteneur de clé.</target>
         <note>{Locked="/k"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
-        <target state="new">Use a machine-level private key container.  (The default is user-level.)</target>
+        <target state="translated">Utilisez un conteneur de clé privée au niveau de l’ordinateur.  (La valeur par défaut est au niveau de l’utilisateur.)</target>
         <note />
       </trans-unit>
     </body>
