@@ -153,6 +153,24 @@ namespace Sign.Cli {
         /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
         /// </summary>
+        internal static string InvalidCertificateFingerprintAlgorithmValue {
+            get {
+                return ResourceManager.GetString("InvalidCertificateFingerprintAlgorithmValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s fingerprint (in hexadecimal)..
+        /// </summary>
+        internal static string InvalidCertificateFingerprintValue {
+            get {
+                return ResourceManager.GetString("InvalidCertificateFingerprintValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
+        /// </summary>
         internal static string InvalidDigestValue {
             get {
                 return ResourceManager.GetString("InvalidDigestValue", resourceCulture);
@@ -174,15 +192,6 @@ namespace Sign.Cli {
         internal static string InvalidMaxConcurrencyValue {
             get {
                 return ResourceManager.GetString("InvalidMaxConcurrencyValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value for {0}. The value must be the certificate&apos;s SHA-1 thumbprint..
-        /// </summary>
-        internal static string InvalidSha1ThumbprintValue {
-            get {
-                return ResourceManager.GetString("InvalidSha1ThumbprintValue", resourceCulture);
             }
         }
         

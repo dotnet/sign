@@ -4,42 +4,47 @@
     <body>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
-        <target state="translated">Soubor PFX, P7B nebo CER obsahující certifikát a potenciálně privátní klíč.</target>
+        <target state="new">PFX, P7B, or CER file containing a certificate and potentially a private key.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
+        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
+        <target state="new">Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintOptionDescription">
+        <source>SHA fingerprint used to identify a certificate.</source>
+        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
-        <target state="translated">Heslo pro soubor certifikátu.</target>
+        <target state="new">Password for certificate file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
-        <target state="translated">Zprostředkovatel kryptografických služeb obsahující kontejner privátního klíče. Vyžaduje /k a volitelně /km.</target>
+        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
-        <target state="translated">Název kontejneru privátního klíče.</target>
+        <target state="new">Private key container name.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingCspError">
         <source>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</source>
-        <target state="translated">Chybí zprostředkovatel kryptografických služeb.  K určení zprostředkovatele kryptografických služeb použijte /csp.</target>
+        <target state="new">Cryptographic Service Provider missing.  Use /csp to specify a CSP.</target>
         <note>{Locked="/csp"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="MissingPrivateKeyContainerError">
         <source>Private key container name missing. Use /k to specify a key container name.</source>
-        <target state="translated">Chybí název kontejneru privátního klíče. Název kontejneru klíče zadejte pomocí /k.</target>
+        <target state="new">Private key container name missing. Use /k to specify a key container name.</target>
         <note>{Locked="/k"} is a command line option.</note>
-      </trans-unit>
-      <trans-unit id="Sha1ThumbprintOptionDescription">
-        <source>SHA-1 thumbprint used to identify a certificate.</source>
-        <target state="translated">Kryptografický otisk SHA-1 sloužící k identifikaci certifikátu.</target>
-        <note>{Locked="SHA-1"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
-        <target state="translated">Použijte kontejner privátního klíče na úrovni počítače.  (Výchozí hodnota je na úrovni uživatele.)</target>
+        <target state="new">Use a machine-level private key container.  (The default is user-level.)</target>
         <note />
       </trans-unit>
     </body>

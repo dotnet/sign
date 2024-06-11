@@ -121,6 +121,14 @@
     <value>PFX, P7B, or CER file containing a certificate and potentially a private key.</value>
     <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
   </data>
+  <data name="CertificateFingerprintAlgorithmOptionDescription" xml:space="preserve">
+    <value>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</value>
+    <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</comment>
+  </data>
+  <data name="CertificateFingerprintOptionDescription" xml:space="preserve">
+    <value>SHA fingerprint used to identify a certificate.</value>
+    <comment>{Locked="SHA"} is a cryptographic algorithm.</comment>
+  </data>
   <data name="CertificatePasswordOptionDescription" xml:space="preserve">
     <value>Password for certificate file.</value>
   </data>
@@ -138,10 +146,6 @@
   <data name="MissingPrivateKeyContainerError" xml:space="preserve">
     <value>Private key container name missing. Use /k to specify a key container name.</value>
     <comment>{Locked="/k"} is a command line option.</comment>
-  </data>
-  <data name="Sha1ThumbprintOptionDescription" xml:space="preserve">
-    <value>SHA-1 thumbprint used to identify a certificate.</value>
-    <comment>{Locked="SHA-1"} is a cryptographic algorithm.</comment>
   </data>
   <data name="UseMachineKeyContainerOptionDescription" xml:space="preserve">
     <value>Use a machine-level private key container.  (The default is user-level.)</value>

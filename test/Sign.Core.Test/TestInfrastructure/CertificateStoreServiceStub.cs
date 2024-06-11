@@ -33,7 +33,7 @@ namespace Sign.Core.Test
             return Task.FromResult(rsa);
         }
 
-        public void Initialize(string sha1Thumbprint, string? cryptoServiceProvider, string? privateKeyContainer, string? privateMachineKeyContainer)
+        public void Initialize(string certificateFingerprint, string? cryptoServiceProvider, string? privateKeyContainer, string? privateMachineKeyContainer)
         {
             _rsa = RSA.Create(keySizeInBits: 4096);
 

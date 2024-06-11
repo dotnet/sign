@@ -17,7 +17,8 @@ namespace Sign.Core
     /// </summary>
     internal sealed class CertificateStoreService : ISignatureAlgorithmProvider, ICertificateProvider
     {
-        private readonly string _sha1Thumbprint;
+        private readonly string _certificateFingerprint;
+        private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
         private readonly string? _certificatePath;
@@ -28,19 +29,18 @@ namespace Sign.Core
 
         internal CertificateStoreService(
             IServiceProvider serviceProvider,
-            string sha1Thumbprint,
+            string certificateFingerprint,
+            HashAlgorithmName certificateFingerprintAlgorithm,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
             string? certificatePath,
             string? certificatePassword,
             bool isPrivateMachineKeyContainer)
         {
-            if (string.IsNullOrEmpty(sha1Thumbprint))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(sha1Thumbprint));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
 
-            _sha1Thumbprint = sha1Thumbprint;
+            _certificateFingerprint = certificateFingerprint;
+            _certificateFingerprintAlgorithm = certificateFingerprintAlgorithm;
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
@@ -101,8 +101,8 @@ namespace Sign.Core
         /// <summary>
         /// Gets a certificate from a local (user or machine) certificate store or from a provided certificate file.
         /// </summary>
-        /// <returns>A <see cref="X509Certificate2"/> certificate specified by a SHA1 Thumbprint.</returns>
-        /// <exception cref="ArgumentException">Thrown when the SHA1 thumbprint wasn't found in any store.</exception>
+        /// <returns>A <see cref="X509Certificate2"/> certificate specified by a certificate Fingerprint.</returns>
+        /// <exception cref="ArgumentException">Thrown when the certificate fingerprint wasn't found in any store.</exception>
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
             => await GetStoreCertificateAsync();
 
@@ -120,7 +120,9 @@ namespace Sign.Core
 
                 foreach (var cert in certCollection)
                 {
-                    if (string.Equals(cert.Thumbprint, _sha1Thumbprint, StringComparison.InvariantCultureIgnoreCase))
+                    string actualFingerprint = cert.GetCertHashString(_certificateFingerprintAlgorithm);
+
+                    if (string.Equals(actualFingerprint, _certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
@@ -128,14 +130,14 @@ namespace Sign.Core
                     }
                 }
 
-                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, Path.GetFileName(_certificatePath)));
+                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, _certificateFingerprintAlgorithm, Path.GetFileName(_certificatePath)));
             }
 
             // Search User or Machine certificate stores.
             if (!string.IsNullOrEmpty(_privateKeyContainer)
                 && _isPrivateMachineKeyContainer
-                    ? TryFindCertificate(StoreLocation.LocalMachine, _sha1Thumbprint!, out X509Certificate2? certificate)
-                    : TryFindCertificate(StoreLocation.CurrentUser, _sha1Thumbprint!, out certificate))
+                    ? TryFindCertificate(StoreLocation.LocalMachine, _certificateFingerprint, out X509Certificate2? certificate)
+                    : TryFindCertificate(StoreLocation.CurrentUser, _certificateFingerprint, out certificate))
             {
                 _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
@@ -147,17 +149,18 @@ namespace Sign.Core
             throw new ArgumentException(_isPrivateMachineKeyContainer ? Resources.CertificateNotFoundInMachineStore : Resources.CertificateNotFoundInUserStore);
         }
 
-        private static bool TryFindCertificate(StoreLocation storeLocation, string sha1Fingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
+        private bool TryFindCertificate(StoreLocation storeLocation, string expectedFingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
         {
             // Check machine certificate store.
             using (var store = new X509Store(StoreName.My, storeLocation))
             {
                 store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
-                var certificates = store.Certificates.Find(X509FindType.FindByThumbprint, sha1Fingerprint, validOnly: false);
 
-                foreach (var cert in certificates)
+                foreach (var cert in store.Certificates)
                 {
-                    if (string.Equals(cert.Thumbprint, sha1Fingerprint, StringComparison.InvariantCultureIgnoreCase))
+                    string actualFingerprint = cert.GetCertHashString(_certificateFingerprintAlgorithm);
+
+                    if (string.Equals(actualFingerprint, expectedFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
                         certificate = cert;
 

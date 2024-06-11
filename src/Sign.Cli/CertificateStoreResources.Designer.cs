@@ -70,6 +70,24 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate fingerprint algorithm. Allowed values are &apos;sha256&apos;, &apos;sha384&apos;, and &apos;sha512&apos;..
+        /// </summary>
+        internal static string CertificateFingerprintAlgorithmOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateFingerprintAlgorithmOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SHA fingerprint used to identify a certificate..
+        /// </summary>
+        internal static string CertificateFingerprintOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateFingerprintOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password for certificate file..
         /// </summary>
         internal static string CertificatePasswordOptionDescription {
@@ -111,15 +129,6 @@ namespace Sign.Cli {
         internal static string MissingPrivateKeyContainerError {
             get {
                 return ResourceManager.GetString("MissingPrivateKeyContainerError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to SHA-1 thumbprint used to identify a certificate..
-        /// </summary>
-        internal static string Sha1ThumbprintOptionDescription {
-            get {
-                return ResourceManager.GetString("Sha1ThumbprintOptionDescription", resourceCulture);
             }
         }
         

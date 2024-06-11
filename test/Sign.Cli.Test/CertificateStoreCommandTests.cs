@@ -33,15 +33,21 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void Sha1ThumbprintOption_Always_IsRequired()
+        public void CertificateFingerprintOption_Always_IsRequired()
         {
-            Assert.True(_command.Sha1ThumbprintOption.IsRequired);
+            Assert.True(_command.CertificateFingerprintOption.IsRequired);
         }
 
         [Fact]
-        public void Sha1ThumbprintOption_Always_HasArityOfExactlyOne()
+        public void CertificateFingerprintOption_Always_HasArityOfExactlyOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.Sha1ThumbprintOption.Arity);
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateFingerprintOption.Arity);
+        }
+
+        [Fact]
+        public void CertificateFingerprintAlgorithmOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateFingerprintAlgorithmOption.Arity);
         }
 
         [Fact]
@@ -81,13 +87,15 @@ namespace Sign.Cli.Test
 
             [Theory]
             [InlineData("certificate-store a")]
-            [InlineData("certificate-store a -s")]
-            [InlineData("certificate-store a -s sha1 -cf")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -p")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -csp ")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -csp sampleCSP -k")]
-            [InlineData("certificate-store a -s sha1 -csp")]
-            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k")]
+            [InlineData("certificate-store a -cfp")]
+            [InlineData("certificate-store a -cfp -cfpa -cf")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha-333 -cf")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa -cf filePath -p")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp sampleCSP -k")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp sampleCSP -k")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -96,14 +104,14 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("certificate-store a -s sha1")]
-            [InlineData("certificate-store a -s sha1 -cf filePath")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -p password")]
-            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k keyContainer ")]
-            [InlineData("certificate-store a -s sha1 -csp sampleCSP -k machineKeyContainer -km")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -csp sampleCSP -k keyContainer ")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -p password -csp sampleCSP -k keyContainer")]
-            [InlineData("certificate-store a -s sha1 -cf filePath -csp sampleCSP -k keyContainer -km")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha384 -cf filePath")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha512 -cf filePath -p password")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp sampleCSP -k keyContainer ")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -csp sampleCSP -k machineKeyContainer -km")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp sampleCSP -k keyContainer ")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -p password -csp sampleCSP -k keyContainer")]
+            [InlineData("certificate-store a -cfp fingerprint -cfpa sha256 -cf filePath -csp sampleCSP -k keyContainer -km")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);

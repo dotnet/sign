@@ -4,42 +4,47 @@
     <body>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
-        <target state="translated">証明書と潜在的に秘密キーを含む PFX、P7B、または CER ファイル。</target>
+        <target state="new">PFX, P7B, or CER file containing a certificate and potentially a private key.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
+        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
+        <target state="new">Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintOptionDescription">
+        <source>SHA fingerprint used to identify a certificate.</source>
+        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
-        <target state="translated">証明書ファイルのパスワード。</target>
+        <target state="new">Password for certificate file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
-        <target state="translated">秘密キー コンテナーを含む暗号化サービス プロバイダー。/k および必要に応じて /km が必要です。</target>
+        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
-        <target state="translated">秘密キー コンテナー名。</target>
+        <target state="new">Private key container name.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingCspError">
         <source>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</source>
-        <target state="translated">暗号化サービス プロバイダーがありません。/csp を使用して CSP を指定します。</target>
+        <target state="new">Cryptographic Service Provider missing.  Use /csp to specify a CSP.</target>
         <note>{Locked="/csp"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="MissingPrivateKeyContainerError">
         <source>Private key container name missing. Use /k to specify a key container name.</source>
-        <target state="translated">秘密キー コンテナー名がありません。キー コンテナー名を指定するには、/k を使用します。</target>
+        <target state="new">Private key container name missing. Use /k to specify a key container name.</target>
         <note>{Locked="/k"} is a command line option.</note>
-      </trans-unit>
-      <trans-unit id="Sha1ThumbprintOptionDescription">
-        <source>SHA-1 thumbprint used to identify a certificate.</source>
-        <target state="translated">証明書の識別に使用される SHA-1 拇印。</target>
-        <note>{Locked="SHA-1"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
-        <target state="translated">コンピューター レベルの秘密キー コンテナーを使用します。(既定値はユーザー レベルです)。</target>
+        <target state="new">Use a machine-level private key container.  (The default is user-level.)</target>
         <note />
       </trans-unit>
     </body>

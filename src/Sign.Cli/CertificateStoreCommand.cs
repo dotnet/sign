@@ -19,12 +19,13 @@ namespace Sign.Cli
     {
         private readonly CodeCommand _codeCommand;
 
-        internal Option<string> Sha1ThumbprintOption { get; } = new(new[] { "-s", "--sha1" }, CertificateStoreResources.Sha1ThumbprintOptionDescription);
-        internal Option<string?> CertificateFileOption { get; } = new(new[] { "-cf", "--certificate-file" }, CertificateStoreResources.CertificateFileOptionDescription);
-        internal Option<string?> CertificatePasswordOption { get; } = new(new[] { "-p", "--password" }, CertificateStoreResources.CertificatePasswordOptionDescription);
-        internal Option<string?> CryptoServiceProviderOption { get; } = new(new[] { "-csp", "--crypto-service-provider" }, CertificateStoreResources.CspOptionDescription);
-        internal Option<string?> PrivateKeyContainerOption { get; } = new(new[] { "-k", "--key-container" }, CertificateStoreResources.KeyContainerOptionDescription);
-        internal Option<bool> UseMachineKeyContainerOption { get; } = new(new[] { "-km", "--use-machine-key-container" }, getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
+        internal Option<string> CertificateFingerprintOption { get; } = new(["-cfp", "--certificate-fingerprint"], CertificateStoreResources.CertificateFingerprintOptionDescription);
+        internal Option<HashAlgorithmName> CertificateFingerprintAlgorithmOption { get; } = new([ "-cfpa", "--certificate-fingerprint-algorithm" ], HashAlgorithmParser.ParseHashAlgorithmName, description: CertificateStoreResources.CertificateFingerprintAlgorithmOptionDescription);
+        internal Option<string?> CertificateFileOption { get; } = new(["-cf", "--certificate-file"], CertificateStoreResources.CertificateFileOptionDescription);
+        internal Option<string?> CertificatePasswordOption { get; } = new(["-p", "--password"], CertificateStoreResources.CertificatePasswordOptionDescription);
+        internal Option<string?> CryptoServiceProviderOption { get; } = new(["-csp", "--crypto-service-provider"], CertificateStoreResources.CspOptionDescription);
+        internal Option<string?> PrivateKeyContainerOption { get; } = new(["-k", "--key-container"], CertificateStoreResources.KeyContainerOptionDescription);
+        internal Option<bool> UseMachineKeyContainerOption { get; } = new(["-km", "--use-machine-key-container"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
 
@@ -36,9 +37,12 @@ namespace Sign.Cli
 
             _codeCommand = codeCommand;
 
-            Sha1ThumbprintOption.IsRequired = true;
+            CertificateFingerprintOption.IsRequired = true;
 
-            AddOption(Sha1ThumbprintOption);
+            CertificateFingerprintAlgorithmOption.SetDefaultValue(HashAlgorithmName.SHA256);
+
+            AddOption(CertificateFingerprintOption);
+            AddOption(CertificateFingerprintAlgorithmOption);
             AddOption(CertificateFileOption);
             AddOption(CertificatePasswordOption);
             AddOption(CryptoServiceProviderOption);
@@ -67,7 +71,8 @@ namespace Sign.Cli
                 string? output = context.ParseResult.GetValueForOption(_codeCommand.OutputOption);
                 int maxConcurrency = context.ParseResult.GetValueForOption(_codeCommand.MaxConcurrencyOption);
 
-                string? sha1Thumbprint = context.ParseResult.GetValueForOption(Sha1ThumbprintOption);
+                string? certificateFingerprint = context.ParseResult.GetValueForOption(CertificateFingerprintOption);
+                HashAlgorithmName certificateFingerprintAlgorithm = context.ParseResult.GetValueForOption(CertificateFingerprintAlgorithmOption);
                 string? certificatePath = context.ParseResult.GetValueForOption(CertificateFileOption);
                 string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
@@ -83,13 +88,14 @@ namespace Sign.Cli
                     return;
                 }
 
-                // SHA-1 Thumbprint is required in case the provided certificate container contains multiple certificates.
-                if (string.IsNullOrEmpty(sha1Thumbprint))
+                // Certificate Fingerprint is required in case the provided certificate container contains multiple certificates.
+                if (string.IsNullOrEmpty(certificateFingerprint))
                 {
                     context.Console.Error.WriteFormattedLine(
-                        Resources.InvalidSha1ThumbprintValue,
-                        Sha1ThumbprintOption);
+                        Resources.InvalidCertificateFingerprintValue,
+                        CertificateFingerprintOption);
                     context.ExitCode = ExitCode.NoInputsFound;
+
                     return;
                 }
 
@@ -125,7 +131,8 @@ namespace Sign.Cli
                     addServices: (IServiceCollection services) =>
                     {
                         CertificateStoreServiceProvider certificateStoreServiceProvider = new(
-                            sha1Thumbprint,
+                            certificateFingerprint,
+                            certificateFingerprintAlgorithm,
                             cryptoServiceProvider,
                             privateKeyContainer,
                             certificatePath,

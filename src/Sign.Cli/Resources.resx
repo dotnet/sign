@@ -149,6 +149,14 @@
     <value>Invalid value for {0}. The value must be a fully rooted directory path.</value>
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</comment>
   </data>
+  <data name="InvalidCertificateFingerprintAlgorithmValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint-algorithm).  {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</comment>
+  </data>
+  <data name="InvalidCertificateFingerprintValue" xml:space="preserve">
+    <value>Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</value>
+    <comment>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint) and should not be localized.</comment>
+  </data>
   <data name="InvalidDigestValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</value>
     <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.  {NumberedPlaceholder="{0}"} is an option name (e.g.:  --file-digest) and should not be localized.</comment>
@@ -159,10 +167,6 @@
   <data name="InvalidMaxConcurrencyValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be a number value greater than or equal to 1.</value>
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --max-concurrency) and should not be localized.</comment>
-  </data>
-  <data name="InvalidSha1ThumbprintValue" xml:space="preserve">
-    <value>Invalid value for {0}. The value must be the certificate's SHA-1 thumbprint.</value>
-    <comment>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --sha1) and should not be localized.</comment>
   </data>
   <data name="InvalidUrlValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</value>

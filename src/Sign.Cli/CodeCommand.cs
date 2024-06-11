@@ -12,18 +12,18 @@ namespace Sign.Cli
 {
     internal sealed class CodeCommand : Command
     {
-        internal Option<string?> ApplicationNameOption { get; } = new(new[] { "-an", "--application-name" }, Resources.ApplicationNameOptionDescription);
-        internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(new[] { "-b", "--base-directory" }, ParseBaseDirectoryOption, description: Resources.BaseDirectoryOptionDescription);
-        internal Option<string> DescriptionOption { get; } = new(new[] { "-d", "--description" }, Resources.DescriptionOptionDescription);
-        internal Option<Uri?> DescriptionUrlOption { get; } = new(new[] { "-u", "--description-url" }, ParseUrl, description: Resources.DescriptionUrlOptionDescription);
-        internal Option<HashAlgorithmName> FileDigestOption { get; } = new(new[] { "-fd", "--file-digest" }, ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
-        internal Option<string?> FileListOption = new(new[] { "-fl", "--file-list" }, Resources.FileListOptionDescription);
-        internal Option<int> MaxConcurrencyOption { get; } = new(new[] { "-m", "--max-concurrency" }, ParseMaxConcurrencyOption, description: Resources.MaxConcurrencyOptionDescription);
-        internal Option<string?> OutputOption { get; } = new(new[] { "-o", "--output" }, Resources.OutputOptionDescription);
-        internal Option<string?> PublisherNameOption { get; } = new(new[] { "-pn", "--publisher-name" }, Resources.PublisherNameOptionDescription);
-        internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(new[] { "-td", "--timestamp-digest" }, ParseHashAlgorithmName, description: Resources.TimestampDigestOptionDescription);
-        internal Option<Uri?> TimestampUrlOption { get; } = new(new[] { "-t", "--timestamp-url" }, ParseUrl, description: Resources.TimestampUrlOptionDescription);
-        internal Option<LogLevel> VerbosityOption { get; } = new(new[] { "-v", "--verbosity" }, () => LogLevel.Warning, Resources.VerbosityOptionDescription);
+        internal Option<string?> ApplicationNameOption { get; } = new(["-an", "--application-name"], Resources.ApplicationNameOptionDescription);
+        internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(["-b", "--base-directory"], ParseBaseDirectoryOption, description: Resources.BaseDirectoryOptionDescription);
+        internal Option<string> DescriptionOption { get; } = new(["-d", "--description"], Resources.DescriptionOptionDescription);
+        internal Option<Uri?> DescriptionUrlOption { get; } = new(["-u", "--description-url"], ParseUrl, description: Resources.DescriptionUrlOptionDescription);
+        internal Option<HashAlgorithmName> FileDigestOption { get; } = new(["-fd", "--file-digest"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
+        internal Option<string?> FileListOption = new(["-fl", "--file-list"], Resources.FileListOptionDescription);
+        internal Option<int> MaxConcurrencyOption { get; } = new(["-m", "--max-concurrency"], ParseMaxConcurrencyOption, description: Resources.MaxConcurrencyOptionDescription);
+        internal Option<string?> OutputOption { get; } = new(["-o", "--output"], Resources.OutputOptionDescription);
+        internal Option<string?> PublisherNameOption { get; } = new(["-pn", "--publisher-name"], Resources.PublisherNameOptionDescription);
+        internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(["-td", "--timestamp-digest"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.TimestampDigestOptionDescription);
+        internal Option<Uri?> TimestampUrlOption { get; } = new(["-t", "--timestamp-url"], ParseUrl, description: Resources.TimestampUrlOptionDescription);
+        internal Option<LogLevel> VerbosityOption { get; } = new(["-v", "--verbosity"], () => LogLevel.Warning, Resources.VerbosityOptionDescription);
 
         internal CodeCommand()
             : base("code", Resources.CodeCommandDescription)
@@ -88,33 +88,6 @@ namespace Sign.Cli
             }
 
             return value;
-        }
-
-        private static HashAlgorithmName ParseHashAlgorithmName(ArgumentResult result)
-        {
-            if (result.Tokens.Count == 0)
-            {
-                return HashAlgorithmName.SHA256;
-            }
-
-            string token = result.Tokens.Single().Value.ToLowerInvariant();
-
-            switch (token)
-            {
-                case "sha256":
-                    return HashAlgorithmName.SHA256;
-
-                case "sha384":
-                    return HashAlgorithmName.SHA384;
-
-                case "sha512":
-                    return HashAlgorithmName.SHA512;
-
-                default:
-                    result.ErrorMessage = FormatMessage(Resources.InvalidDigestValue, result.Argument);
-
-                    return HashAlgorithmName.SHA256;
-            }
         }
 
         private static Uri? ParseUrl(ArgumentResult result)

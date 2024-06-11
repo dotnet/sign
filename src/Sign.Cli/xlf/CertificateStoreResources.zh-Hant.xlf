@@ -4,42 +4,47 @@
     <body>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
-        <target state="translated">包含憑證和潛在的私用金鑰的 PFX、P7B 或 CER 檔案。</target>
+        <target state="new">PFX, P7B, or CER file containing a certificate and potentially a private key.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
+        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
+        <target state="new">Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
+      </trans-unit>
+      <trans-unit id="CertificateFingerprintOptionDescription">
+        <source>SHA fingerprint used to identify a certificate.</source>
+        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
-        <target state="translated">憑證檔案的密碼。</target>
+        <target state="new">Password for certificate file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
-        <target state="translated">包含私密金鑰容器的加密服務提供者。需要 /k 並選擇性地 /km。</target>
+        <target state="new">Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
-        <target state="translated">私密金鑰容器名稱。</target>
+        <target state="new">Private key container name.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissingCspError">
         <source>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</source>
-        <target state="translated">遺漏密碼編譯服務提供者。使用 /csp 來指定雲端解決方案提供者。</target>
+        <target state="new">Cryptographic Service Provider missing.  Use /csp to specify a CSP.</target>
         <note>{Locked="/csp"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="MissingPrivateKeyContainerError">
         <source>Private key container name missing. Use /k to specify a key container name.</source>
-        <target state="translated">遺漏私密金鑰容器名稱。使用 /k 來指定金鑰容器名稱。</target>
+        <target state="new">Private key container name missing. Use /k to specify a key container name.</target>
         <note>{Locked="/k"} is a command line option.</note>
-      </trans-unit>
-      <trans-unit id="Sha1ThumbprintOptionDescription">
-        <source>SHA-1 thumbprint used to identify a certificate.</source>
-        <target state="translated">SHA-1 用以識別憑證的指紋。</target>
-        <note>{Locked="SHA-1"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
-        <target state="translated">使用機器層級私密金鑰容器。(預設為使用者等級。)</target>
+        <target state="new">Use a machine-level private key container.  (The default is user-level.)</target>
         <note />
       </trans-unit>
     </body>
