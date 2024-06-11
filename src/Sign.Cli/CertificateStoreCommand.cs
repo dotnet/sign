@@ -12,6 +12,7 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
+using Sign.SignatureProviders.CertificateStore;
 
 namespace Sign.Cli
 {

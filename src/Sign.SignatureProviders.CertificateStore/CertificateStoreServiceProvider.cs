@@ -3,8 +3,9 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
+using Sign.Core;
 
-namespace Sign.Core
+namespace Sign.SignatureProviders.CertificateStore
 {
     /// <summary>
     /// Provider that initializes a new <see cref="CertificateStoreService"/> if required.

@@ -7,10 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Sign.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Sign.Core
+namespace Sign.SignatureProviders.CertificateStore
 {
     /// <summary>
     /// Creates an object used to access Certificate Stores and acquire certificates and RSA keys (if applicable).
