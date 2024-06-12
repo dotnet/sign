@@ -4,7 +4,7 @@
 
 namespace Sign.Core
 {
-    internal interface ISignatureProvider
+    internal interface IDataFormatSigner
     {
         bool CanSign(FileInfo file);
         Task SignAsync(IEnumerable<FileInfo> files, SignOptions options);

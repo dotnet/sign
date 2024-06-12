@@ -4,7 +4,7 @@
 
 namespace Sign.Core
 {
-    internal interface IAzureSignToolSignatureProvider : ISignatureProvider
+    internal interface IAzureSignToolDataFormatSigner : IDataFormatSigner
     {
     }
 }

@@ -6,30 +6,30 @@ using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Sign.Core
 {
-    internal sealed class AggregatingSignatureProvider : IAggregatingSignatureProvider
+    internal sealed class AggregatingSigner : IAggregatingDataFormatSigner
     {
         private readonly IContainerProvider _containerProvider;
-        private readonly IDefaultSignatureProvider _defaultSignatureProvider;
+        private readonly IDefaultDataFormatSigner _defaultSigner;
         private readonly IFileMetadataService _fileMetadataService;
         private readonly IMatcherFactory _matcherFactory;
-        private readonly IEnumerable<ISignatureProvider> _signatureProviders;
+        private readonly IEnumerable<IDataFormatSigner> _signers;
 
         // Dependency injection requires a public constructor.
-        public AggregatingSignatureProvider(
-            IEnumerable<ISignatureProvider> signatureProviders,
-            IDefaultSignatureProvider defaultSignatureProvider,
+        public AggregatingSigner(
+            IEnumerable<IDataFormatSigner> signers,
+            IDefaultDataFormatSigner defaultSigner,
             IContainerProvider containerProvider,
             IFileMetadataService fileMetadataService,
             IMatcherFactory matcherFactory)
         {
-            ArgumentNullException.ThrowIfNull(signatureProviders, nameof(signatureProviders));
-            ArgumentNullException.ThrowIfNull(defaultSignatureProvider, nameof(defaultSignatureProvider));
+            ArgumentNullException.ThrowIfNull(signers, nameof(signers));
+            ArgumentNullException.ThrowIfNull(defaultSigner, nameof(defaultSigner));
             ArgumentNullException.ThrowIfNull(containerProvider, nameof(containerProvider));
             ArgumentNullException.ThrowIfNull(fileMetadataService, nameof(fileMetadataService));
             ArgumentNullException.ThrowIfNull(matcherFactory, nameof(matcherFactory));
 
-            _signatureProviders = signatureProviders;
-            _defaultSignatureProvider = defaultSignatureProvider;
+            _signers = signers;
+            _defaultSigner = defaultSigner;
             _containerProvider = containerProvider;
             _fileMetadataService = fileMetadataService;
             _matcherFactory = matcherFactory;
@@ -39,9 +39,9 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            foreach (ISignatureProvider signatureProvider in _signatureProviders)
+            foreach (IDataFormatSigner signer in _signers)
             {
-                if (signatureProvider.CanSign(file))
+                if (signer.CanSign(file))
                 {
                     return true;
                 }
@@ -181,10 +181,10 @@ namespace Sign.Core
 
             // split by code sign service and fallback to default
 
-            var grouped = (from signatureProvider in _signatureProviders
+            var grouped = (from signer in _signers
                            from file in files
-                           where signatureProvider.CanSign(file)
-                           group file by signatureProvider into groups
+                           where signer.CanSign(file)
+                           group file by signer into groups
                            select groups).ToList();
 
             // get all files and exclude existing; 
@@ -192,8 +192,8 @@ namespace Sign.Core
             // This is to catch PE files that don't have the correct extension set
             var defaultFiles = files.Except(grouped.SelectMany(g => g))
                                     .Where(_fileMetadataService.IsPortableExecutable)
-                                    .Select(f => new { _defaultSignatureProvider.SignatureProvider, f })
-                                    .GroupBy(a => a.SignatureProvider, k => k.f)
+                                    .Select(f => new { _defaultSigner.Signer, f })
+                                    .GroupBy(a => a.Signer, k => k.f)
                                     .SingleOrDefault(); // one group here
 
             if (defaultFiles != null)
@@ -207,11 +207,11 @@ namespace Sign.Core
         public void CopySigningDependencies(FileInfo file, DirectoryInfo destination, SignOptions options)
         {
             // pass the handling for this down to the actual implementations
-            foreach (ISignatureProvider signatureProvider in _signatureProviders)
+            foreach (IDataFormatSigner signer in _signers)
             {
-                if (signatureProvider.CanSign(file))
+                if (signer.CanSign(file))
                 {
-                    signatureProvider.CopySigningDependencies(file, destination, options);
+                    signer.CopySigningDependencies(file, destination, options);
                 }
             }
         }

@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal abstract class RetryingSignatureProvider
+    internal abstract class RetryingSigner
     {
         protected ILogger Logger { get; }
 
-        protected RetryingSignatureProvider(ILogger logger)
+        protected RetryingSigner(ILogger logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 

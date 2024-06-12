@@ -8,45 +8,45 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public partial class AggregatingSignatureProviderTests
+    public partial class AggregatingSignerTests
     {
         private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"));
 
         [Fact]
-        public void Constructor_WhenSignatureProvidersIsNull_Throws()
+        public void Constructor_WhenSignersIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AggregatingSignatureProvider(
-                    signatureProviders: null!,
-                    Mock.Of<IDefaultSignatureProvider>(),
+                () => new AggregatingSigner(
+                    signers: null!,
+                    Mock.Of<IDefaultDataFormatSigner>(),
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IFileMetadataService>(),
                     Mock.Of<IMatcherFactory>()));
 
-            Assert.Equal("signatureProviders", exception.ParamName);
+            Assert.Equal("signers", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenDefaultSignatureProviderIsNull_Throws()
+        public void Constructor_WhenDefaultSignerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AggregatingSignatureProvider(
-                    Enumerable.Empty<ISignatureProvider>(),
-                    defaultSignatureProvider: null!,
+                () => new AggregatingSigner(
+                    Enumerable.Empty<IDataFormatSigner>(),
+                    defaultSigner: null!,
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IFileMetadataService>(),
                     Mock.Of<IMatcherFactory>()));
 
-            Assert.Equal("defaultSignatureProvider", exception.ParamName);
+            Assert.Equal("defaultSigner", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_WhenContainerProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AggregatingSignatureProvider(
-                    Enumerable.Empty<ISignatureProvider>(),
-                    Mock.Of<IDefaultSignatureProvider>(),
+                () => new AggregatingSigner(
+                    Enumerable.Empty<IDataFormatSigner>(),
+                    Mock.Of<IDefaultDataFormatSigner>(),
                     containerProvider: null!,
                     Mock.Of<IFileMetadataService>(),
                     Mock.Of<IMatcherFactory>()));
@@ -58,9 +58,9 @@ namespace Sign.Core.Test
         public void Constructor_WhenFileMetadataServiceIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AggregatingSignatureProvider(
-                    Enumerable.Empty<ISignatureProvider>(),
-                    Mock.Of<IDefaultSignatureProvider>(),
+                () => new AggregatingSigner(
+                    Enumerable.Empty<IDataFormatSigner>(),
+                    Mock.Of<IDefaultDataFormatSigner>(),
                     Mock.Of<IContainerProvider>(),
                     fileMetadataService: null!,
                     Mock.Of<IMatcherFactory>()));
@@ -72,9 +72,9 @@ namespace Sign.Core.Test
         public void Constructor_WhenMatcherFactoryIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new AggregatingSignatureProvider(
-                    Enumerable.Empty<ISignatureProvider>(),
-                    Mock.Of<IDefaultSignatureProvider>(),
+                () => new AggregatingSigner(
+                    Enumerable.Empty<IDataFormatSigner>(),
+                    Mock.Of<IDefaultDataFormatSigner>(),
                     Mock.Of<IContainerProvider>(),
                     Mock.Of<IFileMetadataService>(),
                     matcherFactory: null!));
@@ -85,46 +85,46 @@ namespace Sign.Core.Test
         [Fact]
         public void CanSign_WhenFileIsNull_Throws()
         {
-            AggregatingSignatureProvider provider = CreateProvider();
+            AggregatingSigner aggregatingSigner = CreateSigner();
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => provider.CanSign(file: null!));
+                () => aggregatingSigner.CanSign(file: null!));
 
             Assert.Equal("file", exception.ParamName);
         }
 
         [Fact]
-        public void CanSign_WhenSignatureProviderReturnsTrue_ReturnsTrue()
+        public void CanSign_WhenSignerReturnsTrue_ReturnsTrue()
         {
             const string extension = ".xyz";
 
-            Mock<ISignatureProvider> signatureProvider = new(MockBehavior.Strict);
+            Mock<IDataFormatSigner> signer = new(MockBehavior.Strict);
 
-            signatureProvider.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
+            signer.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
                 .Returns(true);
 
-            AggregatingSignatureProvider provider = CreateProvider(signatureProvider.Object);
+            AggregatingSigner aggregatingSigner = CreateSigner(signer.Object);
 
-            Assert.True(provider.CanSign(new FileInfo($"file{extension}")));
+            Assert.True(aggregatingSigner.CanSign(new FileInfo($"file{extension}")));
 
-            signatureProvider.VerifyAll();
+            signer.VerifyAll();
         }
 
         [Fact]
-        public void CanSign_WhenSignatureProviderReturnsFalse_ReturnsFalse()
+        public void CanSign_WhenSignerReturnsFalse_ReturnsFalse()
         {
             const string extension = ".xyz";
 
-            Mock<ISignatureProvider> signatureProvider = new(MockBehavior.Strict);
+            Mock<IDataFormatSigner> signer = new(MockBehavior.Strict);
 
-            signatureProvider.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
+            signer.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
                 .Returns(false);
 
-            AggregatingSignatureProvider provider = CreateProvider(signatureProvider.Object);
+            AggregatingSigner aggregatingSigner = CreateSigner(signer.Object);
 
-            Assert.False(provider.CanSign(new FileInfo($"file{extension}")));
+            Assert.False(aggregatingSigner.CanSign(new FileInfo($"file{extension}")));
 
-            signatureProvider.VerifyAll();
+            signer.VerifyAll();
         }
 
         [Theory]
@@ -134,18 +134,18 @@ namespace Sign.Core.Test
         [InlineData(".ZIP")] // test case insensitivity
         public void CanSign_WhenExtensionIsSpecialCase_ReturnsTrue(string extension)
         {
-            AggregatingSignatureProvider provider = CreateProvider();
+            AggregatingSigner aggregatingSigner = CreateSigner();
 
-            Assert.True(provider.CanSign(new FileInfo($"file{extension}")));
+            Assert.True(aggregatingSigner.CanSign(new FileInfo($"file{extension}")));
         }
 
         [Fact]
         public async Task SignAsync_WhenFilesIsNull_Throws()
         {
-            AggregatingSignatureProvider provider = CreateProvider();
+            AggregatingSigner aggregatingSigner = CreateSigner();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(files: null!, _options));
+                () => aggregatingSigner.SignAsync(files: null!, _options));
 
             Assert.Equal("files", exception.ParamName);
         }
@@ -153,10 +153,10 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenOptionsIsNull_Throws()
         {
-            AggregatingSignatureProvider provider = CreateProvider();
+            AggregatingSigner aggregatingSigner = CreateSigner();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => provider.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
+                () => aggregatingSigner.SignAsync(Enumerable.Empty<FileInfo>(), options: null!));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -164,22 +164,22 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFilesIsEmpty_Returns()
         {
-            AggregatingSignatureProvider provider = CreateProvider();
+            AggregatingSigner aggregatingSigner = CreateSigner();
 
-            await provider.SignAsync(Enumerable.Empty<FileInfo>(), _options);
+            await aggregatingSigner.SignAsync(Enumerable.Empty<FileInfo>(), _options);
         }
 
-        private static AggregatingSignatureProvider CreateProvider(ISignatureProvider? signatureProvider = null)
+        private static AggregatingSigner CreateSigner(IDataFormatSigner? signer = null)
         {
-            IEnumerable<ISignatureProvider> signatureProviders;
+            IEnumerable<IDataFormatSigner> signers;
 
-            if (signatureProvider is null)
+            if (signer is null)
             {
-                signatureProviders = Enumerable.Empty<ISignatureProvider>();
+                signers = Enumerable.Empty<IDataFormatSigner>();
             }
             else
             {
-                signatureProviders = new[] { signatureProvider };
+                signers = [signer];
             }
 
             Mock<IMatcherFactory> matcherFactory = new();
@@ -187,9 +187,9 @@ namespace Sign.Core.Test
             matcherFactory.Setup(x => x.Create())
                 .Returns(new Matcher(StringComparison.OrdinalIgnoreCase));
 
-            return new AggregatingSignatureProvider(
-                signatureProviders,
-                Mock.Of<IDefaultSignatureProvider>(),
+            return new AggregatingSigner(
+                signers,
+                Mock.Of<IDefaultDataFormatSigner>(),
                 Mock.Of<IContainerProvider>(),
                 Mock.Of<IFileMetadataService>(),
                 matcherFactory.Object);

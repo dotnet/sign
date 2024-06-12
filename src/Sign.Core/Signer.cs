@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
@@ -42,7 +41,7 @@ namespace Sign.Core
             HashAlgorithmName fileHashAlgorithm,
             HashAlgorithmName timestampHashAlgorithm)
         {
-            IAggregatingSignatureProvider signatureProvider = _serviceProvider.GetRequiredService<IAggregatingSignatureProvider>();
+            IAggregatingDataFormatSigner signer = _serviceProvider.GetRequiredService<IAggregatingDataFormatSigner>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
             ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxConcurrency };
 
@@ -135,7 +134,7 @@ namespace Sign.Core
                     {
                         string inputFileName = Path.Combine(temporaryDirectory.Directory.FullName, Path.GetRandomFileName());
                         // However check its extension as it might be important (e.g. zip, bundle, etc)
-                        if (signatureProvider.CanSign(input))
+                        if (signer.CanSign(input))
                         {
                             // Keep the input extenstion as it has significance.
                             inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
@@ -148,16 +147,16 @@ namespace Sign.Core
                             input.CopyTo(inputFileName, overwrite: true);
                             // for things like clickonce we will need additional files from the source location
                             // in order to fully sign everything, so ask the signature provider to do it for us.
-                            signatureProvider.CopySigningDependencies(input, temporaryDirectory.Directory, signOptions);
+                            signer.CopySigningDependencies(input, temporaryDirectory.Directory, signOptions);
                         }
 
                         FileInfo fi = new(inputFileName);
 
-                        await signatureProvider.SignAsync(new[] { fi }, signOptions);
+                        await signer.SignAsync(new[] { fi }, signOptions);
 
                         // copy everything back
                         fi.CopyTo(output.FullName, overwrite: true);
-                        signatureProvider.CopySigningDependencies(fi, output.Directory!, signOptions);
+                        signer.CopySigningDependencies(fi, output.Directory!, signOptions);
                     }
 
                     _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);

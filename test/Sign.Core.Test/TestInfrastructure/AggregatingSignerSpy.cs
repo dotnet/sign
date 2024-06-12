@@ -4,7 +4,7 @@
 
 namespace Sign.Core.Test
 {
-    internal sealed class AggregatingSignatureProviderSpy : IAggregatingSignatureProvider
+    internal sealed class AggregatingSignerSpy : IAggregatingDataFormatSigner
     {
         internal List<FileInfo> FilesSubmittedForSigning { get; } = new();
 

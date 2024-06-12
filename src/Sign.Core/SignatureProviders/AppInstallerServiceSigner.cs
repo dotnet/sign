@@ -10,15 +10,15 @@ namespace Sign.Core
 {
     // Not really signing anything, but updates the manifest file with the
     // correct publisher information
-    internal sealed class AppInstallerServiceSignatureProvider : ISignatureProvider
+    internal sealed class AppInstallerServiceSigner : IDataFormatSigner
     {
         private readonly ICertificateProvider _certificateProvider;
         private readonly ILogger _logger;
 
         // Dependency injection requires a public constructor.
-        public AppInstallerServiceSignatureProvider(
+        public AppInstallerServiceSigner(
             ICertificateProvider certificateProvider,
-            ILogger<ISignatureProvider> logger)
+            ILogger<IDataFormatSigner> logger)
         {
             ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));

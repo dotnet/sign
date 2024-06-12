@@ -7,23 +7,23 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    internal sealed class SignatureProviderSpy : ISignatureProvider, IDefaultSignatureProvider
+    internal sealed class SignerSpy : IDataFormatSigner, IDefaultDataFormatSigner
     {
-        private readonly List<ISignatureProvider> _providers;
+        private readonly List<IDataFormatSigner> _providers;
         private readonly List<FileInfo> _signedFiles = new();
 
-        public ISignatureProvider SignatureProvider { get; }
+        public IDataFormatSigner Signer { get; }
 
         internal IReadOnlyList<FileInfo> SignedFiles
         {
             get => _signedFiles;
         }
 
-        internal SignatureProviderSpy()
+        internal SignerSpy()
         {
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Mock.Of<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Mock.Of<ICertificateProvider>();
-            ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
+            ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
             IMageCli mageCli = Mock.Of<IMageCli>();
             IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();
             INuGetSignTool nuGetSignTool = Mock.Of<INuGetSignTool>();
@@ -32,17 +32,17 @@ namespace Sign.Core.Test
             IToolConfigurationProvider toolConfigurationProvider = Mock.Of<IToolConfigurationProvider>();
             IFileMatcher fileMatcher = Mock.Of<IFileMatcher>();
 
-            SignatureProvider = new AzureSignToolSignatureProvider(
+            Signer = new AzureSignToolSigner(
                 toolConfigurationProvider,
                 signatureAlgorithmProvider,
                 certificateProvider,
                 logger);
 
-            _providers = new List<ISignatureProvider>()
+            _providers = new List<IDataFormatSigner>()
             {
-                new AppInstallerServiceSignatureProvider(certificateProvider, logger),
-                SignatureProvider,
-                new ClickOnceSignatureProvider(
+                new AppInstallerServiceSigner(certificateProvider, logger),
+                Signer,
+                new ClickOnceSigner(
                     signatureAlgorithmProvider,
                     certificateProvider,
                     serviceProvider,
@@ -50,8 +50,8 @@ namespace Sign.Core.Test
                     manifestSigner,
                     logger,
                     fileMatcher),
-                new NuGetSignatureProvider(signatureAlgorithmProvider, certificateProvider, nuGetSignTool, logger),
-                new VsixSignatureProvider(signatureAlgorithmProvider, certificateProvider, openVsixSignTool, logger)
+                new NuGetSigner(signatureAlgorithmProvider, certificateProvider, nuGetSignTool, logger),
+                new VsixSigner(signatureAlgorithmProvider, certificateProvider, openVsixSignTool, logger)
             };
         }
 

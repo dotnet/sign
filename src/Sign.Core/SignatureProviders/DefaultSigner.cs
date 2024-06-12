@@ -6,39 +6,39 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Sign.Core
 {
-    internal sealed class DefaultSignatureProvider : IDefaultSignatureProvider
+    internal sealed class DefaultSigner : IDefaultDataFormatSigner
     {
-        public ISignatureProvider SignatureProvider { get; }
+        public IDataFormatSigner Signer { get; }
 
         // Dependency injection requires a public constructor.
-        public DefaultSignatureProvider(IServiceProvider serviceProvider)
+        public DefaultSigner(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
-            foreach (ISignatureProvider signatureProvider in serviceProvider.GetServices<ISignatureProvider>())
+            foreach (IDataFormatSigner signer in serviceProvider.GetServices<IDataFormatSigner>())
             {
-                if (signatureProvider is IAzureSignToolSignatureProvider)
+                if (signer is IAzureSignToolDataFormatSigner)
                 {
-                    SignatureProvider = signatureProvider;
+                    Signer = signer;
 
                     return;
                 }
             }
 
-            SignatureProvider = new DoNothingDefaultSignatureProvider();
+            Signer = new DoNothingDefaultDataFormatSigner();
         }
 
         public bool CanSign(FileInfo file)
         {
-            return SignatureProvider.CanSign(file);
+            return Signer.CanSign(file);
         }
 
         public Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)
         {
-            return SignatureProvider.SignAsync(files, options);
+            return Signer.SignAsync(files, options);
         }
 
-        private sealed class DoNothingDefaultSignatureProvider : ISignatureProvider
+        private sealed class DoNothingDefaultDataFormatSigner : IDataFormatSigner
         {
             public bool CanSign(FileInfo file)
             {

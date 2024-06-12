@@ -8,42 +8,41 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class VsixSignatureProvider : RetryingSignatureProvider, ISignatureProvider
+    internal sealed class NuGetSigner : RetryingSigner, IDataFormatSigner
     {
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
-        private readonly IVsixSignTool _vsixSignTool;
+        private readonly INuGetSignTool _nuGetSignTool;
 
         // Dependency injection requires a public constructor.
-        public VsixSignatureProvider(
+        public NuGetSigner(
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ICertificateProvider certificateProvider,
-            IVsixSignTool vsixSignTool,
-            ILogger<ISignatureProvider> logger)
+            INuGetSignTool nuGetSignTool,
+            ILogger<IDataFormatSigner> logger)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
             ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
-            ArgumentNullException.ThrowIfNull(vsixSignTool, nameof(vsixSignTool));
+            ArgumentNullException.ThrowIfNull(nuGetSignTool, nameof(nuGetSignTool));
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
-            _vsixSignTool = vsixSignTool;
+            _nuGetSignTool = nuGetSignTool;
         }
 
         public bool CanSign(FileInfo file)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return string.Equals(file.Extension, ".vsix", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(file.Extension, ".nupkg", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(file.Extension, ".snupkg", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)
         {
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
-
-            Logger.LogInformation(Resources.VsixSignatureProviderSigning, files.Count());
 
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
             using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
@@ -54,16 +53,9 @@ namespace Sign.Core
             }
         }
 
-        protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        protected override Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
         {
-            // Dual isn't supported, use Sha256
-            SignConfigurationSet configuration = new(
-                options.FileHashAlgorithm,
-                options.FileHashAlgorithm,
-                rsaPrivateKey,
-                certificate);
-
-            return await _vsixSignTool.SignAsync(file, configuration, options);
+            return _nuGetSignTool.SignAsync(file, rsaPrivateKey, certificate, options);
         }
     }
 }

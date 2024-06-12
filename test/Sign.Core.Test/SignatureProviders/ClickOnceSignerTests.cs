@@ -9,20 +9,20 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    public sealed class ClickOnceSignatureProviderTests : IDisposable
+    public sealed class ClickOnceSignerTests : IDisposable
     {
         private readonly DirectoryService _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
-        private readonly ClickOnceSignatureProvider _provider;
+        private readonly ClickOnceSigner _signer;
 
-        public ClickOnceSignatureProviderTests()
+        public ClickOnceSignerTests()
         {
-            _provider = new ClickOnceSignatureProvider(
+            _signer = new ClickOnceSigner(
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
                 Mock.Of<IServiceProvider>(),
                 Mock.Of<IMageCli>(),
                 Mock.Of<IManifestSigner>(),
-                Mock.Of<ILogger<ISignatureProvider>>(),
+                Mock.Of<ILogger<IDataFormatSigner>>(),
                 Mock.Of<IFileMatcher>());
         }
 
@@ -35,13 +35,13 @@ namespace Sign.Core.Test
         public void Constructor_WhenSignatureAlgorithmProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     signatureAlgorithmProvider: null!,
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
@@ -51,13 +51,13 @@ namespace Sign.Core.Test
         public void Constructor_WhenCertificateProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
@@ -67,13 +67,13 @@ namespace Sign.Core.Test
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     serviceProvider: null!,
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
@@ -83,13 +83,13 @@ namespace Sign.Core.Test
         public void Constructor_WhenMageCliIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
                     mageCli: null!,
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("mageCli", exception.ParamName);
@@ -99,13 +99,13 @@ namespace Sign.Core.Test
         public void Constructor_WhenManifestSignerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IMageCli>(),
                     manifestSigner: null!,
-                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
                     Mock.Of<IFileMatcher>()));
 
             Assert.Equal("manifestSigner", exception.ParamName);
@@ -115,7 +115,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
@@ -131,13 +131,13 @@ namespace Sign.Core.Test
         public void Constructor_WhenFileMatcherIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ClickOnceSignatureProvider(
+                () => new ClickOnceSigner(
                     Mock.Of<ISignatureAlgorithmProvider>(),
                     Mock.Of<ICertificateProvider>(),
                     Mock.Of<IServiceProvider>(),
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<ISignatureProvider>>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
                     fileMatcher: null!));
 
             Assert.Equal("fileMatcher", exception.ParamName);
@@ -147,7 +147,7 @@ namespace Sign.Core.Test
         public void CanSign_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => _provider.CanSign(file: null!));
+                () => _signer.CanSign(file: null!));
 
             Assert.Equal("file", exception.ParamName);
         }
@@ -160,7 +160,7 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.True(_provider.CanSign(file));
+            Assert.True(_signer.CanSign(file));
         }
 
         [Theory]
@@ -171,14 +171,14 @@ namespace Sign.Core.Test
         {
             FileInfo file = new($"file{extension}");
 
-            Assert.False(_provider.CanSign(file));
+            Assert.False(_signer.CanSign(file));
         }
 
         [Fact]
         public async Task SignAsync_WhenFilesIsNull_Throws()
         {
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => _provider.SignAsync(
+                () => _signer.SignAsync(
                     files: null!,
                     new SignOptions(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"))));
 
@@ -189,7 +189,7 @@ namespace Sign.Core.Test
         public async Task SignAsync_WhenOptionsIsNull_Throws()
         {
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => _provider.SignAsync(
+                () => _signer.SignAsync(
                     Enumerable.Empty<FileInfo>(),
                     options: null!));
 
@@ -266,10 +266,10 @@ namespace Sign.Core.Test
                         .ReturnsAsync(privateKey);
 
                     Mock<IServiceProvider> serviceProvider = new();
-                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+                    AggregatingSignerSpy aggregatingSignerSpy = new();
 
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignatureProviderSpy);
+                        .Returns(aggregatingSignerSpy);
 
                     Mock<IMageCli> mageCli = new();
                     string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
@@ -310,8 +310,8 @@ namespace Sign.Core.Test
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
 
-                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
-                    ClickOnceSignatureProvider provider = new(
+                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    ClickOnceSigner signer = new(
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
                         serviceProvider.Object,
@@ -320,7 +320,7 @@ namespace Sign.Core.Test
                         logger,
                         fileMatcher.Object);
 
-                    await provider.SignAsync(new[] { applicationFile }, options);
+                    await signer.SignAsync(new[] { applicationFile }, options);
 
                     // Verify that files have been renamed back.
                     foreach (FileInfo file in containerSpy.Files)
@@ -330,9 +330,9 @@ namespace Sign.Core.Test
                         Assert.True(file.Exists);
                     }
 
-                    Assert.Equal(3, aggregatingSignatureProviderSpy.FilesSubmittedForSigning.Count);
+                    Assert.Equal(3, aggregatingSignerSpy.FilesSubmittedForSigning.Count);
                     Assert.Collection(
-                        aggregatingSignatureProviderSpy.FilesSubmittedForSigning,
+                        aggregatingSignerSpy.FilesSubmittedForSigning,
                         file => Assert.Equal(
                             Path.Combine(dllDeployFile.DirectoryName!, Path.GetFileNameWithoutExtension(dllDeployFile.Name)),
                             file.FullName),
@@ -391,10 +391,10 @@ namespace Sign.Core.Test
                         .ReturnsAsync(privateKey);
 
                     Mock<IServiceProvider> serviceProvider = new();
-                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+                    AggregatingSignerSpy aggregatingSignerSpy = new();
 
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignatureProviderSpy);
+                        .Returns(aggregatingSignerSpy);
 
                     Mock<IMageCli> mageCli = new();
 
@@ -424,8 +424,8 @@ namespace Sign.Core.Test
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
 
-                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
-                    ClickOnceSignatureProvider provider = new(
+                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    ClickOnceSigner signer = new(
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
                         serviceProvider.Object,
@@ -434,7 +434,7 @@ namespace Sign.Core.Test
                         logger,
                         fileMatcher.Object);
 
-                    await provider.SignAsync(new[] { applicationFile }, options);
+                    await signer.SignAsync(new[] { applicationFile }, options);
 
                     // Verify that files have been renamed back.
                     foreach (FileInfo file in containerSpy.Files)
@@ -444,7 +444,7 @@ namespace Sign.Core.Test
                         Assert.True(file.Exists);
                     }
 
-                    Assert.Empty(aggregatingSignatureProviderSpy.FilesSubmittedForSigning);
+                    Assert.Empty(aggregatingSignerSpy.FilesSubmittedForSigning);
 
                     mageCli.VerifyAll();
                     manifestSigner.VerifyAll();
@@ -488,10 +488,10 @@ namespace Sign.Core.Test
                         .ReturnsAsync(privateKey);
 
                     Mock<IServiceProvider> serviceProvider = new();
-                    AggregatingSignatureProviderSpy aggregatingSignatureProviderSpy = new();
+                    AggregatingSignerSpy aggregatingSignerSpy = new();
 
                     serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignatureProviderSpy);
+                        .Returns(aggregatingSignerSpy);
 
                     Mock<IMageCli> mageCli = new();
                     string publisher = certificate.SubjectName.Name;
@@ -518,8 +518,8 @@ namespace Sign.Core.Test
                             It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))));
 
-                    ILogger<ISignatureProvider> logger = Mock.Of<ILogger<ISignatureProvider>>();
-                    ClickOnceSignatureProvider provider = new(
+                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    ClickOnceSigner signer = new(
                         signatureAlgorithmProvider.Object,
                         certificateProvider.Object,
                         serviceProvider.Object,
@@ -534,7 +534,7 @@ namespace Sign.Core.Test
                         Assert.Empty(signingDirectory.Directory.EnumerateFiles());
                         Assert.Empty(signingDirectory.Directory.EnumerateDirectories());
                         // tell the provider to copy what it needs into the signing directory
-                        provider.CopySigningDependencies(applicationFile, signingDirectory.Directory, options);
+                        signer.CopySigningDependencies(applicationFile, signingDirectory.Directory, options);
                         // and make sure we got it. We expect only the DLL to be copied, and NOT the .application file itself.
                         IEnumerable<FileInfo> copiedFiles = signingDirectory.Directory.EnumerateFiles("*", SearchOption.AllDirectories);
                         IEnumerable<DirectoryInfo> copiedDirectories = signingDirectory.Directory.EnumerateDirectories();

@@ -4,7 +4,7 @@
 
 namespace Sign.Core
 {
-    internal interface IAggregatingSignatureProvider : ISignatureProvider
+    internal interface IAggregatingDataFormatSigner : IDataFormatSigner
     {
     }
 }

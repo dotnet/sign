@@ -8,17 +8,17 @@ using Moq;
 
 namespace Sign.Core.Test
 {
-    internal sealed class AggregatingSignatureProviderTest
+    internal sealed class AggregatingSignerTest
     {
         private readonly ContainerProviderStub _containerProvider;
 
         internal Dictionary<string, ContainerSpy> Containers { get; }
         internal IEnumerable<FileInfo> Files { get; }
-        internal AggregatingSignatureProvider Provider { get; }
-        internal SignatureProviderSpy SignatureProviderSpy { get; }
+        internal AggregatingSigner Signer { get; }
+        internal SignerSpy SignerSpy { get; }
 
         /// <summary>
-        /// Creates a test for testing <see cref="AggregatingSignatureProvider" />.
+        /// Creates a test for testing <see cref="AggregatingSigner" />.
         /// </summary>
         /// <param name="paths">Zero or more relative file or directory paths.</param>
         /// <remarks>
@@ -77,18 +77,18 @@ namespace Sign.Core.Test
         ///           ✔️ container.zip/nestedcontainer.zip/directory/c.dll
         ///
         /// </remarks>
-        internal AggregatingSignatureProviderTest(params string[] paths)
+        internal AggregatingSignerTest(params string[] paths)
         {
             _containerProvider = new ContainerProviderStub();
             Containers = new Dictionary<string, ContainerSpy>(StringComparer.Ordinal);
-            SignatureProviderSpy = new SignatureProviderSpy();
+            SignerSpy = new SignerSpy();
 
             HashSet<FileInfo> looseFiles = new(FileInfoComparer.Instance);
-            AzureSignToolSignatureProvider azureSignToolSignatureProvider = new(
+            AzureSignToolSigner azureSignToolSigner = new(
                 Mock.Of<IToolConfigurationProvider>(),
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
-                Mock.Of<ILogger<ISignatureProvider>>());
+                Mock.Of<ILogger<IDataFormatSigner>>());
             FileMetadataServiceStub fileMetadataService = new();
 
             // This directory doesn't actually exist or even need to exist.
@@ -152,7 +152,7 @@ namespace Sign.Core.Test
                     {
                         files.Add(file);
 
-                        if (azureSignToolSignatureProvider.CanSign(file))
+                        if (azureSignToolSigner.CanSign(file))
                         {
                             fileMetadataService.PortableExecutableFiles.Add(file);
                         }
@@ -172,9 +172,9 @@ namespace Sign.Core.Test
             matcher.AddInclude("**/*");
 
             Files = fileMatcher.EnumerateMatches(inMemoryDirectoryInfo, matcher).ToList();
-            Provider = new AggregatingSignatureProvider(
-                new[] { SignatureProviderSpy },
-                SignatureProviderSpy,
+            Signer = new AggregatingSigner(
+                [SignerSpy],
+                SignerSpy,
                 _containerProvider,
                 fileMetadataService,
                 new MatcherFactory());
