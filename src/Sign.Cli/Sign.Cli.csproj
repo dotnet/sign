@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
+    <ProjectReference Include="..\Sign.SignatureProviders.CertificateStore\Sign.SignatureProviders.CertificateStore.csproj" />
     <ProjectReference Include="..\Sign.SignatureProviders.KeyVault\Sign.SignatureProviders.KeyVault.csproj" />
   </ItemGroup>
 

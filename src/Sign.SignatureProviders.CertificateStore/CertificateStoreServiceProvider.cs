@@ -3,8 +3,9 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
+using Sign.Core;
 
-namespace Sign.Core
+namespace Sign.SignatureProviders.CertificateStore
 {
     /// <summary>
     /// Provider that initializes a new <see cref="CertificateStoreService"/> if required.
@@ -42,12 +43,7 @@ namespace Sign.Core
             string? certificateFilePassword,
             bool isMachineKeyContainer)
         {
-            ArgumentNullException.ThrowIfNull(certificateFingerprint, nameof(certificateFingerprint));
-
-            if (string.IsNullOrEmpty(certificateFingerprint))
-            {
-                throw new ArgumentException(Resources.ValueCannotBeEmptyString, nameof(certificateFingerprint));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
 
             // Both or neither can be provided when accessing a certificate.
             if (!string.IsNullOrEmpty(cryptoServiceProvider) == string.IsNullOrEmpty(privateKeyContainer))

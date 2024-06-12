@@ -12,6 +12,7 @@ using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
+using Sign.SignatureProviders.CertificateStore;
 
 namespace Sign.Cli
 {
@@ -20,7 +21,7 @@ namespace Sign.Cli
         private readonly CodeCommand _codeCommand;
 
         internal Option<string> CertificateFingerprintOption { get; } = new(["-cfp", "--certificate-fingerprint"], CertificateStoreResources.CertificateFingerprintOptionDescription);
-        internal Option<HashAlgorithmName> CertificateFingerprintAlgorithmOption { get; } = new([ "-cfpa", "--certificate-fingerprint-algorithm" ], HashAlgorithmParser.ParseHashAlgorithmName, description: CertificateStoreResources.CertificateFingerprintAlgorithmOptionDescription);
+        internal Option<HashAlgorithmName> CertificateFingerprintAlgorithmOption { get; } = new(["-cfpa", "--certificate-fingerprint-algorithm"], HashAlgorithmParser.ParseHashAlgorithmName, description: CertificateStoreResources.CertificateFingerprintAlgorithmOptionDescription);
         internal Option<string?> CertificateFileOption { get; } = new(["-cf", "--certificate-file"], CertificateStoreResources.CertificateFileOptionDescription);
         internal Option<string?> CertificatePasswordOption { get; } = new(["-p", "--password"], CertificateStoreResources.CertificatePasswordOptionDescription);
         internal Option<string?> CryptoServiceProviderOption { get; } = new(["-csp", "--crypto-service-provider"], CertificateStoreResources.CspOptionDescription);

@@ -9,8 +9,9 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sign.Core;
 
-namespace Sign.Core
+namespace Sign.SignatureProviders.CertificateStore
 {
     /// <summary>
     /// Creates an object used to access Certificate Stores and acquire certificates and RSA keys (if applicable).
@@ -37,6 +38,7 @@ namespace Sign.Core
             string? certificatePassword,
             bool isPrivateMachineKeyContainer)
         {
+            ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
             ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
 
             _certificateFingerprint = certificateFingerprint;
