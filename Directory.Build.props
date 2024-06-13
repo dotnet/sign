@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))</RepositoryRootDirectory>
+    <RepositoryRootDirectory>$(MSBuildThisFileDirectory)</RepositoryRootDirectory>
   </PropertyGroup>
 
   <ItemGroup>
