@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
         <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
-        <target state="new">Unable to find a certificate with a matching {0} fingerprint in {1}.</target>
+        <target state="translated">Es wurde kein Zertifikat mit einem übereinstimmenden {0}-Fingerabdruck in {1} gefunden.</target>
         <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
