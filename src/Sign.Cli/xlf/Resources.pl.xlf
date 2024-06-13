@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintAlgorithmValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
-        <target state="new">Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</target>
+        <target state="translated">Nieprawidłowa wartość dla {0}. Wartością musi być „sha256”, „sha384”, lub „sha512”.</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint-algorithm).  {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
         <source>Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</source>
-        <target state="new">Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</target>
+        <target state="translated">Nieprawidłowa wartość dla opcji {0}. Wartość musi być odciskiem palca certyfikatu (w systemie szesnastkowym).</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">

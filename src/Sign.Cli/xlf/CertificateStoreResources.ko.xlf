@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
         <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="new">Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <target state="translated">인증서 지문 알고리즘입니다. 허용되는 값은 'sha256', 'sha384', 'sha512'입니다.</target>
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
-        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <target state="translated">인증서를 식별하는 데 사용되는 SHA 지문입니다.</target>
         <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">

@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
         <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="new">Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <target state="translated">憑證指紋演算法。允許的值為 'sha256'、'sha384' 和 'sha512'。</target>
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
-        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <target state="translated">用以識別憑證的 SHA 指紋。</target>
         <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
