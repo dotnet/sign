@@ -3,10 +3,17 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
+using Sign.Core;
 
 namespace Sign.Cli
 {
@@ -52,6 +59,145 @@ namespace Sign.Cli
             AddGlobalOption(TimestampDigestOption);
             AddGlobalOption(MaxConcurrencyOption);
             AddGlobalOption(VerbosityOption);
+        }
+
+        internal async Task HandleAsync(InvocationContext context, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, string fileArgument)
+        {
+            // Some of the options have either a default value or are required and that is why
+            // we can safely use the null-forgiving operator (!) to simplify the code.
+            DirectoryInfo baseDirectory = context.ParseResult.GetValueForOption(BaseDirectoryOption)!;
+            string? applicationName = context.ParseResult.GetValueForOption(ApplicationNameOption);
+            string? publisherName = context.ParseResult.GetValueForOption(PublisherNameOption);
+            string? description = context.ParseResult.GetValueForOption(DescriptionOption);
+            Uri descriptionUrl = context.ParseResult.GetValueForOption(DescriptionUrlOption)!;
+            string? fileListFilePath = context.ParseResult.GetValueForOption(FileListOption);
+            HashAlgorithmName fileHashAlgorithmName = context.ParseResult.GetValueForOption(FileDigestOption);
+            HashAlgorithmName timestampHashAlgorithmName = context.ParseResult.GetValueForOption(TimestampDigestOption);
+            Uri timestampUrl = context.ParseResult.GetValueForOption(TimestampUrlOption)!;
+            LogLevel verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
+            string? output = context.ParseResult.GetValueForOption(OutputOption);
+            int maxConcurrency = context.ParseResult.GetValueForOption(MaxConcurrencyOption);
+
+            // Make sure this is rooted
+            if (!Path.IsPathRooted(baseDirectory.FullName))
+            {
+                context.Console.Error.WriteFormattedLine(
+                    Resources.InvalidBaseDirectoryValue,
+                    BaseDirectoryOption);
+                context.ExitCode = ExitCode.InvalidOptions;
+                return;
+            }
+
+            IServiceProvider serviceProvider = serviceProviderFactory.Create(
+                verbosity,
+                addServices: (IServiceCollection services) =>
+                {
+                    services.AddSingleton<ISignatureAlgorithmProvider>(
+                        (IServiceProvider serviceProvider) => signatureProvider.GetSignatureAlgorithmProvider(serviceProvider));
+                    services.AddSingleton<ICertificateProvider>(
+                        (IServiceProvider serviceProvider) => signatureProvider.GetCertificateProvider(serviceProvider));
+                });
+
+            List<FileInfo> inputFiles;
+
+            // If we're going to glob, we can't be fully rooted currently (fix me later)
+            bool isGlob = fileArgument.Contains('*');
+
+            if (isGlob)
+            {
+                if (Path.IsPathRooted(fileArgument))
+                {
+                    context.Console.Error.WriteLine(Resources.InvalidFileValue);
+                    context.ExitCode = ExitCode.InvalidOptions;
+                    return;
+                }
+
+                IFileListReader fileListReader = serviceProvider.GetRequiredService<IFileListReader>();
+                IFileMatcher fileMatcher = serviceProvider.GetRequiredService<IFileMatcher>();
+
+                using (MemoryStream stream = new(Encoding.UTF8.GetBytes(fileArgument)))
+                using (StreamReader reader = new(stream))
+                {
+                    fileListReader.Read(reader, out Matcher? matcher, out Matcher? antiMatcher);
+
+                    DirectoryInfoBase directory = new DirectoryInfoWrapper(baseDirectory);
+
+                    IEnumerable<FileInfo> matches = fileMatcher.EnumerateMatches(directory, matcher);
+
+                    if (antiMatcher is not null)
+                    {
+                        IEnumerable<FileInfo> antiMatches = fileMatcher.EnumerateMatches(directory, antiMatcher);
+                        matches = matches.Except(antiMatches, FileInfoComparer.Instance);
+                    }
+
+                    inputFiles = matches.ToList();
+                }
+            }
+            else
+            {
+                inputFiles = [new FileInfo(ExpandFilePath(baseDirectory, fileArgument))];
+            }
+
+            FileInfo? fileList = null;
+            if (!string.IsNullOrEmpty(fileListFilePath))
+            {
+                if (Path.IsPathRooted(fileListFilePath))
+                {
+                    fileList = new FileInfo(fileListFilePath);
+                }
+                else
+                {
+                    fileList = new FileInfo(ExpandFilePath(baseDirectory, fileListFilePath));
+                }
+            }
+
+            if (inputFiles.Count == 0)
+            {
+                context.Console.Error.WriteLine(Resources.NoFilesToSign);
+                context.ExitCode = ExitCode.NoInputsFound;
+                return;
+            }
+
+            if (inputFiles.Any(file => !file.Exists))
+            {
+                context.Console.Error.WriteFormattedLine(
+                    Resources.SomeFilesDoNotExist,
+                    BaseDirectoryOption);
+
+                foreach (FileInfo file in inputFiles.Where(file => !file.Exists))
+                {
+                    context.Console.Error.WriteLine($"    {file.FullName}");
+                }
+
+                context.ExitCode = ExitCode.NoInputsFound;
+                return;
+            }
+
+            ISigner signer = serviceProvider.GetRequiredService<ISigner>();
+
+            context.ExitCode = await signer.SignAsync(
+                inputFiles,
+                output,
+                fileList,
+                baseDirectory,
+                applicationName,
+                publisherName,
+                description,
+                descriptionUrl,
+                timestampUrl,
+                maxConcurrency,
+                fileHashAlgorithmName,
+                timestampHashAlgorithmName);
+        }
+
+        private static string ExpandFilePath(DirectoryInfo baseDirectory, string file)
+        {
+            if (Path.IsPathRooted(file))
+            {
+                return file;
+            }
+
+            return Path.Combine(baseDirectory.FullName, file);
         }
 
         private static DirectoryInfo ParseBaseDirectoryOption(ArgumentResult result)
