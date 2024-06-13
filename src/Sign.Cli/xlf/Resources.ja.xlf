@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
         <source>File(s) to sign.</source>
-        <target state="new">File(s) to sign.</target>
+        <target state="translated">署名するファイル。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidBaseDirectoryValue">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
         <source>Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</source>
-        <target state="new">Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</target>
+        <target state="translated">{0} の値が無効です。値は証明書のフィンガープリント (16 進数) である必要があります。</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="InvalidFileValue">
         <source>The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</source>
-        <target state="new">The file path cannot be rooted when using a glob. Use a path relative to the working directory (or base directory, if used).</target>
+        <target state="translated">glob を使用している場合、ファイル パスをルート化できません。作業ディレクトリへの相対パス (または使用されている場合はベース ディレクトリ) を使用してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
@@ -89,12 +89,12 @@
       </trans-unit>
       <trans-unit id="MissingFileValue">
         <source>A file or glob is required.</source>
-        <target state="new">A file or glob is required.</target>
+        <target state="translated">ファイルまたは glob が必要です。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
-        <target state="new">No inputs found to sign.</target>
+        <target state="translated">署名する入力が見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
@@ -114,7 +114,7 @@
       </trans-unit>
       <trans-unit id="SomeFilesDoNotExist">
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
-        <target state="new">Some files do not exist.  Try using a different {0} value or a fully qualified file path.</target>
+        <target state="translated">一部のファイルが存在しません。別の {0} 値または完全修飾ファイル パスを使用してみてください。</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
