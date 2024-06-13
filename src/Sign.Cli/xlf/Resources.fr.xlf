@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintAlgorithmValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
-        <target state="new">Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</target>
+        <target state="translated">Valeur invalide pour {0}. La valeur doit être 'sha256', 'sha384' ou 'sha512'.</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint-algorithm).  {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
