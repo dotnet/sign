@@ -13,7 +13,7 @@ namespace Sign.Core
     internal sealed class AppInstallerServiceSigner : IDataFormatSigner
     {
         private readonly ICertificateProvider _certificateProvider;
-        private readonly ILogger _logger;
+        private readonly ILogger<IDataFormatSigner> _logger;
 
         // Dependency injection requires a public constructor.
         public AppInstallerServiceSigner(

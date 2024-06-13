@@ -10,7 +10,7 @@ namespace Sign.Core
     internal sealed class VsixSignTool : Tool, IVsixSignTool
     {
         // Dependency injection requires a public constructor.
-        public VsixSignTool(ILogger<INuGetSignTool> logger)
+        public VsixSignTool(ILogger<IVsixSignTool> logger)
             : base(logger)
         {
         }

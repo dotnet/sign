@@ -9,7 +9,7 @@ namespace Sign.Core
 {
     internal sealed class DirectoryService : IDirectoryService
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<IDirectoryService> _logger;
         private readonly ConcurrentQueue<DirectoryInfo> _temporaryDirectories = new();
 
         // Dependency injection requires a public constructor.

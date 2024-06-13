@@ -9,7 +9,7 @@ namespace Sign.Core
 {
     internal sealed class CertificateVerifier : ICertificateVerifier
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<ICertificateVerifier> _logger;
 
         // Dependency injection requires a public constructor.
         public CertificateVerifier(ILogger<ICertificateVerifier> logger)

@@ -18,7 +18,7 @@ namespace Sign.Core.Test
                 Mock.Of<IDirectoryService>(),
                 Mock.Of<IFileMatcher>(),
                 Mock.Of<IMakeAppxCli>(),
-                Mock.Of<ILogger<IDirectoryService>>());
+                Mock.Of<ILogger<IContainerProvider>>());
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Sign.Core.Test
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
-                    Mock.Of<ILogger<IDirectoryService>>()));
+                    Mock.Of<ILogger<IContainerProvider>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -44,7 +44,7 @@ namespace Sign.Core.Test
                     directoryService: null!,
                     Mock.Of<IFileMatcher>(),
                     Mock.Of<IMakeAppxCli>(),
-                    Mock.Of<ILogger<IDirectoryService>>()));
+                    Mock.Of<ILogger<IContainerProvider>>()));
 
             Assert.Equal("directoryService", exception.ParamName);
         }
@@ -58,7 +58,7 @@ namespace Sign.Core.Test
                     Mock.Of<IDirectoryService>(),
                     fileMatcher: null!,
                     Mock.Of<IMakeAppxCli>(),
-                    Mock.Of<ILogger<IDirectoryService>>()));
+                    Mock.Of<ILogger<IContainerProvider>>()));
 
             Assert.Equal("fileMatcher", exception.ParamName);
         }
@@ -72,7 +72,7 @@ namespace Sign.Core.Test
                     Mock.Of<IDirectoryService>(),
                     Mock.Of<IFileMatcher>(),
                     makeAppxCli: null!,
-                    Mock.Of<ILogger<IDirectoryService>>()));
+                    Mock.Of<ILogger<IContainerProvider>>()));
 
             Assert.Equal("makeAppxCli", exception.ParamName);
         }

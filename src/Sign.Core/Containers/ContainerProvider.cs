@@ -13,7 +13,7 @@ namespace Sign.Core
         private readonly IDirectoryService _directoryService;
         private readonly IFileMatcher _fileMatcher;
         private readonly ICertificateProvider _certificateProvider;
-        private readonly ILogger _logger;
+        private readonly ILogger<IContainerProvider> _logger;
         private readonly IMakeAppxCli _makeAppxCli;
         private readonly HashSet<string> _nuGetExtensions;
         private readonly HashSet<string> _zipExtensions;
@@ -24,7 +24,7 @@ namespace Sign.Core
             IDirectoryService directoryService,
             IFileMatcher fileMatcher,
             IMakeAppxCli makeAppxCli,
-            ILogger<IDirectoryService> logger)
+            ILogger<IContainerProvider> logger)
         {
             ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
             ArgumentNullException.ThrowIfNull(directoryService, nameof(directoryService));

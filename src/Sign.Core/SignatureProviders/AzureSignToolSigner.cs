@@ -14,7 +14,7 @@ namespace Sign.Core
     {
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
-        private readonly ILogger _logger;
+        private readonly ILogger<IDataFormatSigner> _logger;
         private readonly HashSet<string> _supportedFileExtensions;
         private readonly IToolConfigurationProvider _toolConfigurationProvider;
 

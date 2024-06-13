@@ -20,7 +20,7 @@ namespace Sign.Core.Test
                 Mock.Of<IDirectoryService>(),
                 Mock.Of<IFileMatcher>(),
                 Mock.Of<IMakeAppxCli>(),
-                Mock.Of<ILogger<IDirectoryService>>());
+                Mock.Of<ILogger<IContainerProvider>>());
         }
 
         public bool IsAppxBundleContainer(FileInfo file)
