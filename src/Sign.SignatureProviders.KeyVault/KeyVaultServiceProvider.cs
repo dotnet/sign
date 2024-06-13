@@ -7,7 +7,7 @@ using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault
 {
-    internal sealed class KeyVaultServiceProvider
+    internal sealed class KeyVaultServiceProvider : ISignatureProvider
     {
         private readonly string _certificateName;
         private readonly Uri _keyVaultUrl;
@@ -29,14 +29,14 @@ namespace Sign.SignatureProviders.KeyVault
             _certificateName = certificateName;
         }
 
-        internal ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
+        public ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
             return GetService(serviceProvider);
         }
 
-        internal ICertificateProvider GetCertificateProvider(IServiceProvider serviceProvider)
+        public ICertificateProvider GetCertificateProvider(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 

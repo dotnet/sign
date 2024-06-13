@@ -10,7 +10,7 @@ namespace Sign.SignatureProviders.CertificateStore
     /// <summary>
     /// Provider that initializes a new <see cref="CertificateStoreService"/> if required.
     /// </summary>
-    internal class CertificateStoreServiceProvider
+    internal class CertificateStoreServiceProvider : ISignatureProvider
     {
         private readonly string _certificateFingerprint;
         private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
@@ -62,14 +62,14 @@ namespace Sign.SignatureProviders.CertificateStore
             _certificateFilePassword = certificateFilePassword;
         }
 
-        internal ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
+        public ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
             return GetService(serviceProvider);
         }
 
-        internal ICertificateProvider GetCertificateProvider(IServiceProvider serviceProvider)
+        public ICertificateProvider GetCertificateProvider(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
