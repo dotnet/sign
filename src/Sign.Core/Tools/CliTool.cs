@@ -12,7 +12,9 @@ namespace Sign.Core
     {
         protected FileInfo Cli { get; }
 
-        internal CliTool(FileInfo cli, ILogger<ITool> logger)
+        internal CliTool(
+            FileInfo cli,
+            ILogger<ICliTool> logger)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(cli, nameof(cli));

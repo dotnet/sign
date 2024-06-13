@@ -1,4 +1,15 @@
-﻿[*.cs]
+﻿root = true
+
+[*]
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{csproj,md,props,targets,yml}]
+indent_size = 2
+
+[*.cs]
 
 # IDE0063: Use simple 'using' statement
 csharp_prefer_simple_using_statement = false

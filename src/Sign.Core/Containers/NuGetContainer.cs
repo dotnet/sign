@@ -12,7 +12,8 @@ namespace Sign.Core
         internal NuGetContainer(
             FileInfo zipFile,
             IDirectoryService directoryService,
-            IFileMatcher fileMatcher, ILogger logger)
+            IFileMatcher fileMatcher,
+            ILogger logger)
             : base(zipFile, directoryService, fileMatcher, logger)
         {
         }

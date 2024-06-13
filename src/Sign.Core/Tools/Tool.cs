@@ -8,7 +8,7 @@ namespace Sign.Core
 {
     internal abstract class Tool
     {
-        protected ILogger Logger { get; }
+        protected ILogger<ITool> Logger { get; }
 
         internal Tool(ILogger<ITool> logger)
         {
