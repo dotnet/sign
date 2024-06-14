@@ -29,9 +29,9 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void DescriptionOption_Always_IsRequired()
+        public void DescriptionOption_Always_IsNotRequired()
         {
-            Assert.True(_command.DescriptionOption.IsRequired);
+            Assert.False(_command.DescriptionOption.IsRequired);
         }
 
         [Fact]
@@ -41,9 +41,9 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void DescriptionUrlOption_Always_IsRequired()
+        public void DescriptionUrlOption_Always_IsNotRequired()
         {
-            Assert.True(_command.DescriptionUrlOption.IsRequired);
+            Assert.False(_command.DescriptionUrlOption.IsRequired);
         }
 
         [Fact]
