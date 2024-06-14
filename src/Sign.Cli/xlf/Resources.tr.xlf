@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
         <source>Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</source>
-        <target state="new">Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</target>
+        <target state="translated">{0} için geçersiz değer. Değer, sertifikanın parmak izi olmalıdır (onaltılık).</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">

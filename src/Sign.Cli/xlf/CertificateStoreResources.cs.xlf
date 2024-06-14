@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
         <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="new">Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</target>
+        <target state="translated">Algoritmus otisku certifikátu. Povolené hodnoty jsou sha256, sha384 a sha512.</target>
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
-        <target state="new">SHA fingerprint used to identify a certificate.</target>
+        <target state="translated">Otisk SHA sloužící k identifikaci certifikátu</target>
         <note>{Locked="SHA"} is a cryptographic algorithm.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
