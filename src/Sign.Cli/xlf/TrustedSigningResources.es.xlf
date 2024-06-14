@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="es" original="../TrustedSigningResources.resx">
+    <body>
+      <trans-unit id="AccountOptionDescription">
+        <source>The Trusted Signing Account name.</source>
+        <target state="new">The Trusted Signing Account name.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateProfileOptionDescription">
+        <source>The Certificate Profile name.</source>
+        <target state="new">The Certificate Profile name.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ClientIdOptionDescription">
+        <source>Client ID to authenticate to Trusted Signing.</source>
+        <target state="new">Client ID to authenticate to Trusted Signing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ClientSecretOptionDescription">
+        <source>Client secret to authenticate to Trusted Signing.</source>
+        <target state="new">Client secret to authenticate to Trusted Signing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Use Trusted Signing</source>
+        <target state="new">Use Trusted Signing</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EndpointOptionDescription">
+        <source>The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.</source>
+        <target state="new">The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidClientSecretCredential">
+        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
+        <target state="new">If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</target>
+        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="ManagedIdentityOptionDescription">
+        <source>Managed identity to authenticate to Trusted Signing.</source>
+        <target state="new">Managed identity to authenticate to Trusted Signing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TenantIdOptionDescription">
+        <source>Tenant ID to authenticate to Trusted Signing.</source>
+        <target state="new">Tenant ID to authenticate to Trusted Signing.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

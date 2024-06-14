@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
     <ProjectReference Include="..\Sign.SignatureProviders.CertificateStore\Sign.SignatureProviders.CertificateStore.csproj" />
     <ProjectReference Include="..\Sign.SignatureProviders.KeyVault\Sign.SignatureProviders.KeyVault.csproj" />
+    <ProjectReference Include="..\Sign.SignatureProviders.TrustedSigning\Sign.SignatureProviders.TrustedSigning.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,6 +69,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="TrustedSigningResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TrustedSigningResources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -82,6 +88,10 @@
     <EmbeddedResource Update="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="TrustedSigningResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TrustedSigningResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
