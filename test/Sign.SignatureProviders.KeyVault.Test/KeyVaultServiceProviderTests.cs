@@ -14,9 +14,9 @@ namespace Sign.SignatureProviders.KeyVault.Test
 {
     public class KeyVaultServiceProviderTests
     {
+        private readonly static TokenCredential TokenCredential = Mock.Of<TokenCredential>();
         private readonly static Uri KeyVaultUrl = new("https://keyvault.test");
         private const string CertificateName = "a";
-        private readonly TokenCredential tokenCredential = Mock.Of<TokenCredential>();
         private readonly IServiceProvider serviceProvider;
 
         public KeyVaultServiceProviderTests()
@@ -36,28 +36,28 @@ namespace Sign.SignatureProviders.KeyVault.Test
         }
 
         [Fact]
-        public void Constructor_WhenTokenKeyVaultUrlIsNull_Throws()
+        public void Constructor_WhenKeyVaultUrlIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultServiceProvider(tokenCredential, keyVaultUrl: null!, CertificateName));
+                () => new KeyVaultServiceProvider(TokenCredential, keyVaultUrl: null!, CertificateName));
 
             Assert.Equal("keyVaultUrl", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenTokenCertificateNameIsNull_Throws()
+        public void Constructor_WhenCertificateNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultServiceProvider(tokenCredential, KeyVaultUrl, certificateName: null!));
+                () => new KeyVaultServiceProvider(TokenCredential, KeyVaultUrl, certificateName: null!));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenTokenCertificateNameIsEmpty_Throws()
+        public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new KeyVaultServiceProvider(tokenCredential, KeyVaultUrl, certificateName: string.Empty));
+                () => new KeyVaultServiceProvider(TokenCredential, KeyVaultUrl, certificateName: string.Empty));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
@@ -65,7 +65,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_WhenServiceProviderIsNull_Throws()
         {
-            KeyVaultServiceProvider provider = new(tokenCredential, KeyVaultUrl, CertificateName);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName);
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
@@ -76,7 +76,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_ReturnsSameInstance()
         {
-            KeyVaultServiceProvider provider = new(tokenCredential, KeyVaultUrl, CertificateName);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName);
 
             ConcurrentBag<ISignatureAlgorithmProvider> signatureAlgorithmProviders = [];
             Parallel.For(0, 2, (_, _) =>
@@ -91,7 +91,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetCertificateProvider_WhenServiceProviderIsNull_Throws()
         {
-            KeyVaultServiceProvider provider = new(tokenCredential, KeyVaultUrl, CertificateName);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName);
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
@@ -102,7 +102,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetCertificateProvider_ReturnsSameInstance()
         {
-            KeyVaultServiceProvider provider = new(tokenCredential, KeyVaultUrl, CertificateName);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName);
 
             ConcurrentBag<ICertificateProvider> certificateProviders = [];
             Parallel.For(0, 2, (_, _) =>
