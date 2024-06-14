@@ -35,9 +35,6 @@ namespace Sign.Cli
         internal CodeCommand()
             : base("code", Resources.CodeCommandDescription)
         {
-            DescriptionOption.IsRequired = true;
-            DescriptionUrlOption.IsRequired = true;
-
             MaxConcurrencyOption.SetDefaultValue(4);
             FileDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
             TimestampDigestOption.SetDefaultValue(HashAlgorithmName.SHA256);
@@ -63,13 +60,13 @@ namespace Sign.Cli
 
         internal async Task HandleAsync(InvocationContext context, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, string fileArgument)
         {
-            // Some of the options have either a default value or are required and that is why
-            // we can safely use the null-forgiving operator (!) to simplify the code.
+            // Some of the options have a default value and that is why we can safely use
+            // the null-forgiving operator (!) to simplify the code.
             DirectoryInfo baseDirectory = context.ParseResult.GetValueForOption(BaseDirectoryOption)!;
             string? applicationName = context.ParseResult.GetValueForOption(ApplicationNameOption);
             string? publisherName = context.ParseResult.GetValueForOption(PublisherNameOption);
             string? description = context.ParseResult.GetValueForOption(DescriptionOption);
-            Uri descriptionUrl = context.ParseResult.GetValueForOption(DescriptionUrlOption)!;
+            Uri? descriptionUrl = context.ParseResult.GetValueForOption(DescriptionUrlOption);
             string? fileListFilePath = context.ParseResult.GetValueForOption(FileListOption);
             HashAlgorithmName fileHashAlgorithmName = context.ParseResult.GetValueForOption(FileDigestOption);
             HashAlgorithmName timestampHashAlgorithmName = context.ParseResult.GetValueForOption(TimestampDigestOption);

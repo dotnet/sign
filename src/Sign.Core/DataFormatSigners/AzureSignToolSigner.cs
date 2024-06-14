@@ -162,8 +162,8 @@ namespace Sign.Core
                 {
                     code = signer.SignFile(
                         file.FullName,
-                        options.Description,
-                        options.DescriptionUrl?.AbsoluteUri,
+                        options.Description ?? string.Empty,
+                        options.DescriptionUrl?.AbsoluteUri ?? string.Empty,
                         pageHashing: null,
                         _logger);
                     success = code == S_OK;
