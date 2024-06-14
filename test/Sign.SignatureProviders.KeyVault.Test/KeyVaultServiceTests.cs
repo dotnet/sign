@@ -12,9 +12,9 @@ namespace Sign.SignatureProviders.KeyVault.Test
 {
     public class KeyVaultServiceTests
     {
+        private readonly static TokenCredential TokenCredential = Mock.Of<TokenCredential>();
         private readonly static Uri KeyVaultUrl = new("https://keyvault.test");
         private const string CertificateName = "a";
-        private readonly TokenCredential tokenCredential = Mock.Of<TokenCredential>();
         private readonly IServiceProvider serviceProvider;
 
         public KeyVaultServiceTests()
@@ -28,7 +28,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider: null!, tokenCredential, KeyVaultUrl, CertificateName));
+                () => new KeyVaultService(serviceProvider: null!, TokenCredential, KeyVaultUrl, CertificateName));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
@@ -43,28 +43,28 @@ namespace Sign.SignatureProviders.KeyVault.Test
         }
 
         [Fact]
-        public void Constructor_WhenTokenKeyVaultUrlIsNull_Throws()
+        public void Constructor_WhenKeyVaultUrlIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider, tokenCredential, keyVaultUrl: null!, CertificateName));
+                () => new KeyVaultService(serviceProvider, TokenCredential, keyVaultUrl: null!, CertificateName));
 
             Assert.Equal("keyVaultUrl", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenTokenCertificateNameIsNull_Throws()
+        public void Constructor_WhenCertificateNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider, tokenCredential, KeyVaultUrl, certificateName: null!));
+                () => new KeyVaultService(serviceProvider, TokenCredential, KeyVaultUrl, certificateName: null!));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenTokenCertificateNameIsEmpty_Throws()
+        public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new KeyVaultService(serviceProvider, tokenCredential, KeyVaultUrl, certificateName: string.Empty));
+                () => new KeyVaultService(serviceProvider, TokenCredential, KeyVaultUrl, certificateName: string.Empty));
 
             Assert.Equal("certificateName", exception.ParamName);
         }

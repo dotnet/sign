@@ -5,14 +5,8 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
-using System.Security.Cryptography;
-using System.Text;
 using Azure.Core;
 using Azure.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
-using Microsoft.Extensions.Logging;
 using Sign.Core;
 using Sign.SignatureProviders.KeyVault;
 
