@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- This can probably be removed here and in Directory.Packages.props once we upgrade to a different Trusted Signing library -->
+    <PackageReference Include="Azure.Core" />
+    <PackageReference Include="Azure.CodeSigning.Sdk" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="sign" />
+    <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning.Test" />
+  </ItemGroup>
+
+</Project>

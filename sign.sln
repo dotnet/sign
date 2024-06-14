@@ -42,6 +42,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.Cer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.CertificateStore.Test", "test\Sign.SignatureProviders.CertificateStore.Test\Sign.SignatureProviders.CertificateStore.Test.csproj", "{3AE48DC2-8422-4E3A-AFBC-12551D50DBCA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.TrustedSigning", "src\Sign.SignatureProviders.TrustedSigning\Sign.SignatureProviders.TrustedSigning.csproj", "{060800AF-42FC-493C-AD99-9C87212BA969}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,6 +86,10 @@ Global
 		{3AE48DC2-8422-4E3A-AFBC-12551D50DBCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AE48DC2-8422-4E3A-AFBC-12551D50DBCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AE48DC2-8422-4E3A-AFBC-12551D50DBCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{060800AF-42FC-493C-AD99-9C87212BA969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{060800AF-42FC-493C-AD99-9C87212BA969}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{060800AF-42FC-493C-AD99-9C87212BA969}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{060800AF-42FC-493C-AD99-9C87212BA969}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +104,7 @@ Global
 		{47F03ADD-A646-44C8-92FA-9594CD4506E6} = {780818DD-6B52-47C8-AC54-71448DF822BD}
 		{68104303-9832-4841-89AB-B98712C4E618} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 		{3AE48DC2-8422-4E3A-AFBC-12551D50DBCA} = {780818DD-6B52-47C8-AC54-71448DF822BD}
+		{060800AF-42FC-493C-AD99-9C87212BA969} = {92C73EE1-4EF3-4721-B6A9-9F458A673CA3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7AA1043F-37A2-404F-8EC3-34C747C1CEB7}
