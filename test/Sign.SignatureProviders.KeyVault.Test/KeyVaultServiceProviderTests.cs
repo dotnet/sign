@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Collections.Concurrent;
 using Azure.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -77,14 +78,14 @@ namespace Sign.SignatureProviders.KeyVault.Test
         {
             KeyVaultServiceProvider provider = new(tokenCredential, KeyVaultUrl, CertificateName);
 
-            List<ISignatureAlgorithmProvider> signatureAlgorithmProviders = [];
+            ConcurrentBag<ISignatureAlgorithmProvider> signatureAlgorithmProviders = [];
             Parallel.For(0, 2, (_, _) =>
             {
                 signatureAlgorithmProviders.Add(provider.GetSignatureAlgorithmProvider(serviceProvider));
             });
 
             Assert.Equal(2, signatureAlgorithmProviders.Count);
-            Assert.Same(signatureAlgorithmProviders[0], signatureAlgorithmProviders[1]);
+            Assert.Same(signatureAlgorithmProviders.First(), signatureAlgorithmProviders.Last());
         }
 
         [Fact]
@@ -103,14 +104,14 @@ namespace Sign.SignatureProviders.KeyVault.Test
         {
             KeyVaultServiceProvider provider = new(tokenCredential, KeyVaultUrl, CertificateName);
 
-            List<ICertificateProvider> certificateProviders = [];
+            ConcurrentBag<ICertificateProvider> certificateProviders = [];
             Parallel.For(0, 2, (_, _) =>
             {
                 certificateProviders.Add(provider.GetCertificateProvider(serviceProvider));
             });
 
             Assert.Equal(2, certificateProviders.Count);
-            Assert.Same(certificateProviders[0], certificateProviders[1]);
+            Assert.Same(certificateProviders.First(), certificateProviders.Last());
         }
     }
 }
