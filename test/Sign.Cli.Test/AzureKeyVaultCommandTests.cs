@@ -45,54 +45,6 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void ClientIdOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.ClientIdOption.Arity);
-        }
-
-        [Fact]
-        public void ClientIdOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ClientIdOption.IsRequired);
-        }
-
-        [Fact]
-        public void ClientSecretOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.ClientSecretOption.Arity);
-        }
-
-        [Fact]
-        public void ClientSecretOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ClientSecretOption.IsRequired);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_HasArityOfZeroOrOne()
-        {
-            Assert.Equal(ArgumentArity.ZeroOrOne, _command.ManagedIdentityOption.Arity);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ManagedIdentityOption.IsRequired);
-        }
-
-        [Fact]
-        public void TenantIdOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.TenantIdOption.Arity);
-        }
-
-        [Fact]
-        public void TenantIdOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.TenantIdOption.IsRequired);
-        }
-
-        [Fact]
         public void UrlOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.UrlOption.Arity);
@@ -123,12 +75,12 @@ namespace Sign.Cli.Test
             [InlineData("azure-key-vault -kvu https://keyvault.test a")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c -azs")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c -azs d")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -137,8 +89,8 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvm b")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azm b")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c -azs d e")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);

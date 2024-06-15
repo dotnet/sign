@@ -12,34 +12,9 @@
         <target state="translated">従来の .clickonce ZIP 回避策による ClickOnce 署名はサポートされなくなりました。ドキュメントを参照してください。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ClientIdOptionDescription">
-        <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault に対して認証するクライアント ID。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ClientSecretOptionDescription">
-        <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault に対して認証するクライアント シークレット。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
         <target state="translated">Azure Key Vault を使用してください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidClientSecretCredential">
-        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="translated">マネージド ID を使用しない場合は、{0}、{1}、{2} のオプションがすべて必要です。</target>
-        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
-      </trans-unit>
-      <trans-unit id="ManagedIdentityOptionDescription">
-        <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault に対して認証するマネージド ID。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TenantIdOptionDescription">
-        <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault に対して認証するテナント ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">

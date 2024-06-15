@@ -68,54 +68,6 @@ namespace Sign.Cli.Test
             Assert.True(_command.CertificateProfileOption.IsRequired);
         }
 
-        [Fact]
-        public void ManagedIdentityOption_Always_HasArityOfZeroOrOne()
-        {
-            Assert.Equal(ArgumentArity.ZeroOrOne, _command.ManagedIdentityOption.Arity);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ManagedIdentityOption.IsRequired);
-        }
-
-        [Fact]
-        public void TenantIdOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.TenantIdOption.Arity);
-        }
-
-        [Fact]
-        public void TenantIdOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.TenantIdOption.IsRequired);
-        }
-
-        [Fact]
-        public void ClientIdOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.ClientIdOption.Arity);
-        }
-
-        [Fact]
-        public void ClientIdOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ClientIdOption.IsRequired);
-        }
-
-        [Fact]
-        public void ClientSecretOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.ClientSecretOption.Arity);
-        }
-
-        [Fact]
-        public void ClientSecretOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ClientSecretOption.IsRequired);
-        }
-
         public class ParserTests
         {
             private readonly TrustedSigningCommand _command;
@@ -135,12 +87,12 @@ namespace Sign.Cli.Test
             [InlineData("trusted-signing -tse https://trustedsigning.test -tsa")]
             [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a")]
             [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst c")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst c -tsi")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst c -tsi d")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst c -tsi d -tss")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst c -tsi d -tss e")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d -azs")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d -azs e")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -149,8 +101,8 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tsm c")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -tst c -tsi d -tss e f")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azm c")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d -azs e f")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);

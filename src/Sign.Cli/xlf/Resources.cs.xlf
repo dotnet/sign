@@ -17,6 +17,16 @@
         <target state="translated">Použijte úložiště certifikátů systému Windows nebo místní soubor certifikátu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClientIdOptionDescription">
+        <source>Client ID to authenticate to Azure Key Vault.</source>
+        <target state="new">Client ID to authenticate to Azure Key Vault.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ClientSecretOptionDescription">
+        <source>Client secret to authenticate to Azure Key Vault.</source>
+        <target state="new">Client secret to authenticate to Azure Key Vault.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
         <target state="translated">Podepisovat binární soubory a kontejnery.</target>
@@ -57,6 +67,11 @@
         <target state="new">Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint).  {Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic hash algorithms.</note>
       </trans-unit>
+      <trans-unit id="InvalidClientSecretCredential">
+        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
+        <target state="new">If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</target>
+        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="InvalidDigestValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
         <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být sha256, sha384 nebo sha512.</target>
@@ -76,6 +91,11 @@
         <source>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</source>
         <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být absolutní adresa URL protokolu HTTP nebo HTTPS.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="ManagedIdentityOptionDescription">
+        <source>Managed identity to authenticate to Azure Key Vault.</source>
+        <target state="new">Managed identity to authenticate to Azure Key Vault.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
@@ -111,6 +131,11 @@
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
         <target state="translated">Některé soubory neexistují.  Zkuste použít jinou hodnotu {0} nebo plně kvalifikovanou cestu k souboru.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="TenantIdOptionDescription">
+        <source>Tenant ID to authenticate to Azure Key Vault.</source>
+        <target state="new">Tenant ID to authenticate to Azure Key Vault.</target>
+        <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>

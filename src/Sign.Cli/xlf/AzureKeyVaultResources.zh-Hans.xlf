@@ -12,34 +12,9 @@
         <target state="translated">不再支持通过旧版 .clickonce ZIP 解决方法进行 ClickOnce 签名。参阅文档。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ClientIdOptionDescription">
-        <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">要向 Azure Key Vault 进行身份验证的客户端 ID。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ClientSecretOptionDescription">
-        <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="translated">要向 Azure Key Vault 进行身份验证的客户端密码。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
         <target state="translated">使用 Azure Key Vault。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidClientSecretCredential">
-        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="translated">如果不使用托管标识，则需要以下所有选项: {0}、{1} 和 {2}。</target>
-        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
-      </trans-unit>
-      <trans-unit id="ManagedIdentityOptionDescription">
-        <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="translated">要向 Azure Key Vault 进行身份验证的托管标识。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TenantIdOptionDescription">
-        <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">要向 Azure Key Vault 进行身份验证的租户 ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">

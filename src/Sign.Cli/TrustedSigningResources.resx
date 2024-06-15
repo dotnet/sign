@@ -123,26 +123,10 @@
   <data name="CertificateProfileOptionDescription" xml:space="preserve">
     <value>The Certificate Profile name.</value>
   </data>
-  <data name="ClientIdOptionDescription" xml:space="preserve">
-    <value>Client ID to authenticate to Trusted Signing.</value>
-  </data>
-  <data name="ClientSecretOptionDescription" xml:space="preserve">
-    <value>Client secret to authenticate to Trusted Signing.</value>
-  </data>
   <data name="CommandDescription" xml:space="preserve">
     <value>Use Trusted Signing</value>
   </data>
   <data name="EndpointOptionDescription" xml:space="preserve">
     <value>The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.</value>
-  </data>
-  <data name="InvalidClientSecretCredential" xml:space="preserve">
-    <value>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</value>
-    <comment>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</comment>
-  </data>
-  <data name="ManagedIdentityOptionDescription" xml:space="preserve">
-    <value>Managed identity to authenticate to Trusted Signing.</value>
-  </data>
-  <data name="TenantIdOptionDescription" xml:space="preserve">
-    <value>Tenant ID to authenticate to Trusted Signing.</value>
   </data>
 </root>

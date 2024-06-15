@@ -79,56 +79,11 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client ID to authenticate to Azure Key Vault..
-        /// </summary>
-        internal static string ClientIdOptionDescription {
-            get {
-                return ResourceManager.GetString("ClientIdOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Client secret to authenticate to Azure Key Vault..
-        /// </summary>
-        internal static string ClientSecretOptionDescription {
-            get {
-                return ResourceManager.GetString("ClientSecretOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Use Azure Key Vault..
         /// </summary>
         internal static string CommandDescription {
             get {
                 return ResourceManager.GetString("CommandDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to If not using a managed identity, all of these options are required: {0}, {1}, and {2}..
-        /// </summary>
-        internal static string InvalidClientSecretCredential {
-            get {
-                return ResourceManager.GetString("InvalidClientSecretCredential", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Managed identity to authenticate to Azure Key Vault..
-        /// </summary>
-        internal static string ManagedIdentityOptionDescription {
-            get {
-                return ResourceManager.GetString("ManagedIdentityOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Tenant ID to authenticate to Azure Key Vault..
-        /// </summary>
-        internal static string TenantIdOptionDescription {
-            get {
-                return ResourceManager.GetString("TenantIdOptionDescription", resourceCulture);
             }
         }
         

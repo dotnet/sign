@@ -12,34 +12,9 @@
         <target state="translated">Подписание ClickOnce с помощью устаревшего обходного пути .clickonce ZIP больше не поддерживается. См. документацию.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ClientIdOptionDescription">
-        <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">ИД клиента для проверки подлинности в Azure Key Vault.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ClientSecretOptionDescription">
-        <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="translated">Секрет клиента для проверки подлинности в Azure Key Vault.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
         <target state="translated">Использование Azure Key Vault.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidClientSecretCredential">
-        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="translated">Если управляемое удостоверение не используется, требуются все следующие параметры: {0}, {1} и {2}.</target>
-        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
-      </trans-unit>
-      <trans-unit id="ManagedIdentityOptionDescription">
-        <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="translated">Управляемое удостоверение для проверки подлинности в Azure Key Vault.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TenantIdOptionDescription">
-        <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">ИД клиента для проверки подлинности в Azure Key Vault.</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">

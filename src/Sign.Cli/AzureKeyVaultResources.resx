@@ -123,24 +123,8 @@
   <data name="ClickOnceExtensionNotSupported" xml:space="preserve">
     <value>ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</value>
   </data>
-  <data name="ClientIdOptionDescription" xml:space="preserve">
-    <value>Client ID to authenticate to Azure Key Vault.</value>
-  </data>
-  <data name="ClientSecretOptionDescription" xml:space="preserve">
-    <value>Client secret to authenticate to Azure Key Vault.</value>
-  </data>
   <data name="CommandDescription" xml:space="preserve">
     <value>Use Azure Key Vault.</value>
-  </data>
-  <data name="InvalidClientSecretCredential" xml:space="preserve">
-    <value>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</value>
-    <comment>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</comment>
-  </data>
-  <data name="ManagedIdentityOptionDescription" xml:space="preserve">
-    <value>Managed identity to authenticate to Azure Key Vault.</value>
-  </data>
-  <data name="TenantIdOptionDescription" xml:space="preserve">
-    <value>Tenant ID to authenticate to Azure Key Vault.</value>
   </data>
   <data name="UrlOptionDescription" xml:space="preserve">
     <value>URL to an Azure Key Vault.</value>

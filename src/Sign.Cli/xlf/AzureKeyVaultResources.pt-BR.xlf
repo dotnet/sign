@@ -12,34 +12,9 @@
         <target state="translated">Não há mais suporte para a assinatura do ClickOnce por meio da solução alternativa .clickonce ZIP herdada. Consulte a documentação.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ClientIdOptionDescription">
-        <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">ID do cliente a ser autenticada no Azure Key Vault.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ClientSecretOptionDescription">
-        <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="translated">Segredo do cliente a ser autenticado no Azure Key Vault.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
         <target state="translated">Use o Azure Key Vault.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidClientSecretCredential">
-        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="translated">Se não estiver usando uma identidade gerenciada, todas essas opções serão necessárias: {0}, {1} e {2}.</target>
-        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
-      </trans-unit>
-      <trans-unit id="ManagedIdentityOptionDescription">
-        <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="translated">Identidade gerenciada a ser autenticada no Azure Key Vault.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TenantIdOptionDescription">
-        <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">ID do locatário a ser autenticada no Azure Key Vault.</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">
