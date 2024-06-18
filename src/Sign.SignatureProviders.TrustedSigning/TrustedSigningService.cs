@@ -24,7 +24,7 @@ namespace Sign.SignatureProviders.TrustedSigning
         private readonly string _certificateProfileName;
         private readonly ILogger<TrustedSigningService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
-        private X509Certificate2? _publicKey;
+        private X509Certificate2? _certificate;
 
         public TrustedSigningService(
             TokenCredential tokenCredential,
@@ -49,21 +49,21 @@ namespace Sign.SignatureProviders.TrustedSigning
         public void Dispose()
         {
             _mutex.Dispose();
-            _publicKey?.Dispose();
+            _certificate?.Dispose();
             GC.SuppressFinalize(this);
         }
 
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
         {
-            if (_publicKey is not null)
+            if (_certificate is not null)
             {
-                return new X509Certificate2(_publicKey);
+                return new X509Certificate2(_certificate);
             }
 
             await _mutex.WaitAsync(cancellationToken);
             try
             {
-                if (_publicKey is null)
+                if (_certificate is null)
                 {
                     Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -76,7 +76,8 @@ namespace Sign.SignatureProviders.TrustedSigning
                     X509Certificate2Collection collection = [];
                     collection.Import(rawData);
 
-                    _publicKey = collection[collection.Count - 1];
+                    // This should contain the certificate chain in root->leaf order.
+                    _certificate = collection[collection.Count - 1];
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                 }
@@ -86,13 +87,13 @@ namespace Sign.SignatureProviders.TrustedSigning
                 _mutex.Release();
             }
 
-            return new X509Certificate2(_publicKey);
+            return new X509Certificate2(_certificate);
         }
 
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            X509Certificate2 publicKey = await GetCertificateAsync(cancellationToken);
-            return new RSATrustedSigning(_client, _accountName, _certificateProfileName, publicKey);
+            X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
+            return new RSATrustedSigning(_client, _accountName, _certificateProfileName, certificate);
         }
     }
 }

@@ -15,22 +15,22 @@ namespace Sign.SignatureProviders.TrustedSigning
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
-        private readonly X509Certificate2 _publicKey;
+        private readonly X509Certificate2 _certificate;
 
         public RSATrustedSigning(
             CertificateProfileClient client,
             string accountName,
             string certificateProfileName,
-            X509Certificate2 publicKey)
+            X509Certificate2 certificate)
         {
             _client = client;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
-            _publicKey = publicKey;
+            _certificate = certificate;
         }
 
         private RSA PublicKey
-            => _publicKey.GetRSAPublicKey()!;
+            => _certificate.GetRSAPublicKey()!;
 
         public override RSAParameters ExportParameters(bool includePrivateParameters)
         {
