@@ -86,13 +86,13 @@ namespace Sign.Cli.Test
             [InlineData("trusted-signing -tse https://trustedsigning.test")]
             [InlineData("trusted-signing -tse https://trustedsigning.test -tsa")]
             [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d -azs")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d -azs e")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt c")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt c -azi")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt c -azi d")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt c -azi d -azs")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt c -azi d -azs e")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -101,8 +101,8 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azm c")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tsc b -azt c -azi d -azs e f")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azm c")]
+            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -azt c -azi d -azs e f")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);
