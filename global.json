@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "8.0.301",
+    "dotnet": "8.0.302",
     "runtimes": {
       "dotnet/x64": [
         "8.0.6"
