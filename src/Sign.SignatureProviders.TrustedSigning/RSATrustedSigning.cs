@@ -47,7 +47,7 @@ namespace Sign.SignatureProviders.TrustedSigning
 
         public override byte[] SignHash(byte[] hash, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)
         {
-            var signatureAlgorithm = GetSignatureAlgorithm(hash, padding);
+            SignatureAlgorithm signatureAlgorithm = GetSignatureAlgorithm(hash, padding);
             SignRequest request = new(signatureAlgorithm, hash);
             CertificateProfileSignOperation operation = _client.StartSign(_accountName, _certificateProfileName, request);
             Response<SignStatus> response = operation.WaitForCompletion();

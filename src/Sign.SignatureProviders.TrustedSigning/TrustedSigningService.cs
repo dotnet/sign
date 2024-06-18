@@ -61,7 +61,7 @@ namespace Sign.SignatureProviders.TrustedSigning
                 return new X509Certificate2(_publicKey);
             }
 
-            await _mutex.WaitAsync();
+            await _mutex.WaitAsync(cancellationToken);
             try
             {
                 if (_publicKey is null)
