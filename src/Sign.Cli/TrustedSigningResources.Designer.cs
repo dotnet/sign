@@ -79,7 +79,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use Trusted Signing.
+        ///   Looks up a localized string similar to Use Trusted Signing..
         /// </summary>
         internal static string CommandDescription {
             get {
@@ -88,7 +88,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources..
+        ///   Looks up a localized string similar to The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in..
         /// </summary>
         internal static string EndpointOptionDescription {
             get {

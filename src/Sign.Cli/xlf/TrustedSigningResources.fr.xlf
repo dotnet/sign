@@ -13,13 +13,13 @@
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
-        <source>Use Trusted Signing</source>
-        <target state="new">Use Trusted Signing</target>
+        <source>Use Trusted Signing.</source>
+        <target state="new">Use Trusted Signing.</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">
-        <source>The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.</source>
-        <target state="new">The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.</target>
+        <source>The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</source>
+        <target state="new">The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</target>
         <note />
       </trans-unit>
     </body>

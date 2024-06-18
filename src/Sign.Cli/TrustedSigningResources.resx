@@ -124,9 +124,9 @@
     <value>The Certificate Profile name.</value>
   </data>
   <data name="CommandDescription" xml:space="preserve">
-    <value>Use Trusted Signing</value>
+    <value>Use Trusted Signing.</value>
   </data>
   <data name="EndpointOptionDescription" xml:space="preserve">
-    <value>The Trusted Signing Account endpoint. The URI value must have a URI that aligns to the region your Trusted Signing Account and Certificate Profile you are specifying were created in during the setup of these resources.</value>
+    <value>The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</value>
   </data>
 </root>
