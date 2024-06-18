@@ -3,6 +3,8 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Azure.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sign.Core;
 
 namespace Sign.SignatureProviders.TrustedSigning
@@ -61,7 +63,8 @@ namespace Sign.SignatureProviders.TrustedSigning
                     return _trustedSigningService;
                 }
 
-                _trustedSigningService = new TrustedSigningService(serviceProvider, _tokenCredential, _endpointUrl, _accountName, _certificateProfileName);
+                ILogger<TrustedSigningService> logger = serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>();
+                _trustedSigningService = new TrustedSigningService(_tokenCredential, _endpointUrl, _accountName, _certificateProfileName, logger);
             }
 
             return _trustedSigningService;

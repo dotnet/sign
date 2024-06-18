@@ -10,7 +10,6 @@ using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
 using Azure.Core;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
 
@@ -28,23 +27,23 @@ namespace Sign.SignatureProviders.TrustedSigning
         private X509Certificate2? _publicKey;
 
         public TrustedSigningService(
-            IServiceProvider serviceProvider,
             TokenCredential tokenCredential,
             Uri endpointUrl,
             string accountName,
-            string certificateProfileName)
+            string certificateProfileName,
+            ILogger<TrustedSigningService> logger)
         {
-            ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
             ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
             ArgumentNullException.ThrowIfNull(endpointUrl, nameof(endpointUrl));
             ArgumentException.ThrowIfNullOrEmpty(accountName, nameof(accountName));
             ArgumentException.ThrowIfNullOrEmpty(certificateProfileName, nameof(certificateProfileName));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-            _client = new CertificateProfileClient(tokenCredential, endpointUrl);
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
+            _logger = logger;
 
-            _logger = serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>();
+            _client = new CertificateProfileClient(tokenCredential, endpointUrl);
         }
 
         public void Dispose()
