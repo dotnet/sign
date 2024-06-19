@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
         <source>Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="needs-review-translation">{0} の値が無効です。値は証明書のフィンガープリント (16 進数) である必要があります。</target>
+        <target state="new">Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint).  {Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
