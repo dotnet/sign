@@ -11,7 +11,7 @@ namespace Sign.Core.Test
         [InlineData(new byte[] { 0 }, "00")]
         [InlineData(new byte[] { 0, 0, 0, 1 }, "00000001")]
         [InlineData(new byte[] { 0, 255, 1, 254 }, "00FF01FE")]
-        public void ShouldEncodeToHex(byte[] input, string expected)
+        public void TryHexEncode_WhenInputsAreValid_ReturnsTrue(byte[] input, string expected)
         {
             Span<char> buffer = stackalloc char[expected.Length];
             Assert.True(HexHelpers.TryHexEncode(input, buffer));
@@ -19,14 +19,14 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ShouldReturnFalseIfBufferIsTooSmall()
+        public void TryHexEncode_WhenBufferIsTooSmall_ReturnsFalse()
         {
             Span<char> buffer = stackalloc char[1];
             Assert.False(HexHelpers.TryHexEncode(new byte[2], buffer));
         }
 
         [Fact]
-        public void ShouldNotClobberSurroundingData()
+        public void TryHexEncode_Never_ClobbersSurroundingData()
         {
             Span<char> buffer = stackalloc char[] { 'Q', 'Q', 'Q', 'Q' };
             Assert.True(HexHelpers.TryHexEncode(new byte[] { 0x66 }, buffer.Slice(1, 2)));
@@ -34,7 +34,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ShouldTranslateAllValues()
+        public void TryHexEncode_WithAnyByteValue_ReturnsTrue()
         {
             Span<char> buffer = stackalloc char[2];
             Span<byte> value = stackalloc byte[1];
@@ -44,6 +44,22 @@ namespace Sign.Core.Test
                 Assert.True(HexHelpers.TryHexEncode(value, buffer));
                 Assert.Equal(i.ToString("X2"), buffer.ToString());
             }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData("g")]
+        public void IsHex_WhenTextIsNotHex_ReturnsFalse(string? text)
+        {
+            Assert.False(HexHelpers.IsHex(text));
+        }
+
+        [Fact]
+        public void IsHex_WhenTextIsHex_ReturnsTrue()
+        {
+            Assert.True(HexHelpers.IsHex("0123456789abcdefABCDEF"));
         }
     }
 }

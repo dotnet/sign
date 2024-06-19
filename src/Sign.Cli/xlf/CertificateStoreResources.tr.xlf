@@ -7,11 +7,6 @@
         <target state="translated">Bir sertifika ve potansiyel olarak özel anahtar içeren PFX, P7B veya CER dosyası.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
-      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
-        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="translated">Sertifika parmak izi algoritması. İzin verilen değerler: 'sha256', 'sha384' ve 'sha512'.</target>
-        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
-      </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
         <target state="translated">Sertifikayı tanımlamak için kullanılan SHA parmak izi.</target>
