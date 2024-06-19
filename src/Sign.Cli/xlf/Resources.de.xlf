@@ -52,15 +52,10 @@
         <target state="translated">Ungültiger Wert für {0}. Der Wert muss ein vollständiger Stammverzeichnispfad sein.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
       </trans-unit>
-      <trans-unit id="InvalidCertificateFingerprintAlgorithmValue">
-        <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
-        <target state="translated">Ungültiger Wert für {0}. Der Wert muss "sha256", "sha384" oder "sha512" sein.</target>
-        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint-algorithm).  {Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
-      </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
-        <source>Invalid value for {0}. The value must be the certificate's fingerprint (in hexadecimal).</source>
-        <target state="translated">Ungültiger Wert für {0}. Der Wert muss der Fingerabdruck des Zertifikats sein (hexadezimal).</target>
-        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint) and should not be localized.</note>
+        <source>Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
+        <target state="needs-review-translation">Ungültiger Wert für {0}. Der Wert muss der Fingerabdruck des Zertifikats sein (hexadezimal).</target>
+        <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint).  {Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>

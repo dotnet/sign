@@ -7,11 +7,6 @@
         <target state="translated">包含憑證和潛在的私用金鑰的 PFX、P7B 或 CER 檔案。</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
-      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
-        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="translated">憑證指紋演算法。允許的值為 'sha256'、'sha384' 和 'sha512'。</target>
-        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
-      </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
         <target state="translated">用以識別憑證的 SHA 指紋。</target>

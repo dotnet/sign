@@ -7,11 +7,6 @@
         <target state="translated">Plik PFX, P7B lub CER zawierający certyfikat i potencjalnie klucz prywatny.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
-      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
-        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="translated">Algorytm odcisku palca certyfikatu. Dozwolone wartości to „sha256”, „sha384” i „sha512”.</target>
-        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
-      </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
         <target state="translated">Odcisk palca SHA używany do identyfikowania certyfikatu.</target>

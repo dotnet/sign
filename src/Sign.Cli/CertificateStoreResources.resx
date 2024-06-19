@@ -121,10 +121,6 @@
     <value>PFX, P7B, or CER file containing a certificate and potentially a private key.</value>
     <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
   </data>
-  <data name="CertificateFingerprintAlgorithmOptionDescription" xml:space="preserve">
-    <value>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</value>
-    <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</comment>
-  </data>
   <data name="CertificateFingerprintOptionDescription" xml:space="preserve">
     <value>SHA fingerprint used to identify a certificate.</value>
     <comment>{Locked="SHA"} is a cryptographic algorithm.</comment>

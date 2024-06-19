@@ -7,11 +7,6 @@
         <target state="translated">証明書と潜在的に秘密キーを含む PFX、P7B、または CER ファイル。</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
-      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
-        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="translated">証明書のフィンガープリント アルゴリズム。使用できる値は、'sha256'、'sha384'、および 'sha512' です。</target>
-        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
-      </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
         <target state="translated">証明書の識別に使用される SHA フィンガープリント。</target>

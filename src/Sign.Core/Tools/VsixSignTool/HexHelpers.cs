@@ -14,6 +14,26 @@ namespace Sign.Core
             (byte)'F',
         };
 
+        internal static bool IsHex(ReadOnlySpan<char> text)
+        {
+            if (text.IsEmpty)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < text.Length; ++i)
+            {
+                char c = text[i];
+
+                if (!char.IsDigit(c) && !(c >= 'a' && c <= 'f') && !(c >= 'A' && c <= 'F'))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public static bool TryHexEncode(ReadOnlySpan<byte> data, Span<char> buffer)
         {
             var charsRequired = data.Length * 2;

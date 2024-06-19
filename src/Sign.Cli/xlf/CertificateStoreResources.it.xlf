@@ -7,11 +7,6 @@
         <target state="translated">PFX, P7B o CER file contenente un certificato e potenzialmente una chiave privata.</target>
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
-      <trans-unit id="CertificateFingerprintAlgorithmOptionDescription">
-        <source>Certificate fingerprint algorithm. Allowed values are 'sha256', 'sha384', and 'sha512'.</source>
-        <target state="translated">Algoritmo di impronta digitale del certificato. I valori consentiti sono 'sha256', 'sha384'e ' sha512'.</target>
-        <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithms.</note>
-      </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate.</source>
         <target state="translated">Impronta digitale SHA usata per identificare un certificato.</target>
