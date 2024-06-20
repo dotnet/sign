@@ -88,7 +88,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client ID to authenticate to Azure Key Vault..
+        ///   Looks up a localized string similar to Client ID to authenticate to Azure..
         /// </summary>
         internal static string ClientIdOptionDescription {
             get {
@@ -97,7 +97,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client secret to authenticate to Azure Key Vault..
+        ///   Looks up a localized string similar to Client secret to authenticate to Azure..
         /// </summary>
         internal static string ClientSecretOptionDescription {
             get {
@@ -178,15 +178,6 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If not using a managed identity, all of these options are required: {0}, {1}, and {2}..
-        /// </summary>
-        internal static string InvalidClientSecretCredential {
-            get {
-                return ResourceManager.GetString("InvalidClientSecretCredential", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be &apos;sha256&apos;, &apos;sha384&apos;, or &apos;sha512&apos;..
         /// </summary>
         internal static string InvalidDigestValue {
@@ -223,11 +214,20 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Managed identity to authenticate to Azure Key Vault..
+        ///   Looks up a localized string similar to Managed identity to authenticate to Azure Key. (obsolete).
         /// </summary>
         internal static string ManagedIdentityOptionDescription {
             get {
                 return ResourceManager.GetString("ManagedIdentityOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified..
+        /// </summary>
+        internal static string ManagedIdentityOptionObsolete {
+            get {
+                return ResourceManager.GetString("ManagedIdentityOptionObsolete", resourceCulture);
             }
         }
         
@@ -295,7 +295,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tenant ID to authenticate to Azure Key Vault..
+        ///   Looks up a localized string similar to Tenant ID to authenticate to Azure..
         /// </summary>
         internal static string TenantIdOptionDescription {
             get {

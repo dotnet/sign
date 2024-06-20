@@ -15,7 +15,7 @@ namespace Sign.Cli
     {
         internal Option<Uri> UrlOption { get; } = new(["-kvu", "--azure-key-vault-url"], AzureKeyVaultResources.UrlOptionDescription);
         internal Option<string> CertificateOption { get; } = new(["-kvc", "--azure-key-vault-certificate"], AzureKeyVaultResources.CertificateOptionDescription);
-        internal AzureAuthOptions AzureAuthOptions { get; } = new();
+        internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
 
@@ -30,7 +30,7 @@ namespace Sign.Cli
 
             AddOption(UrlOption);
             AddOption(CertificateOption);
-            AzureAuthOptions.AddOptionsToCommand(this);
+            AzureCredentialOptions.AddOptionsToCommand(this);
 
             AddArgument(FileArgument);
 
@@ -54,7 +54,7 @@ namespace Sign.Cli
                     return;
                 }
 
-                TokenCredential? credential = AzureAuthOptions.CreateTokenCredential(context);
+                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
                 if (credential is null)
                 {
                     return;

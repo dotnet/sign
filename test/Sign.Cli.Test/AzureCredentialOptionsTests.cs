@@ -6,9 +6,9 @@ using System.CommandLine;
 
 namespace Sign.Cli.Test
 {
-    public class AzureAuthOptionsTests
+    public class AzureCredentialOptionsTests
     {
-        private readonly AzureAuthOptions _options = new();
+        private readonly AzureCredentialOptions _options = new();
 
         [Fact]
         public void ManagedIdentityOption_Always_HasArityOfZeroOrOne()

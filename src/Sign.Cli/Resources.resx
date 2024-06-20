@@ -127,10 +127,10 @@
     <value>Use Windows Certificate Store or a local certificate file.</value>
   </data>
   <data name="ClientIdOptionDescription" xml:space="preserve">
-    <value>Client ID to authenticate to Azure Key Vault.</value>
+    <value>Client ID to authenticate to Azure.</value>
   </data>
   <data name="ClientSecretOptionDescription" xml:space="preserve">
-    <value>Client secret to authenticate to Azure Key Vault.</value>
+    <value>Client secret to authenticate to Azure.</value>
   </data>
   <data name="CodeCommandDescription" xml:space="preserve">
     <value>Sign binaries and containers.</value>
@@ -159,10 +159,6 @@
     <value>Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</value>
     <comment>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint).  {Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic hash algorithms.</comment>
   </data>
-  <data name="InvalidClientSecretCredential" xml:space="preserve">
-    <value>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</value>
-    <comment>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</comment>
-  </data>
   <data name="InvalidDigestValue" xml:space="preserve">
     <value>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</value>
     <comment>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.  {NumberedPlaceholder="{0}"} is an option name (e.g.:  --file-digest) and should not be localized.</comment>
@@ -179,7 +175,10 @@
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</comment>
   </data>
   <data name="ManagedIdentityOptionDescription" xml:space="preserve">
-    <value>Managed identity to authenticate to Azure Key Vault.</value>
+    <value>Managed identity to authenticate to Azure Key. (obsolete)</value>
+  </data>
+  <data name="ManagedIdentityOptionObsolete" xml:space="preserve">
+    <value>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</value>
   </data>
   <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
     <value>Maximum concurrency.</value>
@@ -205,7 +204,7 @@
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</comment>
   </data>
   <data name="TenantIdOptionDescription" xml:space="preserve">
-    <value>Tenant ID to authenticate to Azure Key Vault.</value>
+    <value>Tenant ID to authenticate to Azure.</value>
   </data>
   <data name="TimestampDigestOptionDescription" xml:space="preserve">
     <value>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</value>

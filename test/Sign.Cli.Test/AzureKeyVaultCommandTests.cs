@@ -75,12 +75,12 @@ namespace Sign.Cli.Test
             [InlineData("azure-key-vault -kvu https://keyvault.test a")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c -azs")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c -azs d")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -89,8 +89,8 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azm b")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -azt b -azi c -azs d e")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a b")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);

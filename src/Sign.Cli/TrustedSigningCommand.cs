@@ -16,7 +16,7 @@ namespace Sign.Cli
         internal Option<Uri> EndpointOption { get; } = new(["-tse", "--trusted-signing-endpoint"], TrustedSigningResources.EndpointOptionDescription);
         internal Option<string> AccountOption { get; } = new(["-tsa", "--trusted-signing-account"], TrustedSigningResources.AccountOptionDescription);
         internal Option<string> CertificateProfileOption { get; } = new(["-tscp", "--trusted-signing-certificate-profile"], TrustedSigningResources.CertificateProfileOptionDescription);
-        internal AzureAuthOptions AzureAuthOptions { get; } = new();
+        internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
 
@@ -33,7 +33,7 @@ namespace Sign.Cli
             AddOption(EndpointOption);
             AddOption(AccountOption);
             AddOption(CertificateProfileOption);
-            AzureAuthOptions.AddOptionsToCommand(this);
+            AzureCredentialOptions.AddOptionsToCommand(this);
 
             AddArgument(FileArgument);
 
@@ -48,7 +48,7 @@ namespace Sign.Cli
                     return;
                 }
 
-                TokenCredential? credential = AzureAuthOptions.CreateTokenCredential(context);
+                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
                 if (credential is null)
                 {
                     return;
