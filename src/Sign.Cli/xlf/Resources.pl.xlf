@@ -17,6 +17,16 @@
         <target state="translated">Użyj magazynu certyfikatów systemu Windows lub lokalnego pliku certyfikatów.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClientIdOptionDescription">
+        <source>Client ID to authenticate to Azure.</source>
+        <target state="new">Client ID to authenticate to Azure.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ClientSecretOptionDescription">
+        <source>Client secret to authenticate to Azure.</source>
+        <target state="new">Client secret to authenticate to Azure.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
         <target state="translated">Podpisz pliki binarne i kontenery.</target>
@@ -77,6 +87,16 @@
         <target state="translated">Nieprawidłowa wartość dla {0}. Wartość musi być bezwzględnym adresem URL protokołu HTTP lub HTTPS.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
+      <trans-unit id="ManagedIdentityOptionDescription">
+        <source>Managed identity to authenticate to Azure Key. (obsolete)</source>
+        <target state="new">Managed identity to authenticate to Azure Key. (obsolete)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManagedIdentityOptionObsolete">
+        <source>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</source>
+        <target state="new">The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
         <source>Maximum concurrency.</source>
         <target state="translated">Maksymalna współbieżność.</target>
@@ -111,6 +131,11 @@
         <source>Some files do not exist.  Try using a different {0} value or a fully qualified file path.</source>
         <target state="translated">Niektóre pliki nie istnieją.  Spróbuj użyć innej wartości {0} lub w pełni kwalifikowanej ścieżki pliku.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --base-directory) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="TenantIdOptionDescription">
+        <source>Tenant ID to authenticate to Azure.</source>
+        <target state="new">Tenant ID to authenticate to Azure.</target>
+        <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
         <source>Digest algorithm for the RFC 3161 timestamp server. Allowed values are sha256, sha384, and sha512.</source>

@@ -15,8 +15,6 @@ namespace Sign.Cli
 {
     internal sealed class CertificateStoreCommand : Command
     {
-        private readonly CodeCommand _codeCommand;
-
         internal Option<string?> CertificateFingerprintOption { get; } = new(["-cfp", "--certificate-fingerprint"], ParseCertificateFingerprint, description: CertificateStoreResources.CertificateFingerprintOptionDescription);
         internal Option<string?> CertificateFileOption { get; } = new(["-cf", "--certificate-file"], CertificateStoreResources.CertificateFileOptionDescription);
         internal Option<string?> CertificatePasswordOption { get; } = new(["-p", "--password"], CertificateStoreResources.CertificatePasswordOptionDescription);
@@ -31,8 +29,6 @@ namespace Sign.Cli
         {
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
-
-            _codeCommand = codeCommand;
 
             CertificateFingerprintOption.IsRequired = true;
 
@@ -111,7 +107,7 @@ namespace Sign.Cli
                     certificatePassword,
                     useMachineKeyContainer);
 
-                await _codeCommand.HandleAsync(context, serviceProviderFactory, certificateStoreServiceProvider, fileArgument);
+                await codeCommand.HandleAsync(context, serviceProviderFactory, certificateStoreServiceProvider, fileArgument);
             });
         }
 

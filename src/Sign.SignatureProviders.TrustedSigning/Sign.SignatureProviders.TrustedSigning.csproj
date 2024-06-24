@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+    NuGet package Azure.CodeSigning.Sdk 0.1.96 depends on NuGet package Azure.Core 1.25.0 or later. However, Azure.CodeSigning.dll
+    (in the Azure.CodeSigning.Sdk package) actually references Azure.Core.dll 1.27.0. When this mismatch is resolved, this explicit
+    package reference can be removed here and in the Directory.Packages.props.
+    -->
+    <PackageReference Include="Azure.Core" />
+    <PackageReference Include="Azure.CodeSigning.Sdk" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="sign" />
+    <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

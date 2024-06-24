@@ -45,54 +45,6 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void ClientIdOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.ClientIdOption.Arity);
-        }
-
-        [Fact]
-        public void ClientIdOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ClientIdOption.IsRequired);
-        }
-
-        [Fact]
-        public void ClientSecretOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.ClientSecretOption.Arity);
-        }
-
-        [Fact]
-        public void ClientSecretOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ClientSecretOption.IsRequired);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_HasArityOfZeroOrOne()
-        {
-            Assert.Equal(ArgumentArity.ZeroOrOne, _command.ManagedIdentityOption.Arity);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.ManagedIdentityOption.IsRequired);
-        }
-
-        [Fact]
-        public void TenantIdOption_Always_HasArityOfExactlyOne()
-        {
-            Assert.Equal(ArgumentArity.ExactlyOne, _command.TenantIdOption.Arity);
-        }
-
-        [Fact]
-        public void TenantIdOption_Always_IsNotRequired()
-        {
-            Assert.False(_command.TenantIdOption.IsRequired);
-        }
-
-        [Fact]
         public void UrlOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.UrlOption.Arity);
@@ -137,7 +89,7 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvm b")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a b")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {

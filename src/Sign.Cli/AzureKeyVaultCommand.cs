@@ -6,7 +6,6 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using Azure.Core;
-using Azure.Identity;
 using Sign.Core;
 using Sign.SignatureProviders.KeyVault;
 
@@ -14,14 +13,9 @@ namespace Sign.Cli
 {
     internal sealed class AzureKeyVaultCommand : Command
     {
-        private readonly CodeCommand _codeCommand;
-
-        internal Option<string> CertificateOption { get; } = new(["-kvc", "--azure-key-vault-certificate"], AzureKeyVaultResources.CertificateOptionDescription);
-        internal Option<string?> ClientIdOption { get; } = new(["-kvi", "--azure-key-vault-client-id"], AzureKeyVaultResources.ClientIdOptionDescription);
-        internal Option<string?> ClientSecretOption { get; } = new(["-kvs", "--azure-key-vault-client-secret"], AzureKeyVaultResources.ClientSecretOptionDescription);
-        internal Option<bool> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], getDefaultValue: () => false, AzureKeyVaultResources.ManagedIdentityOptionDescription);
-        internal Option<string?> TenantIdOption { get; } = new(["-kvt", "--azure-key-vault-tenant-id"], AzureKeyVaultResources.TenantIdOptionDescription);
         internal Option<Uri> UrlOption { get; } = new(["-kvu", "--azure-key-vault-url"], AzureKeyVaultResources.UrlOptionDescription);
+        internal Option<string> CertificateOption { get; } = new(["-kvc", "--azure-key-vault-certificate"], AzureKeyVaultResources.CertificateOptionDescription);
+        internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
 
@@ -31,19 +25,12 @@ namespace Sign.Cli
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
-            _codeCommand = codeCommand;
-
             CertificateOption.IsRequired = true;
             UrlOption.IsRequired = true;
 
-            ManagedIdentityOption.SetDefaultValue(false);
-
             AddOption(UrlOption);
-            AddOption(TenantIdOption);
-            AddOption(ClientIdOption);
-            AddOption(ClientSecretOption);
             AddOption(CertificateOption);
-            AddOption(ManagedIdentityOption);
+            AzureCredentialOptions.AddOptionsToCommand(this);
 
             AddArgument(FileArgument);
 
@@ -67,41 +54,19 @@ namespace Sign.Cli
                     return;
                 }
 
+                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
+                if (credential is null)
+                {
+                    return;
+                }
+
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
                 Uri url = context.ParseResult.GetValueForOption(UrlOption)!;
-                string? tenantId = context.ParseResult.GetValueForOption(TenantIdOption);
-                string? clientId = context.ParseResult.GetValueForOption(ClientIdOption);
-                string? secret = context.ParseResult.GetValueForOption(ClientSecretOption);
                 string certificateId = context.ParseResult.GetValueForOption(CertificateOption)!;
-                bool useManagedIdentity = context.ParseResult.GetValueForOption(ManagedIdentityOption);
-
-                TokenCredential? credential = null;
-
-                if (useManagedIdentity)
-                {
-                    credential = new DefaultAzureCredential();
-                }
-                else
-                {
-                    if (string.IsNullOrEmpty(tenantId) ||
-                        string.IsNullOrEmpty(clientId) ||
-                        string.IsNullOrEmpty(secret))
-                    {
-                        context.Console.Error.WriteFormattedLine(
-                            AzureKeyVaultResources.InvalidClientSecretCredential,
-                            TenantIdOption,
-                            ClientIdOption,
-                            ClientSecretOption);
-                        context.ExitCode = ExitCode.NoInputsFound;
-                        return;
-                    }
-
-                    credential = new ClientSecretCredential(tenantId, clientId, secret);
-                }
 
                 KeyVaultServiceProvider keyVaultServiceProvider = new(credential, url, certificateId);
-                await _codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, fileArgument);
+                await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, fileArgument);
             });
         }
     }

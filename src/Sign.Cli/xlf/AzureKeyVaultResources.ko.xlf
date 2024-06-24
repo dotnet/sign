@@ -12,34 +12,9 @@
         <target state="translated">레거시 .clickonce ZIP 해결 방법을 통한 ClickOnce 서명은 더 이상 지원되지 않습니다. 설명서를 참조하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ClientIdOptionDescription">
-        <source>Client ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault에 인증하기 위한 클라이언트 ID입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ClientSecretOptionDescription">
-        <source>Client secret to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault에 인증하기 위한 클라이언트 암호입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Azure Key Vault.</source>
         <target state="translated">Azure Key Vault를 사용합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidClientSecretCredential">
-        <source>If not using a managed identity, all of these options are required: {0}, {1}, and {2}.</source>
-        <target state="translated">관리 ID를 사용하고 있지 않은 경우 {0}, {1} 및 {2} 옵션이 모두 필요합니다.</target>
-        <note>{NumberedPlaceholder="{0}", "{1}", "{2}"} are option names and should not be localized.</note>
-      </trans-unit>
-      <trans-unit id="ManagedIdentityOptionDescription">
-        <source>Managed identity to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault에 인증하기 위한 관리 ID입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TenantIdOptionDescription">
-        <source>Tenant ID to authenticate to Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault에 인증하기 위한 테넌트 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">

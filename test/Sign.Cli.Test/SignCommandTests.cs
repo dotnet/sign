@@ -73,7 +73,7 @@ namespace Sign.Cli.Test
         public void Command_WhenRequiredArgumentIsMissing_HasError()
         {
             string command = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                + $"-kvu {KeyVaultUrl} -kvc {CertificateName} -kvm --timestamp-url {TimestampUrl}";
+                + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl}";
             ParseResult result = _parser.Parse(command);
 
             Assert.NotEmpty(result.Errors);
@@ -83,7 +83,7 @@ namespace Sign.Cli.Test
         public void Command_WhenAllOptionsAndArgumentAreValid_HasNoError()
         {
             string command = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                + $"-kvu {KeyVaultUrl} -kvc {CertificateName} -kvm --timestamp-url {TimestampUrl} {File}";
+                + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} {File}";
             ParseResult result = _parser.Parse(command);
 
             Assert.Empty(result.Errors);

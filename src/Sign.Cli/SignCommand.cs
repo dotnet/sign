@@ -23,11 +23,17 @@ namespace Sign.Cli
 
             codeCommand.AddCommand(azureKeyVaultCommand);
 
-            CertificateStoreCommand certManagerCommand = new(
+            CertificateStoreCommand certificateStoreCommand = new(
                 codeCommand,
                 serviceProviderFactory);
 
-            codeCommand.AddCommand(certManagerCommand);
+            codeCommand.AddCommand(certificateStoreCommand);
+
+            TrustedSigningCommand trustedSigningCommand = new(
+                codeCommand,
+                serviceProviderFactory);
+
+            codeCommand.AddCommand(trustedSigningCommand);
         }
     }
 }

@@ -60,7 +60,7 @@ namespace Sign.Cli.Test
             public async Task Command_WhenFileIsGlobPattern_SignsOnlyMatches()
             {
                 string commandText = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                    + $"-kvu {KeyVaultUrl} -kvc {CertificateName} -kvm --timestamp-url {TimestampUrl} "
+                    + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} "
                     + $"-b \"{_temporaryDirectory.Directory.FullName}\" **/*.dll";
 
                 int exitCode = await _parser.InvokeAsync(commandText);
@@ -78,7 +78,7 @@ namespace Sign.Cli.Test
             public async Task Command_WhenFileIsGlobPatternWithSubdirectory_SignsOnlyMatches()
             {
                 string commandText = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                    + $"-kvu {KeyVaultUrl} -kvc {CertificateName} -kvm --timestamp-url {TimestampUrl} "
+                    + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} "
                     + $"-b \"{_temporaryDirectory.Directory.FullName}\" **/e/*.dll";
 
                 int exitCode = await _parser.InvokeAsync(commandText);
@@ -94,7 +94,7 @@ namespace Sign.Cli.Test
             public async Task Command_WhenFileIsGlobPatternWithBracedExpansion_SignsOnlyMatches()
             {
                 string commandText = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                      + $"-kvu {KeyVaultUrl} -kvc {CertificateName} -kvm --timestamp-url {TimestampUrl} "
+                      + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} "
                       + $"-b \"{_temporaryDirectory.Directory.FullName}\" **/*.{{dll,exe}}";
 
                 int exitCode = await _parser.InvokeAsync(commandText);
