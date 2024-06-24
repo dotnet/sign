@@ -115,7 +115,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Azure credential type that will be used. This defaults to all types except interactive-browser, shared-token and visual-studio-code..
+        ///   Looks up a localized string similar to Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code..
         /// </summary>
         internal static string CredentialTypeOptionDescription {
             get {
