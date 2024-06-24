@@ -15,7 +15,7 @@ namespace Sign.Cli
     {
         internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["-act", "--azure-credential-type"], Resources.CredentialTypeOptionDescription).FromAmong(
             AzureCredentialType.Environment);
-        internal Option<bool?> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], Resources.ManagedIdentityOptionDescription);
+        internal Option<bool?> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
         internal Option<string?> TenantIdOption { get; } = new(["-kvt", "--azure-key-vault-tenant-id"], Resources.TenantIdOptionDescription);
         internal Option<string?> ClientIdOption { get; } = new(["-kvi", "--azure-key-vault-client-id"], Resources.ClientIdOptionDescription);
         internal Option<string?> ClientSecretOption { get; } = new(["-kvs", "--azure-key-vault-client-secret"], Resources.ClientSecretOptionDescription);

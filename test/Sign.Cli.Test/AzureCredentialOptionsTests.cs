@@ -49,6 +49,12 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void ManagedIdentityOption_Always_IsHidden()
+        {
+            Assert.True(_options.ManagedIdentityOption.IsHidden);
+        }
+
+        [Fact]
         public void TenantIdOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _options.TenantIdOption.Arity);
