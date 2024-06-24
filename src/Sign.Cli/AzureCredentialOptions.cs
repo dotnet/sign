@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using Azure.Core;
 using Azure.Identity;
 
@@ -12,17 +13,39 @@ namespace Sign.Cli
 {
     internal sealed class AzureCredentialOptions
     {
-        internal Option<bool?> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], Resources.ManagedIdentityOptionDescription);
+        internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["-act", "--azure-credential-type"], Resources.CredentialTypeOptionDescription).FromAmong(
+            AzureCredentialType.Environment);
+        internal Option<bool?> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
         internal Option<string?> TenantIdOption { get; } = new(["-kvt", "--azure-key-vault-tenant-id"], Resources.TenantIdOptionDescription);
         internal Option<string?> ClientIdOption { get; } = new(["-kvi", "--azure-key-vault-client-id"], Resources.ClientIdOptionDescription);
         internal Option<string?> ClientSecretOption { get; } = new(["-kvs", "--azure-key-vault-client-secret"], Resources.ClientSecretOptionDescription);
 
         internal void AddOptionsToCommand(Command command)
         {
+            command.AddOption(CredentialTypeOption);
             command.AddOption(ManagedIdentityOption);
             command.AddOption(TenantIdOption);
             command.AddOption(ClientIdOption);
             command.AddOption(ClientSecretOption);
+        }
+
+        internal DefaultAzureCredentialOptions CreateDefaultAzureCredentialOptions(ParseResult parseResult)
+        {
+            DefaultAzureCredentialOptions options = new();
+
+            string? credentialType = parseResult.GetValueForOption(CredentialTypeOption);
+            if (credentialType is not null)
+            {
+                options.ExcludeAzureCliCredential = true;
+                options.ExcludeAzureDeveloperCliCredential = true;
+                options.ExcludeAzurePowerShellCredential = true;
+                options.ExcludeEnvironmentCredential = credentialType != AzureCredentialType.Environment;
+                options.ExcludeManagedIdentityCredential = true;
+                options.ExcludeVisualStudioCredential = true;
+                options.ExcludeWorkloadIdentityCredential = true;
+            }
+
+            return options;
         }
 
         internal TokenCredential? CreateTokenCredential(InvocationContext context)
@@ -45,7 +68,8 @@ namespace Sign.Cli
                 return new ClientSecretCredential(tenantId, clientId, secret);
             }
 
-            return new DefaultAzureCredential();
+            DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(context.ParseResult);
+            return new DefaultAzureCredential(options);
         }
     }
 }
