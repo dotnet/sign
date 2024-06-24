@@ -32,6 +32,11 @@
         <target state="translated">バイナリとコンテナーに署名します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CredentialTypeOptionDescription">
+        <source>Azure credential type that will be used. This defaults to all types except interactive-browser, shared-token and visual-studio-code.</source>
+        <target state="new">Azure credential type that will be used. This defaults to all types except interactive-browser, shared-token and visual-studio-code.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">署名証明書の説明。</target>
