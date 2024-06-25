@@ -19,12 +19,12 @@
       </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure.</source>
-        <target state="new">Client ID to authenticate to Azure.</target>
+        <target state="translated">Client-ID für die Authentifizierung bei Azure.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientSecretOptionDescription">
         <source>Client secret to authenticate to Azure.</source>
-        <target state="new">Client secret to authenticate to Azure.</target>
+        <target state="translated">Geheimer Clientschlüssel für die Authentifizierung bei Azure.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
@@ -34,7 +34,7 @@
       </trans-unit>
       <trans-unit id="CredentialTypeOptionDescription">
         <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="new">Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</target>
+        <target state="translated">Azure-Anmeldeinformationstyp, der verwendet wird. Standardmäßig werden alle Typen außer interaktivem Browser, freigegebenem Token und Visual Studio Code verwendet.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateFingerprintValue">
         <source>Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
-        <target state="new">Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</target>
+        <target state="translated">Ungültiger Wert für {0}. Der Wert muss ein SHA-256-, SHA-384- oder SHA-512-Zertifikatfingerabdruck (hexadezimal) sein.</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint).  {Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic hash algorithms.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
@@ -94,12 +94,12 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key. (obsolete)</source>
-        <target state="new">Managed identity to authenticate to Azure Key. (obsolete)</target>
+        <target state="translated">Verwaltete Identität für die Authentifizierung bei Azure Key. (veraltet)</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionObsolete">
         <source>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</source>
-        <target state="new">The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</target>
+        <target state="translated">Die Optionen „-kvm“ und „--azure-key-vault-managed-identity“ sind veraltet und sollten nicht mehr angegeben werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
@@ -139,7 +139,7 @@
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">
         <source>Tenant ID to authenticate to Azure.</source>
-        <target state="new">Tenant ID to authenticate to Azure.</target>
+        <target state="translated">Mandanten-ID für die Authentifizierung bei Azure.</target>
         <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
