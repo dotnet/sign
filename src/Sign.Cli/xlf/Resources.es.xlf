@@ -37,11 +37,6 @@
         <target state="translated">Firmar archivos binarios y contenedores.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CredentialTypeOptionDescription">
-        <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="translated">Tipo de credencial de Azure que se usará. El valor predeterminado es todos los tipos, excepto el explorador interactivo, el token compartido y el Visual Studio Code.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">Descripción del certificado de firma.</target>

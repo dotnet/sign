@@ -13,11 +13,6 @@ namespace Sign.Cli
 {
     internal sealed class AzureCredentialOptions
     {
-        internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["--azure-credential-type", "-act"], Resources.CredentialTypeOptionDescription).FromAmong(
-            AzureCredentialType.AzureCli,
-            AzureCredentialType.Environment,
-            AzureCredentialType.ManagedIdentity);
-        internal Option<string?> TenantIdOption { get; } = new(["--azure-tenant-id", "-ati"], Resources.TenantIdOptionDescription);
         internal Option<string?> ManagedIdentityClientIdOption = new(["--managed-identity-client-id", "-mici"], Resources.ManagedIdentityClientIdOptionDescription);
         internal Option<string?> ManagedIdentityResourceIdOption = new(["--managed-identity-resource-id", "-miri"], Resources.ManagedIdentityResourceIdOptionDescription);
         internal Option<bool?> ObsoleteManagedIdentityOption { get; } = new(["--azure-key-vault-managed-identity", "-kvm"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
@@ -27,8 +22,6 @@ namespace Sign.Cli
 
         internal void AddOptionsToCommand(Command command)
         {
-            command.AddOption(CredentialTypeOption);
-            command.AddOption(TenantIdOption);
             command.AddOption(ManagedIdentityClientIdOption);
             command.AddOption(ManagedIdentityResourceIdOption);
             command.AddOption(ObsoleteManagedIdentityOption);
@@ -41,12 +34,6 @@ namespace Sign.Cli
         {
             DefaultAzureCredentialOptions options = new();
 
-            string? tenantId = parseResult.GetValueForOption(TenantIdOption);
-            if (tenantId is not null)
-            {
-                options.TenantId = tenantId;
-            }
-
             string? managedIdentityClientId = parseResult.GetValueForOption(ManagedIdentityClientIdOption);
             if (managedIdentityClientId is not null)
             {
@@ -57,18 +44,6 @@ namespace Sign.Cli
             if (managedIdentityResourceId is not null)
             {
                 options.ManagedIdentityResourceId = new ResourceIdentifier(managedIdentityResourceId);
-            }
-
-            string? credentialType = parseResult.GetValueForOption(CredentialTypeOption);
-            if (credentialType is not null)
-            {
-                options.ExcludeAzureCliCredential = credentialType != AzureCredentialType.AzureCli;
-                options.ExcludeAzureDeveloperCliCredential = true;
-                options.ExcludeAzurePowerShellCredential = true;
-                options.ExcludeEnvironmentCredential = credentialType != AzureCredentialType.Environment;
-                options.ExcludeManagedIdentityCredential = credentialType != AzureCredentialType.ManagedIdentity;
-                options.ExcludeVisualStudioCredential = true;
-                options.ExcludeWorkloadIdentityCredential = true;
             }
 
             return options;

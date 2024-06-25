@@ -37,11 +37,6 @@
         <target state="translated">Podepisovat binární soubory a kontejnery.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CredentialTypeOptionDescription">
-        <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="new">Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">Popis podpisového certifikátu.</target>
