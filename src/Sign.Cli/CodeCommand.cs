@@ -19,18 +19,18 @@ namespace Sign.Cli
 {
     internal sealed class CodeCommand : Command
     {
-        internal Option<string?> ApplicationNameOption { get; } = new(["-an", "--application-name"], Resources.ApplicationNameOptionDescription);
-        internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(["-b", "--base-directory"], ParseBaseDirectoryOption, description: Resources.BaseDirectoryOptionDescription);
-        internal Option<string> DescriptionOption { get; } = new(["-d", "--description"], Resources.DescriptionOptionDescription);
-        internal Option<Uri?> DescriptionUrlOption { get; } = new(["-u", "--description-url"], ParseUrl, description: Resources.DescriptionUrlOptionDescription);
-        internal Option<HashAlgorithmName> FileDigestOption { get; } = new(["-fd", "--file-digest"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
-        internal Option<string?> FileListOption = new(["-fl", "--file-list"], Resources.FileListOptionDescription);
-        internal Option<int> MaxConcurrencyOption { get; } = new(["-m", "--max-concurrency"], ParseMaxConcurrencyOption, description: Resources.MaxConcurrencyOptionDescription);
-        internal Option<string?> OutputOption { get; } = new(["-o", "--output"], Resources.OutputOptionDescription);
-        internal Option<string?> PublisherNameOption { get; } = new(["-pn", "--publisher-name"], Resources.PublisherNameOptionDescription);
-        internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(["-td", "--timestamp-digest"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.TimestampDigestOptionDescription);
-        internal Option<Uri?> TimestampUrlOption { get; } = new(["-t", "--timestamp-url"], ParseUrl, description: Resources.TimestampUrlOptionDescription);
-        internal Option<LogLevel> VerbosityOption { get; } = new(["-v", "--verbosity"], () => LogLevel.Warning, Resources.VerbosityOptionDescription);
+        internal Option<string?> ApplicationNameOption { get; } = new(["--application-name", "-an"], Resources.ApplicationNameOptionDescription);
+        internal Option<DirectoryInfo> BaseDirectoryOption { get; } = new(["--base-directory", "-b"], ParseBaseDirectoryOption, description: Resources.BaseDirectoryOptionDescription);
+        internal Option<string> DescriptionOption { get; } = new(["--description", "-d"], Resources.DescriptionOptionDescription);
+        internal Option<Uri?> DescriptionUrlOption { get; } = new(["--description-url", "-u"], ParseUrl, description: Resources.DescriptionUrlOptionDescription);
+        internal Option<HashAlgorithmName> FileDigestOption { get; } = new(["--file-digest", "-fd"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
+        internal Option<string?> FileListOption = new(["--file-list", "-fl"], Resources.FileListOptionDescription);
+        internal Option<int> MaxConcurrencyOption { get; } = new(["--max-concurrency", "-m"], ParseMaxConcurrencyOption, description: Resources.MaxConcurrencyOptionDescription);
+        internal Option<string?> OutputOption { get; } = new(["--output", "-o"], Resources.OutputOptionDescription);
+        internal Option<string?> PublisherNameOption { get; } = new(["--publisher-name", "-pn"], Resources.PublisherNameOptionDescription);
+        internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(["--timestamp-digest", "-td"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.TimestampDigestOptionDescription);
+        internal Option<Uri?> TimestampUrlOption { get; } = new(["--timestamp-url", "-t"], ParseUrl, description: Resources.TimestampUrlOptionDescription);
+        internal Option<LogLevel> VerbosityOption { get; } = new(["--verbosity", "-v"], () => LogLevel.Warning, Resources.VerbosityOptionDescription);
 
         internal CodeCommand()
             : base("code", Resources.CodeCommandDescription)

@@ -13,12 +13,12 @@ namespace Sign.Cli
 {
     internal sealed class AzureCredentialOptions
     {
-        internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["-act", "--azure-credential-type"], Resources.CredentialTypeOptionDescription).FromAmong(
+        internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["--azure-credential-type", "-act"], Resources.CredentialTypeOptionDescription).FromAmong(
             AzureCredentialType.Environment);
-        internal Option<bool?> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
-        internal Option<string?> TenantIdOption { get; } = new(["-kvt", "--azure-key-vault-tenant-id"], Resources.TenantIdOptionDescription);
-        internal Option<string?> ClientIdOption { get; } = new(["-kvi", "--azure-key-vault-client-id"], Resources.ClientIdOptionDescription);
-        internal Option<string?> ClientSecretOption { get; } = new(["-kvs", "--azure-key-vault-client-secret"], Resources.ClientSecretOptionDescription);
+        internal Option<bool?> ManagedIdentityOption { get; } = new(["--azure-key-vault-managed-identity", "-kvm"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
+        internal Option<string?> TenantIdOption { get; } = new(["--azure-key-vault-tenant-id", "-kvt"], Resources.TenantIdOptionDescription);
+        internal Option<string?> ClientIdOption { get; } = new(["--azure-key-vault-client-id", "-kvi"], Resources.ClientIdOptionDescription);
+        internal Option<string?> ClientSecretOption { get; } = new(["--azure-key-vault-client-secret", "-kvs"], Resources.ClientSecretOptionDescription);
 
         internal void AddOptionsToCommand(Command command)
         {

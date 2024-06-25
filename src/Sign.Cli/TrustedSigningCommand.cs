@@ -13,9 +13,9 @@ namespace Sign.Cli
 {
     internal sealed class TrustedSigningCommand : Command
     {
-        internal Option<Uri> EndpointOption { get; } = new(["-tse", "--trusted-signing-endpoint"], TrustedSigningResources.EndpointOptionDescription);
-        internal Option<string> AccountOption { get; } = new(["-tsa", "--trusted-signing-account"], TrustedSigningResources.AccountOptionDescription);
-        internal Option<string> CertificateProfileOption { get; } = new(["-tscp", "--trusted-signing-certificate-profile"], TrustedSigningResources.CertificateProfileOptionDescription);
+        internal Option<Uri> EndpointOption { get; } = new(["--trusted-signing-endpoint", "-tse"], TrustedSigningResources.EndpointOptionDescription);
+        internal Option<string> AccountOption { get; } = new(["--trusted-signing-account", "-tsa"], TrustedSigningResources.AccountOptionDescription);
+        internal Option<string> CertificateProfileOption { get; } = new(["--trusted-signing-certificate-profile", "-tscp"], TrustedSigningResources.CertificateProfileOptionDescription);
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);

@@ -13,8 +13,8 @@ namespace Sign.Cli
 {
     internal sealed class AzureKeyVaultCommand : Command
     {
-        internal Option<Uri> UrlOption { get; } = new(["-kvu", "--azure-key-vault-url"], AzureKeyVaultResources.UrlOptionDescription);
-        internal Option<string> CertificateOption { get; } = new(["-kvc", "--azure-key-vault-certificate"], AzureKeyVaultResources.CertificateOptionDescription);
+        internal Option<Uri> UrlOption { get; } = new(["--azure-key-vault-url", "-kvu"], AzureKeyVaultResources.UrlOptionDescription);
+        internal Option<string> CertificateOption { get; } = new(["--azure-key-vault-certificate", "-kvc"], AzureKeyVaultResources.CertificateOptionDescription);
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
