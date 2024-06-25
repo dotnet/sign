@@ -6,6 +6,7 @@ namespace Sign.Cli
 {
     internal static class AzureCredentialType
     {
+        public const string Default = "default";
         public const string AzureCli = "azure-cli";
         public const string Environment = "environment";
         public const string ManagedIdentity = "managed-identity";

@@ -6,14 +6,17 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.Identity.Client.Region;
 
 namespace Sign.Cli
 {
     internal sealed class AzureCredentialOptions
     {
         internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["--azure-credential-type", "-act"], Resources.CredentialTypeOptionDescription).FromAmong(
+            AzureCredentialType.Default,
             AzureCredentialType.AzureCli,
             AzureCredentialType.Environment,
             AzureCredentialType.ManagedIdentity);
@@ -37,45 +40,10 @@ namespace Sign.Cli
             command.AddOption(ObsoleteClientSecretOption);
         }
 
-        internal DefaultAzureCredentialOptions CreateDefaultAzureCredentialOptions(ParseResult parseResult)
-        {
-            DefaultAzureCredentialOptions options = new();
-
-            string? tenantId = parseResult.GetValueForOption(TenantIdOption);
-            if (tenantId is not null)
-            {
-                options.TenantId = tenantId;
-            }
-
-            string? managedIdentityClientId = parseResult.GetValueForOption(ManagedIdentityClientIdOption);
-            if (managedIdentityClientId is not null)
-            {
-                options.ManagedIdentityClientId = managedIdentityClientId;
-            }
-
-            string? managedIdentityResourceId = parseResult.GetValueForOption(ManagedIdentityResourceIdOption);
-            if (managedIdentityResourceId is not null)
-            {
-                options.ManagedIdentityResourceId = new ResourceIdentifier(managedIdentityResourceId);
-            }
-
-            string? credentialType = parseResult.GetValueForOption(CredentialTypeOption);
-            if (credentialType is not null)
-            {
-                options.ExcludeAzureCliCredential = credentialType != AzureCredentialType.AzureCli;
-                options.ExcludeAzureDeveloperCliCredential = true;
-                options.ExcludeAzurePowerShellCredential = true;
-                options.ExcludeEnvironmentCredential = credentialType != AzureCredentialType.Environment;
-                options.ExcludeManagedIdentityCredential = credentialType != AzureCredentialType.ManagedIdentity;
-                options.ExcludeVisualStudioCredential = true;
-                options.ExcludeWorkloadIdentityCredential = true;
-            }
-
-            return options;
-        }
-
         internal TokenCredential? CreateTokenCredential(InvocationContext context)
         {
+            Debugger.Launch();
+
             bool? useManagedIdentity = context.ParseResult.GetValueForOption(ObsoleteManagedIdentityOption);
 
             if (useManagedIdentity is not null)
@@ -94,9 +62,43 @@ namespace Sign.Cli
                 context.Console.Out.WriteLine(Resources.ClientSecretOptionsObsolete);
                 return new ClientSecretCredential(tenantId, clientId, secret);
             }
+            
+            tenantId = context.ParseResult.GetValueForOption(TenantIdOption);
+            string? managedIdentityResourceId = context.ParseResult.GetValueForOption(ManagedIdentityResourceIdOption);
+            string? managedIdentityClientId = context.ParseResult.GetValueForOption(ManagedIdentityClientIdOption);
 
-            DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(context.ParseResult);
-            return new DefaultAzureCredential(options);
+            var credentialType = context.ParseResult.GetValueForOption(CredentialTypeOption);
+            switch (credentialType)
+            {
+                case AzureCredentialType.AzureCli:
+                    return new AzureCliCredential(new AzureCliCredentialOptions { TenantId = tenantId });
+
+                case AzureCredentialType.Environment:
+                    return new EnvironmentCredential();
+
+                case AzureCredentialType.ManagedIdentity when managedIdentityResourceId is not null:
+                    return new ManagedIdentityCredential(
+                        resourceId: new ResourceIdentifier(managedIdentityResourceId));
+                case AzureCredentialType.ManagedIdentity when managedIdentityClientId is not null:
+                    return new ManagedIdentityCredential(
+                        clientId: managedIdentityClientId);
+                case AzureCredentialType.ManagedIdentity:
+                    return new ManagedIdentityCredential();
+
+                case AzureCredentialType.Default:
+                case null:
+                    return new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                    {
+                        TenantId = tenantId,
+                        ManagedIdentityResourceId = managedIdentityResourceId is not null
+                            ? new ResourceIdentifier(managedIdentityResourceId) : null,
+                        ManagedIdentityClientId = managedIdentityResourceId is null
+                            ? managedIdentityClientId : null,
+                    });
+
+                default:
+                    throw new NotImplementedException("Credential type not supported: " + credentialType);
+            }
         }
     }
 }
