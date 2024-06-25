@@ -180,11 +180,17 @@
     <value>Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL.</value>
     <comment>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</comment>
   </data>
+  <data name="ManagedIdentityClientIdOptionDescription" xml:space="preserve">
+    <value>The client id of a user assigned ManagedIdentity.</value>
+  </data>
   <data name="ManagedIdentityOptionDescription" xml:space="preserve">
     <value>Managed identity to authenticate to Azure Key. (obsolete)</value>
   </data>
   <data name="ManagedIdentityOptionObsolete" xml:space="preserve">
     <value>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</value>
+  </data>
+  <data name="ManagedIdentityResourceIdOptionDescription" xml:space="preserve">
+    <value>The resource id of a user assigned ManagedIdentity.</value>
   </data>
   <data name="MaxConcurrencyOptionDescription" xml:space="preserve">
     <value>Maximum concurrency.</value>

@@ -97,6 +97,11 @@
         <target state="translated">Ungültiger Wert für {0}. Der Wert muss eine absolute HTTP- oder HTTPS-URL sein.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
+      <trans-unit id="ManagedIdentityClientIdOptionDescription">
+        <source>The client id of a user assigned ManagedIdentity.</source>
+        <target state="new">The client id of a user assigned ManagedIdentity.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key. (obsolete)</source>
         <target state="translated">Verwaltete Identität für die Authentifizierung bei Azure Key. (veraltet)</target>
@@ -105,6 +110,11 @@
       <trans-unit id="ManagedIdentityOptionObsolete">
         <source>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</source>
         <target state="translated">Die Optionen „-kvm“ und „--azure-key-vault-managed-identity“ sind veraltet und sollten nicht mehr angegeben werden.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManagedIdentityResourceIdOptionDescription">
+        <source>The resource id of a user assigned ManagedIdentity.</source>
+        <target state="new">The resource id of a user assigned ManagedIdentity.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">

@@ -49,6 +49,30 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void ManagedIdentityClientIdOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _options.ManagedIdentityClientIdOption.Arity);
+        }
+
+        [Fact]
+        public void ManagedIdentityClientIdOption_Always_IsNotRequired()
+        {
+            Assert.False(_options.ManagedIdentityClientIdOption.IsRequired);
+        }
+
+        [Fact]
+        public void ManagedIdentityResourceIdOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _options.ManagedIdentityResourceIdOption.Arity);
+        }
+
+        [Fact]
+        public void ManagedIdentityResourceIdOption_Always_IsNotRequired()
+        {
+            Assert.False(_options.ManagedIdentityResourceIdOption.IsRequired);
+        }
+
+        [Fact]
         public void ObsoleteManagedIdentityOption_Always_HasArityOfZeroOrOne()
         {
             Assert.Equal(ArgumentArity.ZeroOrOne, _options.ObsoleteManagedIdentityOption.Arity);
@@ -128,6 +152,9 @@ namespace Sign.Cli.Test
             _options.AddOptionsToCommand(command);
 
             Assert.Contains(_options.CredentialTypeOption, command.Options);
+            Assert.Contains(_options.TenantIdOption, command.Options);
+            Assert.Contains(_options.ManagedIdentityClientIdOption, command.Options);
+            Assert.Contains(_options.ManagedIdentityResourceIdOption, command.Options);
             Assert.Contains(_options.ObsoleteManagedIdentityOption, command.Options);
             Assert.Contains(_options.ObsoleteTenantIdOption, command.Options);
             Assert.Contains(_options.ObsoleteClientIdOption, command.Options);
@@ -135,13 +162,33 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CreateDefaultAzureCredentialOptions_WhenTenantIsSpecified_TenantIdIsSet()
+        public void CreateDefaultAzureCredentialOptions_WhenTenantIdIsSpecified_TenantIdIsSet()
         {
             ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -ati b c");
 
             DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
 
             Assert.Equal("b", credentialOptions.TenantId);
+        }
+
+        [Fact]
+        public void CreateDefaultAzureCredentialOptions_WhenManagedIdentityClientIdIsSpecified_ManagedIdentityClientIdIsSet()
+        {
+            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -mici b c");
+
+            DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
+
+            Assert.Equal("b", credentialOptions.ManagedIdentityClientId);
+        }
+
+        [Fact]
+        public void CreateDefaultAzureCredentialOptions_WhenManagedIdentityResourceIdIsSpecified_ManagedIdentityResourceIdIsSet()
+        {
+            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -miri b c");
+
+            DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
+
+            Assert.Equal("b", credentialOptions.ManagedIdentityResourceId);
         }
 
         [Fact]
@@ -164,6 +211,25 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void CreateDefaultAzureCredentialOptions_WhenAzureCliCredentialTypeIsSpecified_ExcludeOptionsHaveTheCorrectValues()
+        {
+            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -act azure-cli b");
+
+            DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
+
+            Assert.False(credentialOptions.ExcludeAzureCliCredential);
+            Assert.True(credentialOptions.ExcludeAzureDeveloperCliCredential);
+            Assert.True(credentialOptions.ExcludeAzurePowerShellCredential);
+            Assert.True(credentialOptions.ExcludeEnvironmentCredential);
+            Assert.True(credentialOptions.ExcludeInteractiveBrowserCredential);
+            Assert.True(credentialOptions.ExcludeManagedIdentityCredential);
+            Assert.True(credentialOptions.ExcludeSharedTokenCacheCredential);
+            Assert.True(credentialOptions.ExcludeVisualStudioCodeCredential);
+            Assert.True(credentialOptions.ExcludeVisualStudioCredential);
+            Assert.True(credentialOptions.ExcludeWorkloadIdentityCredential);
+        }
+
+        [Fact]
         public void CreateDefaultAzureCredentialOptions_WhenEnvironmentCredentialTypeIsSpecified_ExcludeOptionsHaveTheCorrectValues()
         {
             ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -act environment b");
@@ -183,18 +249,18 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CreateDefaultAzureCredentialOptions_WhenAzureCliCredentialTypeIsSpecified_ExcludeOptionsHaveTheCorrectValues()
+        public void CreateDefaultAzureCredentialOptions_WhenManagedIdentityCredentialTypeIsSpecified_ExcludeOptionsHaveTheCorrectValues()
         {
-            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -act azure-cli b");
+            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -act managed-identity b");
 
             DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
 
-            Assert.False(credentialOptions.ExcludeAzureCliCredential);
+            Assert.True(credentialOptions.ExcludeAzureCliCredential);
             Assert.True(credentialOptions.ExcludeAzureDeveloperCliCredential);
             Assert.True(credentialOptions.ExcludeAzurePowerShellCredential);
             Assert.True(credentialOptions.ExcludeEnvironmentCredential);
             Assert.True(credentialOptions.ExcludeInteractiveBrowserCredential);
-            Assert.True(credentialOptions.ExcludeManagedIdentityCredential);
+            Assert.False(credentialOptions.ExcludeManagedIdentityCredential);
             Assert.True(credentialOptions.ExcludeSharedTokenCacheCredential);
             Assert.True(credentialOptions.ExcludeVisualStudioCodeCredential);
             Assert.True(credentialOptions.ExcludeVisualStudioCredential);
