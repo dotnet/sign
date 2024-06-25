@@ -14,6 +14,7 @@ namespace Sign.Cli
     internal sealed class AzureCredentialOptions
     {
         internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["-act", "--azure-credential-type"], Resources.CredentialTypeOptionDescription).FromAmong(
+            AzureCredentialType.AzureCli,
             AzureCredentialType.Environment);
         internal Option<bool?> ManagedIdentityOption { get; } = new(["-kvm", "--azure-key-vault-managed-identity"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
         internal Option<string?> TenantIdOption { get; } = new(["-kvt", "--azure-key-vault-tenant-id"], Resources.TenantIdOptionDescription);
@@ -36,7 +37,7 @@ namespace Sign.Cli
             string? credentialType = parseResult.GetValueForOption(CredentialTypeOption);
             if (credentialType is not null)
             {
-                options.ExcludeAzureCliCredential = true;
+                options.ExcludeAzureCliCredential = credentialType != AzureCredentialType.AzureCli;
                 options.ExcludeAzureDeveloperCliCredential = true;
                 options.ExcludeAzurePowerShellCredential = true;
                 options.ExcludeEnvironmentCredential = credentialType != AzureCredentialType.Environment;

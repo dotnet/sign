@@ -124,7 +124,7 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CreateDefaultAzureCredentialOptions_WhenEnvironmentIsSpecified_ExcludeOptionsHaveTheCorrectValues()
+        public void CreateDefaultAzureCredentialOptions_WhenEnvironmentCredentialTypeIsSpecified_ExcludeOptionsHaveTheCorrectValues()
         {
             ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -act environment b");
 
@@ -134,6 +134,25 @@ namespace Sign.Cli.Test
             Assert.True(credentialOptions.ExcludeAzureDeveloperCliCredential);
             Assert.True(credentialOptions.ExcludeAzurePowerShellCredential);
             Assert.False(credentialOptions.ExcludeEnvironmentCredential);
+            Assert.True(credentialOptions.ExcludeInteractiveBrowserCredential);
+            Assert.True(credentialOptions.ExcludeManagedIdentityCredential);
+            Assert.True(credentialOptions.ExcludeSharedTokenCacheCredential);
+            Assert.True(credentialOptions.ExcludeVisualStudioCodeCredential);
+            Assert.True(credentialOptions.ExcludeVisualStudioCredential);
+            Assert.True(credentialOptions.ExcludeWorkloadIdentityCredential);
+        }
+
+        [Fact]
+        public void CreateDefaultAzureCredentialOptions_WhenAzureCliCredentialTypeIsSpecified_ExcludeOptionsHaveTheCorrectValues()
+        {
+            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -act azure-cli b");
+
+            DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
+
+            Assert.False(credentialOptions.ExcludeAzureCliCredential);
+            Assert.True(credentialOptions.ExcludeAzureDeveloperCliCredential);
+            Assert.True(credentialOptions.ExcludeAzurePowerShellCredential);
+            Assert.True(credentialOptions.ExcludeEnvironmentCredential);
             Assert.True(credentialOptions.ExcludeInteractiveBrowserCredential);
             Assert.True(credentialOptions.ExcludeManagedIdentityCredential);
             Assert.True(credentialOptions.ExcludeSharedTokenCacheCredential);
