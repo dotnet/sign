@@ -8,5 +8,6 @@ namespace Sign.Cli
     {
         public const string AzureCli = "azure-cli";
         public const string Environment = "environment";
+        public const string ManagedIdentity = "managed-identity";
     }
 }

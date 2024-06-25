@@ -232,6 +232,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The client id of a user assigned ManagedIdentity..
+        /// </summary>
+        internal static string ManagedIdentityClientIdOptionDescription {
+            get {
+                return ResourceManager.GetString("ManagedIdentityClientIdOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Managed identity to authenticate to Azure Key. (obsolete).
         /// </summary>
         internal static string ManagedIdentityOptionDescription {
@@ -246,6 +255,15 @@ namespace Sign.Cli {
         internal static string ManagedIdentityOptionObsolete {
             get {
                 return ResourceManager.GetString("ManagedIdentityOptionObsolete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The resource id of a user assigned ManagedIdentity..
+        /// </summary>
+        internal static string ManagedIdentityResourceIdOptionDescription {
+            get {
+                return ResourceManager.GetString("ManagedIdentityResourceIdOptionDescription", resourceCulture);
             }
         }
         

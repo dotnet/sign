@@ -97,6 +97,11 @@
         <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 절대 HTTP 또는 HTTPS URL이어야 합니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --timestamp-url) and should not be localized.</note>
       </trans-unit>
+      <trans-unit id="ManagedIdentityClientIdOptionDescription">
+        <source>The client id of a user assigned ManagedIdentity.</source>
+        <target state="new">The client id of a user assigned ManagedIdentity.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key. (obsolete)</source>
         <target state="translated">Azure Key에 인증할 관리 ID입니다. (사용되지 않음)</target>
@@ -105,6 +110,11 @@
       <trans-unit id="ManagedIdentityOptionObsolete">
         <source>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</source>
         <target state="translated">-kvm 및 --azure-key-vault-managed-identity 옵션은 사용되지 않으므로 더 이상 지정하지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManagedIdentityResourceIdOptionDescription">
+        <source>The resource id of a user assigned ManagedIdentity.</source>
+        <target state="new">The resource id of a user assigned ManagedIdentity.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
