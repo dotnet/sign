@@ -15,12 +15,12 @@ namespace Sign.Cli
 {
     internal sealed class CertificateStoreCommand : Command
     {
-        internal Option<string?> CertificateFingerprintOption { get; } = new(["-cfp", "--certificate-fingerprint"], ParseCertificateFingerprint, description: CertificateStoreResources.CertificateFingerprintOptionDescription);
-        internal Option<string?> CertificateFileOption { get; } = new(["-cf", "--certificate-file"], CertificateStoreResources.CertificateFileOptionDescription);
-        internal Option<string?> CertificatePasswordOption { get; } = new(["-p", "--password"], CertificateStoreResources.CertificatePasswordOptionDescription);
-        internal Option<string?> CryptoServiceProviderOption { get; } = new(["-csp", "--crypto-service-provider"], CertificateStoreResources.CspOptionDescription);
-        internal Option<string?> PrivateKeyContainerOption { get; } = new(["-k", "--key-container"], CertificateStoreResources.KeyContainerOptionDescription);
-        internal Option<bool> UseMachineKeyContainerOption { get; } = new(["-km", "--use-machine-key-container"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
+        internal Option<string?> CertificateFingerprintOption { get; } = new(["--certificate-fingerprint", "-cfp"], ParseCertificateFingerprint, description: CertificateStoreResources.CertificateFingerprintOptionDescription);
+        internal Option<string?> CertificateFileOption { get; } = new(["--certificate-file", "-cf"], CertificateStoreResources.CertificateFileOptionDescription);
+        internal Option<string?> CertificatePasswordOption { get; } = new(["--password", "-p"], CertificateStoreResources.CertificatePasswordOptionDescription);
+        internal Option<string?> CryptoServiceProviderOption { get; } = new(["--crypto-service-provider", "-csp"], CertificateStoreResources.CspOptionDescription);
+        internal Option<string?> PrivateKeyContainerOption { get; } = new(["--key-container", "-k"], CertificateStoreResources.KeyContainerOptionDescription);
+        internal Option<bool> UseMachineKeyContainerOption { get; } = new(["--use-machine-key-container", "-km"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
 
