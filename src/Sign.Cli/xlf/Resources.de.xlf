@@ -27,6 +27,11 @@
         <target state="new">Client secret to authenticate to Azure.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClientSecretOptionsObsolete">
+        <source>The client secret options are obsolete and should no longer be specified.</source>
+        <target state="new">The client secret options are obsolete and should no longer be specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
         <target state="translated">Signieren Sie Binärdateien und Container.</target>

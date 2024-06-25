@@ -132,6 +132,9 @@
   <data name="ClientSecretOptionDescription" xml:space="preserve">
     <value>Client secret to authenticate to Azure.</value>
   </data>
+  <data name="ClientSecretOptionsObsolete" xml:space="preserve">
+    <value>The client secret options are obsolete and should no longer be specified.</value>
+  </data>
   <data name="CodeCommandDescription" xml:space="preserve">
     <value>Sign binaries and containers.</value>
   </data>

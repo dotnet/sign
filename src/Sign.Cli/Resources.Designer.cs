@@ -106,6 +106,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The client secret options are obsolete and should no longer be specified..
+        /// </summary>
+        internal static string ClientSecretOptionsObsolete {
+            get {
+                return ResourceManager.GetString("ClientSecretOptionsObsolete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sign binaries and containers..
         /// </summary>
         internal static string CodeCommandDescription {
