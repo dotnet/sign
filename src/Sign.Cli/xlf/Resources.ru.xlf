@@ -37,11 +37,6 @@
         <target state="translated">Подписывание двоичных файлов и контейнеров.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CredentialTypeOptionDescription">
-        <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="translated">Тип учетных данных Azure, который будет использоваться. Это значение по умолчанию используется для всех типов, кроме интерактивного браузера, общего токена и Visual Studio Code.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">Описание сертификата для подписи</target>

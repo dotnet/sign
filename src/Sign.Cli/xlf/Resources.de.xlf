@@ -37,11 +37,6 @@
         <target state="translated">Signieren Sie Binärdateien und Container.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CredentialTypeOptionDescription">
-        <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="translated">Azure-Anmeldeinformationstyp, der verwendet wird. Standardmäßig werden alle Typen außer interaktivem Browser, freigegebenem Token und Visual Studio Code verwendet.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">Beschreibung des Signaturzertifikats.</target>

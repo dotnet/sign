@@ -37,11 +37,6 @@
         <target state="translated">簽署二進位檔和容器。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CredentialTypeOptionDescription">
-        <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="translated">將使用的 Azure 認證類型。這預設為互動式瀏覽器、共用權杖和 Visual Studio Code 以外的所有類型。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">簽署憑證的描述。</target>

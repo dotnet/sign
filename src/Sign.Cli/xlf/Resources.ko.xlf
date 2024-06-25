@@ -37,11 +37,6 @@
         <target state="translated">이진 파일 및 컨테이너에 서명합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CredentialTypeOptionDescription">
-        <source>Azure credential type that will be used. This defaults to all types except interactive browser, shared token and Visual Studio Code.</source>
-        <target state="translated">사용할 Azure 자격 증명 형식입니다. 기본적으로 대화형 브라우저, 공유 토큰 및 Visual Studio Code를 제외한 모든 형식으로 설정됩니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">서명 인증서에 대한 설명입니다.</target>
