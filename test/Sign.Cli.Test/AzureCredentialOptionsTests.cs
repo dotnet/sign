@@ -37,24 +37,6 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void ManagedIdentityOption_Always_HasArityOfZeroOrOne()
-        {
-            Assert.Equal(ArgumentArity.ZeroOrOne, _options.ManagedIdentityOption.Arity);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_IsNotRequired()
-        {
-            Assert.False(_options.ManagedIdentityOption.IsRequired);
-        }
-
-        [Fact]
-        public void ManagedIdentityOption_Always_IsHidden()
-        {
-            Assert.True(_options.ManagedIdentityOption.IsHidden);
-        }
-
-        [Fact]
         public void TenantIdOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _options.TenantIdOption.Arity);
@@ -67,27 +49,75 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void ClientIdOption_Always_HasArityOfExactlyOne()
+        public void ObsoleteManagedIdentityOption_Always_HasArityOfZeroOrOne()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _options.ClientIdOption.Arity);
+            Assert.Equal(ArgumentArity.ZeroOrOne, _options.ObsoleteManagedIdentityOption.Arity);
         }
 
         [Fact]
-        public void ClientIdOption_Always_IsNotRequired()
+        public void ObsoleteManagedIdentityOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ClientIdOption.IsRequired);
+            Assert.False(_options.ObsoleteManagedIdentityOption.IsRequired);
         }
 
         [Fact]
-        public void ClientSecretOption_Always_HasArityOfExactlyOne()
+        public void ObsoleteManagedIdentityOption_Always_IsHidden()
         {
-            Assert.Equal(ArgumentArity.ExactlyOne, _options.ClientSecretOption.Arity);
+            Assert.True(_options.ObsoleteManagedIdentityOption.IsHidden);
         }
 
         [Fact]
-        public void ClientSecretOption_Always_IsNotRequired()
+        public void ObsoleteTenantIdOption_Always_HasArityOfExactlyOne()
         {
-            Assert.False(_options.ClientSecretOption.IsRequired);
+            Assert.Equal(ArgumentArity.ExactlyOne, _options.ObsoleteTenantIdOption.Arity);
+        }
+
+        [Fact]
+        public void ObsoleteTenantIdOption_Always_IsNotRequired()
+        {
+            Assert.False(_options.ObsoleteTenantIdOption.IsRequired);
+        }
+
+        [Fact]
+        public void ObsoleteTenantIdOption_Always_IsHidden()
+        {
+            Assert.True(_options.ObsoleteTenantIdOption.IsHidden);
+        }
+
+        [Fact]
+        public void ObsoleteClientIdOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _options.ObsoleteClientIdOption.Arity);
+        }
+
+        [Fact]
+        public void ObsoleteClientIdOption_Always_IsNotRequired()
+        {
+            Assert.False(_options.ObsoleteClientIdOption.IsRequired);
+        }
+
+        [Fact]
+        public void ObsoleteClientIdOption_Always_IsHidden()
+        {
+            Assert.True(_options.ObsoleteClientIdOption.IsHidden);
+        }
+
+        [Fact]
+        public void ObsoleteClientSecretOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _options.ObsoleteClientSecretOption.Arity);
+        }
+
+        [Fact]
+        public void ObsoleteClientSecretOption_Always_IsNotRequired()
+        {
+            Assert.False(_options.ObsoleteClientSecretOption.IsRequired);
+        }
+
+        [Fact]
+        public void ObsoleteClientSecretOption_Always_IsHidden()
+        {
+            Assert.True(_options.ObsoleteClientSecretOption.IsHidden);
         }
 
         [Fact]
@@ -98,10 +128,20 @@ namespace Sign.Cli.Test
             _options.AddOptionsToCommand(command);
 
             Assert.Contains(_options.CredentialTypeOption, command.Options);
-            Assert.Contains(_options.ManagedIdentityOption, command.Options);
-            Assert.Contains(_options.TenantIdOption, command.Options);
-            Assert.Contains(_options.ClientIdOption, command.Options);
-            Assert.Contains(_options.ClientSecretOption, command.Options);
+            Assert.Contains(_options.ObsoleteManagedIdentityOption, command.Options);
+            Assert.Contains(_options.ObsoleteTenantIdOption, command.Options);
+            Assert.Contains(_options.ObsoleteClientIdOption, command.Options);
+            Assert.Contains(_options.ObsoleteClientSecretOption, command.Options);
+        }
+
+        [Fact]
+        public void CreateDefaultAzureCredentialOptions_WhenTenantIsSpecified_TenantIdIsSet()
+        {
+            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -ati b c");
+
+            DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
+
+            Assert.Equal("b", credentialOptions.TenantId);
         }
 
         [Fact]

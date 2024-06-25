@@ -27,6 +27,11 @@
         <target state="translated">Секрет клиента для проверки подлинности в Azure.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClientSecretOptionsObsolete">
+        <source>The client secret options are obsolete and should no longer be specified.</source>
+        <target state="new">The client secret options are obsolete and should no longer be specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CodeCommandDescription">
         <source>Sign binaries and containers.</source>
         <target state="translated">Подписывание двоичных файлов и контейнеров.</target>

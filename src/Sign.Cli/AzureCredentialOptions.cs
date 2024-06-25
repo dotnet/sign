@@ -16,23 +16,31 @@ namespace Sign.Cli
         internal Option<string?> CredentialTypeOption { get; } = new Option<string?>(["--azure-credential-type", "-act"], Resources.CredentialTypeOptionDescription).FromAmong(
             AzureCredentialType.AzureCli,
             AzureCredentialType.Environment);
-        internal Option<bool?> ManagedIdentityOption { get; } = new(["--azure-key-vault-managed-identity", "-kvm"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
-        internal Option<string?> TenantIdOption { get; } = new(["--azure-key-vault-tenant-id", "-kvt"], Resources.TenantIdOptionDescription);
-        internal Option<string?> ClientIdOption { get; } = new(["--azure-key-vault-client-id", "-kvi"], Resources.ClientIdOptionDescription);
-        internal Option<string?> ClientSecretOption { get; } = new(["--azure-key-vault-client-secret", "-kvs"], Resources.ClientSecretOptionDescription);
+        internal Option<string?> TenantIdOption { get; } = new(["--azure-tenant-id", "-ati"], Resources.TenantIdOptionDescription);
+        internal Option<bool?> ObsoleteManagedIdentityOption { get; } = new(["--azure-key-vault-managed-identity", "-kvm"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
+        internal Option<string?> ObsoleteTenantIdOption { get; } = new(["--azure-key-vault-tenant-id", "-kvt"], Resources.TenantIdOptionDescription) { IsHidden = true };
+        internal Option<string?> ObsoleteClientIdOption { get; } = new(["--azure-key-vault-client-id", "-kvi"], Resources.ClientIdOptionDescription) { IsHidden = true };
+        internal Option<string?> ObsoleteClientSecretOption { get; } = new(["--azure-key-vault-client-secret", "-kvs"], Resources.ClientSecretOptionDescription) { IsHidden = true };
 
         internal void AddOptionsToCommand(Command command)
         {
             command.AddOption(CredentialTypeOption);
-            command.AddOption(ManagedIdentityOption);
             command.AddOption(TenantIdOption);
-            command.AddOption(ClientIdOption);
-            command.AddOption(ClientSecretOption);
+            command.AddOption(ObsoleteManagedIdentityOption);
+            command.AddOption(ObsoleteTenantIdOption);
+            command.AddOption(ObsoleteClientIdOption);
+            command.AddOption(ObsoleteClientSecretOption);
         }
 
         internal DefaultAzureCredentialOptions CreateDefaultAzureCredentialOptions(ParseResult parseResult)
         {
             DefaultAzureCredentialOptions options = new();
+
+            string? tenantId = parseResult.GetValueForOption(TenantIdOption);
+            if (tenantId is not null)
+            {
+                options.TenantId = tenantId;
+            };
 
             string? credentialType = parseResult.GetValueForOption(CredentialTypeOption);
             if (credentialType is not null)
@@ -51,21 +59,22 @@ namespace Sign.Cli
 
         internal TokenCredential? CreateTokenCredential(InvocationContext context)
         {
-            bool? useManagedIdentity = context.ParseResult.GetValueForOption(ManagedIdentityOption);
+            bool? useManagedIdentity = context.ParseResult.GetValueForOption(ObsoleteManagedIdentityOption);
 
             if (useManagedIdentity is not null)
             {
                 context.Console.Out.WriteLine(Resources.ManagedIdentityOptionObsolete);
             }
 
-            string? tenantId = context.ParseResult.GetValueForOption(TenantIdOption);
-            string? clientId = context.ParseResult.GetValueForOption(ClientIdOption);
-            string? secret = context.ParseResult.GetValueForOption(ClientSecretOption);
+            string? tenantId = context.ParseResult.GetValueForOption(ObsoleteTenantIdOption);
+            string? clientId = context.ParseResult.GetValueForOption(ObsoleteClientIdOption);
+            string? secret = context.ParseResult.GetValueForOption(ObsoleteClientSecretOption);
 
             if (!string.IsNullOrEmpty(tenantId) &&
                 !string.IsNullOrEmpty(clientId) &&
                 !string.IsNullOrEmpty(secret))
             {
+                context.Console.Out.WriteLine(Resources.ClientSecretOptionsObsolete);
                 return new ClientSecretCredential(tenantId, clientId, secret);
             }
 
