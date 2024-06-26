@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -168,6 +168,14 @@
     <value>Deleting directory {path}.</value>
     <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
+  <data name="DeletedFile" xml:space="preserve">
+    <value>File {path} deleted.</value>
+    <comment>{Placeholder="{path}"} is a file path.</comment>
+  </data>
+  <data name="DeletingFile" xml:space="preserve">
+    <value>Deleting file {path}.</value>
+    <comment>{Placeholder="{path}"} is a file path.</comment>
+  </data>
   <data name="DirectoryNotDeleted" xml:space="preserve">
     <value>Directory {path} still exists.</value>
     <comment>{Placeholder="{path}"} is a directory path.</comment>
@@ -183,9 +191,21 @@
     <value>An exception occurred while attempting to delete directory {path}.</value>
     <comment>{Placeholder="{path}"} is a directory path.</comment>
   </data>
+  <data name="ExportingCertificate" xml:space="preserve">
+    <value>Exporting certificate to {path}.</value>
+    <comment>{Placeholder="{path}"} is a path to a certificate file.</comment>
+  </data>
+  <data name="ExportSucceededWithTimeElapsed" xml:space="preserve">
+    <value>Completed in {millseconds} ms.</value>
+    <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
+  </data>
   <data name="FetchedCertificate" xml:space="preserve">
     <value>Fetched certificate. [{milliseconds} ms]</value>
     <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
+  </data>
+  <data name="FetchedCertificateFingerprint" xml:space="preserve">
+    <value>Fetched certificate with fingerprint {fingerprint}.</value>
+    <comment>{Placeholder="{fingerprint}"} is an identifier for a certificate.</comment>
   </data>
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>

@@ -76,6 +76,7 @@ namespace Sign.Core
             services.AddSingleton<IVsixSignTool, VsixSignTool>();
             services.AddSingleton<ICertificateVerifier, CertificateVerifier>();
             services.AddSingleton<ISigner, Signer>();
+            services.AddSingleton<IExporter, Exporter>();
 
             if (addServices is not null)
             {
