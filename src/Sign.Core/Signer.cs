@@ -39,7 +39,8 @@ namespace Sign.Core
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm)
+            HashAlgorithmName timestampHashAlgorithm,
+            string? certificateExportPath)
         {
             IAggregatingDataFormatSigner signer = _serviceProvider.GetRequiredService<IAggregatingDataFormatSigner>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
@@ -76,6 +77,14 @@ namespace Sign.Core
             {
                 using (X509Certificate2 certificate = await certificateProvider.GetCertificateAsync())
                 {
+                    if (!string.IsNullOrWhiteSpace(certificateExportPath))
+                    {
+                        string fullExportPath = ExpandFilePath(baseDirectory, certificateExportPath);
+
+                        IExporter exporter = _serviceProvider.GetRequiredService<IExporter>();
+                        await exporter.ExportAsync(fullExportPath);
+                    }
+
                     ICertificateVerifier certificateVerifier = _serviceProvider.GetRequiredService<ICertificateVerifier>();
 
                     certificateVerifier.Verify(certificate);

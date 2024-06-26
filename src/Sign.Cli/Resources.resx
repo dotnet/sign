@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -122,6 +122,9 @@
   </data>
   <data name="BaseDirectoryOptionDescription" xml:space="preserve">
     <value>Base directory for files.  Overrides the current working directory.</value>
+  </data>
+  <data name="CertificateExportOptionDescription" xml:space="preserve">
+      <value>Path to export certificate.</value>
   </data>
   <data name="CertificateStoreCommandDescription" xml:space="preserve">
     <value>Use Windows Certificate Store or a local certificate file.</value>

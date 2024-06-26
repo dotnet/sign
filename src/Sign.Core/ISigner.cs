@@ -20,6 +20,7 @@ namespace Sign.Core
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm);
+            HashAlgorithmName timestampHashAlgorithm,
+            string? certificateExportPath);
     }
 }

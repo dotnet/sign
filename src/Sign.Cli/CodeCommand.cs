@@ -31,6 +31,7 @@ namespace Sign.Cli
         internal Option<HashAlgorithmName> TimestampDigestOption { get; } = new(["--timestamp-digest", "-td"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.TimestampDigestOptionDescription);
         internal Option<Uri?> TimestampUrlOption { get; } = new(["--timestamp-url", "-t"], ParseUrl, description: Resources.TimestampUrlOptionDescription);
         internal Option<LogLevel> VerbosityOption { get; } = new(["--verbosity", "-v"], () => LogLevel.Warning, Resources.VerbosityOptionDescription);
+        internal Option<string> CertificateExportOption { get; } = new(["--certificate-export-path", "-co"], Resources.CertificateExportOptionDescription);
 
         internal CodeCommand()
             : base("code", Resources.CodeCommandDescription)
@@ -56,9 +57,11 @@ namespace Sign.Cli
             AddGlobalOption(TimestampDigestOption);
             AddGlobalOption(MaxConcurrencyOption);
             AddGlobalOption(VerbosityOption);
+            AddGlobalOption(CertificateExportOption);
         }
 
-        internal async Task HandleAsync(InvocationContext context, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, string fileArgument)
+        internal async Task HandleAsync(InvocationContext context, IServiceProviderFactory serviceProviderFactory,
+            ISignatureProvider signatureProvider, string fileArgument)
         {
             // Some of the options have a default value and that is why we can safely use
             // the null-forgiving operator (!) to simplify the code.
@@ -74,6 +77,7 @@ namespace Sign.Cli
             LogLevel verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
             string? output = context.ParseResult.GetValueForOption(OutputOption);
             int maxConcurrency = context.ParseResult.GetValueForOption(MaxConcurrencyOption);
+            string? certificateExportPath = context.ParseResult.GetValueForOption(CertificateExportOption);
 
             // Make sure this is rooted
             if (!Path.IsPathRooted(baseDirectory.FullName))
@@ -184,7 +188,8 @@ namespace Sign.Cli
                 timestampUrl,
                 maxConcurrency,
                 fileHashAlgorithmName,
-                timestampHashAlgorithmName);
+                timestampHashAlgorithmName,
+                certificateExportPath);
         }
 
         private static string ExpandFilePath(DirectoryInfo baseDirectory, string file)
