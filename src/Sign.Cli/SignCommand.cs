@@ -13,9 +13,11 @@ namespace Sign.Cli
             : base("sign", Resources.SignCommandDescription)
         {
             CodeCommand codeCommand = new();
+            ExportCommand exportCommand = new();
             serviceProviderFactory ??= new ServiceProviderFactory();
 
             AddCommand(codeCommand);
+            AddCommand(exportCommand);
 
             AzureKeyVaultCommand azureKeyVaultCommand = new(
                 codeCommand,
@@ -32,8 +34,12 @@ namespace Sign.Cli
             TrustedSigningSignCommand trustedSigningSignCommand = new(
                 codeCommand,
                 serviceProviderFactory);
+            TrustedSigningExportCommand trustedSigningExportCommand = new(
+                exportCommand,
+                serviceProviderFactory);
 
             codeCommand.AddCommand(trustedSigningSignCommand);
+            exportCommand.AddCommand(trustedSigningExportCommand);
         }
     }
 }
