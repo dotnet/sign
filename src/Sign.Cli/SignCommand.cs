@@ -29,11 +29,11 @@ namespace Sign.Cli
 
             codeCommand.AddCommand(certificateStoreCommand);
 
-            TrustedSigningCommand trustedSigningCommand = new(
+            TrustedSigningSignCommand trustedSigningSignCommand = new(
                 codeCommand,
                 serviceProviderFactory);
 
-            codeCommand.AddCommand(trustedSigningCommand);
+            codeCommand.AddCommand(trustedSigningSignCommand);
         }
     }
 }
