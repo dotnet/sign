@@ -7,6 +7,7 @@
     <IsShipping>true</IsShipping>
     <OutputType>Exe</OutputType>
     <PackageDescription>Sign CLI</PackageDescription>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackAsTool>true</PackAsTool>
     <RollForward>Major</RollForward>
     <RootNamespace>Sign.Cli</RootNamespace>
