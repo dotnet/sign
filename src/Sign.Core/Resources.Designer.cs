@@ -187,6 +187,24 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to File {path} deleted..
+        /// </summary>
+        internal static string DeletedFile {
+            get {
+                return ResourceManager.GetString("DeletedFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deleting file {path}..
+        /// </summary>
+        internal static string DeletingFile {
+            get {
+                return ResourceManager.GetString("DeletingFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Directory {path} still exists..
         /// </summary>
         internal static string DirectoryNotDeleted {
@@ -223,11 +241,38 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exporting certificate to {path}..
+        /// </summary>
+        internal static string ExportingCertificate {
+            get {
+                return ResourceManager.GetString("ExportingCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Completed in {millseconds} ms..
+        /// </summary>
+        internal static string ExportSucceededWithTimeElapsed {
+            get {
+                return ResourceManager.GetString("ExportSucceededWithTimeElapsed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fetched certificate. [{milliseconds} ms].
         /// </summary>
         internal static string FetchedCertificate {
             get {
                 return ResourceManager.GetString("FetchedCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fetched certificate with fingerprint {fingerprint}..
+        /// </summary>
+        internal static string FetchedCertificateFingerprint {
+            get {
+                return ResourceManager.GetString("FetchedCertificateFingerprint", resourceCulture);
             }
         }
         

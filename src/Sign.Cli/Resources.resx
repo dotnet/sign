@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -143,6 +143,12 @@
   </data>
   <data name="DescriptionUrlOptionDescription" xml:space="preserve">
     <value>Description URL of the signing certificate.</value>
+  </data>
+  <data name="ExportCommandDescription" xml:space="preserve">
+    <value>Export certificate used for signing.</value>
+  </data>
+  <data name="ExportOutputOptionDescription" xml:space="preserve">
+    <value>Exported certificate path.</value>
   </data>
   <data name="FileDigestOptionDescription" xml:space="preserve">
     <value>Digest algorithm to hash files with. Allowed values are 'sha256', 'sha384', and 'sha512'.</value>
