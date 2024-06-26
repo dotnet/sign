@@ -21,6 +21,7 @@ namespace Sign.Cli.Test
         internal int? MaxConcurrency { get; private set; }
         internal HashAlgorithmName? FileHashAlgorithm { get; private set; }
         internal HashAlgorithmName? TimestampHashAlgorithm { get; private set; }
+        internal string? CertificateExportPath { get; private set; }
         internal int ExitCode { get; }
 
         internal SignerSpy()
@@ -40,7 +41,8 @@ namespace Sign.Cli.Test
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm)
+            HashAlgorithmName timestampHashAlgorithm,
+            string? certificateExportPath)
         {
             InputFiles = inputFiles;
             OutputFile = outputFile;
@@ -54,6 +56,7 @@ namespace Sign.Cli.Test
             MaxConcurrency = maxConcurrency;
             FileHashAlgorithm = fileHashAlgorithm;
             TimestampHashAlgorithm = timestampHashAlgorithm;
+            CertificateExportPath = certificateExportPath;
 
             return Task.FromResult(ExitCode);
         }

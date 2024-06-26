@@ -260,7 +260,8 @@ namespace Sign.Core.Test
                 _certificatesFixture.TimestampServiceUrl,
                 maxConcurrency: 4,
                 HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+                HashAlgorithmName.SHA256,
+                null);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
