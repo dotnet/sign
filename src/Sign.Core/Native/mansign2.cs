@@ -660,16 +660,9 @@ namespace System.Deployment.Internal.CodeSigning
         private static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner2 signer, string timeStampUrl, bool disallowMansignTimestampFallback)
         {
             // Make sure it is RSA, as this is the only one Fusion will support.
-            // HACK: do this in a better way
-            RSA rsaPrivateKey = null;
-            if (signer.Certificate.HasPrivateKey)
-            {
-                rsaPrivateKey = signer.Certificate.GetRSAPrivateKey();
-            }
-            else if (signer.StrongNameKey is RSAKeyVault provider)
-            {
-                rsaPrivateKey = provider;
-            }
+            RSA rsaPrivateKey = signer.Certificate.HasPrivateKey
+                ? signer.Certificate.GetRSAPrivateKey()
+                : signer.StrongNameKey as RSA;
 
             if (rsaPrivateKey == null)
             {
