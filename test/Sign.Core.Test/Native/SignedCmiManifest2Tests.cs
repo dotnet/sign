@@ -28,6 +28,7 @@ namespace Sign.Core.Test
         public void Sign_Never_GeneratesSha1MessageImprint()
         {
             using (X509Certificate2 certificate = CreateCertificate())
+            using (X509Certificate2 publicKeyCertificate = new(certificate.Export(X509ContentType.Cert)))
             using (RSA privateKey = certificate.GetRSAPrivateKey()!)
             {
                 XmlDocument manifest = new() { PreserveWhitespace = true };
@@ -35,14 +36,14 @@ namespace Sign.Core.Test
                 using (StringReader reader = new(@$"<?xml version=""1.0"" encoding=""utf-8""?>
     <asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
       <assemblyIdentity name=""WinFormsApp.application"" version=""1.0.0.0"" publicKeyToken=""46deb9a9283e4567"" language=""neutral"" processorArchitecture=""msil"" xmlns=""urn:schemas-microsoft-com:asm.v1"" />
-      <publisherIdentity name=""{certificate.Subject}"" />
+      <publisherIdentity name=""{publicKeyCertificate.Subject}"" />
     </asmv1:assembly>"))
                 {
                     manifest.Load(reader);
                 }
 
                 SignedCmiManifest2 signedCmiManifest = new(manifest);
-                CmiManifestSigner2 signer = new(privateKey, certificate)
+                CmiManifestSigner2 signer = new(privateKey, publicKeyCertificate)
                 {
                     Flag = CmiManifestSignerFlag.DontReplacePublicKeyToken
                 };

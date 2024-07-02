@@ -5,7 +5,6 @@
 #define RUNTIME_TYPE_NETCORE
 
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
@@ -13,7 +12,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Xml;
-using RSAKeyVaultProvider;
 using _FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 #nullable disable
@@ -660,16 +658,9 @@ namespace System.Deployment.Internal.CodeSigning
         private static void AuthenticodeSignLicenseDom(XmlDocument licenseDom, CmiManifestSigner2 signer, string timeStampUrl, bool disallowMansignTimestampFallback)
         {
             // Make sure it is RSA, as this is the only one Fusion will support.
-            // HACK: do this in a better way
-            RSA rsaPrivateKey = null;
-            if (signer.Certificate.HasPrivateKey)
-            {
-                rsaPrivateKey = signer.Certificate.GetRSAPrivateKey();
-            }
-            else if (signer.StrongNameKey is RSAKeyVault provider)
-            {
-                rsaPrivateKey = provider;
-            }
+            RSA rsaPrivateKey = signer.Certificate.HasPrivateKey
+                ? signer.Certificate.GetRSAPrivateKey()
+                : signer.StrongNameKey as RSA;
 
             if (rsaPrivateKey == null)
             {
@@ -892,11 +883,6 @@ namespace System.Deployment.Internal.CodeSigning
             if (signatureParent == null)
             {
                 throw new CryptographicException(Win32.TRUST_E_SUBJECT_FORM_UNKNOWN);
-            }
-
-            if (!(signer.StrongNameKey is RSA))
-            {
-                throw new NotSupportedException();
             }
 
             // Setup up XMLDSIG engine.
