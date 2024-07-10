@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="ClientSecretOptionsObsolete">
         <source>The client secret options are obsolete and should no longer be specified.</source>
-        <target state="new">The client secret options are obsolete and should no longer be specified.</target>
+        <target state="translated">Параметры секрета клиента устарели и больше не должны указываться.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityClientIdOptionDescription">
         <source>The client id of a user assigned ManagedIdentity.</source>
-        <target state="new">The client id of a user assigned ManagedIdentity.</target>
+        <target state="translated">Идентификатор клиента для управляемого удостоверения, назначаемого пользователем.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityResourceIdOptionDescription">
         <source>The resource id of a user assigned ManagedIdentity.</source>
-        <target state="new">The resource id of a user assigned ManagedIdentity.</target>
+        <target state="translated">ИД ресурса для управляемого удостоверения, назначаемого пользователем.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">

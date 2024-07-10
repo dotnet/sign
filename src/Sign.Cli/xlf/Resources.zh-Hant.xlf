@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="ClientSecretOptionsObsolete">
         <source>The client secret options are obsolete and should no longer be specified.</source>
-        <target state="new">The client secret options are obsolete and should no longer be specified.</target>
+        <target state="translated">用戶端密碼選項已過時，應不再指定。</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityClientIdOptionDescription">
         <source>The client id of a user assigned ManagedIdentity.</source>
-        <target state="new">The client id of a user assigned ManagedIdentity.</target>
+        <target state="translated">使用者指派 ManagedIdentity 的用戶端識別碼。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityResourceIdOptionDescription">
         <source>The resource id of a user assigned ManagedIdentity.</source>
-        <target state="new">The resource id of a user assigned ManagedIdentity.</target>
+        <target state="translated">使用者指派 ManagedIdentity 的資源識別碼。</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">

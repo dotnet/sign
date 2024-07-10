@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="ClientSecretOptionsObsolete">
         <source>The client secret options are obsolete and should no longer be specified.</source>
-        <target state="new">The client secret options are obsolete and should no longer be specified.</target>
+        <target state="translated">클라이언트 비밀 옵션은 사용되지 않으므로 더 이상 지정하지 않아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityClientIdOptionDescription">
         <source>The client id of a user assigned ManagedIdentity.</source>
-        <target state="new">The client id of a user assigned ManagedIdentity.</target>
+        <target state="translated">ManagedIdentity가 할당된 사용자의 클라이언트 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityResourceIdOptionDescription">
         <source>The resource id of a user assigned ManagedIdentity.</source>
-        <target state="new">The resource id of a user assigned ManagedIdentity.</target>
+        <target state="translated">사용자가 할당한 ManagedIdentity의 리소스 ID입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">

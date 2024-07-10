@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="AccountOptionDescription">
         <source>The Trusted Signing Account name.</source>
-        <target state="new">The Trusted Signing Account name.</target>
+        <target state="translated">Nombre de la cuenta de firma de confianza.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateProfileOptionDescription">
         <source>The Certificate Profile name.</source>
-        <target state="new">The Certificate Profile name.</target>
+        <target state="translated">Nombre del perfil de certificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Trusted Signing.</source>
-        <target state="new">Use Trusted Signing.</target>
+        <target state="translated">Use la firma de confianza.</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">
         <source>The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</source>
-        <target state="new">The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</target>
+        <target state="translated">Punto de conexión de la cuenta de firma de confianza. El valor debe ser un identificador URI que se alinee con la región en la que se han creado la cuenta de firma de confianza y el perfil de certificado.</target>
         <note />
       </trans-unit>
     </body>
