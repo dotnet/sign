@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="AccountOptionDescription">
         <source>The Trusted Signing Account name.</source>
-        <target state="new">The Trusted Signing Account name.</target>
+        <target state="translated">Nome dell'account di firma attendibile.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateProfileOptionDescription">
         <source>The Certificate Profile name.</source>
-        <target state="new">The Certificate Profile name.</target>
+        <target state="translated">Nome profilo certificato.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Trusted Signing.</source>
-        <target state="new">Use Trusted Signing.</target>
+        <target state="translated">Usa firma attendibile.</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">
         <source>The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</source>
-        <target state="new">The Trusted Signing Account endpoint. The value must be a URI that aligns to the region that your Trusted Signing Account and Certificate Profile were created in.</target>
+        <target state="translated">Endpoint dell'account di firma attendibile. Il valore deve essere un URI allineato all'area in cui sono stati creati l'account di firma attendibile e il profilo certificato.</target>
         <note />
       </trans-unit>
     </body>

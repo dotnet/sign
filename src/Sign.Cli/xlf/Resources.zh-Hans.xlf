@@ -19,17 +19,17 @@
       </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure.</source>
-        <target state="new">Client ID to authenticate to Azure.</target>
+        <target state="translated">要向 Azure 进行身份验证的客户端 ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientSecretOptionDescription">
         <source>Client secret to authenticate to Azure.</source>
-        <target state="new">Client secret to authenticate to Azure.</target>
+        <target state="translated">要向 Azure 进行身份验证的客户端密码。</target>
         <note />
       </trans-unit>
       <trans-unit id="ClientSecretOptionsObsolete">
         <source>The client secret options are obsolete and should no longer be specified.</source>
-        <target state="new">The client secret options are obsolete and should no longer be specified.</target>
+        <target state="translated">客户端密码选项已过时，不应再指定。</target>
         <note />
       </trans-unit>
       <trans-unit id="CodeCommandDescription">
@@ -94,22 +94,22 @@
       </trans-unit>
       <trans-unit id="ManagedIdentityClientIdOptionDescription">
         <source>The client id of a user assigned ManagedIdentity.</source>
-        <target state="new">The client id of a user assigned ManagedIdentity.</target>
+        <target state="translated">用户分配的 ManagedIdentity 的客户端 ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionDescription">
         <source>Managed identity to authenticate to Azure Key. (obsolete)</source>
-        <target state="new">Managed identity to authenticate to Azure Key. (obsolete)</target>
+        <target state="translated">要向 Azure Key 进行身份验证的托管标识。(已过时)</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityOptionObsolete">
         <source>The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</source>
-        <target state="new">The -kvm and --azure-key-vault-managed-identity options are obsolete and should no longer be specified.</target>
+        <target state="translated">-kvm 和 --azure-key-vault-managed-identity 选项已过时，不应再指定。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManagedIdentityResourceIdOptionDescription">
         <source>The resource id of a user assigned ManagedIdentity.</source>
-        <target state="new">The resource id of a user assigned ManagedIdentity.</target>
+        <target state="translated">用户分配的 ManagedIdentity 的资源 ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="MaxConcurrencyOptionDescription">
@@ -149,7 +149,7 @@
       </trans-unit>
       <trans-unit id="TenantIdOptionDescription">
         <source>Tenant ID to authenticate to Azure.</source>
-        <target state="new">Tenant ID to authenticate to Azure.</target>
+        <target state="translated">要向 Azure 进行身份验证的租户 ID。</target>
         <note />
       </trans-unit>
       <trans-unit id="TimestampDigestOptionDescription">
