@@ -7,6 +7,7 @@
     <IsShipping>true</IsShipping>
     <OutputType>Exe</OutputType>
     <PackageDescription>Sign CLI</PackageDescription>
+    <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
     <PackAsTool>true</PackAsTool>
     <RollForward>Major</RollForward>
     <RootNamespace>Sign.Cli</RootNamespace>
@@ -43,7 +44,7 @@
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </Content>
-    <Content Include="$(RepositoryRootDirectory)\README.md">
+    <Content Include="PACKAGE.md">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </Content>
