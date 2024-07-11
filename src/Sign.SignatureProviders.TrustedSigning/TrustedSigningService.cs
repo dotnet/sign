@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
 using Azure.Core;
@@ -67,13 +68,13 @@ namespace Sign.SignatureProviders.TrustedSigning
 
                     _logger.LogTrace(Resources.FetchingCertificate);
 
-                    var response = await _client.GetSignCertificateChainAsync(_accountName, _certificateProfileName, cancellationToken: cancellationToken);
+                    Response<Stream> response = await _client.GetSignCertificateChainAsync(_accountName, _certificateProfileName, cancellationToken: cancellationToken);
 
-                    var rawData = new MemoryStream();
-                    response.Value.CopyTo(rawData);
+                    byte[] rawData = new byte[response.Value.Length];
+                    response.Value.Read(rawData, 0, rawData.Length);
 
                     X509Certificate2Collection collection = [];
-                    collection.Import(rawData.ToArray());
+                    collection.Import(rawData);
 
                     // This should contain the certificate chain in root->leaf order.
                     _certificate = collection[collection.Count - 1];
