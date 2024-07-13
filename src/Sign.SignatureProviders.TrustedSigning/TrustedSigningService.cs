@@ -60,6 +60,7 @@ namespace Sign.SignatureProviders.TrustedSigning
             }
 
             await _mutex.WaitAsync(cancellationToken);
+
             try
             {
                 if (_certificate is null)
@@ -80,6 +81,7 @@ namespace Sign.SignatureProviders.TrustedSigning
                     _certificate = collection[collection.Count - 1];
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                    response.Value.Dispose();
                 }
             }
             finally
