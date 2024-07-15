@@ -5,7 +5,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
@@ -61,6 +60,7 @@ namespace Sign.SignatureProviders.TrustedSigning
             }
 
             await _mutex.WaitAsync(cancellationToken);
+
             try
             {
                 if (_certificate is null)
@@ -69,10 +69,11 @@ namespace Sign.SignatureProviders.TrustedSigning
 
                     _logger.LogTrace(Resources.FetchingCertificate);
 
-                    CertificateProfileSignOperation operation = await _client.StartSignAsync(_accountName, _certificateProfileName, _emptyRequest, cancellationToken: cancellationToken);
-                    Response<SignStatus> response = await operation.WaitForCompletionAsync(cancellationToken);
+                    Response<Stream> response = await _client.GetSignCertificateChainAsync(_accountName, _certificateProfileName, cancellationToken: cancellationToken);
 
-                    byte[] rawData = Convert.FromBase64String(Encoding.UTF8.GetString(response.Value.SigningCertificate));
+                    byte[] rawData = new byte[response.Value.Length];
+                    response.Value.Read(rawData, 0, rawData.Length);
+
                     X509Certificate2Collection collection = [];
                     collection.Import(rawData);
 
@@ -80,6 +81,7 @@ namespace Sign.SignatureProviders.TrustedSigning
                     _certificate = collection[collection.Count - 1];
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                    response.Value.Dispose();
                 }
             }
             finally
