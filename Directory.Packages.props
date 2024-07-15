@@ -4,9 +4,9 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.Core" Version="1.38.0" />
     <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.106" />
-    <PackageVersion Include="Azure.Identity" Version="1.11.4" />
+    <PackageVersion Include="Azure.Core" Version="1.41.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.12.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.6.0" />
     <PackageVersion Include="AzureSign.Core" Version="4.0.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
@@ -22,15 +22,15 @@
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
-    <PackageVersion Include="NuGet.Packaging" Version="6.10.0" />
+    <PackageVersion Include="NuGet.Packaging" Version="6.10.1" />
     <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
-    <PackageVersion Include="NuGet.Protocol" Version="6.10.0" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.10.1" />
     <PackageVersion Include="NuGetKeyVaultSignTool.Core" Version="3.2.3" />
     <PackageVersion Include="RSAKeyVaultProvider" Version="2.1.1" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="8.0.0" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.1" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.3" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.4" />
     <PackageVersion Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" Version="24.0.15760" />
   </ItemGroup>
 </Project>
