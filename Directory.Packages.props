@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.Core" Version="1.38.0" />
-    <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.96" />
+    <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.106" />
     <PackageVersion Include="Azure.Identity" Version="1.11.4" />
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.6.0" />
     <PackageVersion Include="AzureSign.Core" Version="4.0.1" />
