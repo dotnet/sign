@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Security.KeyVault.Keys" PrivateAssets="analyzers;build;compile;contentfiles" />
+    <PackageReference Include="Azure.Security.KeyVault.Certificates" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="AzureSign.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />

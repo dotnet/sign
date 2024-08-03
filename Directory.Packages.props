@@ -7,6 +7,7 @@
     <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.106" />
     <PackageVersion Include="Azure.Core" Version="1.42.0" />
     <PackageVersion Include="Azure.Identity" Version="1.12.0" />
+    <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.6.0" />
     <!-- Lift this dependency from NuGetKeyVaultSignTool.Core to get the latest version. -->
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.6.0" />
