@@ -5,7 +5,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using NuGetKeyVaultSignTool;
 
 namespace Sign.Core
 {
@@ -17,14 +16,16 @@ namespace Sign.Core
         {
         }
 
-        public async Task<bool> SignAsync(FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
+        public async Task<bool> SignAsync(FileInfo packageFile, RSA rsa, X509Certificate2 certificate, SignOptions options)
         {
-            ArgumentNullException.ThrowIfNull(file, nameof(file));
+            ArgumentNullException.ThrowIfNull(packageFile, nameof(packageFile));
+            ArgumentNullException.ThrowIfNull(rsa, nameof(rsa));
+            ArgumentNullException.ThrowIfNull(certificate, nameof(certificate));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            Logger.LogInformation(Resources.SigningFile, file.FullName);
+            Logger.LogInformation(Resources.SigningFile, packageFile.FullName);
 
-            SignCommand signCommand = new(Logger);
+            NuGetPackageSigner signer = new(Logger);
 
             var result = false;
 
@@ -33,18 +34,16 @@ namespace Sign.Core
                 NuGet.Common.HashAlgorithmName fileHashAlgorithm = FromCryptographyName(options.FileHashAlgorithm);
                 NuGet.Common.HashAlgorithmName timestampHashAlgorithm = FromCryptographyName(options.TimestampHashAlgorithm);
 
-                result = await signCommand.SignAsync(
-                    file.FullName,
-                    file.FullName,
-                    options.TimestampService?.AbsoluteUri,
-                    v3ServiceIndex: null,
-                    packageOwners: null,
+                result = await signer.SignAsync(
+                    packageFile.FullName,
+                    packageFile.FullName,
+                    options.TimestampService,
                     NuGet.Packaging.Signing.SignatureType.Author,
                     fileHashAlgorithm,
                     timestampHashAlgorithm,
-                    overwrite: true,
                     certificate,
-                    rsaPrivateKey);
+                    rsa,
+                    overwrite: true);
             }
             catch (Exception e)
             {
