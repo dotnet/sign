@@ -8,9 +8,10 @@ using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Keys.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RSAKeyVaultProvider;
 using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault
@@ -48,10 +49,10 @@ namespace Sign.SignatureProviders.KeyVault
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
             KeyVaultCertificateWithPolicy certificateWithPolicy = await _task!;
-            X509Certificate2 certificate = new(certificateWithPolicy.Cer);
-            Uri keyIdentifier = certificateWithPolicy.KeyId;
+            KeyClient keyClient = new(certificateWithPolicy.KeyId, _tokenCredential);
+            CryptographyClient cryptoClient = keyClient.GetCryptographyClient(certificateWithPolicy.Name);
 
-            return RSAFactory.Create(_tokenCredential, keyIdentifier, certificate);
+            return await cryptoClient.CreateRSAAsync(cancellationToken);
         }
 
         private async Task<KeyVaultCertificateWithPolicy> GetKeyVaultCertificateAsync(

@@ -6,9 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Security.KeyVault.Keys" PrivateAssets="analyzers;build;compile;contentfiles" />
-    <PackageReference Include="Azure.Security.KeyVault.Certificates" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="AzureSign.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
+    <PackageReference Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
@@ -16,11 +15,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Protocol" />
-    <PackageReference Include="NuGetKeyVaultSignTool.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Security.Cryptography.Xml" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Text.Json" PrivateAssets="analyzers;build;compile;contentfiles" />
-    <PackageReference Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" />
   </ItemGroup>
 
   <ItemGroup>
