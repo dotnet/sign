@@ -3,10 +3,8 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Azure.Core;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Sign.TestInfrastructure;
 
 namespace Sign.SignatureProviders.KeyVault.Test
 {
@@ -15,29 +13,13 @@ namespace Sign.SignatureProviders.KeyVault.Test
         private readonly static TokenCredential TokenCredential = Mock.Of<TokenCredential>();
         private readonly static Uri KeyVaultUrl = new("https://keyvault.test");
         private const string CertificateName = "a";
-        private readonly IServiceProvider serviceProvider;
-
-        public KeyVaultServiceTests()
-        {
-            ServiceCollection services = new();
-            services.AddSingleton<ILogger<KeyVaultService>>(new TestLogger<KeyVaultService>());
-            serviceProvider = services.BuildServiceProvider();
-        }
-
-        [Fact]
-        public void Constructor_WhenServiceProviderIsNull_Throws()
-        {
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider: null!, TokenCredential, KeyVaultUrl, CertificateName));
-
-            Assert.Equal("serviceProvider", exception.ParamName);
-        }
+        private readonly static ILogger<KeyVaultService> logger = Mock.Of<ILogger<KeyVaultService>>();
 
         [Fact]
         public void Constructor_WhenTokenCredentialIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider, tokenCredential: null!, KeyVaultUrl, CertificateName));
+                () => new KeyVaultService(tokenCredential: null!, KeyVaultUrl, CertificateName, logger));
 
             Assert.Equal("tokenCredential", exception.ParamName);
         }
@@ -46,7 +28,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenKeyVaultUrlIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider, TokenCredential, keyVaultUrl: null!, CertificateName));
+                () => new KeyVaultService(TokenCredential, keyVaultUrl: null!, CertificateName, logger));
 
             Assert.Equal("keyVaultUrl", exception.ParamName);
         }
@@ -55,7 +37,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(serviceProvider, TokenCredential, KeyVaultUrl, certificateName: null!));
+                () => new KeyVaultService(TokenCredential, KeyVaultUrl, certificateName: null!, logger));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
@@ -64,9 +46,18 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new KeyVaultService(serviceProvider, TokenCredential, KeyVaultUrl, certificateName: string.Empty));
+                () => new KeyVaultService(TokenCredential, KeyVaultUrl, certificateName: string.Empty, logger));
 
             Assert.Equal("certificateName", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenLoggerIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new KeyVaultService(TokenCredential, KeyVaultUrl, CertificateName, logger: null!));
+
+            Assert.Equal("logger", exception.ParamName);
         }
     }
 }

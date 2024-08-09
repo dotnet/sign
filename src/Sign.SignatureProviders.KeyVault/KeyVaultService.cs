@@ -8,69 +8,90 @@ using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault
 {
-    internal sealed class KeyVaultService : ISignatureAlgorithmProvider, ICertificateProvider
+    internal sealed class KeyVaultService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
-        private readonly ILogger<KeyVaultService> _logger;
-        private readonly Task<KeyVaultCertificateWithPolicy>? _task;
         private readonly TokenCredential _tokenCredential;
+        private readonly Uri _keyVaultUrl;
+        private readonly string _certificateName;
+        private readonly ILogger<KeyVaultService> _logger;
+        private readonly SemaphoreSlim _mutex = new(1);
+        private KeyVaultCertificateWithPolicy? _certificateWithPolicy;
 
         internal KeyVaultService(
-            IServiceProvider serviceProvider,
             TokenCredential tokenCredential,
             Uri keyVaultUrl,
-            string certificateName)
+            string certificateName,
+            ILogger<KeyVaultService> logger)
         {
-            ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
             ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
             ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
             ArgumentException.ThrowIfNullOrEmpty(certificateName, nameof(certificateName));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _tokenCredential = tokenCredential;
-            _logger = serviceProvider.GetRequiredService<ILogger<KeyVaultService>>();
+            _keyVaultUrl = keyVaultUrl;
+            _certificateName = certificateName;
+            _logger = logger;
+        }
 
-            _task = GetKeyVaultCertificateAsync(keyVaultUrl, tokenCredential, certificateName);
+        public void Dispose()
+        {
+            _mutex.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificateWithPolicy certificateWithPolicy = await _task!;
+            KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
 
             return new X509Certificate2(certificateWithPolicy.Cer);
         }
 
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificateWithPolicy certificateWithPolicy = await _task!;
-            KeyClient keyClient = new(certificateWithPolicy.KeyId, _tokenCredential);
-            CryptographyClient cryptoClient = keyClient.GetCryptographyClient(certificateWithPolicy.Name);
+            KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
 
+            CryptographyClient cryptoClient = new(certificateWithPolicy.KeyId, _tokenCredential);
             return await cryptoClient.CreateRSAAsync(cancellationToken);
         }
 
-        private async Task<KeyVaultCertificateWithPolicy> GetKeyVaultCertificateAsync(
-            Uri keyVaultUrl,
-            TokenCredential tokenCredential,
-            string certificateName)
+        private async Task<KeyVaultCertificateWithPolicy> GetCertificateWithPolicyAsync(CancellationToken cancellationToken)
         {
-            Stopwatch stopwatch = Stopwatch.StartNew();
+            if (_certificateWithPolicy is not null)
+            {
+                return _certificateWithPolicy;
+            }
 
-            _logger.LogTrace(Resources.FetchingCertificate);
+            await _mutex.WaitAsync(cancellationToken);
 
-            CertificateClient client = new(keyVaultUrl, tokenCredential);
-            Response<KeyVaultCertificateWithPolicy>? response =
-                await client.GetCertificateAsync(certificateName).ConfigureAwait(false);
+            try
+            {
+                if (_certificateWithPolicy is null)
+                {
+                    Stopwatch stopwatch = Stopwatch.StartNew();
 
-            _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                    _logger.LogTrace(Resources.FetchingCertificate);
 
-            return response.Value;
+                    CertificateClient client = new(_keyVaultUrl, _tokenCredential);
+                    Response<KeyVaultCertificateWithPolicy> response = await client.GetCertificateAsync(_certificateName, cancellationToken);
+
+                    _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+
+                    _certificateWithPolicy = response.Value;
+                }
+            }
+            finally
+            {
+                _mutex.Release();
+            }
+
+            return _certificateWithPolicy;
         }
     }
 }
