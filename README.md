@@ -46,6 +46,8 @@ You should also use the `filter` parameter with the file list to sign, something
   - Key permissions
     - Cryptographic Operations
       - Sign
+    - Key Management Operations
+      - Get  _(Note:  this is only for the public key not the private key.)_
   - Certificate permissions
     - Certificate Management Operations
       - Get
@@ -70,7 +72,7 @@ The following information is needed for the signing build:
 * `Tenant Id` Azure AD tenant
 * `Client Id` / `Application Id` ServicePrincipal identifier
 * `Key Vault Url` Url to Key Vault. Must be a Premium Sku for EV code signing certificates and all certificates issued after June 2023
-* `Certificate Id` Id of the certificate in Key Vault. 
+* `Certificate Id` Id of the certificate in Key Vault.
 * `Client Secret` for Azure DevOps Pipelines
 * `Subscription Id` for GitHub Actions
 
