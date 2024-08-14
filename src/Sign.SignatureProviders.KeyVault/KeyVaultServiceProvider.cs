@@ -3,6 +3,8 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Azure.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault
@@ -57,7 +59,8 @@ namespace Sign.SignatureProviders.KeyVault
                     return _keyVaultService;
                 }
 
-                _keyVaultService = new KeyVaultService(serviceProvider, _tokenCredential, _keyVaultUrl, _certificateName);
+                ILogger<KeyVaultService> logger = serviceProvider.GetRequiredService<ILogger<KeyVaultService>>();
+                _keyVaultService = new KeyVaultService(_tokenCredential, _keyVaultUrl, _certificateName, logger);
             }
 
             return _keyVaultService;
