@@ -25,6 +25,7 @@ namespace Sign.SignatureProviders.CertificateStore
         private readonly string? _certificatePath;
         private readonly string? _certificatePassword;
         private readonly bool _isPrivateMachineKeyContainer;
+        private readonly bool _isUserProtectedKey;
 
         private readonly ILogger<CertificateStoreService> _logger;
 
@@ -36,7 +37,8 @@ namespace Sign.SignatureProviders.CertificateStore
             string? privateKeyContainer,
             string? certificatePath,
             string? certificatePassword,
-            bool isPrivateMachineKeyContainer)
+            bool isPrivateMachineKeyContainer,
+            bool isUserProtectedKey)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
             ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
@@ -46,6 +48,7 @@ namespace Sign.SignatureProviders.CertificateStore
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isPrivateMachineKeyContainer = isPrivateMachineKeyContainer;
+            _isUserProtectedKey = isUserProtectedKey;
             _certificatePath = certificatePath;
             _certificatePassword = certificatePassword;
 
@@ -65,7 +68,7 @@ namespace Sign.SignatureProviders.CertificateStore
             // Get RSA from a cryptographic service provider
             if (!string.IsNullOrEmpty(_privateKeyContainer) && !string.IsNullOrEmpty(_cryptoServiceProvider))
             {
-                var cngKeyFlags = CngKeyOpenOptions.Silent;
+                var cngKeyFlags = _isUserProtectedKey ? CngKeyOpenOptions.None : CngKeyOpenOptions.Silent;
 
                 if (_isPrivateMachineKeyContainer)
                 {

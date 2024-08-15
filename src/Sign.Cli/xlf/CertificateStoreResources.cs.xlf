@@ -42,6 +42,11 @@
         <target state="translated">Použijte kontejner privátního klíče na úrovni počítače.  (Výchozí hodnota je na úrovni uživatele.)</target>
         <note />
       </trans-unit>
+      <trans-unit id="UserProtectedKeyDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

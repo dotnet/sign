@@ -42,6 +42,11 @@
         <target state="translated">コンピューター レベルの秘密キー コンテナーを使用します。(既定値はユーザー レベルです)。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UserProtectedKeyDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

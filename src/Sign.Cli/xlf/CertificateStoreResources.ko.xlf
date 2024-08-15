@@ -42,6 +42,11 @@
         <target state="translated">컴퓨터 수준 프라이빗 키 컨테이너를 사용합니다.  (기본값은 사용자 수준입니다.)</target>
         <note />
       </trans-unit>
+      <trans-unit id="UserProtectedKeyDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

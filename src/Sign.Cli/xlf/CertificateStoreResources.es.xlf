@@ -42,6 +42,11 @@
         <target state="translated">Use un contenedor de claves privadas de nivel de máquina.  (El valor predeterminado es de nivel de usuario).</target>
         <note />
       </trans-unit>
+      <trans-unit id="UserProtectedKeyDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -42,6 +42,11 @@
         <target state="translated">Use um contêiner de chave privada no nível do computador.  (O padrão é o nível do usuário.)</target>
         <note />
       </trans-unit>
+      <trans-unit id="UserProtectedKeyDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

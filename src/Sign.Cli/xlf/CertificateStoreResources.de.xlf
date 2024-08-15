@@ -42,6 +42,11 @@
         <target state="translated">Verwenden Sie einen Container mit privatem Schlüssel auf Computerebene.  (Der Standardwert ist Benutzerebene.)</target>
         <note />
       </trans-unit>
+      <trans-unit id="UserProtectedKeyDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

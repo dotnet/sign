@@ -131,5 +131,14 @@ namespace Sign.Cli {
                 return ResourceManager.GetString("UseMachineKeyContainerOptionDescription", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow user interactions (such as a dialog box) when a key is accessed..
+        /// </summary>
+        internal static string UserProtectedKeyDescription {
+            get {
+                return ResourceManager.GetString("UserProtectedKeyDescription", resourceCulture);
+            }
+        }
     }
 }

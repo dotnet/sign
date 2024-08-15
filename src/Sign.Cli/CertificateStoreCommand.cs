@@ -21,6 +21,7 @@ namespace Sign.Cli
         internal Option<string?> CryptoServiceProviderOption { get; } = new(["--crypto-service-provider", "-csp"], CertificateStoreResources.CspOptionDescription);
         internal Option<string?> PrivateKeyContainerOption { get; } = new(["--key-container", "-k"], CertificateStoreResources.KeyContainerOptionDescription);
         internal Option<bool> UseMachineKeyContainerOption { get; } = new(["--use-machine-key-container", "-km"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
+        internal Option<bool> UserProtectedKeyOption { get; } = new(["--user-protected-key", "-upk"], getDefaultValue: () => false, description: CertificateStoreResources.UserProtectedKeyDescription);
 
         internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
 
@@ -38,6 +39,7 @@ namespace Sign.Cli
             AddOption(CryptoServiceProviderOption);
             AddOption(PrivateKeyContainerOption);
             AddOption(UseMachineKeyContainerOption);
+            AddOption(UserProtectedKeyOption);
             AddArgument(FileArgument);
 
             this.SetHandler(async (InvocationContext context) =>
@@ -59,6 +61,7 @@ namespace Sign.Cli
                 string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
                 string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainerOption);
                 bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainerOption);
+                bool userProtectedKey = context.ParseResult.GetValueForOption(UserProtectedKeyOption);
 
                 // Certificate fingerprint is required in case the provided certificate container contains multiple certificates.
                 if (string.IsNullOrEmpty(certificateFingerprint))
@@ -105,7 +108,8 @@ namespace Sign.Cli
                     privateKeyContainer,
                     certificatePath,
                     certificatePassword,
-                    useMachineKeyContainer);
+                    useMachineKeyContainer,
+                    userProtectedKey);
 
                 await codeCommand.HandleAsync(context, serviceProviderFactory, certificateStoreServiceProvider, fileArgument);
             });

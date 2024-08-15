@@ -146,4 +146,7 @@
   <data name="UseMachineKeyContainerOptionDescription" xml:space="preserve">
     <value>Use a machine-level private key container.  (The default is user-level.)</value>
   </data>
+  <data name="UserProtectedKeyDescription" xml:space="preserve">
+    <value>Allow user interactions (such as a dialog box) when a key is accessed.</value>
+  </data>
 </root>
