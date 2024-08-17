@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AllowUiPromptsDescription" xml:space="preserve">
+    <value>Allow user interactions (such as a dialog box) when a key is accessed.</value>
+  </data>
   <data name="CertificateFileOptionDescription" xml:space="preserve">
     <value>PFX, P7B, or CER file containing a certificate and potentially a private key.</value>
     <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
@@ -145,8 +148,5 @@
   </data>
   <data name="UseMachineKeyContainerOptionDescription" xml:space="preserve">
     <value>Use a machine-level private key container.  (The default is user-level.)</value>
-  </data>
-  <data name="UserProtectedKeyDescription" xml:space="preserve">
-    <value>Allow user interactions (such as a dialog box) when a key is accessed.</value>
   </data>
 </root>

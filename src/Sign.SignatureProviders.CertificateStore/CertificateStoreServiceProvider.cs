@@ -19,7 +19,7 @@ namespace Sign.SignatureProviders.CertificateStore
         private readonly string? _certificateFilePath;
         private readonly string? _certificateFilePassword;
         private readonly bool _isMachineKeyContainer;
-        private readonly bool _isUserProtectedKey;
+        private readonly bool _isUiAllowed;
 
         private readonly object _lockObject = new();
         private CertificateStoreService? _certificateStoreService;
@@ -34,7 +34,7 @@ namespace Sign.SignatureProviders.CertificateStore
         /// <param name="certificateFilePath">Optional path to the PFX, P7B, or CER file with the certificate.</param>
         /// <param name="certificateFilePassword">Optional password used to open the provided certificate.</param>
         /// <param name="isMachineKeyContainer">Optional Flag used to denote per-machine key container should be used.</param>
-        /// <param name="isUserProtectedKey">Optional Flag used to denote when user interactions are expected during key retrieval.</param>
+        /// <param name="isUiAllowed">Optional Flag used to denote when user interactions are expected during key retrieval.</param>
         /// <exception cref="ArgumentException">Thrown when a required argument is empty not valid.</exception>
         internal CertificateStoreServiceProvider(
             string certificateFingerprint,
@@ -44,7 +44,7 @@ namespace Sign.SignatureProviders.CertificateStore
             string? certificateFilePath,
             string? certificateFilePassword,
             bool isMachineKeyContainer,
-            bool isUserProtectedKey)
+            bool isUiAllowed)
         {
             ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
 
@@ -61,7 +61,7 @@ namespace Sign.SignatureProviders.CertificateStore
             _cryptoServiceProvider = cryptoServiceProvider;
             _privateKeyContainer = privateKeyContainer;
             _isMachineKeyContainer = isMachineKeyContainer;
-            _isUserProtectedKey = isUserProtectedKey;
+            _isUiAllowed = isUiAllowed;
             _certificateFilePath = certificateFilePath;
             _certificateFilePassword = certificateFilePassword;
         }
@@ -103,7 +103,7 @@ namespace Sign.SignatureProviders.CertificateStore
                     _certificateFilePath,
                     _certificateFilePassword,
                     _isMachineKeyContainer,
-                    _isUserProtectedKey);
+                    _isUiAllowed);
             }
 
             return _certificateStoreService;

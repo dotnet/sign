@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../CertificateStoreResources.resx">
     <body>
+      <trans-unit id="AllowUiPromptsDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
         <target state="translated">包含证书和可能包含私钥的 PFX、P7B 或 CER 文件。</target>
@@ -40,11 +45,6 @@
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
         <target state="translated">使用计算机级私钥容器。(默认值为用户级别。)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UserProtectedKeyDescription">
-        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
-        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
         <note />
       </trans-unit>
     </body>

@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../CertificateStoreResources.resx">
     <body>
+      <trans-unit id="AllowUiPromptsDescription">
+        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
         <target state="translated">証明書と潜在的に秘密キーを含む PFX、P7B、または CER ファイル。</target>
@@ -40,11 +45,6 @@
       <trans-unit id="UseMachineKeyContainerOptionDescription">
         <source>Use a machine-level private key container.  (The default is user-level.)</source>
         <target state="translated">コンピューター レベルの秘密キー コンテナーを使用します。(既定値はユーザー レベルです)。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UserProtectedKeyDescription">
-        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
-        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
         <note />
       </trans-unit>
     </body>

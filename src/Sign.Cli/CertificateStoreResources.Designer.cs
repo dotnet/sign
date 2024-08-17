@@ -61,6 +61,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow user interactions (such as a dialog box) when a key is accessed..
+        /// </summary>
+        internal static string AllowUiPromptsDescription {
+            get {
+                return ResourceManager.GetString("AllowUiPromptsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PFX, P7B, or CER file containing a certificate and potentially a private key..
         /// </summary>
         internal static string CertificateFileOptionDescription {
@@ -129,15 +138,6 @@ namespace Sign.Cli {
         internal static string UseMachineKeyContainerOptionDescription {
             get {
                 return ResourceManager.GetString("UseMachineKeyContainerOptionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow user interactions (such as a dialog box) when a key is accessed..
-        /// </summary>
-        internal static string UserProtectedKeyDescription {
-            get {
-                return ResourceManager.GetString("UserProtectedKeyDescription", resourceCulture);
             }
         }
     }
