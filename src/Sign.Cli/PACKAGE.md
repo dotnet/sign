@@ -4,6 +4,12 @@ Sign CLI is a .NET tool that provides digital signing for .NET assemblies, packa
 
 The tool signs files inside-out, starting with the most nested files and then the outer files, ensuring everything is signed in the correct order.
 
+## Prerequisites
+
+- An up-to-date x64-based version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
+- [.NET 8 SDK or later](https://dotnet.microsoft.com/download)
+- [Microsoft Visual C++ 14 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+
 ## Usage
 
 - For help with...

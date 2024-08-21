@@ -230,4 +230,8 @@
   <data name="x86NotSupported" xml:space="preserve">
     <value>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</value>
   </data>
+  <data name="MsvcrtNotDetected" xml:space="preserve">
+    <value>Warning:  The Microsoft Visual C++ 14 runtime is required but was not detected on your system.  Download and install from https://aka.ms/vs/17/release/vc_redist.x64.exe</value>
+    <comment>{Locked="https://aka.ms/vs/17/release/vc_redist.x64.exe"} is a URL.</comment>
+  </data>
 </root>

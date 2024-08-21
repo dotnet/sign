@@ -4,6 +4,23 @@
 
 This project aims to make it easier to integrate secure code signing into a CI pipeline by using cloud-based hardware security module(HSM)-protected keys. This project is part of the [.NET Foundation](https://www.dotnetfoundation.org/) and operates under their [code of conduct](https://www.dotnetfoundation.org/code-of-conduct). It is licensed under [MIT](https://opensource.org/licenses/MIT) (an OSI approved license).
 
+## Prerequisites
+
+- An up-to-date x64-based version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
+- [.NET 8 SDK or later](https://dotnet.microsoft.com/download)
+- [Microsoft Visual C++ 14 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+
+## Install
+
+To install Sign CLI in the current directory, open a command prompt, path to the directory where Sign CLI will be installed, and execute:
+
+```
+dotnet new tool-manifest
+dotnet tool install --local --prerelease sign
+```
+
+To run Sign CLI, execute `dotnet sign` from the same directory.
+
 ## Design
 
 Given an initial file path or glob pattern, this tool recursively searches directories and containers to find signable files and containers.  For each signable artifact, the tool uses an implementation of [`System.Security.Cryptography.RSA`](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-7.0) that delegates the signing operation to Azure Key Vault.  The tool computes a digest (or hash) of the to-be-signed content and submits the digest --- not the original content --- to Azure Key Vault for digest signing.  The returned raw signature value is then incorporated in whatever signature format is appropriate for the file type.  Signable content is not sent to Azure Key Vault.
@@ -79,7 +96,6 @@ The following information is needed for the signing build:
 ## Creating a code signing certificate in Azure Key Vault
 
 Code signing certificates must use the `RSA-HSM` key type to ensure the private keys are stored in a FIPS 140-2 compliant manner. While you can import a certificate from a PFX file, if available, the most secure option is to create a new Certificate Signing Request to provide to your certificate authority, and then merge in the public certificate they issue. Detailed steps are available [here](https://learn.microsoft.com/en-us/answers/questions/732422/ev-code-signing-with-azure-keyvault-and-azure-pipe).
-
 
 ## Migrating from the legacy code signing service
 
