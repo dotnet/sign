@@ -126,8 +126,8 @@ namespace Sign.Core
 
                     // Inner files are now signed
                     // now look for the manifest file and sign that if we have one
-
-                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
+                    var appManifestFromDeploymentManifest = GetApplicationManifestForDeploymentManifest(file);
+                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => f.Name.Equals(appManifestFromDeploymentManifest?.Name, StringComparison.OrdinalIgnoreCase));
 
                     string fileArgs = $@"-update ""{manifestFile}"" {args}";
 
