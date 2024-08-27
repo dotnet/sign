@@ -61,6 +61,15 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty &apos;codebase&apos; attribute within the deployment manifest..
+        /// </summary>
+        internal static string ApplicationManifestNotFound {
+            get {
+                return ResourceManager.GetString("ApplicationManifestNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signing SignTool job with {count} files..
         /// </summary>
         internal static string AzureSignToolSignatureProviderSigning {

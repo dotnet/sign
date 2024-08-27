@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -272,6 +273,42 @@ namespace Sign.Core
                     file.CopyTo(fullDestPath, overwrite: true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Try and find the application manifest (.manifest) file from a clickonce application manifest (.application / .vsto
+        /// There might not be one, if the user is attempting to only re-sign the deployment manifest without touching other files.
+        /// </summary>
+        /// <param name="deploymentManifest"></param>
+        /// <returns>A FileInfo pointing to the Application manifest, or null if it couldn't be found.</returns>
+        /// <exception cref="InvalidDataException"></exception>
+        private FileInfo? GetApplicationManifestForDeploymentManifest(FileInfo deploymentManifest)
+        {
+            var xml = new XmlDocument();
+            xml.Load(deploymentManifest.FullName);
+            // there should only be a single result here, if the file is a valid clickonce manifest.
+            var dependentAssemblies = xml.GetElementsByTagName("dependentAssembly");
+            if (dependentAssemblies.Count != 1)
+            {
+                Logger.LogDebug(Resources.ApplicationManifestNotFound);
+                return null;
+            }
+
+            var node = dependentAssemblies.Item(0);
+            if (node is null || node.Attributes is null)
+            {
+                Logger.LogDebug(Resources.ApplicationManifestNotFound);
+                return null;
+            }
+
+            var applicationManifestFileNameAttribute = node.Attributes["codebase"];
+            if (applicationManifestFileNameAttribute is null || string.IsNullOrEmpty(applicationManifestFileNameAttribute.Value))
+            {
+                Logger.LogDebug(Resources.ApplicationManifestNotFound);
+                return null;
+            }
+
+            return new FileInfo(Path.Combine(deploymentManifest.Directory!.FullName, applicationManifestFileNameAttribute.Value));
         }
     }
 }
