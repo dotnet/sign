@@ -128,7 +128,7 @@ namespace Sign.Core
                     // Inner files are now signed
                     // now look for the manifest file and sign that if we have one
                     var appManifestFromDeploymentManifest = GetApplicationManifestForDeploymentManifest(file);
-                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => f.Name.Equals(appManifestFromDeploymentManifest?.Name, StringComparison.OrdinalIgnoreCase));
+                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => f.Name.Equals(appManifestFromDeploymentManifest, StringComparison.OrdinalIgnoreCase));
 
                     string fileArgs = $@"-update ""{manifestFile}"" {args}";
 
@@ -278,11 +278,13 @@ namespace Sign.Core
         /// <summary>
         /// Try and find the application manifest (.manifest) file from a clickonce application manifest (.application / .vsto
         /// There might not be one, if the user is attempting to only re-sign the deployment manifest without touching other files.
+        /// This is necessary because there might be multiple *.manifest files present, e.g. if a DLL that's part of the clickonce
+        /// package ships its own assembly manifest which isn't a clickonce application manifest.
         /// </summary>
         /// <param name="deploymentManifest"></param>
-        /// <returns>A FileInfo pointing to the Application manifest, or null if it couldn't be found.</returns>
+        /// <returns>A string containing the file name of the Application manifest, or null if it couldn't be found.</returns>
         /// <exception cref="InvalidDataException"></exception>
-        private FileInfo? GetApplicationManifestForDeploymentManifest(FileInfo deploymentManifest)
+        private string? GetApplicationManifestForDeploymentManifest(FileInfo deploymentManifest)
         {
             var xml = new XmlDocument();
             xml.Load(deploymentManifest.FullName);
@@ -308,7 +310,17 @@ namespace Sign.Core
                 return null;
             }
 
-            return new FileInfo(Path.Combine(deploymentManifest.Directory!.FullName, applicationManifestFileNameAttribute.Value));
+            // the codebase attribute can be a relative file path (e.g. Application Files\MyApp_1_0_0_0\MyApp.dll.manifest) or
+            // a URI (e.g. https://my.cdn.com/clickonce/MyApp/ApplicationFiles/MyApp_1_0_0_0/MyApp.dll.manifest) so we need to
+            // handle both cases and extract just the file name part.
+            //
+            // we only try and parse absolute uris, because a relative uri can just be treated like a file path for our purposes
+            if (Uri.TryCreate(applicationManifestFileNameAttribute.Value, UriKind.Absolute, out var uri))
+            {
+                Path.GetFileName(uri.LocalPath); // works for http(s) and file:// uris
+            }
+
+            return Path.GetFileName(applicationManifestFileNameAttribute.Value);
         }
     }
 }
