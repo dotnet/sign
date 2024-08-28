@@ -563,6 +563,147 @@ namespace Sign.Core.Test
             }
         }
 
+        [Fact]
+        public async Task SignAsync_WhenFilesIsClickOnce_DetectsCorrectManifest()
+        {
+            const string commonName = "Test certificate (DO NOT TRUST)";
+
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo applicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    DeploymentManifestValidContent,
+                    "MyApp.application");
+                // This is an incomplete manifest --- just enough to satisfy SignAsync(...)'s requirements.
+                FileInfo manifestFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
+  <publisherIdentity name=""CN={commonName}, O=unit.test"" />
+</asmv1:assembly>",
+                    "MyApp_1_0_0_0", "MyApp.dll.manifest");
+                // A second, unrelated manifest file, which we want to ignore and not sign.
+                FileInfo secondManifestFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
+  <publisherIdentity name=""CN={commonName}, O=unit.test"" />
+</asmv1:assembly>",
+                    "MyApp_1_0_0_0", "Some.Dependency.dll.manifest");
+
+
+                SignOptions options = new(
+                    "ApplicationName",
+                    "PublisherName",
+                    "Description",
+                    new Uri("https://description.test"),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("http://timestamp.test"),
+                    matcher: null,
+                    antiMatcher: null);
+
+                using (X509Certificate2 certificate = CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(certificate);
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    Mock<IServiceProvider> serviceProvider = new();
+                    AggregatingSignerSpy aggregatingSignerSpy = new();
+
+                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
+                        .Returns(aggregatingSignerSpy);
+
+                    Mock<IMageCli> mageCli = new();
+                    string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
+                    mageCli.Setup(x => x.RunAsync(
+                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
+                        .ReturnsAsync(0);
+
+                    string publisher;
+
+                    if (string.IsNullOrEmpty(options.PublisherName))
+                    {
+                        publisher = certificate.SubjectName.Name;
+                    }
+                    else
+                    {
+                        publisher = options.PublisherName;
+                    }
+
+                    expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -appm \"{manifestFile.FullName}\" -SupportURL https://description.test/";
+                    mageCli.Setup(x => x.RunAsync(
+                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
+                        .ReturnsAsync(0);
+
+                    Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == manifestFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    ClickOnceSigner signer = new(
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        serviceProvider.Object,
+                        mageCli.Object,
+                        manifestSigner.Object,
+                        logger,
+                        fileMatcher.Object);
+
+                    await signer.SignAsync(new[] { applicationFile }, options);
+
+                    // Verify that files have been renamed back.
+                    foreach (FileInfo file in containerSpy.Files)
+                    {
+                        file.Refresh();
+
+                        Assert.True(file.Exists);
+                    }
+
+                    mageCli.VerifyAll();
+                    manifestSigner.VerifyAll();
+
+                    // make sure we never tried to sign the second manifest file
+                    manifestSigner.Verify(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == secondManifestFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))), Times.Never());
+                }
+            }
+        }
+
         private static FileInfo AddFile(
             ContainerSpy containerSpy,
             DirectoryInfo directory,
