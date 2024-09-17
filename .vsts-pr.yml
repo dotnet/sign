@@ -49,4 +49,4 @@ stages:
             mergeTestResults: true
             searchFolder: $(System.DefaultWorkingDirectory)
             testRunTitle: sign unit tests - $(Agent.JobName)
-          condition: failed()
+          condition: succeededOrFailed()
