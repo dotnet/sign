@@ -41,3 +41,12 @@ stages:
           name: Build
           displayName: Build and run tests
           condition: succeeded()
+        - task: PublishTestResults@2
+          displayName: 'Publish test results'
+          inputs:
+            testResultsFormat: xUnit
+            testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/**/*.xml'
+            mergeTestResults: true
+            searchFolder: $(System.DefaultWorkingDirectory)
+            testRunTitle: sign unit tests - $(Agent.JobName)
+          condition: failed()
