@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../CertificateStoreResources.resx">
     <body>
-      <trans-unit id="AllowUiPromptsDescription">
-        <source>Allow user interactions (such as a dialog box) when a key is accessed.</source>
-        <target state="new">Allow user interactions (such as a dialog box) when a key is accessed.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CertificateFileOptionDescription">
         <source>PFX, P7B, or CER file containing a certificate and potentially a private key.</source>
         <target state="translated">PFX, P7B o CER file contenente un certificato e potenzialmente una chiave privata.</target>
@@ -26,6 +21,11 @@
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">Provider del servizio di crittografia contenente il contenitore di chiavi private. Richiede /k e facoltativamente /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
+      </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
