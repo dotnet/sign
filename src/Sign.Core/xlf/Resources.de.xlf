@@ -5,7 +5,7 @@
       <trans-unit id="ApplicationManifestNotFound">
         <source>Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty 'codebase' attribute within the deployment manifest.</source>
         <target state="new">Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty 'codebase' attribute within the deployment manifest.</target>
-        <note />
+        <note>{Locked="&lt;dependentAssembly&gt;"} is an XML element.  {Locked="codebase"} is an XML attribute.</note>
       </trans-unit>
       <trans-unit id="AzureSignToolSignatureProviderSigning">
         <source>Signing SignTool job with {count} files.</source>

@@ -277,5 +277,6 @@
   </data>
   <data name="ApplicationManifestNotFound" xml:space="preserve">
     <value>Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty 'codebase' attribute within the deployment manifest.</value>
+    <comment>{Locked="&lt;dependentAssembly&gt;"} is an XML element.  {Locked="codebase"} is an XML attribute.</comment>
   </data>
 </root>
