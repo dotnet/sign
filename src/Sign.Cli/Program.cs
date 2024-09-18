@@ -51,9 +51,7 @@ namespace Sign.Cli
 
                 if (!File.Exists(vcRuntime140FilePath))
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(Resources.MsvcrtNotDetected);
-                    Console.ResetColor();
+                    WriteWarning(Resources.MsvcrtNotDetected);
                 }
 
                 try
@@ -69,6 +67,13 @@ namespace Sign.Cli
                     return ExitCode.Failed;
                 }
             }
+        }
+
+        private static void WriteWarning(string warning)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(warning);
+            Console.ResetColor();
         }
 
         internal static Parser CreateParser(IServiceProviderFactory? serviceProviderFactory = null)
