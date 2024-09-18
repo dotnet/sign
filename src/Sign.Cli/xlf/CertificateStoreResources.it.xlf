@@ -22,6 +22,11 @@
         <target state="translated">Provider del servizio di crittografia contenente il contenitore di chiavi private. Richiede /k e facoltativamente /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
         <target state="translated">Nome del contenitore di chiavi private.</target>

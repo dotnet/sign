@@ -97,6 +97,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow user interactions (such as a dialog box) when a private key is accessed..
+        /// </summary>
+        internal static string InteractiveDescription {
+            get {
+                return ResourceManager.GetString("InteractiveDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Private key container name..
         /// </summary>
         internal static string KeyContainerOptionDescription {

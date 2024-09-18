@@ -20,6 +20,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         private const string? CertificateFilePath = null;
         private const string? CertificateFilePassword = null;
         private const bool IsMachineKeyContainer = true;
+        private const bool IsInteractive = false;
         private readonly IServiceProvider serviceProvider;
 
         public CertificateStoreServiceProviderTests()
@@ -33,7 +34,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenCertificateFingerprintIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertificateStoreServiceProvider(certificateFingerprint: null!, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreServiceProvider(certificateFingerprint: null!, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("certificateFingerprint", exception.ParamName);
         }
@@ -42,7 +43,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenCertificateFingerprintIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new CertificateStoreServiceProvider(certificateFingerprint: string.Empty, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreServiceProvider(certificateFingerprint: string.Empty, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("certificateFingerprint", exception.ParamName);
         }
@@ -51,7 +52,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenCryptoServiceProviderIsNullAndPrivateKeyContainerIsNot_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider: null, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider: null, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("cryptoServiceProvider", exception.ParamName);
         }
@@ -60,7 +61,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenCryptoServiceProviderIsEmptyAndPrivateKeyContainerIsNot_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider: string.Empty, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider: string.Empty, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("cryptoServiceProvider", exception.ParamName);
         }
@@ -69,7 +70,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenPrivateKeyContainerIsNullAndCryptoServiceProviderIsNot_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, privateKeyContainer: null, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, privateKeyContainer: null, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("privateKeyContainer", exception.ParamName);
         }
@@ -78,7 +79,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenPrivateKeyContainerIsEmptyAndCryptoServiceProviderIsNot_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, privateKeyContainer: string.Empty, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, privateKeyContainer: string.Empty, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("privateKeyContainer", exception.ParamName);
         }
@@ -90,13 +91,13 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         [InlineData("", "")]
         public void Constructor_WhenPrivateKeyContainerAndCryptoServiceProviderAreBothNullOrEmpty_DoesNotThrow(string? cryptoServiceProvider, string? privateKeyContainer)
         {
-            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider, privateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer);
+            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider, privateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive);
         }
 
         [Fact]
         public void GetSignatureAlgorithmProvider_WhenServiceProviderIsNull_Throws()
         {
-            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer);
+            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive);
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
@@ -107,7 +108,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_ReturnsSameInstance()
         {
-            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer);
+            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive);
 
             ConcurrentBag<ISignatureAlgorithmProvider> signatureAlgorithmProviders = [];
             Parallel.For(0, 2, (_, _) =>
@@ -122,7 +123,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         [Fact]
         public void GetCertificateProvider_WhenServiceProviderIsNull_Throws()
         {
-            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer);
+            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive);
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => provider.GetCertificateProvider(serviceProvider: null!));
@@ -133,7 +134,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         [Fact]
         public void GetCertificateProvider_ReturnsSameInstance()
         {
-            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer);
+            CertificateStoreServiceProvider provider = new(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive);
 
             ConcurrentBag<ICertificateProvider> certificateProviders = [];
             Parallel.For(0, 2, (_, _) =>

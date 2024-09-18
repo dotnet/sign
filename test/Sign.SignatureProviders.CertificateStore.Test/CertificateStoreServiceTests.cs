@@ -18,6 +18,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         private const string? CertificateFilePath = null;
         private const string? CertificateFilePassword = null;
         private const bool IsMachineKeyContainer = true;
+        private const bool IsInteractive = false;
         private readonly IServiceProvider serviceProvider;
 
         public CertificateStoreServiceTests()
@@ -31,7 +32,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertificateStoreService(serviceProvider: null!, CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreService(serviceProvider: null!, CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
@@ -40,7 +41,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenCertificateFingerprintIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertificateStoreService(serviceProvider, certificateFingerprint: null!, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreService(serviceProvider, certificateFingerprint: null!, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("certificateFingerprint", exception.ParamName);
         }
@@ -49,7 +50,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         public void Constructor_WhenCertificateFingerprintIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new CertificateStoreService(serviceProvider, certificateFingerprint: string.Empty, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer));
+                () => new CertificateStoreService(serviceProvider, certificateFingerprint: string.Empty, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("certificateFingerprint", exception.ParamName);
         }

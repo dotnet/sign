@@ -22,6 +22,11 @@
         <target state="translated">秘密キー コンテナーを含む暗号化サービス プロバイダー。/k および必要に応じて /km が必要です。</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
         <target state="translated">秘密キー コンテナー名。</target>

@@ -22,6 +22,11 @@
         <target state="translated">Zprostředkovatel kryptografických služeb obsahující kontejner privátního klíče. Vyžaduje /k a volitelně /km.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
         <target state="translated">Název kontejneru privátního klíče.</target>

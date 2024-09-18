@@ -22,6 +22,11 @@
         <target state="translated">包含私密金鑰容器的加密服務提供者。需要 /k 並選擇性地 /km。</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
         <target state="translated">私密金鑰容器名稱。</target>

@@ -22,6 +22,11 @@
         <target state="translated">프라이빗 키 컨테이너를 포함하는 암호화 서비스 공급자입니다. /k 및 선택적으로 /km이 필요합니다.</target>
         <note>{Locked="/k", "/km"} are command line options.</note>
       </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
+        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
         <source>Private key container name.</source>
         <target state="translated">프라이빗 키 컨테이너 이름입니다.</target>
