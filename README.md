@@ -12,14 +12,13 @@ This project aims to make it easier to integrate secure code signing into a CI p
 
 ## Install
 
-To install Sign CLI in the current directory, open a command prompt, path to the directory where Sign CLI will be installed, and execute:
+To install Sign CLI in the current directory, open a command prompt, and execute:
 
 ```
-dotnet new tool-manifest
-dotnet tool install --local --prerelease sign
+dotnet tool install --tool-path . --prerelease sign
 ```
 
-To run Sign CLI, execute `dotnet sign` from the same directory.
+To run Sign CLI, execute `sign` from the same directory.
 
 ## Design
 
