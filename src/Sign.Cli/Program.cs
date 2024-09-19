@@ -44,6 +44,16 @@ namespace Sign.Cli
 
                 AddEnvironmentPath(netfxDir);
 
+                string systemDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
+
+                // NavSip.dll has a dependency on this.
+                string vcRuntime140FilePath = Path.Combine(systemDirectoryPath, "vcruntime140.dll");
+
+                if (!File.Exists(vcRuntime140FilePath))
+                {
+                    WriteWarning(Resources.MsvcrtNotDetected);
+                }
+
                 try
                 {
                     Parser parser = CreateParser();
@@ -57,6 +67,13 @@ namespace Sign.Cli
                     return ExitCode.Failed;
                 }
             }
+        }
+
+        private static void WriteWarning(string warning)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(warning);
+            Console.ResetColor();
         }
 
         internal static Parser CreateParser(IServiceProviderFactory? serviceProviderFactory = null)

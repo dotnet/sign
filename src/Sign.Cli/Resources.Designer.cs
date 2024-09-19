@@ -277,6 +277,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Warning:  The Microsoft Visual C++ 14 runtime is required but was not detected on your system.  Download and install from https://aka.ms/vs/17/release/vc_redist.x64.exe.
+        /// </summary>
+        internal static string MsvcrtNotDetected {
+            get {
+                return ResourceManager.GetString("MsvcrtNotDetected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No inputs found to sign..
         /// </summary>
         internal static string NoFilesToSign {

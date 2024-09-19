@@ -122,6 +122,11 @@
         <target state="translated">Un fichier ou un glob est requis.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MsvcrtNotDetected">
+        <source>Warning:  The Microsoft Visual C++ 14 runtime is required but was not detected on your system.  Download and install from https://aka.ms/vs/17/release/vc_redist.x64.exe</source>
+        <target state="new">Warning:  The Microsoft Visual C++ 14 runtime is required but was not detected on your system.  Download and install from https://aka.ms/vs/17/release/vc_redist.x64.exe</target>
+        <note>{Locked="https://aka.ms/vs/17/release/vc_redist.x64.exe"} is a URL.</note>
+      </trans-unit>
       <trans-unit id="NoFilesToSign">
         <source>No inputs found to sign.</source>
         <target state="translated">Aucune entrée à signer.</target>
