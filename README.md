@@ -99,3 +99,13 @@ Code signing certificates must use the `RSA-HSM` key type to ensure the private 
 ## Migrating from the legacy code signing service
 
 If you've been using the legacy code signing service, using `SignClient.exe` to upload files for signing, you can use your existing certificate and Key Vault with this new tool. You will need to create a new ServicePrincipal and assign it permissions as described above.
+
+## FAQ
+
+### What signature algorithms are supported?
+
+At this time, only RSA PKCS #1 v1.5 is supported.
+
+ECDSA is not supported.  Not only do some signature providers not support ECDSA, [the Microsoft Trusted Root Program does not support ECDSA code signing.](https://learn.microsoft.com/security/trusted-root/program-requirements#b-signature-requirements)
+
+> **Please Note**: Signatures using elliptical curve cryptography (ECC), such as ECDSA, aren't supported in Windows and newer Windows security features. Users utilizing these algorithms and certificates will face various errors and potential security risks. The Microsoft Trusted Root Program recommends that ECC/ECDSA certificates shouldn't be issued to subscribers due to this known incompatibility and risk.
