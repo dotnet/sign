@@ -128,22 +128,6 @@
     <value>The certificate is not yet time valid.</value>
     <comment>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</comment>
   </data>
-  <data name="CertificateNotFound" xml:space="preserve">
-    <value>Unable to find a matching certificate.</value>
-  </data>
-  <data name="CertificateNotFoundInFile" xml:space="preserve">
-    <value>Unable to find a certificate with a matching {0} fingerprint in {1}.</value>
-    <comment>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</comment>
-  </data>
-  <data name="CertificateNotFoundInMachineStore" xml:space="preserve">
-    <value>Unable to find a matching certificate in machine certificate store.</value>
-  </data>
-  <data name="CertificateNotFoundInUserStore" xml:space="preserve">
-    <value>Unable to find a matching certificate in user certificate store.</value>
-  </data>
-  <data name="CertificateRSANotFound" xml:space="preserve">
-    <value>Unable to acquire RSA private key for the provided certificate.</value>
-  </data>
   <data name="ClickOnceSignatureProviderSigning" xml:space="preserve">
     <value>Signing Mage job with {count} files.</value>
     <comment>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</comment>
@@ -182,13 +166,6 @@
   <data name="ExceptionWhileDeletingDirectory" xml:space="preserve">
     <value>An exception occurred while attempting to delete directory {path}.</value>
     <comment>{Placeholder="{path}"} is a directory path.</comment>
-  </data>
-  <data name="FetchedCertificate" xml:space="preserve">
-    <value>Fetched certificate. [{milliseconds} ms]</value>
-    <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
-  </data>
-  <data name="FetchingCertificate" xml:space="preserve">
-    <value>Fetching certificate from Azure Key Vault.</value>
   </data>
   <data name="MultiplePrivateKeyContainersError" xml:space="preserve">
     <value>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</value>
@@ -254,12 +231,6 @@
   <data name="SubmittingFileForSigning" xml:space="preserve">
     <value>Submitting {filePath} for signing.</value>
     <comment>{Placeholder="{filePath}"} is a file path.</comment>
-  </data>
-  <data name="UnsupportedPublicKeyAlgorithm" xml:space="preserve">
-    <value>The certificate has an unsupported public key algorithm.</value>
-  </data>
-  <data name="ValueCannotBeEmptyString" xml:space="preserve">
-    <value>The value cannot be an empty string.</value>
   </data>
   <data name="VsixSignatureProviderSigning" xml:space="preserve">
     <value>Signing VsixSignTool job with {count} files.</value>

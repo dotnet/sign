@@ -88,51 +88,6 @@ namespace Sign.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find a matching certificate..
-        /// </summary>
-        internal static string CertificateNotFound {
-            get {
-                return ResourceManager.GetString("CertificateNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find a certificate with a matching {0} fingerprint in {1}..
-        /// </summary>
-        internal static string CertificateNotFoundInFile {
-            get {
-                return ResourceManager.GetString("CertificateNotFoundInFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find a matching certificate in machine certificate store..
-        /// </summary>
-        internal static string CertificateNotFoundInMachineStore {
-            get {
-                return ResourceManager.GetString("CertificateNotFoundInMachineStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find a matching certificate in user certificate store..
-        /// </summary>
-        internal static string CertificateNotFoundInUserStore {
-            get {
-                return ResourceManager.GetString("CertificateNotFoundInUserStore", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to acquire RSA private key for the provided certificate..
-        /// </summary>
-        internal static string CertificateRSANotFound {
-            get {
-                return ResourceManager.GetString("CertificateRSANotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Signing Mage job with {count} files..
         /// </summary>
         internal static string ClickOnceSignatureProviderSigning {
@@ -219,24 +174,6 @@ namespace Sign.Core {
         internal static string ExceptionWhileDeletingDirectory {
             get {
                 return ResourceManager.GetString("ExceptionWhileDeletingDirectory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fetched certificate. [{milliseconds} ms].
-        /// </summary>
-        internal static string FetchedCertificate {
-            get {
-                return ResourceManager.GetString("FetchedCertificate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Fetching certificate from Azure Key Vault..
-        /// </summary>
-        internal static string FetchingCertificate {
-            get {
-                return ResourceManager.GetString("FetchingCertificate", resourceCulture);
             }
         }
         
@@ -390,24 +327,6 @@ namespace Sign.Core {
         internal static string SubmittingFileForSigning {
             get {
                 return ResourceManager.GetString("SubmittingFileForSigning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The certificate has an unsupported public key algorithm..
-        /// </summary>
-        internal static string UnsupportedPublicKeyAlgorithm {
-            get {
-                return ResourceManager.GetString("UnsupportedPublicKeyAlgorithm", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value cannot be an empty string..
-        /// </summary>
-        internal static string ValueCannotBeEmptyString {
-            get {
-                return ResourceManager.GetString("ValueCannotBeEmptyString", resourceCulture);
             }
         }
         

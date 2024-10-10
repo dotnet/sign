@@ -115,12 +115,12 @@ namespace Sign.SignatureProviders.CertificateStore
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            _logger.LogTrace(Resources.FetchingCertificate);
-
             // Check the provided file if any.
             if (!string.IsNullOrEmpty(_certificatePath))
             {
-                var certCollection = new X509Certificate2Collection();
+                _logger.LogTrace(Resources.FetchingCertificateFromFile);
+
+                X509Certificate2Collection certCollection = new();
                 certCollection.Import(_certificatePath, _certificatePassword, X509KeyStorageFlags.EphemeralKeySet);
 
                 foreach (var cert in certCollection)
@@ -129,14 +129,16 @@ namespace Sign.SignatureProviders.CertificateStore
 
                     if (string.Equals(actualFingerprint, _certificateFingerprint, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                        _logger.LogTrace(Resources.FetchedCertificateFromFile, stopwatch.Elapsed.TotalMilliseconds);
 
                         return Task.FromResult(new X509Certificate2(cert));
                     }
                 }
 
-                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, _certificateFingerprintAlgorithm, Path.GetFileName(_certificatePath)));
+                throw new ArgumentException(string.Format(Resources.CertificateNotFoundInFile, _certificateFingerprint, Path.GetFileName(_certificatePath)));
             }
+
+            _logger.LogTrace(Resources.FetchingCertificateFromCertificateStore);
 
             // Search User or Machine certificate stores.
             if (!string.IsNullOrEmpty(_privateKeyContainer)
@@ -144,20 +146,18 @@ namespace Sign.SignatureProviders.CertificateStore
                     ? TryFindCertificate(StoreLocation.LocalMachine, _certificateFingerprint, out X509Certificate2? certificate)
                     : TryFindCertificate(StoreLocation.CurrentUser, _certificateFingerprint, out certificate))
             {
-                _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                _logger.LogTrace(Resources.FetchedCertificateFromCertificateStore, stopwatch.Elapsed.TotalMilliseconds);
 
                 return Task.FromResult(certificate);
             }
 
-            _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
-
-            throw new ArgumentException(_isPrivateMachineKeyContainer ? Resources.CertificateNotFoundInMachineStore : Resources.CertificateNotFoundInUserStore);
+            throw new ArgumentException(_isPrivateMachineKeyContainer ? Resources.CertificateNotFoundInMachineStore : Resources.CertificateNotFoundInUserStore, _certificateFingerprint);
         }
 
         private bool TryFindCertificate(StoreLocation storeLocation, string expectedFingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
         {
             // Check machine certificate store.
-            using (var store = new X509Store(StoreName.My, storeLocation))
+            using (X509Store store = new(StoreName.My, storeLocation))
             {
                 store.Open(OpenFlags.OpenExistingOnly | OpenFlags.ReadOnly);
 

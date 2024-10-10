@@ -51,9 +51,8 @@ namespace Sign.SignatureProviders.CertificateStore
             // Both or neither can be provided when accessing a certificate.
             if (!string.IsNullOrEmpty(cryptoServiceProvider) == string.IsNullOrEmpty(privateKeyContainer))
             {
-                throw new ArgumentException(
-                    Resources.ValueCannotBeEmptyString,
-                    string.IsNullOrEmpty(cryptoServiceProvider) ? nameof(cryptoServiceProvider) : nameof(privateKeyContainer));
+                ArgumentException.ThrowIfNullOrEmpty(cryptoServiceProvider, nameof(cryptoServiceProvider));
+                ArgumentException.ThrowIfNullOrEmpty(privateKeyContainer, nameof(privateKeyContainer));
             }
 
             _certificateFingerprint = certificateFingerprint;

@@ -17,31 +17,6 @@
         <target state="translated">该证书尚未生效。</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
-      <trans-unit id="CertificateNotFound">
-        <source>Unable to find a matching certificate.</source>
-        <target state="translated">找不到匹配的证书。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInFile">
-        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
-        <target state="translated">在 {1} 中找不到具有匹配的 {0} 指纹的证书。</target>
-        <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInMachineStore">
-        <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="translated">在计算机证书存储中找不到匹配的证书。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInUserStore">
-        <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="translated">在用户证书存储中找不到匹配的证书。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateRSANotFound">
-        <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="translated">无法获取所提供的证书的 RSA 私钥。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
         <target state="translated">{fileName} 返回错误 {error}</target>
@@ -91,16 +66,6 @@
         <source>An exception occurred while attempting to delete directory {path}.</source>
         <target state="translated">尝试删除目录 {path} 时发生异常。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
-      </trans-unit>
-      <trans-unit id="FetchedCertificate">
-        <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="translated">已提取证书。[{milliseconds} 毫秒]</target>
-        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
-      </trans-unit>
-      <trans-unit id="FetchingCertificate">
-        <source>Fetching certificate from Azure Key Vault.</source>
-        <target state="translated">正在从 Azure Key Vault 提取证书。</target>
-        <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
@@ -187,11 +152,6 @@
         <target state="translated">正在提交 {filePath} 进行签名。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
-      <trans-unit id="UnsupportedPublicKeyAlgorithm">
-        <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="translated">证书具有不受支持的公钥算法。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
         <target state="translated">指定的 {0} 无效。</target>
@@ -205,11 +165,6 @@
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
         <target state="translated">不支持所选算法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueCannotBeEmptyString">
-        <source>The value cannot be an empty string.</source>
-        <target state="translated">值不能为空字符串。</target>
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
