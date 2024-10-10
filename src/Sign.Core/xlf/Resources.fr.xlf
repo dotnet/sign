@@ -17,31 +17,6 @@
         <target state="translated">La date de début du certificat n’est pas encore valide.</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
-      <trans-unit id="CertificateNotFound">
-        <source>Unable to find a matching certificate.</source>
-        <target state="translated">Désolé... Nous ne pouvons pas trouver un certificat correspondant.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInFile">
-        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
-        <target state="translated">Impossible de trouver un certificat avec une empreinte digitale {0} correspondante dans {1}.</target>
-        <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInMachineStore">
-        <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="translated">Désolé... Nous ne pouvons pas trouver un certificat correspondant dans le magasin de certificats de machine.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInUserStore">
-        <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="translated">Désolé... Nous ne pouvons pas trouver un certificat correspondant dans le magasin de certificats d’utilisateur.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateRSANotFound">
-        <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="translated">Désolé.... Nous ne pouvons pas acquérir la clé privée RSA pour le certificat fourni.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
         <target state="translated">{fileName} a renvoyé l'erreur {error}</target>
@@ -91,16 +66,6 @@
         <source>An exception occurred while attempting to delete directory {path}.</source>
         <target state="translated">Une exception s’est produite lors de la tentative de suppression du répertoire {path}.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
-      </trans-unit>
-      <trans-unit id="FetchedCertificate">
-        <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="translated">Certificat récupéré. [{milliseconds} ms]</target>
-        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
-      </trans-unit>
-      <trans-unit id="FetchingCertificate">
-        <source>Fetching certificate from Azure Key Vault.</source>
-        <target state="translated">Récupération du certificat à partir d’Azure Key Vault.</target>
-        <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
@@ -187,11 +152,6 @@
         <target state="translated">Envoi de {filePath} pour signature.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
-      <trans-unit id="UnsupportedPublicKeyAlgorithm">
-        <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="translated">Le certificat possède un algorithme de clé publique non pris en charge.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
         <target state="translated">Le mode {0} spécifié n’est pas valide.</target>
@@ -205,11 +165,6 @@
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
         <target state="translated">L’algorithme sélectionné n’est pas pris en charge.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueCannotBeEmptyString">
-        <source>The value cannot be an empty string.</source>
-        <target state="translated">La valeur ne peut pas être une chaîne vide.</target>
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">

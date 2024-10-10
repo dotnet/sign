@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../Resources.resx">
+    <body>
+      <trans-unit id="CertificateNotFound">
+        <source>Unable to find a matching certificate.</source>
+        <target state="new">Unable to find a matching certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInFile">
+        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
+        <target state="new">Unable to find a certificate with a matching {0} fingerprint in {1}.</target>
+        <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInMachineStore">
+        <source>Unable to find a matching certificate in machine certificate store.</source>
+        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateNotFoundInUserStore">
+        <source>Unable to find a matching certificate in user certificate store.</source>
+        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateRSANotFound">
+        <source>Unable to acquire RSA private key for the provided certificate.</source>
+        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FetchedCertificateFromCertificateStore">
+        <source>Fetched certificate from certificate store. [{milliseconds} ms]</source>
+        <target state="new">Fetched certificate from certificate store. [{milliseconds} ms]</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+      </trans-unit>
+      <trans-unit id="FetchedCertificateFromFile">
+        <source>Fetched certificate from file. [{milliseconds} ms]</source>
+        <target state="new">Fetched certificate from file. [{milliseconds} ms]</target>
+        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
+      </trans-unit>
+      <trans-unit id="FetchingCertificateFromCertificateStore">
+        <source>Fetching certificate from certificate store.</source>
+        <target state="new">Fetching certificate from certificate store.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FetchingCertificateFromFile">
+        <source>Fetching certificate from file.</source>
+        <target state="new">Fetching certificate from file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnsupportedPublicKeyAlgorithm">
+        <source>The certificate has an unsupported public key algorithm.</source>
+        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
