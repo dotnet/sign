@@ -58,6 +58,7 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<INuGetSignTool>());
             Assert.NotNull(serviceProvider.GetRequiredService<IVsixSignTool>());
             Assert.NotNull(serviceProvider.GetRequiredService<ICertificateVerifier>());
+            Assert.NotNull(serviceProvider.GetRequiredService<IXmlDocumentLoader>());
             Assert.NotNull(serviceProvider.GetRequiredService<ISigner>());
         }
 

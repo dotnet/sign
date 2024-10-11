@@ -22,6 +22,7 @@ namespace Sign.Core
         private readonly IManifestSigner _manifestSigner;
         private readonly ParallelOptions _parallelOptions = new() { MaxDegreeOfParallelism = 4 };
         private readonly IFileMatcher _fileMatcher;
+        private readonly IXmlDocumentLoader _xmlDocumentLoader;
 
         // Dependency injection requires a public constructor.
         public ClickOnceSigner(
@@ -31,7 +32,8 @@ namespace Sign.Core
             IMageCli mageCli,
             IManifestSigner manifestSigner,
             ILogger<IDataFormatSigner> logger,
-            IFileMatcher fileMatcher)
+            IFileMatcher fileMatcher,
+            IXmlDocumentLoader xmlDocumentLoader)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
@@ -40,12 +42,14 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(mageCli, nameof(mageCli));
             ArgumentNullException.ThrowIfNull(manifestSigner, nameof(manifestSigner));
             ArgumentNullException.ThrowIfNull(fileMatcher, nameof(fileMatcher));
+            ArgumentNullException.ThrowIfNull(xmlDocumentLoader, nameof(xmlDocumentLoader));
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
             _mageCli = mageCli;
             _manifestSigner = manifestSigner;
             _fileMatcher = fileMatcher;
+            _xmlDocumentLoader = xmlDocumentLoader;
 
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             _aggregatingSigner = new Lazy<IAggregatingDataFormatSigner>(() => serviceProvider.GetService<IAggregatingDataFormatSigner>()!);
@@ -148,7 +152,7 @@ namespace Sign.Core
                     if (string.IsNullOrEmpty(options.PublisherName))
                     {
                         string publisherName = certificate.SubjectName.Name;
- 
+
                         // get the DN. it may be quoted
                         publisherParam = $@"-pub ""{publisherName.Replace("\"", "")}""";
                     }
@@ -232,7 +236,6 @@ namespace Sign.Core
             return false;
         }
 
-
         private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot)
         {
             return clickOnceRoot.EnumerateFiles("*", SearchOption.AllDirectories);
@@ -288,15 +291,15 @@ namespace Sign.Core
         /// <param name="deploymentManifest">A <see cref="FileInfo"/> representing a deployment manifest file.</param>
         /// <param name="applicationManifestFileName">A <see cref="string?"/> representing a manifest file name or <c>null</c> if one isn't found.</param>
         /// <returns><c>true</c> if the application manifest file name was found; otherwise, <c>false</c>.</returns>
-        /// <exception cref="InvalidDataException"></exception>
-        private bool TryGetApplicationManifestFileName(FileInfo deploymentManifest, [NotNullWhen(true)] out string? applicationManifestFileName)
+        /// <remarks>This is non-private only for unit testing.</remarks>
+        internal bool TryGetApplicationManifestFileName(FileInfo deploymentManifest, [NotNullWhen(true)] out string? applicationManifestFileName)
         {
             applicationManifestFileName = null;
 
-            var xml = new XmlDocument();
-            xml.Load(deploymentManifest.FullName);
+            XmlDocument xmlDoc = _xmlDocumentLoader.Load(deploymentManifest);
+
             // there should only be a single result here, if the file is a valid clickonce manifest.
-            XmlNodeList dependentAssemblies = xml.GetElementsByTagName("dependentAssembly");
+            XmlNodeList dependentAssemblies = xmlDoc.GetElementsByTagName("dependentAssembly");
             if (dependentAssemblies.Count != 1)
             {
                 Logger.LogDebug(Resources.ApplicationManifestNotFound);

@@ -4,6 +4,7 @@
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -13,6 +14,8 @@ namespace Sign.Core.Test
     {
         private readonly DirectoryService _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
         private readonly ClickOnceSigner _signer;
+
+        private static readonly XmlDocumentLoader _xmlDocumentReader = new();
 
         private const string DeploymentManifestValidContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
             <asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xrml=""urn:mpeg:mpeg21:2003:01-REL-R-NS"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
@@ -27,8 +30,22 @@ namespace Sign.Core.Test
                         <assemblyIdentity name=""MyApp.dll"" version=""1.0.0.0"" publicKeyToken=""0000000000000000"" language=""neutral"" processorArchitecture=""msil"" type=""win32"" />
                     </dependentAssembly>
                 </dependency>
-            </asmv1:assembly>
-";
+            </asmv1:assembly>";
+
+        private const string DeploymentManifestCodeBaseTemplate = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            <asmv1:assembly xsi:schemaLocation=""urn:schemas-microsoft-com:asm.v1 assembly.adaptive.xsd"" manifestVersion=""1.0"" xmlns:asmv1=""urn:schemas-microsoft-com:asm.v1"" xmlns=""urn:schemas-microsoft-com:asm.v2"" xmlns:asmv2=""urn:schemas-microsoft-com:asm.v2"" xmlns:xrml=""urn:mpeg:mpeg21:2003:01-REL-R-NS"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"" xmlns:dsig=""http://www.w3.org/2000/09/xmldsig#"" xmlns:co.v1=""urn:schemas-microsoft-com:clickonce.v1"" xmlns:co.v2=""urn:schemas-microsoft-com:clickonce.v2"">
+                <assemblyIdentity name=""MyApp.application"" version=""1.0.0.0"" publicKeyToken=""0000000000000000"" language=""neutral"" processorArchitecture=""msil"" xmlns=""urn:schemas-microsoft-com:asm.v1"" />
+                <description asmv2:publisher=""Contoso Limited"" asmv2:product=""MyApp"" xmlns=""urn:schemas-microsoft-com:asm.v1"" />
+                <deployment install=""false"" />
+                <compatibleFrameworks xmlns=""urn:schemas-microsoft-com:clickonce.v2"">
+                    <framework targetVersion=""4.8"" profile=""Full"" supportedRuntime=""4.0.30319"" />
+                </compatibleFrameworks>
+                <dependency>
+                    <dependentAssembly dependencyType=""install"" codebase=""{0}"" size=""14853"">
+                        <assemblyIdentity name=""MyApp.dll"" version=""1.0.0.0"" publicKeyToken=""0000000000000000"" language=""neutral"" processorArchitecture=""msil"" type=""win32"" />
+                    </dependentAssembly>
+                </dependency>
+            </asmv1:assembly>";
 
         public ClickOnceSignerTests()
         {
@@ -39,7 +56,8 @@ namespace Sign.Core.Test
                 Mock.Of<IMageCli>(),
                 Mock.Of<IManifestSigner>(),
                 Mock.Of<ILogger<IDataFormatSigner>>(),
-                Mock.Of<IFileMatcher>());
+                Mock.Of<IFileMatcher>(),
+                _xmlDocumentReader);
         }
 
         public void Dispose()
@@ -58,7 +76,8 @@ namespace Sign.Core.Test
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Mock.Of<IFileMatcher>(),
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -74,7 +93,8 @@ namespace Sign.Core.Test
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Mock.Of<IFileMatcher>(),
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -90,7 +110,8 @@ namespace Sign.Core.Test
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Mock.Of<IFileMatcher>(),
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
@@ -106,7 +127,8 @@ namespace Sign.Core.Test
                     mageCli: null!,
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Mock.Of<IFileMatcher>(),
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("mageCli", exception.ParamName);
         }
@@ -122,7 +144,8 @@ namespace Sign.Core.Test
                     Mock.Of<IMageCli>(),
                     manifestSigner: null!,
                     Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Mock.Of<IFileMatcher>(),
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("manifestSigner", exception.ParamName);
         }
@@ -138,7 +161,8 @@ namespace Sign.Core.Test
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     logger: null!,
-                    Mock.Of<IFileMatcher>()));
+                    Mock.Of<IFileMatcher>(),
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -154,9 +178,27 @@ namespace Sign.Core.Test
                     Mock.Of<IMageCli>(),
                     Mock.Of<IManifestSigner>(),
                     Mock.Of<ILogger<IDataFormatSigner>>(),
-                    fileMatcher: null!));
+                    fileMatcher: null!,
+                    Mock.Of<IXmlDocumentLoader>()));
 
             Assert.Equal("fileMatcher", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenXmlDocumentLoaderIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new ClickOnceSigner(
+                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Mock.Of<ICertificateProvider>(),
+                    Mock.Of<IServiceProvider>(),
+                    Mock.Of<IMageCli>(),
+                    Mock.Of<IManifestSigner>(),
+                    Mock.Of<ILogger<IDataFormatSigner>>(),
+                    Mock.Of<IFileMatcher>(),
+                    xmlDocumentLoader: null!));
+
+            Assert.Equal("xmlDocumentLoader", exception.ParamName);
         }
 
         [Fact]
@@ -334,7 +376,8 @@ namespace Sign.Core.Test
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher.Object,
+                        _xmlDocumentReader);
 
                     await signer.SignAsync(new[] { applicationFile }, options);
 
@@ -448,7 +491,8 @@ namespace Sign.Core.Test
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher.Object,
+                        _xmlDocumentReader);
 
                     await signer.SignAsync(new[] { applicationFile }, options);
 
@@ -542,7 +586,8 @@ namespace Sign.Core.Test
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher.Object,
+                        _xmlDocumentReader);
 
                     using (TemporaryDirectory signingDirectory = new(_directoryService))
                     {
@@ -600,7 +645,6 @@ namespace Sign.Core.Test
   <publisherIdentity name=""CN={commonName}, O=unit.test"" />
 </asmv1:assembly>",
                     "MyApp_1_0_0_0", "Some.Dependency.dll.manifest");
-
 
                 SignOptions options = new(
                     "ApplicationName",
@@ -678,11 +722,13 @@ namespace Sign.Core.Test
                         mageCli.Object,
                         manifestSigner.Object,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher.Object,
+                        _xmlDocumentReader);
 
                     await signer.SignAsync(new[] { applicationFile }, options);
 
-                    // Verify that files have been renamed back.
+                    // None of the files were .deploy files and so none would have been renamed.
+                    // Still, make sure they exist.
                     foreach (FileInfo file in containerSpy.Files)
                     {
                         file.Refresh();
@@ -702,6 +748,152 @@ namespace Sign.Core.Test
                             It.Is<SignOptions>(o => ReferenceEquals(options, o))), Times.Never());
                 }
             }
+        }
+
+        [Fact]
+        public void TryGetApplicationManifestFileName_WhenCodeBaseAttributeIsMissing_ReturnsFalse()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                string xml = ModifyXml(
+                    DeploymentManifestCodeBaseTemplate,
+                    (XmlDocument xmlDoc, XmlNamespaceManager xmlNamespaceManager) =>
+                    {
+                        XmlNodeList nodes = xmlDoc.SelectNodes(
+                            "//asmv1:assembly/asmv2:dependency/asmv2:dependentAssembly[@codebase]",
+                            xmlNamespaceManager)!;
+
+                        foreach (XmlNode node in nodes)
+                        {
+                            XmlAttribute codebaseAttribute = node.Attributes!["codebase"]!;
+
+                            node.Attributes.Remove(codebaseAttribute);
+                        }
+                    });
+                FileInfo file = CreateFile(temporaryDirectory.Directory, xml);
+
+                bool actualResult = _signer.TryGetApplicationManifestFileName(file, out string? applicationManifestFileName);
+
+                Assert.False(actualResult);
+            }
+        }
+
+        [Fact]
+        public void TryGetApplicationManifestFileName_WhenDependentAssemblyElementIsMissing_ReturnsFalse()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                string xml = ModifyXml(
+                    DeploymentManifestCodeBaseTemplate,
+                    (XmlDocument xmlDoc, XmlNamespaceManager xmlNamespaceManager) =>
+                    {
+                        XmlNodeList nodes = xmlDoc.SelectNodes(
+                            "//asmv1:assembly/asmv2:dependency/asmv2:dependentAssembly",
+                            xmlNamespaceManager)!;
+
+                        foreach (XmlNode node in nodes)
+                        {
+                            node.ParentNode!.RemoveChild(node);
+                        }
+                    });
+                FileInfo file = CreateFile(temporaryDirectory.Directory, xml);
+
+                bool actualResult = _signer.TryGetApplicationManifestFileName(file, out string? applicationManifestFileName);
+
+                Assert.False(actualResult);
+            }
+        }
+
+        [Fact]
+        public void TryGetApplicationManifestFileName_WhenMultipleDependentAssemblyElementsArePresent_ReturnsFalse()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                string xml = ModifyXml(
+                    string.Format(DeploymentManifestCodeBaseTemplate, @"MyApp_1_0_0_0\MyApp.dll.manifest"),
+                    (XmlDocument xmlDoc, XmlNamespaceManager xmlNamespaceManager) =>
+                    {
+                        XmlNodeList nodes = xmlDoc.SelectNodes(
+                            "//asmv1:assembly/asmv2:dependency/asmv2:dependentAssembly",
+                            xmlNamespaceManager)!;
+
+                        foreach (XmlNode node in nodes)
+                        {
+                            XmlNode duplicateNode = node.CloneNode(deep: true);
+
+                            node.ParentNode!.AppendChild(duplicateNode);
+                        }
+                    });
+                FileInfo file = CreateFile(temporaryDirectory.Directory, xml);
+
+                bool actualResult = _signer.TryGetApplicationManifestFileName(file, out string? applicationManifestFileName);
+
+                Assert.False(actualResult);
+            }
+        }
+
+        [Theory]
+        [InlineData(@"MyApp_1_0_0_0\MyApp.dll.manifest")]
+        [InlineData("https://unit.test/MyApp.dll.manifest")]
+        public void TryGetApplicationManifestFileName_WhenCodeBaseIsValid_ReturnsTrue(string codebase)
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                string xml = string.Format(DeploymentManifestCodeBaseTemplate, codebase);
+                FileInfo file = CreateFile(temporaryDirectory.Directory, xml);
+
+                bool actualResult = _signer.TryGetApplicationManifestFileName(file, out string? applicationManifestFileName);
+
+                Assert.True(actualResult);
+                Assert.Equal("MyApp.dll.manifest", applicationManifestFileName);
+            }
+        }
+
+        private static string ModifyXml(string xml, Action<XmlDocument, XmlNamespaceManager> modify)
+        {
+            XmlReaderSettings settings = new()
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null // prevent external entity resolution
+            };
+            XmlDocument xmlDoc = new();
+
+            using (StringReader stringReader = new(xml))
+            using (XmlReader xmlReader = XmlReader.Create(stringReader, settings))
+            {
+                xmlDoc.Load(xmlReader);
+            }
+
+            XmlNamespaceManager namespaceManager = new(xmlDoc.NameTable);
+
+            namespaceManager.AddNamespace("asmv1", "urn:schemas-microsoft-com:asm.v1");
+            namespaceManager.AddNamespace("asmv2", "urn:schemas-microsoft-com:asm.v2");
+            namespaceManager.AddNamespace("asmv3", "urn:schemas-microsoft-com:asm.v3");
+            namespaceManager.AddNamespace("dsig", "http://www.w3.org/2000/09/xmldsig#");
+            namespaceManager.AddNamespace("co.v1", "urn:schemas-microsoft-com:clickonce.v1");
+            namespaceManager.AddNamespace("co.v2", "urn:schemas-microsoft-com:clickonce.v2");
+            namespaceManager.AddNamespace("xrml", "urn:mpeg:mpeg21:2003:01-REL-R-NS");
+            namespaceManager.AddNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+
+            modify(xmlDoc, namespaceManager);
+
+            using (StringWriter stringWriter = new())
+            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter))
+            {
+                xmlDoc.WriteTo(xmlWriter);
+                xmlWriter.Flush();
+
+                return stringWriter.GetStringBuilder().ToString();
+            }
+        }
+
+        private static FileInfo CreateFile(DirectoryInfo directory, string xml)
+        {
+            FileInfo file = new(Path.Combine(directory.FullName, "test.xml"));
+
+            File.WriteAllText(file.FullName, xml);
+
+            return file;
         }
 
         private static FileInfo AddFile(
