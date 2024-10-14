@@ -51,7 +51,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         [Fact]
         public void Constructor_WhenCryptoServiceProviderIsNullAndPrivateKeyContainerIsNot_Throws()
         {
-            ArgumentException exception = Assert.Throws<ArgumentException>(
+            ArgumentException exception = Assert.Throws<ArgumentNullException>(
                 () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, cryptoServiceProvider: null, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("cryptoServiceProvider", exception.ParamName);
@@ -69,7 +69,7 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         [Fact]
         public void Constructor_WhenPrivateKeyContainerIsNullAndCryptoServiceProviderIsNot_Throws()
         {
-            ArgumentException exception = Assert.Throws<ArgumentException>(
+            ArgumentException exception = Assert.Throws<ArgumentNullException>(
                 () => new CertificateStoreServiceProvider(CertificateFingerprint, CertificateFingerprintAlgorithm, CryptoServiceProvider, privateKeyContainer: null, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
 
             Assert.Equal("privateKeyContainer", exception.ParamName);

@@ -17,31 +17,6 @@
         <target state="translated">Bu sertifikanın geçerlilik süresi henüz başlamadı.</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
-      <trans-unit id="CertificateNotFound">
-        <source>Unable to find a matching certificate.</source>
-        <target state="translated">Eşleşen sertifika bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInFile">
-        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
-        <target state="translated">{1} dosya yolunda eşleşen {0} parmak izine sahip sertifika bulunamadı.</target>
-        <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInMachineStore">
-        <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="translated">Makine sertifikası deposunda eşleşen bir sertifika bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInUserStore">
-        <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="translated">Kullanıcı sertifikası deposunda eşleşen bir sertifika bulunamadı.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateRSANotFound">
-        <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="translated">Sağlanan sertifika için RSA özel anahtarı alınamıyor.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
         <target state="translated">{fileName}, {error} hatasını döndürdü</target>
@@ -91,16 +66,6 @@
         <source>An exception occurred while attempting to delete directory {path}.</source>
         <target state="translated">{path} dizini silinmeye çalışılırken bir özel durum oluştu.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
-      </trans-unit>
-      <trans-unit id="FetchedCertificate">
-        <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="translated">Sertifika getirildi. [{milliseconds} ms]</target>
-        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
-      </trans-unit>
-      <trans-unit id="FetchingCertificate">
-        <source>Fetching certificate from Azure Key Vault.</source>
-        <target state="translated">Sertifika Azure Key Vault’tan getiriliyor.</target>
-        <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
@@ -187,11 +152,6 @@
         <target state="translated">{filePath} imzalama için gönderiliyor.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
-      <trans-unit id="UnsupportedPublicKeyAlgorithm">
-        <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="translated">Sertifika, desteklenmeyen ortak anahtar algoritmasına sahip.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
         <target state="translated">Belirtilen {0} geçersiz.</target>
@@ -205,11 +165,6 @@
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
         <target state="translated">Seçilen algoritma desteklenmiyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueCannotBeEmptyString">
-        <source>The value cannot be an empty string.</source>
-        <target state="translated">Değer boş bir dize olamaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">

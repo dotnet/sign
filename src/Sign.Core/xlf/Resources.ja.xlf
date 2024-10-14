@@ -17,31 +17,6 @@
         <target state="translated">証明書はまだ有効な時間ではありません。</target>
         <note>A certificate has a validity period with start and end dates.  "not yet time valid" means that the start date is in the future.</note>
       </trans-unit>
-      <trans-unit id="CertificateNotFound">
-        <source>Unable to find a matching certificate.</source>
-        <target state="translated">一致する証明書が見つかりません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInFile">
-        <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
-        <target state="translated">{1} で、{0} フィンガープリントが一致する証明書が見つかりません。</target>
-        <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInMachineStore">
-        <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="translated">コンピューター証明書ストアに一致する証明書が見つかりません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateNotFoundInUserStore">
-        <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="translated">ユーザー証明書ストアに一致する証明書が見つかりません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateRSANotFound">
-        <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="translated">指定された証明書の RSA 秘密キーを取得できません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CliStandardError">
         <source>{fileName} returned the error {error}</source>
         <target state="translated">{fileName} がエラー {error} を返しました</target>
@@ -91,16 +66,6 @@
         <source>An exception occurred while attempting to delete directory {path}.</source>
         <target state="translated">ディレクトリ {path} の削除しようとしている間に例外が発生しました。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
-      </trans-unit>
-      <trans-unit id="FetchedCertificate">
-        <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="translated">証明書をフェッチしました。[{milliseconds} ミリ秒]</target>
-        <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
-      </trans-unit>
-      <trans-unit id="FetchingCertificate">
-        <source>Fetching certificate from Azure Key Vault.</source>
-        <target state="translated">Azure Key Vault から証明書をフェッチしています。</target>
-        <note />
       </trans-unit>
       <trans-unit id="MultiplePrivateKeyContainersError">
         <source>Multiple private key containers provided. Use either /k for user stores or /km for machine stores.</source>
@@ -187,11 +152,6 @@
         <target state="translated">署名のために {filePath} を送信しています。</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
-      <trans-unit id="UnsupportedPublicKeyAlgorithm">
-        <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="translated">証明書にサポートされていない公開キー アルゴリズムがあります。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSIXSignToolOpcContentTypeInvalid">
         <source>Specified {0} is invalid.</source>
         <target state="translated">指定された {0} は無効です。</target>
@@ -205,11 +165,6 @@
       <trans-unit id="VSIXSignToolUnsupportedAlgorithm">
         <source>The algorithm selected is not supported.</source>
         <target state="translated">選択したアルゴリズムはサポートされていません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ValueCannotBeEmptyString">
-        <source>The value cannot be an empty string.</source>
-        <target state="translated">値を空の文字列にすることはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="VsixSignatureProviderSigning">
