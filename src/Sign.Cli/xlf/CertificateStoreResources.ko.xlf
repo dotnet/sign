@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="InteractiveDescription">
         <source>Allow user interactions (such as a dialog box) when a private key is accessed.</source>
-        <target state="new">Allow user interactions (such as a dialog box) when a private key is accessed.</target>
+        <target state="translated">프라이빗 키에 액세스할 때 사용자 상호 작용(예: 대화 상자)을 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="KeyContainerOptionDescription">
