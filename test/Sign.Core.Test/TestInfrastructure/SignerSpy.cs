@@ -49,7 +49,8 @@ namespace Sign.Core.Test
                     mageCli,
                     manifestSigner,
                     logger,
-                    fileMatcher),
+                    fileMatcher,
+                    new XmlDocumentLoader()),
                 new NuGetSigner(signatureAlgorithmProvider, certificateProvider, nuGetSignTool, logger),
                 new VsixSigner(signatureAlgorithmProvider, certificateProvider, openVsixSignTool, logger)
             };

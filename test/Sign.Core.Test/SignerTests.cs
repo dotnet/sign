@@ -609,6 +609,7 @@ namespace Sign.Core.Test
             services.AddSingleton<INuGetSignTool, NuGetSignTool>();
             services.AddSingleton<IVsixSignTool, VsixSignTool>();
             services.AddSingleton<ICertificateVerifier, CertificateVerifier>();
+            services.AddSingleton<IXmlDocumentLoader, XmlDocumentLoader>();
             services.AddSingleton<ISigner, Signer>();
 
             return new ServiceProvider(services.BuildServiceProvider());
