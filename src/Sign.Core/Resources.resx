@@ -246,4 +246,10 @@
   <data name="VSIXSignToolUnsupportedAlgorithm" xml:space="preserve">
     <value>The algorithm selected is not supported.</value>
   </data>
+  <data name="ApplicationManifestNotFound" xml:space="preserve">
+    <value>Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty 'codebase' attribute within the deployment manifest.</value>
+  </data>
+  <data name="NoDeploymentManifestsSelectedForSigning" xml:space="preserve">
+    <value>No deployment manifest files have been detected for signing, possibly because they've been excluded via file path filters</value>
+  </data>
 </root>
