@@ -57,6 +57,8 @@ namespace Sign.Core
                 ".mst",
                 ".ocx",
                 ".ps1",
+                ".ps1xml",
+                ".psd1",
                 ".psm1",
                 ".stl",
                 ".sys",

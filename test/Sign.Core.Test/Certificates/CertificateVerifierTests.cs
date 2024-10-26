@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
@@ -38,7 +38,7 @@ namespace Sign.Core.Test
             CertificateVerifier verifier = new(logger);
             DateTimeOffset now = DateTimeOffset.Now;
 
-            using (X509Certificate2 certificate = CreateCertificate(
+            using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate(
                 notBefore: now.AddDays(1),
                 notAfter: now.AddDays(2)))
             {
@@ -55,7 +55,7 @@ namespace Sign.Core.Test
             CertificateVerifier verifier = new(logger);
             DateTimeOffset now = DateTimeOffset.Now;
 
-            using (X509Certificate2 certificate = CreateCertificate(
+            using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate(
                 notBefore: now.AddDays(-2),
                 notAfter: now.AddDays(-1)))
             {
@@ -72,7 +72,7 @@ namespace Sign.Core.Test
             CertificateVerifier verifier = new(logger);
             DateTimeOffset now = DateTimeOffset.Now;
 
-            using (X509Certificate2 certificate = CreateCertificate(
+            using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate(
                 notBefore: now.AddDays(-1),
                 notAfter: now.AddDays(1)))
             {
@@ -80,20 +80,6 @@ namespace Sign.Core.Test
             }
 
             Assert.Equal(0, logger.Log_CallCount);
-        }
-
-        private static X509Certificate2 CreateCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter)
-        {
-            using (RSA keyPair = RSA.Create(keySizeInBits: 3072))
-            {
-                CertificateRequest certificateRequest = new(
-                    "CN=test.test",
-                    keyPair,
-                    HashAlgorithmName.SHA256,
-                    RSASignaturePadding.Pkcs1);
-
-                return certificateRequest.CreateSelfSigned(notBefore, notAfter);
-            }
         }
 
         private sealed class Logger : ILogger<ICertificateVerifier>

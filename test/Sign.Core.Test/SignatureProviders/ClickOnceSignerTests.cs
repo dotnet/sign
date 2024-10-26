@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
@@ -253,7 +254,7 @@ namespace Sign.Core.Test
                     matcher: null,
                     antiMatcher: null);
 
-                using (X509Certificate2 certificate = CreateCertificate())
+                using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
                     Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
@@ -378,7 +379,7 @@ namespace Sign.Core.Test
                     matcher: null,
                     antiMatcher: null);
 
-                using (X509Certificate2 certificate = CreateCertificate())
+                using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
                     Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
@@ -475,7 +476,7 @@ namespace Sign.Core.Test
                     string.Empty,
                     "MyApp_1_0_0_0", "MyApp.dll.deploy");
 
-                using (X509Certificate2 certificate = CreateCertificate())
+                using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
                     Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
@@ -563,19 +564,6 @@ namespace Sign.Core.Test
             containerSpy.Files.Add(file);
 
             return file;
-        }
-
-        private static X509Certificate2 CreateCertificate()
-        {
-            RSA keyPair = RSA.Create(keySizeInBits: 3072);
-            CertificateRequest request = new(
-                "CN=Common Name, O=Organization, L=City, S=State, C=Country",
-                keyPair,
-                HashAlgorithmName.SHA256,
-                RSASignaturePadding.Pkcs1);
-            DateTimeOffset now = DateTimeOffset.Now;
-
-            return request.CreateSelfSigned(now.AddMinutes(-5), now.AddMinutes(5));
         }
     }
 }
