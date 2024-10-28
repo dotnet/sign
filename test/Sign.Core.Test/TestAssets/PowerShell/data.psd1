@@ -1,0 +1,3 @@
+﻿@{
+    Greeting = 'Hello, World!'
+}

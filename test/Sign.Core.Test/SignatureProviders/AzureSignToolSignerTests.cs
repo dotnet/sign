@@ -2,17 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
+    [Collection(SigningTestsCollection.Name)]
     public class AzureSignToolSignerTests
     {
+        private readonly TrustedCertificateFixture _certificateFixture;
+        private readonly DirectoryService _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
         private readonly AzureSignToolSigner _signer;
 
-        public AzureSignToolSignerTests()
+        public AzureSignToolSignerTests(TrustedCertificateFixture certificateFixture)
         {
+            ArgumentNullException.ThrowIfNull(certificateFixture, nameof(certificateFixture));
+
+            _certificateFixture = certificateFixture;
             _signer = new AzureSignToolSigner(
                 Mock.Of<IToolConfigurationProvider>(),
                 Mock.Of<ISignatureAlgorithmProvider>(),
@@ -35,6 +45,7 @@ namespace Sign.Core.Test
         [InlineData(".appxbundle")]
         [InlineData(".cab")]
         [InlineData(".cat")]
+        [InlineData(".cdxml")]
         [InlineData(".dll")]
         [InlineData(".eappx")]
         [InlineData(".eappxbundle")]
@@ -49,6 +60,8 @@ namespace Sign.Core.Test
         [InlineData(".mst")]
         [InlineData(".ocx")]
         [InlineData(".ps1")]
+        [InlineData(".ps1xml")]
+        [InlineData(".psd1")]
         [InlineData(".psm1")]
         [InlineData(".stl")]
         [InlineData(".sys")]
@@ -71,6 +84,74 @@ namespace Sign.Core.Test
             FileInfo file = new($"file{extension}");
 
             Assert.False(_signer.CanSign(file));
+        }
+
+        [RequiresElevationTheory]
+        [InlineData("cmdlet-definition.cdxml")]
+        [InlineData("script.ps1")]
+        [InlineData("data.psd1")]
+        [InlineData("module.psm1")]
+        [InlineData("formatting.ps1xml")]
+        public async Task SignAsync_WhenFileIsSupported_Signs(string fileName)
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo file = TestAssets.GetTestAsset(temporaryDirectory.Directory, "PowerShell", fileName);
+
+                SignOptions options = new(
+                    applicationName: null,
+                    publisherName: null,
+                    description: null,
+                    descriptionUrl: null,
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    timestampService: null!,
+                    matcher: null,
+                    antiMatcher: null);
+
+                X509Certificate2 certificate = _certificateFixture.TrustedCertificate;
+
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    ToolConfigurationProvider toolConfigurationProvider = new(new AppRootDirectoryLocator());
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(new X509Certificate2(certificate));
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+
+                    AzureSignToolSigner signer = new(
+                        toolConfigurationProvider,
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        logger);
+
+                    await signer.SignAsync(new[] { file }, options);
+
+                    // Verify that the file has been renamed back.
+                    file.Refresh();
+
+                    Assert.True(file.Exists);
+
+                    PowerShellFileReader reader = PowerShellFileReader.Read(file);
+
+                    Assert.True(reader.TryGetSignature(out SignedCms? signedCms));
+
+                    SignerInfo signerInfo = (SignerInfo)Assert.Single(signedCms.SignerInfos)!;
+
+                    Assert.True(certificate.RawDataMemory.Span.SequenceEqual(signerInfo.Certificate!.RawDataMemory.Span));
+
+                    signedCms.CheckSignature(verifySignatureOnly: true);
+
+                    signatureAlgorithmProvider.VerifyAll();
+                    certificateProvider.VerifyAll();
+                }
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
@@ -27,7 +28,7 @@ namespace Sign.Core.Test
         [SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
         public void Sign_Never_GeneratesSha1MessageImprint()
         {
-            using (X509Certificate2 certificate = CreateCertificate())
+            using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
             using (X509Certificate2 publicKeyCertificate = new(certificate.Export(X509ContentType.Cert)))
             using (RSA privateKey = certificate.GetRSAPrivateKey()!)
             {
@@ -62,19 +63,6 @@ namespace Sign.Core.Test
                         out int bytesConsumed));
                 Assert.True(timestampToken.TokenInfo.HashAlgorithmId.IsEqualTo(Oids.Sha256));
             }
-        }
-
-        private static X509Certificate2 CreateCertificate()
-        {
-            RSA keyPair = RSA.Create(keySizeInBits: 3072);
-            CertificateRequest request = new(
-                "CN=Common Name, O=Organization, L=City, S=State, C=Country",
-                keyPair,
-                HashAlgorithmName.SHA256,
-                RSASignaturePadding.Pkcs1);
-            DateTimeOffset now = DateTimeOffset.Now;
-
-            return request.CreateSelfSigned(now.AddMinutes(-5), now.AddMinutes(5));
         }
 
         private static TemporaryEnvironmentPathOverride CreateTemporaryEnvironmentPathOverride()

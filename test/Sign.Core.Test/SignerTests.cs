@@ -4,7 +4,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -32,8 +31,6 @@ namespace Sign.Core.Test
 
             _certificatesFixture = certificatesFixture;
             _keyVaultServiceStub = new KeyVaultServiceStub();
-
-            RegisterSipsFromIniFile(); // Register SIPS from INI file to avoid relying SIPs being registered prior to running tests.
         }
 
         public void Dispose()
@@ -101,7 +98,7 @@ namespace Sign.Core.Test
         {
             using (TemporaryDirectory temporaryDirectory = new(new DirectoryService(Mock.Of<ILogger<IDirectoryService>>())))
             {
-                FileInfo file = GetTestAsset(temporaryDirectory, "VsixPackage.vsix");
+                FileInfo file = TestAssets.GetTestAsset(temporaryDirectory.Directory, "VsixPackage.vsix");
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.vsix"));
 
                 await SignAsync(temporaryDirectory, file, outputFile);
@@ -115,7 +112,7 @@ namespace Sign.Core.Test
         {
             using (TemporaryDirectory temporaryDirectory = new(new DirectoryService(Mock.Of<ILogger<IDirectoryService>>())))
             {
-                FileInfo file = GetTestAsset(temporaryDirectory, "App1_1.0.0.0_x64.msixbundle");
+                FileInfo file = TestAssets.GetTestAsset(temporaryDirectory.Directory, "App1_1.0.0.0_x64.msixbundle");
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.msixbundle"));
 
                 await SignAsync(temporaryDirectory, file, outputFile);
@@ -129,7 +126,7 @@ namespace Sign.Core.Test
         {
             using (TemporaryDirectory temporaryDirectory = new(new DirectoryService(Mock.Of<ILogger<IDirectoryService>>())))
             {
-                FileInfo file = GetTestAsset(temporaryDirectory, "EmptyExtension.app");
+                FileInfo file = TestAssets.GetTestAsset(temporaryDirectory.Directory, "EmptyExtension.app");
                 FileInfo outputFile = new(Path.Combine(temporaryDirectory.Directory.FullName, "signed.app"));
 
                 await SignAsync(temporaryDirectory, file, outputFile);
@@ -268,17 +265,6 @@ namespace Sign.Core.Test
 
             Assert.Equal(LogLevel.Information, lastLogEntry.LogLevel);
             Assert.Matches(@"^Completed in \d+ ms.$", lastLogEntry.Message);
-        }
-
-        private static FileInfo GetTestAsset(TemporaryDirectory temporaryDirectory, string fileName)
-        {
-            FileInfo thisAssemblyFile = new(Path.Combine(Assembly.GetExecutingAssembly().Location));
-            FileInfo testAssetFile = new(Path.Combine(thisAssemblyFile.DirectoryName!, "TestAssets", fileName));
-            FileInfo testAssetFileCopy = new(Path.Combine(temporaryDirectory.Directory.FullName, fileName));
-
-            File.Copy(testAssetFile.FullName, testAssetFileCopy.FullName);
-
-            return testAssetFileCopy;
         }
 
         private async Task VerifyAuthenticodeSignedFileAsync(FileInfo outputFile)
@@ -612,16 +598,6 @@ namespace Sign.Core.Test
             services.AddSingleton<ISigner, Signer>();
 
             return new ServiceProvider(services.BuildServiceProvider());
-        }
-
-        private static void RegisterSipsFromIniFile()
-        {
-            AppRootDirectoryLocator locator = new();
-            DirectoryInfo appRootDirectory = locator.Directory;
-            string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", "x64");
-            Kernel32.SetDllDirectoryW(baseDirectory);
-            Kernel32.LoadLibraryW($@"{baseDirectory}\wintrust.dll");
-            Kernel32.LoadLibraryW($@"{baseDirectory}\mssign32.dll");
         }
     }
 }

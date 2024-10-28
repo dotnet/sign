@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-namespace Sign.Core.Test
+namespace Sign.TestInfrastructure
 {
-    internal sealed class TemporaryFile : IDisposable
+    public sealed class TemporaryFile : IDisposable
     {
-        internal FileInfo File { get; }
+        public FileInfo File { get; }
 
-        internal TemporaryFile()
+        public TemporaryFile()
         {
             File = new(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
         }

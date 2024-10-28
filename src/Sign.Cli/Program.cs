@@ -22,27 +22,7 @@ namespace Sign.Cli
                     return ExitCode.Failed;
                 }
 
-                AppRootDirectoryLocator locator = new();
-                DirectoryInfo appRootDirectory = locator.Directory;
-
-                string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", "x64");
-
-                //
-                // Ensure we invoke wintrust!DllMain before we get too far.
-                // This will call wintrust!RegisterSipsFromIniFile and read in wintrust.dll.ini
-                // to swap out some local SIPs. Internally, wintrust will call LoadLibraryW
-                // on each DLL= entry, so we need to also adjust our DLL search path or we'll
-                // load unwanted system-provided copies.
-                //
-                Kernel32.SetDllDirectoryW(baseDirectory);
-                Kernel32.LoadLibraryW($@"{baseDirectory}\wintrust.dll");
-                Kernel32.LoadLibraryW($@"{baseDirectory}\mssign32.dll");
-
-                // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken.
-                string windir = Environment.GetEnvironmentVariable("windir")!;
-                string netfxDir = $@"{windir}\Microsoft.NET\Framework64\v4.0.30319";
-
-                AddEnvironmentPath(netfxDir);
+                AppInitializer.Initialize();
 
                 string systemDirectoryPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
 
@@ -85,16 +65,6 @@ namespace Sign.Cli
                 .UseParseErrorReporting()
                 .UseHelp()
                 .Build();
-        }
-
-        private static void AddEnvironmentPath(string path)
-        {
-            const string name = "PATH";
-
-            string paths = Environment.GetEnvironmentVariable(name) ?? string.Empty;
-            string newPaths = string.Join(Path.PathSeparator, paths, path);
-
-            Environment.SetEnvironmentVariable(name, newPaths);
         }
     }
 }

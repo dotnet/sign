@@ -9,7 +9,7 @@ namespace Sign.Core.Test
     [CollectionDefinition(Name, DisableParallelization = true)]
     public sealed class CertificatesFixture
     {
-        private const string Name = "Certificates Tests";
+        private const string Name = nameof(CertificatesFixture);
 
         private readonly CertificateAuthority _timestampRootCa;
         private readonly CertificateAuthority _timestampIntermediateCa;

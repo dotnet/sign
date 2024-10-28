@@ -1,0 +1,27 @@
+﻿<Configuration>
+    <ViewDefinitions>
+        <View>
+            <Name>HelloWorldView</Name>
+            <ViewSelectedBy>
+                <TypeName>System.String</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>Greeting</Label>
+                        <Width>20</Width>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Greeting</PropertyName>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>
