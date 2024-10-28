@@ -4,52 +4,52 @@
     <body>
       <trans-unit id="CertificateNotFound">
         <source>Unable to find a matching certificate.</source>
-        <target state="new">Unable to find a matching certificate.</target>
+        <target state="translated">Désolé... Nous ne pouvons pas trouver un certificat correspondant.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInFile">
         <source>Unable to find a certificate with a matching {0} fingerprint in {1}.</source>
-        <target state="new">Unable to find a certificate with a matching {0} fingerprint in {1}.</target>
+        <target state="translated">Impossible de trouver un certificat avec une empreinte digitale {0} correspondante dans {1}.</target>
         <note>{NumberedPlaceholder="{0}"} is a cryptographic algorithm.  {NumberedPlaceholder="{1}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="CertificateNotFoundInMachineStore">
         <source>Unable to find a matching certificate in machine certificate store.</source>
-        <target state="new">Unable to find a matching certificate in machine certificate store.</target>
+        <target state="translated">Désolé... Nous ne pouvons pas trouver un certificat correspondant dans le magasin de certificats de machine.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateNotFoundInUserStore">
         <source>Unable to find a matching certificate in user certificate store.</source>
-        <target state="new">Unable to find a matching certificate in user certificate store.</target>
+        <target state="translated">Désolé... Nous ne pouvons pas trouver un certificat correspondant dans le magasin de certificats d’utilisateur.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateRSANotFound">
         <source>Unable to acquire RSA private key for the provided certificate.</source>
-        <target state="new">Unable to acquire RSA private key for the provided certificate.</target>
+        <target state="translated">Désolé.... Nous ne pouvons pas acquérir la clé privée RSA pour le certificat fourni.</target>
         <note />
       </trans-unit>
       <trans-unit id="FetchedCertificateFromCertificateStore">
         <source>Fetched certificate from certificate store. [{milliseconds} ms]</source>
-        <target state="new">Fetched certificate from certificate store. [{milliseconds} ms]</target>
+        <target state="translated">Certificat récupéré à partir du magasin de certificats. [{milliseconds} ms]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchedCertificateFromFile">
         <source>Fetched certificate from file. [{milliseconds} ms]</source>
-        <target state="new">Fetched certificate from file. [{milliseconds} ms]</target>
+        <target state="translated">Certificat récupéré à partir du fichier. [{milliseconds} ms]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificateFromCertificateStore">
         <source>Fetching certificate from certificate store.</source>
-        <target state="new">Fetching certificate from certificate store.</target>
+        <target state="translated">Récupération d’un certificat à partir du magasin de certificats.</target>
         <note />
       </trans-unit>
       <trans-unit id="FetchingCertificateFromFile">
         <source>Fetching certificate from file.</source>
-        <target state="new">Fetching certificate from file.</target>
+        <target state="translated">Récupération d’un certificat à partir du fichier.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
-        <target state="new">The certificate has an unsupported public key algorithm.</target>
+        <target state="translated">Le certificat possède un algorithme de clé publique non pris en charge.</target>
         <note />
       </trans-unit>
     </body>
