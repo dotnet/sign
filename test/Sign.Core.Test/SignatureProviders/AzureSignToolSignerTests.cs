@@ -45,6 +45,7 @@ namespace Sign.Core.Test
         [InlineData(".appxbundle")]
         [InlineData(".cab")]
         [InlineData(".cat")]
+        [InlineData(".cdxml")]
         [InlineData(".dll")]
         [InlineData(".eappx")]
         [InlineData(".eappxbundle")]
@@ -85,7 +86,8 @@ namespace Sign.Core.Test
             Assert.False(_signer.CanSign(file));
         }
 
-        [ElevatedTheory]
+        [RequiresElevationTheory]
+        [InlineData("cmdlet-definition.cdxml")]
         [InlineData("script.ps1")]
         [InlineData("data.psd1")]
         [InlineData("module.psm1")]

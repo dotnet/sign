@@ -36,6 +36,7 @@ namespace Sign.Core
             _logger = logger;
             _toolConfigurationProvider = toolConfigurationProvider;
 
+            // For PowerShell file extensions, see https://github.com/PowerShell/PowerShell/blob/2f4f585e7fe075f5c1669397ae738c554fa18391/src/System.Management.Automation/security/SecurityManager.cs#L97C1-L106C10
             _supportedFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 ".app",
@@ -43,6 +44,7 @@ namespace Sign.Core
                 ".appxbundle",
                 ".cab",
                 ".cat",
+                ".cdxml",       // PowerShell cmdlet definition XML
                 ".dll",
                 ".eappx",
                 ".eappxbundle",
@@ -56,10 +58,10 @@ namespace Sign.Core
                 ".msp",
                 ".mst",
                 ".ocx",
-                ".ps1",
-                ".ps1xml",
-                ".psd1",
-                ".psm1",
+                ".ps1",         // PowerShell script files
+                ".ps1xml",      // PowerShell display configuration files
+                ".psd1",        // PowerShell data files
+                ".psm1",        // PowerShell module files
                 ".stl",
                 ".sys",
                 ".vbs",

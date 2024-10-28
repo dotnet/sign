@@ -29,7 +29,7 @@ namespace Sign.Core.Test
             return fileExtension switch
             {
                 ".psd1" or ".ps1" or ".psm1" => new TextPowerShellFileReader(file),
-                ".ps1xml" => new XmlPowerShellFileReader(file),
+                ".cdxml" or ".ps1xml" => new XmlPowerShellFileReader(file),
                 _ => throw new ArgumentException(message: null, paramName: nameof(file)),
             };
         }

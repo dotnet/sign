@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CmdletDefinition xmlns="http://schemas.microsoft.com/cmdlets-over-objects/2009/11">
+    <Cmdlets>
+        <Cmdlet>
+            <Verb>Write</Verb>
+            <Noun>HelloWorld</Noun>
+            <HelpFile>Write-HelloWorld</HelpFile>
+            <Parameters>
+                <Parameter>
+                    <Name>Message</Name>
+                    <ParameterType>System.String</ParameterType>
+                    <Position>0</Position>
+                    <Mandatory>true</Mandatory>
+                </Parameter>
+            </Parameters>
+            <MethodName>WriteHelloWorld</MethodName>
+        </Cmdlet>
+    </Cmdlets>
+    <ClassDefinitions>
+        <ClassDefinition>
+            <ClassName>HelloWorldCmdlet</ClassName>
+            <Methods>
+                <Method>
+                    <Name>WriteHelloWorld</Name>
+                    <ReturnType>System.Void</ReturnType>
+                    <Parameters>
+                        <Parameter>
+                            <Name>Message</Name>
+                            <ParameterType>System.String</ParameterType>
+                        </Parameter>
+                    </Parameters>
+                    <Script>
+                        <![CDATA[
+                            param($Message)
+                            Write-Output "Hello, World! $Message"
+                        ]]>
+                    </Script>
+                </Method>
+            </Methods>
+        </ClassDefinition>
+    </ClassDefinitions>
+</CmdletDefinition>
