@@ -100,6 +100,7 @@ namespace Sign.Core.Test
         private DateTimeOffset _crlExpiry;
         private X509Certificate2? _ocspResponder;
         private byte[]? _dnHash;
+        private byte[]? _keyHash;
         private List<IDisposable> _disposables;
 
         internal string? AiaHttpUri { get; }
@@ -338,8 +339,7 @@ namespace Sign.Core.Test
             request.CertificateExtensions.Add(
                 new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
-            byte[] serial = new byte[sizeof(long)];
-            RandomNumberGenerator.Fill(serial);
+            byte[] serial = GenerateSerialNumber();
 
             DateTimeOffset notBefore = _cert.NotBefore.Add(nestingBuffer);
 
@@ -690,11 +690,7 @@ SingleResponse ::= SEQUENCE {
             reader.ThrowIfNotEmpty();
 
             AsnReader algIdReader = idReader.ReadSequence();
-
-            if (algIdReader.ReadObjectIdentifier() != "1.3.14.3.2.26")
-            {
-                return CertStatus.Unknown;
-            }
+            Oid hashAlgorithmOid = new(algIdReader.ReadObjectIdentifier());
 
             if (algIdReader.HasData)
             {
@@ -702,27 +698,45 @@ SingleResponse ::= SEQUENCE {
                 algIdReader.ThrowIfNotEmpty();
             }
 
-            if (_dnHash == null)
+            if (hashAlgorithmOid.IsEqualTo(Oids.Sha1))
             {
-                _dnHash = SHA1.HashData(_cert.SubjectName.RawData);
+                // SHA-1 is obsolete.  We'll rely on serial number only for matching.
             }
-
-            if (!idReader.TryReadPrimitiveOctetString(out ReadOnlyMemory<byte> reqDn))
+            else if (IsSupportedHashAlgorithm(hashAlgorithmOid))
             {
-                idReader.ThrowIfNotEmpty();
-            }
+                if (_dnHash is null || _keyHash is null)
+                {
+                    using (HashAlgorithm hashAlgorithm = CreateHashAlgorithm(hashAlgorithmOid))
+                    {
+                        _dnHash = hashAlgorithm.ComputeHash(_cert.SubjectName.RawData);
+                        _keyHash = hashAlgorithm.ComputeHash(_cert.GetPublicKey());
+                    }
+                }
 
-            if (!reqDn.Span.SequenceEqual(_dnHash))
+                if (!idReader.TryReadPrimitiveOctetString(out ReadOnlyMemory<byte> reqDn))
+                {
+                    idReader.ThrowIfNotEmpty();
+                }
+
+                if (!reqDn.Span.SequenceEqual(_dnHash))
+                {
+                    return CertStatus.Unknown;
+                }
+
+                if (!idReader.TryReadPrimitiveOctetString(out ReadOnlyMemory<byte> reqKeyHash))
+                {
+                    idReader.ThrowIfNotEmpty();
+                }
+
+                if (!reqKeyHash.Span.SequenceEqual(_keyHash))
+                {
+                    return CertStatus.Unknown;
+                }
+            }
+            else
             {
                 return CertStatus.Unknown;
             }
-
-            if (!idReader.TryReadPrimitiveOctetString(out ReadOnlyMemory<byte> reqKeyHash))
-            {
-                idReader.ThrowIfNotEmpty();
-            }
-
-            // We could check the key hash...
 
             ReadOnlyMemory<byte> reqSerial = idReader.ReadIntegerBytes();
             idReader.ThrowIfNotEmpty();
@@ -1040,6 +1054,61 @@ SingleResponse ::= SEQUENCE {
             }
 
             return $"CN=\"{cn}\", O=\"{testName}\"";
+        }
+
+        private static bool IsSupportedHashAlgorithm(Oid oid)
+        {
+            return oid.IsEqualTo(Oids.Sha256)
+                || oid.IsEqualTo(Oids.Sha384)
+                || oid.IsEqualTo(Oids.Sha512);
+        }
+
+        private static HashAlgorithm CreateHashAlgorithm(Oid oid)
+        {
+            if (oid.IsEqualTo(Oids.Sha256))
+            {
+                return SHA256.Create();
+            }
+
+            if (oid.IsEqualTo(Oids.Sha384))
+            {
+                return SHA384.Create();
+            }
+
+            if (oid.IsEqualTo(Oids.Sha512))
+            {
+                return SHA512.Create();
+            }
+
+            throw new ArgumentException($"Hash algorithm {oid.Value} is unsupported.");
+        }
+
+        private static byte[] GenerateSerialNumber()
+        {
+            // See https://www.rfc-editor.org/rfc/rfc5280#section-4.1.2.2
+            //
+            // A serial number MUST be:
+            //
+            //    * a non-negative integer
+            //    * unique for that CA
+            //    * <= 20 bytes
+            //    * big-endian encoded
+            //
+            // To enforce uniqueness, we'll use BigInteger.
+            //
+            // Endianness here is dictated by .NET API's not the CPU architecture running this code.
+            //
+            //    * BigInteger's constructor requires an array of bytes interpreted as an integer in little-endian order.
+            //    * CertificateRequest.Create(...) requires an array of bytes interpreted as an unsigned integer in big-endian order.
+            byte[] bytes = new byte[20];
+
+            RandomNumberGenerator.Fill(bytes);
+
+            // Treat the byte array as a big-endian integer.
+            // Ensure the number is non-negative by setting the highest bit of the first byte (big-endian) to 0.
+            bytes[0] &= 0x7F;
+
+            return bytes;
         }
     }
 }
