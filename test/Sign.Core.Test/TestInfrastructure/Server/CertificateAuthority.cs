@@ -5,6 +5,7 @@
 using System.Formats.Asn1;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
@@ -909,7 +910,7 @@ SingleResponse ::= SEQUENCE {
             using (RSA eeKey = RSA.Create(keySize))
             {
                 CertificateRequest rootReq = new(
-                    BuildSubject($"Test root CA {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
+                    BuildSubject($"{Constants.CommonNamePrefix} Root CA {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
                     rootKey,
                     HashAlgorithmName.SHA256,
                     RSASignaturePadding.Pkcs1);
@@ -951,7 +952,7 @@ SingleResponse ::= SEQUENCE {
 
                     {
                         X509Certificate2 intermedPub = issuingAuthority.CreateSubordinateCA(
-                            BuildSubject($"Test intermediate CA {intermediateIndex} {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
+                            BuildSubject($"{Constants.CommonNamePrefix} Intermediate CA {intermediateIndex} {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
                             intermediateKey);
                         intermedCert = intermedPub.CopyWithPrivateKey(intermediateKey);
                         intermedPub.Dispose();
@@ -975,7 +976,7 @@ SingleResponse ::= SEQUENCE {
                 }
 
                 endEntityCert = issuingAuthority.CreateEndEntity(
-                    BuildSubject(subjectName ?? $"Test End Certificate {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
+                    BuildSubject(subjectName ?? $"{Constants.CommonNamePrefix} End Certificate {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
                     eeKey,
                     extensions);
 

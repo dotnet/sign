@@ -21,7 +21,7 @@ namespace Sign.TestInfrastructure
             using (RSA keyPair = RSA.Create(keySizeInBits: 3072))
             {
                 CertificateRequest request = new(
-                    $"CN=TEST ({Guid.NewGuid():D}) TEST, O=Organization, L=City, S=State, C=Country",
+                    $"CN={Constants.CommonNamePrefix} Certificate ({Guid.NewGuid():D}), O=Organization, L=City, S=State, C=Country",
                     keyPair,
                     HashAlgorithmName.SHA256,
                     RSASignaturePadding.Pkcs1);
