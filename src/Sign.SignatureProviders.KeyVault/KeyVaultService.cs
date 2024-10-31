@@ -21,12 +21,14 @@ namespace Sign.SignatureProviders.KeyVault
         private readonly string _certificateName;
         private readonly ILogger<KeyVaultService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
-        private KeyVaultCertificateWithPolicy? _certificateWithPolicy;
+        private KeyVaultCertificate? _certificate;
+        private readonly string? _certificateVersion;
 
         internal KeyVaultService(
             TokenCredential tokenCredential,
             Uri keyVaultUrl,
             string certificateName,
+            string? certificateVersion,
             ILogger<KeyVaultService> logger)
         {
             ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
@@ -37,6 +39,7 @@ namespace Sign.SignatureProviders.KeyVault
             _tokenCredential = tokenCredential;
             _keyVaultUrl = keyVaultUrl;
             _certificateName = certificateName;
+            _certificateVersion = certificateVersion;
             _logger = logger;
         }
 
@@ -48,42 +51,53 @@ namespace Sign.SignatureProviders.KeyVault
 
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
+            KeyVaultCertificate certificateWithPolicy = await GetCertificateVersionAsync(cancellationToken);
 
             return new X509Certificate2(certificateWithPolicy.Cer);
         }
 
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
+            KeyVaultCertificate certificateWithPolicy = await GetCertificateVersionAsync(cancellationToken);
 
             CryptographyClient cryptoClient = new(certificateWithPolicy.KeyId, _tokenCredential);
             return await cryptoClient.CreateRSAAsync(cancellationToken);
         }
 
-        private async Task<KeyVaultCertificateWithPolicy> GetCertificateWithPolicyAsync(CancellationToken cancellationToken)
+        private async Task<KeyVaultCertificate> GetCertificateVersionAsync(CancellationToken cancellationToken)
         {
-            if (_certificateWithPolicy is not null)
+            if (_certificate is not null)
             {
-                return _certificateWithPolicy;
+                return _certificate;
             }
 
             await _mutex.WaitAsync(cancellationToken);
 
             try
             {
-                if (_certificateWithPolicy is null)
+                if (_certificate is null)
                 {
                     Stopwatch stopwatch = Stopwatch.StartNew();
 
                     _logger.LogTrace(Resources.FetchingCertificate);
 
                     CertificateClient client = new(_keyVaultUrl, _tokenCredential);
-                    Response<KeyVaultCertificateWithPolicy> response = await client.GetCertificateAsync(_certificateName, cancellationToken);
+                    if(_certificateVersion is null)
+                    {
+                        Response<KeyVaultCertificateWithPolicy> response = await client.GetCertificateAsync(_certificateName, cancellationToken);
+                        _certificate = response.Value;
+                    }
+                    else
+                    {
+                        Response<KeyVaultCertificate> response =
+                            await client.GetCertificateVersionAsync(_certificateName, _certificateVersion,
+                                cancellationToken);
+                        _certificate = response.Value;
+                    }
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
-                    _certificateWithPolicy = response.Value;
+
                 }
             }
             finally
@@ -91,7 +105,7 @@ namespace Sign.SignatureProviders.KeyVault
                 _mutex.Release();
             }
 
-            return _certificateWithPolicy;
+            return _certificate;
         }
     }
 }

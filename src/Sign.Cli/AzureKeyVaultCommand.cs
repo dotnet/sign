@@ -14,6 +14,7 @@ namespace Sign.Cli
     internal sealed class AzureKeyVaultCommand : Command
     {
         internal Option<Uri> UrlOption { get; } = new(["--azure-key-vault-url", "-kvu"], AzureKeyVaultResources.UrlOptionDescription);
+        internal Option<string> CertificateVersionOption { get; } = new(["--azure-key-vault-certificate-version", "-kvuv"], AzureKeyVaultResources.CertificateVersionOptionDescription);
         internal Option<string> CertificateOption { get; } = new(["--azure-key-vault-certificate", "-kvc"], AzureKeyVaultResources.CertificateOptionDescription);
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
@@ -30,6 +31,7 @@ namespace Sign.Cli
 
             AddOption(UrlOption);
             AddOption(CertificateOption);
+            AddOption(CertificateVersionOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
             AddArgument(FileArgument);
@@ -63,9 +65,10 @@ namespace Sign.Cli
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
                 Uri url = context.ParseResult.GetValueForOption(UrlOption)!;
+                string? certificateVersion = context.ParseResult.GetValueForOption(CertificateVersionOption);
                 string certificateId = context.ParseResult.GetValueForOption(CertificateOption)!;
 
-                KeyVaultServiceProvider keyVaultServiceProvider = new(credential, url, certificateId);
+                KeyVaultServiceProvider keyVaultServiceProvider = new(credential, url, certificateId, certificateVersion);
                 await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, fileArgument);
             });
         }
