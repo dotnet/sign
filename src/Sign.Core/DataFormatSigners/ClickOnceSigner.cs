@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -20,6 +22,7 @@ namespace Sign.Core
         private readonly IManifestSigner _manifestSigner;
         private readonly ParallelOptions _parallelOptions = new() { MaxDegreeOfParallelism = 4 };
         private readonly IFileMatcher _fileMatcher;
+        private readonly IXmlDocumentLoader _xmlDocumentLoader;
 
         // Dependency injection requires a public constructor.
         public ClickOnceSigner(
@@ -29,7 +32,8 @@ namespace Sign.Core
             IMageCli mageCli,
             IManifestSigner manifestSigner,
             ILogger<IDataFormatSigner> logger,
-            IFileMatcher fileMatcher)
+            IFileMatcher fileMatcher,
+            IXmlDocumentLoader xmlDocumentLoader)
             : base(logger)
         {
             ArgumentNullException.ThrowIfNull(signatureAlgorithmProvider, nameof(signatureAlgorithmProvider));
@@ -38,12 +42,14 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(mageCli, nameof(mageCli));
             ArgumentNullException.ThrowIfNull(manifestSigner, nameof(manifestSigner));
             ArgumentNullException.ThrowIfNull(fileMatcher, nameof(fileMatcher));
+            ArgumentNullException.ThrowIfNull(xmlDocumentLoader, nameof(xmlDocumentLoader));
 
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _certificateProvider = certificateProvider;
             _mageCli = mageCli;
             _manifestSigner = manifestSigner;
             _fileMatcher = fileMatcher;
+            _xmlDocumentLoader = xmlDocumentLoader;
 
             // Need to delay this as it'd create a dependency loop if directly in the ctor
             _aggregatingSigner = new Lazy<IAggregatingDataFormatSigner>(() => serviceProvider.GetService<IAggregatingDataFormatSigner>()!);
@@ -126,14 +132,17 @@ namespace Sign.Core
 
                     // Inner files are now signed
                     // now look for the manifest file and sign that if we have one
-
-                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
-
-                    string fileArgs = $@"-update ""{manifestFile}"" {args}";
-
-                    if (manifestFile is not null && !await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
+                    FileInfo? applicationManifestFile = null;
+                    if (TryGetApplicationManifestFileName(file, out string? fileName))
                     {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
+                        applicationManifestFile = filteredFiles.SingleOrDefault(f => f.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    string fileArgs = $@"-update ""{applicationManifestFile}"" {args}";
+
+                    if (applicationManifestFile is not null && !await SignAsync(fileArgs, applicationManifestFile, rsaPrivateKey, certificate, options))
+                    {
+                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, applicationManifestFile.FullName);
 
                         throw new Exception(message);
                     }
@@ -143,7 +152,7 @@ namespace Sign.Core
                     if (string.IsNullOrEmpty(options.PublisherName))
                     {
                         string publisherName = certificate.SubjectName.Name;
- 
+
                         // get the DN. it may be quoted
                         publisherParam = $@"-pub ""{publisherName.Replace("\"", "")}""";
                     }
@@ -165,9 +174,9 @@ namespace Sign.Core
                     foreach (FileInfo deploymentManifestFile in deploymentManifestFiles)
                     {
                         fileArgs = $@"-update ""{deploymentManifestFile.FullName}"" {args} {publisherParam}";
-                        if (manifestFile is not null)
+                        if (applicationManifestFile is not null)
                         {
-                            fileArgs += $@" -appm ""{manifestFile.FullName}""";
+                            fileArgs += $@" -appm ""{applicationManifestFile.FullName}""";
                         }
                         if (options.DescriptionUrl is not null)
                         {
@@ -227,7 +236,6 @@ namespace Sign.Core
             return false;
         }
 
-
         private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot)
         {
             return clickOnceRoot.EnumerateFiles("*", SearchOption.AllDirectories);
@@ -272,6 +280,61 @@ namespace Sign.Core
                     file.CopyTo(fullDestPath, overwrite: true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Try and find the application manifest (.manifest) file from a ClickOnce application manifest (.application / .vsto
+        /// There might not be one, if the user is attempting to only re-sign the deployment manifest without touching other files.
+        /// This is necessary because there might be multiple *.manifest files present, e.g. if a DLL that's part of the ClickOnce
+        /// package ships its own assembly manifest which isn't a ClickOnce application manifest.
+        /// </summary>
+        /// <param name="deploymentManifest">A <see cref="FileInfo"/> representing a deployment manifest file.</param>
+        /// <param name="applicationManifestFileName">A <see cref="string?"/> representing a manifest file name or <c>null</c> if one isn't found.</param>
+        /// <returns><c>true</c> if the application manifest file name was found; otherwise, <c>false</c>.</returns>
+        /// <remarks>This is non-private only for unit testing.</remarks>
+        internal bool TryGetApplicationManifestFileName(FileInfo deploymentManifest, [NotNullWhen(true)] out string? applicationManifestFileName)
+        {
+            applicationManifestFileName = null;
+
+            XmlDocument xmlDoc = _xmlDocumentLoader.Load(deploymentManifest);
+
+            // there should only be a single result here, if the file is a valid clickonce manifest.
+            XmlNodeList dependentAssemblies = xmlDoc.GetElementsByTagName("dependentAssembly");
+            if (dependentAssemblies.Count != 1)
+            {
+                Logger.LogDebug(Resources.ApplicationManifestNotFound);
+                return false;
+            }
+
+            XmlNode? node = dependentAssemblies.Item(0);
+            if (node is null || node.Attributes is null)
+            {
+                Logger.LogDebug(Resources.ApplicationManifestNotFound);
+                return false;
+            }
+
+            XmlAttribute? codebaseAttribute = node.Attributes["codebase"];
+            if (codebaseAttribute is null || string.IsNullOrEmpty(codebaseAttribute.Value))
+            {
+                Logger.LogDebug(Resources.ApplicationManifestNotFound);
+                return false;
+            }
+
+            // The codebase attribute can be a relative file path (e.g. Application Files\MyApp_1_0_0_0\MyApp.dll.manifest) or
+            // a URI (e.g. https://my.cdn.com/clickonce/MyApp/ApplicationFiles/MyApp_1_0_0_0/MyApp.dll.manifest) so we need to
+            // handle both cases and extract just the file name part.
+            //
+            // We only try and parse absolute URI's, because a relative URI can just be treated like a file path for our purposes.
+            if (Uri.TryCreate(codebaseAttribute.Value, UriKind.Absolute, out Uri? uri))
+            {
+                applicationManifestFileName = Path.GetFileName(uri.LocalPath); // works for http(s) and file:// uris
+            }
+            else
+            {
+                applicationManifestFileName = Path.GetFileName(codebaseAttribute.Value);
+            }
+
+            return !string.IsNullOrEmpty(applicationManifestFileName);
         }
     }
 }
