@@ -2,14 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Runtime.Versioning;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace Sign.TestInfrastructure
 {
-    internal sealed class EphemeralTrust : IDisposable
+    public sealed class EphemeralTrust : IDisposable
     {
         private readonly X509Certificate2 _certificate;
 
+        [SupportedOSPlatform("windows")]
         internal EphemeralTrust(X509Certificate2 certificate)
         {
             ArgumentNullException.ThrowIfNull(certificate, nameof(certificate));
@@ -27,8 +30,74 @@ namespace Sign.TestInfrastructure
             // Do not dispose of _certificate, as this class did not assume ownership of it.
         }
 
+        // If test certificates from a previous test run are still trusted,
+        // we need to remove them if we can or have them removed by the developer before continuing.
+        public static void RemoveResidualTestCertificates()
+        {
+            using (X509Store store = GetStore())
+            {
+                store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+
+                X509Certificate2Collection certificates = store.Certificates;
+                List<X509Certificate2> oldCertificates = new();
+
+                foreach (X509Certificate2 certificate in certificates)
+                {
+                    if (string.Equals(certificate.FriendlyName, Constants.FriendlyName))
+                    {
+                        oldCertificates.Add(certificate);
+                    }
+                }
+
+                store.Close();
+
+                if (oldCertificates.Count > 0)
+                {
+                    if (Environment.IsPrivilegedProcess)
+                    {
+                        store.Open(OpenFlags.ReadWrite | OpenFlags.OpenExistingOnly);
+
+                        try
+                        {
+                            foreach (X509Certificate2 certificate in oldCertificates)
+                            {
+                                store.Remove(certificate);
+                            }
+                        }
+                        finally
+                        {
+                            store.Close();
+                        }
+                    }
+                    else
+                    {
+                        StringBuilder messageBuilder = new();
+                        bool isSingular = oldCertificates.Count == 1;
+
+                        messageBuilder.Append($"{oldCertificates.Count} certificate{(isSingular ? string.Empty : "s")} from a previous test run {(isSingular ? "was" : "were")} found ");
+                        messageBuilder.Append("in the local machine's \"Trusted Root Certification Authorities\" store.  ");
+                        messageBuilder.Append($"Please remove the following certificate{(isSingular ? string.Empty : "s")} manually and rerun.  ");
+                        messageBuilder.Append($"All test certificates have a \"Friendly Name\" value of {Constants.FriendlyName}.");
+                        messageBuilder.AppendLine();
+
+                        foreach (X509Certificate2 certificate in oldCertificates)
+                        {
+                            messageBuilder.AppendLine($"  Subject:  {certificate.Subject}");
+                            messageBuilder.AppendLine($"    Friendly name:  {certificate.FriendlyName}");
+                        }
+
+                        throw new ResidualTestCertificatesFoundInRootStoreException(messageBuilder.ToString());
+                    }
+                }
+            }
+        }
+
+        [SupportedOSPlatform("windows")]
         private void AddTrust()
         {
+            // This enables us to easily and reliably identify our test certificates.
+            _certificate.FriendlyName = Constants.FriendlyName;
+
             using (X509Store store = GetStore())
             {
                 store.Open(OpenFlags.ReadWrite | OpenFlags.OpenExistingOnly);

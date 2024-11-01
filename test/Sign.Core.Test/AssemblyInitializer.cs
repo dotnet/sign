@@ -3,6 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Runtime.CompilerServices;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
@@ -12,6 +13,8 @@ namespace Sign.Core.Test
         public static void Initialize()
         {
             AppInitializer.Initialize();
+
+            EphemeralTrust.RemoveResidualTestCertificates();
         }
     }
 }
