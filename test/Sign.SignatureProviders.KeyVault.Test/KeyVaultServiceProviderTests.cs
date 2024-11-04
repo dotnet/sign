@@ -54,6 +54,18 @@ namespace Sign.SignatureProviders.KeyVault.Test
         }
 
         [Fact]
+        public void Constructor_WhenCertificateVersionIsNull_DoesNotThrow()
+        {
+            var provider = new KeyVaultServiceProvider(TokenCredential, KeyVaultUrl, CertificateName, null);
+        }
+
+        [Fact]
+        public void Constructor_WhenCertificateVersionIsEmpty_DoesNotThrow()
+        {
+            var provider = new KeyVaultServiceProvider(TokenCredential, KeyVaultUrl, CertificateName, "");
+        }
+
+        [Fact]
         public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(

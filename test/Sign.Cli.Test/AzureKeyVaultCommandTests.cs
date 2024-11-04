@@ -45,6 +45,12 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void CertificateVersionOption_Always_Optional()
+        {
+            Assert.False(_command.CertificateVersionOption.IsRequired);
+        }
+
+        [Fact]
         public void UrlOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.UrlOption.Arity);

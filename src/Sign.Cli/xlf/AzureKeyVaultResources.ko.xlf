@@ -7,6 +7,11 @@
         <target state="translated">Azure Key Vault의 인증서 이름입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateVersionOptionDescription">
+        <source>Optional version of the Azure Key Vault certificate</source>
+        <target state="new">Optional version of the Azure Key Vault certificate</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ClickOnceExtensionNotSupported">
         <source>ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation.</source>
         <target state="translated">레거시 .clickonce ZIP 해결 방법을 통한 ClickOnce 서명은 더 이상 지원되지 않습니다. 설명서를 참조하세요.</target>

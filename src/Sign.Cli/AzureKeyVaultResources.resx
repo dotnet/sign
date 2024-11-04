@@ -129,4 +129,7 @@
   <data name="UrlOptionDescription" xml:space="preserve">
     <value>URL to an Azure Key Vault.</value>
   </data>
+  <data name="CertificateVersionOptionDescription" xml:space="preserve">
+      <value>Optional version of the Azure Key Vault certificate</value>
+  </data>
 </root>

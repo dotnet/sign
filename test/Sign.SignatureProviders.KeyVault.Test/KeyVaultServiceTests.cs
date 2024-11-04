@@ -52,6 +52,12 @@ namespace Sign.SignatureProviders.KeyVault.Test
         }
 
         [Fact]
+        public void Constructor_WhenCertificateVersionIsEmpty_DoesNotThrow()
+        {
+            var service = new KeyVaultService(TokenCredential, KeyVaultUrl, CertificateName, null, logger);
+        }
+
+        [Fact]
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(

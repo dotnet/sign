@@ -69,7 +69,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Optional Version of the certificate in Azure Key Vault.
+        ///   Looks up a localized string similar to Optional version of the Azure Key Vault certificate.
         /// </summary>
         internal static string CertificateVersionOptionDescription {
             get {
