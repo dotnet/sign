@@ -14,7 +14,7 @@ namespace Sign.Cli
     internal sealed class AzureKeyVaultCommand : Command
     {
         internal Option<Uri> UrlOption { get; } = new(["--azure-key-vault-url", "-kvu"], AzureKeyVaultResources.UrlOptionDescription);
-        internal Option<string> CertificateVersionOption { get; } = new(["--azure-key-vault-certificate-version", "-kvuv"], AzureKeyVaultResources.CertificateVersionOptionDescription);
+        internal Option<string> CertificateVersionOption { get; } = new(["--azure-key-vault-certificate-version", "-kvcv"], AzureKeyVaultResources.CertificateVersionOptionDescription);
         internal Option<string> CertificateOption { get; } = new(["--azure-key-vault-certificate", "-kvc"], AzureKeyVaultResources.CertificateOptionDescription);
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 

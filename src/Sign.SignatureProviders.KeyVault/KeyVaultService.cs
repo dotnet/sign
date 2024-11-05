@@ -51,16 +51,16 @@ namespace Sign.SignatureProviders.KeyVault
 
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificate certificateWithPolicy = await GetCertificateVersionAsync(cancellationToken);
+            KeyVaultCertificate certificate = await GetCertificateVersionAsync(cancellationToken);
 
-            return new X509Certificate2(certificateWithPolicy.Cer);
+            return new X509Certificate2(certificate.Cer);
         }
 
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificate certificateWithPolicy = await GetCertificateVersionAsync(cancellationToken);
+            KeyVaultCertificate certificate = await GetCertificateVersionAsync(cancellationToken);
 
-            CryptographyClient cryptoClient = new(certificateWithPolicy.KeyId, _tokenCredential);
+            CryptographyClient cryptoClient = new(certificate.KeyId, _tokenCredential);
             return await cryptoClient.CreateRSAAsync(cancellationToken);
         }
 
@@ -82,7 +82,7 @@ namespace Sign.SignatureProviders.KeyVault
                     _logger.LogTrace(Resources.FetchingCertificate);
 
                     CertificateClient client = new(_keyVaultUrl, _tokenCredential);
-                    if(_certificateVersion is null)
+                    if(string.IsNullOrEmpty(_certificateVersion))
                     {
                         Response<KeyVaultCertificateWithPolicy> response = await client.GetCertificateAsync(_certificateName, cancellationToken);
                         _certificate = response.Value;
