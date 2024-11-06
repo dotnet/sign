@@ -5,7 +5,8 @@
       "dotnet/x64": [
         "8.0.10"
       ]
-    }
+    },
+    "xcopy-msbuild": "17.9.6"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "8.0.0-beta.24359.3",
