@@ -102,6 +102,7 @@ namespace Sign.TestInfrastructure
             {
                 store.Open(OpenFlags.ReadWrite | OpenFlags.OpenExistingOnly);
 
+                // CodeQL [SM02730] This is test code. This adds a short-lived test certificate to the root store for testing signing and signature verification. The certificate is later removed. See internal bug 2292291.
                 store.Add(_certificate);
 
                 store.Close();
