@@ -1,16 +1,20 @@
 {
-  "tools": {
-    "dotnet": "8.0.403",
-    "runtimes": {
-      "dotnet/x64": [
-        "8.0.10"
-      ]
+    "tools": {
+        "dotnet": "9.0.100-rc.2.24474.11",
+        "runtimes": {
+            "dotnet/x64": [
+                "8.0.10"
+            ]
+        },
+        "xcopy-msbuild": "17.9.6"
     },
-    "xcopy-msbuild": "17.9.6"
-  },
-  "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "8.0.0-beta.24359.3",
-    "Microsoft.DotNet.Helix.Sdk": "8.0.0-beta.24359.3",
-    "Microsoft.Build.NoTargets": "3.7.0"
-  }
+    "sdk": {
+        "version": "9.0.100-rc.2.24474.11",
+        "rollForward": "latestFeature"
+    },
+    "msbuild-sdks": {
+        "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24555.3",
+        "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.24555.3",
+        "Microsoft.Build.NoTargets": "3.7.0"
+    }
 }

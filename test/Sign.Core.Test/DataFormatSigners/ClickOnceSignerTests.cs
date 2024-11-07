@@ -200,7 +200,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(null)]
         [InlineData("PublisherName")]
-        public async Task SignAsync_WhenFilesIsClickOnceFile_Signs(string publisherName)
+        public async Task SignAsync_WhenFilesIsClickOnceFile_Signs(string? publisherName)
         {
             const string commonName = "Test certificate (DO NOT TRUST)";
 
