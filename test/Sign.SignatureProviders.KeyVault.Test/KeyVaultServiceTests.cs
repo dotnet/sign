@@ -54,7 +54,9 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void Constructor_WhenCertificateVersionIsEmpty_DoesNotThrow()
         {
-            var service = new KeyVaultService(TokenCredential, KeyVaultUrl, CertificateName, null, logger);
+            using (KeyVaultService service = new(TokenCredential, KeyVaultUrl, CertificateName, certificateVersion: null, logger))
+            {
+            }
         }
 
         [Fact]
