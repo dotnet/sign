@@ -63,7 +63,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(TokenCredential, KeyVaultUrl, CertificateName, null, logger: null!));
+                () => new KeyVaultService(TokenCredential, KeyVaultUrl, CertificateName, certificateVersion: null, logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }
