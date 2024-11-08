@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CertificateVersionOptionDescription">
-        <source>Optional version of the Azure Key Vault certificate</source>
-        <target state="new">Optional version of the Azure Key Vault certificate</target>
+        <source>Optional version of the Azure Key Vault certificate.</source>
+        <target state="new">Optional version of the Azure Key Vault certificate.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClickOnceExtensionNotSupported">
