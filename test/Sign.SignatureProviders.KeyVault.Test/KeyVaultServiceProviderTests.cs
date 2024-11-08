@@ -114,7 +114,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetCertificateProvider_ReturnsSameInstance()
         {
-            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName, null);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName, certificateVersion: null);
 
             ConcurrentBag<ICertificateProvider> certificateProviders = [];
             Parallel.For(0, 2, (_, _) =>
