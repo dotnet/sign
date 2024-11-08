@@ -77,7 +77,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_WhenServiceProviderIsNull_Throws()
         {
-            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName, null);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName, certificateVersion: null);
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
