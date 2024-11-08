@@ -82,7 +82,7 @@ namespace Sign.SignatureProviders.KeyVault
                     _logger.LogTrace(Resources.FetchingCertificate);
 
                     CertificateClient client = new(_keyVaultUrl, _tokenCredential);
-                    if(string.IsNullOrEmpty(_certificateVersion))
+                    if (string.IsNullOrEmpty(_certificateVersion))
                     {
                         Response<KeyVaultCertificateWithPolicy> response = await client.GetCertificateAsync(_certificateName, cancellationToken);
                         _certificate = response.Value;
