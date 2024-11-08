@@ -56,7 +56,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void Constructor_WhenCertificateVersionIsNull_DoesNotThrow()
         {
-            var provider = new KeyVaultServiceProvider(TokenCredential, KeyVaultUrl, CertificateName, null);
+            var provider = new KeyVaultServiceProvider(TokenCredential, KeyVaultUrl, CertificateName, certificateVersion: null);
         }
 
         [Fact]
