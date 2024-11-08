@@ -97,7 +97,6 @@ namespace Sign.SignatureProviders.KeyVault
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
-
                 }
             }
             finally
