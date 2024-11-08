@@ -45,7 +45,7 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CertificateVersionOption_Always_Optional()
+        public void CertificateVersionOption_Always_IsOptional()
         {
             Assert.False(_command.CertificateVersionOption.IsRequired);
         }
