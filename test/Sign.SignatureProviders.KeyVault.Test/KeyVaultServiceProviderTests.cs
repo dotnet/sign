@@ -88,7 +88,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_ReturnsSameInstance()
         {
-            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName, null);
+            KeyVaultServiceProvider provider = new(TokenCredential, KeyVaultUrl, CertificateName, certificateVersion: null);
 
             ConcurrentBag<ISignatureAlgorithmProvider> signatureAlgorithmProviders = [];
             Parallel.For(0, 2, (_, _) =>
