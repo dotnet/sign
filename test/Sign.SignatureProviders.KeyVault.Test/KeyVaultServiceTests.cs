@@ -46,7 +46,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new KeyVaultService(TokenCredential, KeyVaultUrl, certificateName: string.Empty, null, logger));
+                () => new KeyVaultService(TokenCredential, KeyVaultUrl, certificateName: string.Empty, certificateVersion: null, logger));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
