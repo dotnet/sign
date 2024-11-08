@@ -39,7 +39,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenKeyVaultUrlIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultServiceProvider(TokenCredential, keyVaultUrl: null!, CertificateName, null));
+                () => new KeyVaultServiceProvider(TokenCredential, keyVaultUrl: null!, CertificateName, certificateVersion: null));
 
             Assert.Equal("keyVaultUrl", exception.ParamName);
         }
