@@ -4,7 +4,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.122" />
+    <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.127" />
     <PackageVersion Include="Azure.Core" Version="1.44.1" />
     <PackageVersion Include="Azure.Identity" Version="1.13.1" />
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
@@ -12,6 +12,7 @@
     <PackageVersion Include="AzureSign.Core" Version="4.0.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" Version="24.0.15760" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0" />
@@ -28,6 +29,5 @@
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.2" />
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
-    <PackageVersion Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" Version="24.0.15760" />
   </ItemGroup>
 </Project>
