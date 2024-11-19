@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.Config = NuGet.Config
 		SdkTools.props = SdkTools.props
 		SECURITY.md = SECURITY.md
+		.github\workflows\stale.yml = .github\workflows\stale.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.Core", "src\Sign.Core\Sign.Core.csproj", "{8781DB2C-CF89-456D-BE9D-D7EF8333F5EC}"
