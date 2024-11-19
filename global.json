@@ -1,15 +1,15 @@
 {
     "tools": {
-        "dotnet": "9.0.100-rc.2.24474.11",
+        "dotnet": "9.0.100",
         "runtimes": {
             "dotnet/x64": [
-                "8.0.10"
+                "8.0.11"
             ]
         },
         "xcopy-msbuild": "17.10.0-pre.4.0"
     },
     "sdk": {
-        "version": "9.0.100-rc.2.24474.11",
+        "version": "9.0.100",
         "rollForward": "latestFeature"
     },
     "msbuild-sdks": {
