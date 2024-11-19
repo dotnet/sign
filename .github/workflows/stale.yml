@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/stale@v9
         with:
-          stale-issue-message: 'This issue is stale because it has been open 7 days with no activity after asking for more info. Comment or this will be closed in 4 days.'
-          close-issue-message: 'This issue was closed because it has been stalled for 10 days with no activity. This can be reopened if additional information is provided.'
+          stale-issue-message: 'This issue is stale because it has been open 10 days with no activity after asking for more info. Comment or this will be closed in 4 days.'
+          close-issue-message: 'This issue was closed because it has been stalled for 14 days with no activity. This can be reopened if additional information is provided.'
           days-before-issue-stale: 10          
           days-before-issue-close: 4
           days-before-pr-stale: -1
