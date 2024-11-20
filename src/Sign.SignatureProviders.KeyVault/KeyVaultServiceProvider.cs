@@ -12,6 +12,7 @@ namespace Sign.SignatureProviders.KeyVault
     internal sealed class KeyVaultServiceProvider : ISignatureProvider
     {
         private readonly string _certificateName;
+        private readonly string? _certificateVersion;
         private readonly Uri _keyVaultUrl;
         private readonly TokenCredential _tokenCredential;
         private readonly object _lockObject = new();
@@ -20,7 +21,8 @@ namespace Sign.SignatureProviders.KeyVault
         internal KeyVaultServiceProvider(
             TokenCredential tokenCredential,
             Uri keyVaultUrl,
-            string certificateName)
+            string certificateName,
+            string? certificateVersion)
         {
             ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
             ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
@@ -29,6 +31,7 @@ namespace Sign.SignatureProviders.KeyVault
             _tokenCredential = tokenCredential;
             _keyVaultUrl = keyVaultUrl;
             _certificateName = certificateName;
+            _certificateVersion = certificateVersion;
         }
 
         public ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
@@ -60,7 +63,7 @@ namespace Sign.SignatureProviders.KeyVault
                 }
 
                 ILogger<KeyVaultService> logger = serviceProvider.GetRequiredService<ILogger<KeyVaultService>>();
-                _keyVaultService = new KeyVaultService(_tokenCredential, _keyVaultUrl, _certificateName, logger);
+                _keyVaultService = new KeyVaultService(_tokenCredential, _keyVaultUrl, _certificateName, _certificateVersion, logger);
             }
 
             return _keyVaultService;
