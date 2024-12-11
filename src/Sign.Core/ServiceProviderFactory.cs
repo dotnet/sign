@@ -9,7 +9,7 @@ namespace Sign.Core
 {
     internal sealed class ServiceProviderFactory : IServiceProviderFactory
     {
-        private Action<IServiceCollection>? servicesToAdd;
+        private Action<IServiceCollection>? _servicesToAdd;
 
         public IServiceProvider Create(
             LogLevel logLevel = LogLevel.Information,
@@ -17,9 +17,9 @@ namespace Sign.Core
             Action<IServiceCollection>? addServices = null)
         {
 
-            if (servicesToAdd is not null)
+            if (_servicesToAdd is not null)
             {
-                addServices += servicesToAdd;
+                addServices += _servicesToAdd;
             }
 
             return ServiceProvider.CreateDefault(logLevel, loggerProvider, addServices);
@@ -29,7 +29,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(services, nameof(services));
 
-            servicesToAdd += services;
+            _servicesToAdd += services;
         }
     }
 }
