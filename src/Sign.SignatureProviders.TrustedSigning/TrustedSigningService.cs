@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 
 using Azure;
 using Azure.CodeSigning;
-using Azure.CodeSigning.Models;
 
 using Microsoft.Extensions.Logging;
 
@@ -18,8 +17,6 @@ namespace Sign.SignatureProviders.TrustedSigning
 {
     internal sealed class TrustedSigningService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
-        private static readonly SignRequest _emptyRequest = new(SignatureAlgorithm.RS256, new byte[32]);
-
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
@@ -81,7 +78,7 @@ namespace Sign.SignatureProviders.TrustedSigning
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                     //print the certificate info
-                    _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(true));
+                    _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(verbose: true));
 
                     response.Value.Dispose();
                 }
