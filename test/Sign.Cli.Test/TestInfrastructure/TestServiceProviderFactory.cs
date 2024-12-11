@@ -26,7 +26,7 @@ namespace Sign.Cli.Test
             return _serviceProvider;
         }
 
-        public void AddServices(Action<IServiceCollection> services)
+        public void AddServices(Action<IServiceCollection> addServices)
         { }
     }
 }

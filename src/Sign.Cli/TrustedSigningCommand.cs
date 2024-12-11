@@ -83,8 +83,7 @@ namespace Sign.Cli
                                 serviceProvider.GetRequiredService<CertificateProfileClient>(),
                                 accountName,
                                 certificateProfileName,
-                         serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>()
-                                );
+                                serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>());
                     });
                 });
 

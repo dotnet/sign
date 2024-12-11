@@ -14,6 +14,6 @@ namespace Sign.Core
             ILoggerProvider? loggerProvider = null,
             Action<IServiceCollection>? addServices = null);
 
-        void AddServices(Action<IServiceCollection> services);
+        void AddServices(Action<IServiceCollection> addServices);
     }
 }
