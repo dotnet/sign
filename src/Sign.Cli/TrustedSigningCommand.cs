@@ -5,7 +5,15 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+
+using Azure.CodeSigning;
+using Azure.CodeSigning.Extensions;
 using Azure.Core;
+
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 using Sign.Core;
 using Sign.SignatureProviders.TrustedSigning;
 
@@ -60,7 +68,33 @@ namespace Sign.Cli
                 string accountName = context.ParseResult.GetValueForOption(AccountOption)!;
                 string certificateProfileName = context.ParseResult.GetValueForOption(CertificateProfileOption)!;
 
-                TrustedSigningServiceProvider trustedSigningServiceProvider = new(credential, endpointUrl, accountName, certificateProfileName);
+                serviceProviderFactory.AddServices(services =>
+                {
+                    services.AddAzureClients(builder =>
+                    {
+                        builder.AddCertificateProfileClient(endpointUrl);
+                        builder.UseCredential(credential);
+                        builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
+                    });
+
+
+                    var opt = new CertificateProfileClientOptions();
+
+
+
+                    services.AddSingleton<TrustedSigningService>(serviceProvider =>
+                    {
+                        return new TrustedSigningService(
+                                serviceProvider.GetRequiredService<CertificateProfileClient>(),
+                                accountName,
+                                certificateProfileName,
+                         serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>()
+                                );
+                    });
+                });
+
+
+                TrustedSigningServiceProvider trustedSigningServiceProvider = new();
 
                 await codeCommand.HandleAsync(context, serviceProviderFactory, trustedSigningServiceProvider, fileArgument);
             });
