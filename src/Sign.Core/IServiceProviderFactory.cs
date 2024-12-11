@@ -13,5 +13,7 @@ namespace Sign.Core
             LogLevel logLevel = LogLevel.Information,
             ILoggerProvider? loggerProvider = null,
             Action<IServiceCollection>? addServices = null);
+
+        void AddServices(Action<IServiceCollection> addServices);
     }
 }
