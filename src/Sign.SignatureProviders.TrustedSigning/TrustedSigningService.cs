@@ -5,11 +5,13 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
-using Azure.Core;
+
 using Microsoft.Extensions.Logging;
+
 using Sign.Core;
 
 namespace Sign.SignatureProviders.TrustedSigning
@@ -26,23 +28,20 @@ namespace Sign.SignatureProviders.TrustedSigning
         private X509Certificate2? _certificate;
 
         public TrustedSigningService(
-            TokenCredential tokenCredential,
-            Uri endpointUrl,
+            CertificateProfileClient certificateProfileClient,
             string accountName,
             string certificateProfileName,
             ILogger<TrustedSigningService> logger)
         {
-            ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
-            ArgumentNullException.ThrowIfNull(endpointUrl, nameof(endpointUrl));
+            ArgumentNullException.ThrowIfNull(certificateProfileClient, paramName: nameof(certificateProfileClient));
             ArgumentException.ThrowIfNullOrEmpty(accountName, nameof(accountName));
             ArgumentException.ThrowIfNullOrEmpty(certificateProfileName, nameof(certificateProfileName));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
+            _client = certificateProfileClient;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
             _logger = logger;
-
-            _client = new CertificateProfileClient(tokenCredential, endpointUrl);
         }
 
         public void Dispose()
@@ -81,6 +80,9 @@ namespace Sign.SignatureProviders.TrustedSigning
                     _certificate = collection[collection.Count - 1];
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                    //print the certificate info
+                    _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(true));
+
                     response.Value.Dispose();
                 }
             }
