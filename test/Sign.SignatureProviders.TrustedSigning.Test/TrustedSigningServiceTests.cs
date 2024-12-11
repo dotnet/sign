@@ -23,7 +23,7 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new TrustedSigningService(certificateProfileClient: null!, AccountName, CertificateProfileName, Logger));
 
-            Assert.Equal("tokenCredential", exception.ParamName);
+            Assert.Equal("certificateProfileClient", exception.ParamName);
         }
 
         [Fact]
