@@ -4,6 +4,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Sign.Core;
 
 namespace Sign.Cli.Test
@@ -24,5 +25,8 @@ namespace Sign.Cli.Test
         {
             return _serviceProvider;
         }
+
+        public void AddServices(Action<IServiceCollection> services)
+        { }
     }
 }
