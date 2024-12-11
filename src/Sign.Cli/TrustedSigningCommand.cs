@@ -77,11 +77,6 @@ namespace Sign.Cli
                         builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
                     });
 
-
-                    var opt = new CertificateProfileClientOptions();
-
-
-
                     services.AddSingleton<TrustedSigningService>(serviceProvider =>
                     {
                         return new TrustedSigningService(
@@ -92,7 +87,6 @@ namespace Sign.Cli
                                 );
                     });
                 });
-
 
                 TrustedSigningServiceProvider trustedSigningServiceProvider = new();
 
