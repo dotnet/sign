@@ -5,38 +5,40 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+
 using Azure;
-using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
+
 using Microsoft.Extensions.Logging;
+
 using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault
 {
     internal sealed class KeyVaultService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
-        private readonly TokenCredential _tokenCredential;
-        private readonly Uri _keyVaultUrl;
+        private readonly CertificateClient _certificateClient;
+        private readonly CryptographyClient _cryptographyClient;
         private readonly string _certificateName;
         private readonly ILogger<KeyVaultService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
         private KeyVaultCertificateWithPolicy? _certificateWithPolicy;
 
         internal KeyVaultService(
-            TokenCredential tokenCredential,
-            Uri keyVaultUrl,
+            CertificateClient certificateClient,
+            CryptographyClient cryptographyClient,
             string certificateName,
             ILogger<KeyVaultService> logger)
         {
-            ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
-            ArgumentNullException.ThrowIfNull(keyVaultUrl, nameof(keyVaultUrl));
+            ArgumentNullException.ThrowIfNull(certificateClient, nameof(certificateClient));
+            ArgumentNullException.ThrowIfNull(cryptographyClient, nameof(cryptographyClient));
             ArgumentException.ThrowIfNullOrEmpty(certificateName, nameof(certificateName));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-            _tokenCredential = tokenCredential;
-            _keyVaultUrl = keyVaultUrl;
             _certificateName = certificateName;
+            _certificateClient = certificateClient;
+            _cryptographyClient = cryptographyClient;
             _logger = logger;
         }
 
@@ -57,8 +59,7 @@ namespace Sign.SignatureProviders.KeyVault
         {
             KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
 
-            CryptographyClient cryptoClient = new(certificateWithPolicy.KeyId, _tokenCredential);
-            return await cryptoClient.CreateRSAAsync(cancellationToken);
+            return await _cryptographyClient.CreateRSAAsync(cancellationToken);
         }
 
         private async Task<KeyVaultCertificateWithPolicy> GetCertificateWithPolicyAsync(CancellationToken cancellationToken)
@@ -78,8 +79,7 @@ namespace Sign.SignatureProviders.KeyVault
 
                     _logger.LogTrace(Resources.FetchingCertificate);
 
-                    CertificateClient client = new(_keyVaultUrl, _tokenCredential);
-                    Response<KeyVaultCertificateWithPolicy> response = await client.GetCertificateAsync(_certificateName, cancellationToken);
+                    Response<KeyVaultCertificateWithPolicy> response = await _certificateClient.GetCertificateAsync(_certificateName, cancellationToken);
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 

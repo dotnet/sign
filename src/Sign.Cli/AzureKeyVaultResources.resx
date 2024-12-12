@@ -126,6 +126,9 @@
   <data name="CommandDescription" xml:space="preserve">
     <value>Use Azure Key Vault.</value>
   </data>
+  <data name="InvalidKeyVaultUrl" xml:space="preserve">
+    <value>URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</value>
+  </data>
   <data name="UrlOptionDescription" xml:space="preserve">
     <value>URL to an Azure Key Vault.</value>
   </data>
