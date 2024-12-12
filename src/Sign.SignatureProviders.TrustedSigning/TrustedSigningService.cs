@@ -67,20 +67,21 @@ namespace Sign.SignatureProviders.TrustedSigning
 
                     Response<Stream> response = await _client.GetSignCertificateChainAsync(_accountName, _certificateProfileName, cancellationToken: cancellationToken);
 
-                    byte[] rawData = new byte[response.Value.Length];
-                    response.Value.Read(rawData, 0, rawData.Length);
+                    using (response.Value)
+                    {
+                        byte[] rawData = new byte[response.Value.Length];
+                        response.Value.Read(rawData, 0, rawData.Length);
 
-                    X509Certificate2Collection collection = [];
-                    collection.Import(rawData);
+                        X509Certificate2Collection collection = [];
+                        collection.Import(rawData);
 
-                    // This should contain the certificate chain in root->leaf order.
-                    _certificate = collection[collection.Count - 1];
+                        // This should contain the certificate chain in root->leaf order.
+                        _certificate = collection[collection.Count - 1];
 
-                    _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
-                    //print the certificate info
-                    _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(verbose: true));
-
-                    response.Value.Dispose();
+                        _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                        //print the certificate info
+                        _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(verbose: true));
+                    }
                 }
             }
             finally
