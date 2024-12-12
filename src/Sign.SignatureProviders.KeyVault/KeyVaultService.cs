@@ -23,7 +23,7 @@ namespace Sign.SignatureProviders.KeyVault
         private readonly string _certificateName;
         private readonly ILogger<KeyVaultService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
-        private KeyVaultCertificateWithPolicy? _certificateWithPolicy;
+        private X509Certificate2? _certificate;
 
         internal KeyVaultService(
             CertificateClient certificateClient,
@@ -45,35 +45,22 @@ namespace Sign.SignatureProviders.KeyVault
         public void Dispose()
         {
             _mutex.Dispose();
+            _certificate?.Dispose();
             GC.SuppressFinalize(this);
         }
 
         public async Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken)
         {
-            KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
-
-            return new X509Certificate2(certificateWithPolicy.Cer);
-        }
-
-        public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
-        {
-            KeyVaultCertificateWithPolicy certificateWithPolicy = await GetCertificateWithPolicyAsync(cancellationToken);
-
-            return await _cryptographyClient.CreateRSAAsync(cancellationToken);
-        }
-
-        private async Task<KeyVaultCertificateWithPolicy> GetCertificateWithPolicyAsync(CancellationToken cancellationToken)
-        {
-            if (_certificateWithPolicy is not null)
+            if (_certificate is not null)
             {
-                return _certificateWithPolicy;
+                return new X509Certificate2(_certificate); // clone it as it's disposable
             }
 
             await _mutex.WaitAsync(cancellationToken);
 
             try
             {
-                if (_certificateWithPolicy is null)
+                if (_certificate is null)
                 {
                     Stopwatch stopwatch = Stopwatch.StartNew();
 
@@ -83,7 +70,10 @@ namespace Sign.SignatureProviders.KeyVault
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
-                    _certificateWithPolicy = response.Value;
+                    _certificate = new X509Certificate2(response.Value.Cer);
+
+                    //print the certificate info
+                    _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(verbose: true));
                 }
             }
             finally
@@ -91,7 +81,12 @@ namespace Sign.SignatureProviders.KeyVault
                 _mutex.Release();
             }
 
-            return _certificateWithPolicy;
+            return new X509Certificate2(_certificate); // clone it as it's disposable
+        }
+
+        public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
+        {
+            return await _cryptographyClient.CreateRSAAsync(cancellationToken);
         }
     }
 }
