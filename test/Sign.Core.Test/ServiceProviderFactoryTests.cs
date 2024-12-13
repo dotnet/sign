@@ -17,7 +17,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => factory.AddServices(null!));
 
-            Assert.Equal("services", exception.ParamName);
+            Assert.Equal("addServices", exception.ParamName);
         }
 
         [Fact]
