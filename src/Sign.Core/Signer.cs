@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
@@ -165,6 +166,11 @@ namespace Sign.Core
             catch (AuthenticationException e)
             {
                 _logger.LogError(e, e.Message);
+                return ExitCode.Failed;
+            }
+            catch (SigningException)
+            {
+                _logger.LogError(Resources.SigningFailedAfterAllAttempts);
                 return ExitCode.Failed;
             }
             catch (Exception e)
