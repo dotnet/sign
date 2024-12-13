@@ -80,7 +80,7 @@ namespace Sign.SignatureProviders.TrustedSigning
 
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                         //print the certificate info
-                        _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(verbose: true));
+                        _logger.LogTrace($"{Resources.CertificateDetails}{Environment.NewLine}{_certificate.ToString(verbose: true)}");
                     }
                 }
             }

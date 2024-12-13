@@ -61,7 +61,7 @@ namespace Sign.SignatureProviders.TrustedSigning {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate Details:\n{details}.
+        ///   Looks up a localized string similar to Certificate details:.
         /// </summary>
         internal static string CertificateDetails {
             get {

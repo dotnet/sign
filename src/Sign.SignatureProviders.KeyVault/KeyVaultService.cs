@@ -73,7 +73,7 @@ namespace Sign.SignatureProviders.KeyVault
                     _certificate = new X509Certificate2(response.Value.Cer);
 
                     //print the certificate info
-                    _logger.LogTrace(Resources.CertificateDetails, _certificate.ToString(verbose: true));
+                    _logger.LogTrace($"{Resources.CertificateDetails}{Environment.NewLine}{_certificate.ToString(verbose: true)}");
                 }
             }
             finally
