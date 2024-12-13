@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using Azure.CodeSigning;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using Moq;
 
 using Sign.TestInfrastructure;
 
@@ -17,6 +21,15 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
         {
             ServiceCollection services = new();
             services.AddSingleton<ILogger<TrustedSigningService>>(new TestLogger<TrustedSigningService>());
+            services.AddSingleton<TrustedSigningService>(sp =>
+            {
+                return new TrustedSigningService(
+                     Mock.Of<CertificateProfileClient>(),
+                     "account",
+                     "profile",
+                     sp.GetRequiredService<ILogger<TrustedSigningService>>()
+                     );
+            });
             serviceProvider = services.BuildServiceProvider();
         }
 
@@ -37,9 +50,7 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
         {
             TrustedSigningServiceProvider provider = new();
 
-            // TODO: Not sure how to test this without creating a CertificateProfileClient
-            //Assert.IsAssignableFrom<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
-            //Assert.IsAssignableFrom<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
         }
 
         [Fact]
@@ -47,8 +58,7 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
         {
             TrustedSigningServiceProvider provider = new();
 
-            // TODO: Not sure how to test this without creating a CertificateProfileClient
-            //Assert.IsAssignableFrom<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
         }
     }
 }
