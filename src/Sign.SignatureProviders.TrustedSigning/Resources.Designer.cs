@@ -61,6 +61,15 @@ namespace Sign.SignatureProviders.TrustedSigning {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate details:.
+        /// </summary>
+        internal static string CertificateDetails {
+            get {
+                return ResourceManager.GetString("CertificateDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fetched certificate. [{milliseconds} ms].
         /// </summary>
         internal static string FetchedCertificate {

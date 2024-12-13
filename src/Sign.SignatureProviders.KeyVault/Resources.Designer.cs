@@ -61,6 +61,15 @@ namespace Sign.SignatureProviders.KeyVault {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate Details:.
+        /// </summary>
+        internal static string CertificateDetails {
+            get {
+                return ResourceManager.GetString("CertificateDetails", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fetched certificate. [{milliseconds} ms].
         /// </summary>
         internal static string FetchedCertificate {
