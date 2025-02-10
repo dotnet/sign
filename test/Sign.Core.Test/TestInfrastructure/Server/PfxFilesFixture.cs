@@ -43,6 +43,7 @@ namespace Sign.Core.Test
                     subjectName: "CN=Sign CLI, OU=TEST, O=TEST",
                     rsa,
                     hashAlgorithmName,
+                    // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                     RSASignaturePadding.Pkcs1);
 
                 certificateRequest.CertificateExtensions.Add(

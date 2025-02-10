@@ -63,6 +63,7 @@ namespace Sign.Core.Test
 
             using (RSA rsa = RSA.Create(keySizeInBits: 3072))
             {
+                // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                 CertificateRequest request = new("CN=timestamp.test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
                 request.CertificateExtensions.Add(
