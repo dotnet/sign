@@ -53,7 +53,7 @@ stages:
         - task: PublishBuildArtifacts@1
           displayName: 'Publish log files on failure'
           inputs:
-            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(Configuration)'
+            PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
             ArtifactName: 'Logs'
             publishLocation: 'Container'
           condition: failed()
