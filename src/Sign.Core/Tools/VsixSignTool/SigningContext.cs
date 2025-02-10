@@ -70,6 +70,7 @@ namespace Sign.Core
             switch (_configuration.SigningKey)
             {
                 case RSA rsa:
+                    // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                     return rsa.SignHash(digest, _configuration.SignatureDigestAlgorithm, RSASignaturePadding.Pkcs1);
                 case ECDsa ecdsa:
                     return ecdsa.SignHash(digest);
@@ -92,6 +93,7 @@ namespace Sign.Core
                 case SigningAlgorithm.RSA:
                     using (var publicKey = Certificate.GetRSAPublicKey())
                     {
+                        // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                         return publicKey != null ? publicKey.VerifyHash(digest, signature, _configuration.SignatureDigestAlgorithm, RSASignaturePadding.Pkcs1) : false;
                     }
                 default:

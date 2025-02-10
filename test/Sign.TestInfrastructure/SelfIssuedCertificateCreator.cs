@@ -24,6 +24,7 @@ namespace Sign.TestInfrastructure
                     $"CN={Constants.CommonNamePrefix} Certificate ({Guid.NewGuid():D}), O=Organization, L=City, S=State, C=Country",
                     keyPair,
                     HashAlgorithmName.SHA256,
+                    // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                     RSASignaturePadding.Pkcs1);
 
                 return request.CreateSelfSigned(notBefore, notAfter);

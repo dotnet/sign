@@ -267,6 +267,7 @@ namespace Sign.Core.Test
             using (RSA rsa = _cert.GetRSAPrivateKey()!)
             using (X509Certificate2 tmp = req.Create(
                 subjectName,
+                // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                 X509SignatureGenerator.CreateForRSA(rsa, RSASignaturePadding.Pkcs1),
                 new DateTimeOffset(_cert.NotBefore),
                 new DateTimeOffset(_cert.NotAfter),
@@ -288,6 +289,7 @@ namespace Sign.Core.Test
                 subject,
                 publicKey,
                 HashAlgorithmName.SHA256,
+                // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                 RSASignaturePadding.Pkcs1);
 
             return CreateCertificate(request, nestingBuffer, extensions, notAfter, ocspResponder);
@@ -485,8 +487,8 @@ namespace Sign.Core.Test
 
             using (RSA key = _cert.GetRSAPrivateKey()!)
             {
-                signature =
-                    key.SignData(tbsCertList, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
+                signature = key.SignData(tbsCertList, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
                 if (CorruptRevocationSignature)
                 {
@@ -644,6 +646,7 @@ SingleResponse ::= SEQUENCE {
                     byte[] signature = rsa.SignData(
                         tbsResponseData,
                         HashAlgorithmName.SHA256,
+                        // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                         RSASignaturePadding.Pkcs1);
 
                     if (CorruptRevocationSignature)
@@ -927,6 +930,7 @@ SingleResponse ::= SEQUENCE {
                     BuildSubject($"{Constants.CommonNamePrefix} Root CA {Guid.NewGuid().ToString("P")}", testName, pkiOptions, pkiOptionsInSubject),
                     rootKey,
                     HashAlgorithmName.SHA256,
+                    // CodeQL [SM03799] PKCS #1 v1.5 is required for interoperability with existing signature verifiers.
                     RSASignaturePadding.Pkcs1);
 
                 X509BasicConstraintsExtension caConstraints =
