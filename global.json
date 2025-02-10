@@ -1,9 +1,9 @@
 {
     "tools": {
-        "dotnet": "9.0.100",
+        "dotnet": "9.0.102",
         "runtimes": {
             "dotnet/x64": [
-                "8.0.11"
+                "9.0.1"
             ]
         },
         "xcopy-msbuild": "17.10.0-pre.4.0"
