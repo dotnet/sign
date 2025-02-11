@@ -104,15 +104,15 @@ namespace Sign.Cli
                     services.AddSingleton<KeyVaultService>(serviceProvider =>
                     {
                         return new KeyVaultService(
-                                serviceProvider.GetRequiredService<CertificateClient>(),
-                                serviceProvider.GetRequiredService<CryptographyClient>(),
-                                certId.Name,
-                                serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());
+                            serviceProvider.GetRequiredService<CertificateClient>(),
+                            serviceProvider.GetRequiredService<CryptographyClient>(),
+                            certId.Name,
+                            serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());
                     });
                 });
 
-
                 KeyVaultServiceProvider keyVaultServiceProvider = new();
+
                 await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, fileArgument);
             });
         }
