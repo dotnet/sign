@@ -3,18 +3,16 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Azure.CodeSigning;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 using Moq;
-
 using Sign.TestInfrastructure;
 
 namespace Sign.SignatureProviders.TrustedSigning.Test
 {
     public class TrustedSigningServiceProviderTests
     {
+        private readonly TrustedSigningServiceProvider _provider = new();
         private readonly IServiceProvider serviceProvider;
 
         public TrustedSigningServiceProviderTests()
@@ -27,8 +25,7 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
                      Mock.Of<CertificateProfileClient>(),
                      "account",
                      "profile",
-                     sp.GetRequiredService<ILogger<TrustedSigningService>>()
-                     );
+                     sp.GetRequiredService<ILogger<TrustedSigningService>>());
             });
             serviceProvider = services.BuildServiceProvider();
         }
@@ -36,29 +33,22 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_WhenServiceProviderIsNull_Throws()
         {
-            TrustedSigningServiceProvider provider = new();
-
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
+                () => _provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
 
-
         [Fact]
-        public void GetSignatureAlgorithmProvider_ReturnsInstance()
+        public void GetSignatureAlgorithmProvider_WhenServiceProviderIsValid_ReturnsInstance()
         {
-            TrustedSigningServiceProvider provider = new();
-
-            Assert.IsType<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<TrustedSigningService>(_provider.GetSignatureAlgorithmProvider(serviceProvider));
         }
 
         [Fact]
-        public void GetCertificateProvider_ReturnsInstance()
+        public void GetCertificateProvider_WhenServiceProviderIsValid_ReturnsInstance()
         {
-            TrustedSigningServiceProvider provider = new();
-
-            Assert.IsType<TrustedSigningService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<TrustedSigningService>(_provider.GetCertificateProvider(serviceProvider));
         }
     }
 }

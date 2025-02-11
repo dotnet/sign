@@ -3,7 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.DependencyInjection;
-
 using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault

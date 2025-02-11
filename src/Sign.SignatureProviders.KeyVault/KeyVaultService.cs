@@ -5,13 +5,10 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-
 using Azure;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
-
 using Microsoft.Extensions.Logging;
-
 using Sign.Core;
 
 namespace Sign.SignatureProviders.KeyVault

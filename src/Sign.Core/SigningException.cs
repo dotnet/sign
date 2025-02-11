@@ -4,15 +4,17 @@
 
 namespace Sign.Core
 {
-    internal class SigningException : Exception
+    internal sealed class SigningException : Exception
     {
         public SigningException()
         {
         }
+
         public SigningException(string message)
             : base(message)
         {
         }
+
         public SigningException(string message, Exception inner)
             : base(message, inner)
         {

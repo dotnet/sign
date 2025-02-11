@@ -5,15 +5,12 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
-
 using Azure.CodeSigning;
 using Azure.CodeSigning.Extensions;
 using Azure.Core;
-
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 using Sign.Core;
 using Sign.SignatureProviders.TrustedSigning;
 
@@ -57,6 +54,7 @@ namespace Sign.Cli
                 }
 
                 TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
+
                 if (credential is null)
                 {
                     return;
@@ -80,10 +78,10 @@ namespace Sign.Cli
                     services.AddSingleton<TrustedSigningService>(serviceProvider =>
                     {
                         return new TrustedSigningService(
-                                serviceProvider.GetRequiredService<CertificateProfileClient>(),
-                                accountName,
-                                certificateProfileName,
-                                serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>());
+                            serviceProvider.GetRequiredService<CertificateProfileClient>(),
+                            accountName,
+                            certificateProfileName,
+                            serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>());
                     });
                 });
 

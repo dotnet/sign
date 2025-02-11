@@ -4,9 +4,7 @@
 
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
-
 using Microsoft.Extensions.Logging;
-
 using Moq;
 
 namespace Sign.SignatureProviders.KeyVault.Test

@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../Resources.resx">
     <body>
       <trans-unit id="CertificateDetails">
-        <source>Certificate Details:</source>
-        <target state="new">Certificate Details:</target>
+        <source>Certificate details:</source>
+        <target state="new">Certificate details:</target>
         <note />
       </trans-unit>
       <trans-unit id="FetchedCertificate">

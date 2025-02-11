@@ -5,12 +5,9 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-
 using Azure;
 using Azure.CodeSigning;
-
 using Microsoft.Extensions.Logging;
-
 using Sign.Core;
 
 namespace Sign.SignatureProviders.TrustedSigning

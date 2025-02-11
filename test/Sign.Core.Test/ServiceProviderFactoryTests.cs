@@ -21,7 +21,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void AddServices_AddedServicesAreAdded()
+        public void AddServices_WhenServicesAreNotAlreadyPresent_AddsServices()
         {
             var factory = new ServiceProviderFactory();
             factory.AddServices(services => services.AddSingleton<ITestService, TestService>());
@@ -30,7 +30,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void AddServices_AddedIfAddedServicesAreAlsoPresent()
+        public void AddServices_WhenServiceIsAlreadyPresent_AddsOnlyNewService()
         {
             var factory = new ServiceProviderFactory();
             factory.AddServices(services => services.AddSingleton<ITestService, TestService>());
@@ -40,13 +40,12 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void Create_NoAddedServices()
+        public void Create_WhenNoServicesAdded_ReturnsDefault()
         {
             var factory = new ServiceProviderFactory();
             IServiceProvider serviceProvider = factory.Create();
             Assert.NotNull(serviceProvider.GetRequiredService<ILogger<ServiceProviderFactoryTests>>());
         }
-
     }
 
     public interface ITestService

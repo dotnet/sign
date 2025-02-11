@@ -5,9 +5,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-
 using AzureSign.Core;
-
 using Microsoft.Extensions.Logging;
 
 namespace Sign.Core

@@ -4,19 +4,18 @@
 
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
 using Moq;
-
 using Sign.TestInfrastructure;
 
 namespace Sign.SignatureProviders.KeyVault.Test
 {
     public class KeyVaultServiceProviderTests
     {
+        private readonly KeyVaultServiceProvider _provider = new();
         private readonly IServiceProvider serviceProvider;
+
         public KeyVaultServiceProviderTests()
         {
             ServiceCollection services = new();
@@ -26,8 +25,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 return new KeyVaultService(
                     Mock.Of<CertificateClient>(),
                     Mock.Of<CryptographyClient>(),
-                    "a", sp.GetRequiredService<ILogger<KeyVaultService>>()
-                    );
+                    "a", sp.GetRequiredService<ILogger<KeyVaultService>>());
             });
             serviceProvider = services.BuildServiceProvider();
         }
@@ -35,39 +33,33 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_WhenServiceProviderIsNull_Throws()
         {
-            KeyVaultServiceProvider provider = new();
-
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
+                () => _provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
 
         [Fact]
-        public void GetSignatureAlgorithmProvider_ReturnsSameInstance()
+        public void GetSignatureAlgorithmProvider_WhenServiceProviderIsValid_ReturnsSameInstance()
         {
             KeyVaultServiceProvider provider = new();
 
-            Assert.IsType<KeyVaultService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<KeyVaultService>(_provider.GetSignatureAlgorithmProvider(serviceProvider));
         }
 
         [Fact]
         public void GetCertificateProvider_WhenServiceProviderIsNull_Throws()
         {
-            KeyVaultServiceProvider provider = new();
-
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => provider.GetSignatureAlgorithmProvider(serviceProvider: null!));
+                () => _provider.GetCertificateProvider(serviceProvider: null!));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
 
         [Fact]
-        public void GetCertificateProvider_ReturnsSameInstance()
+        public void GetCertificateProvider_WhenServiceProviderIsValid_ReturnsSameInstance()
         {
-            KeyVaultServiceProvider provider = new();
-
-            Assert.IsType<KeyVaultService>(provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<KeyVaultService>(_provider.GetCertificateProvider(serviceProvider));
         }
     }
 }
