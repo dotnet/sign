@@ -45,6 +45,12 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void CertificateVersionOption_Always_IsOptional()
+        {
+            Assert.False(_command.CertificateVersionOption.IsRequired);
+        }
+
+        [Fact]
         public void UrlOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.UrlOption.Arity);
@@ -81,6 +87,7 @@ namespace Sign.Cli.Test
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d -kvcv e")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
                 ParseResult result = _parser.Parse(command);
@@ -91,6 +98,7 @@ namespace Sign.Cli.Test
             [Theory]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a b")]
             [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
+            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d -kvcv e f")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _parser.Parse(command);
