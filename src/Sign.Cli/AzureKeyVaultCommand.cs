@@ -22,7 +22,7 @@ namespace Sign.Cli
         internal Option<string> CertificateOption { get; } = new(["--azure-key-vault-certificate", "-kvc"], AzureKeyVaultResources.CertificateOptionDescription);
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
-        internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
+        internal Argument<List<string>?> FilesArgument { get; } = new("file(s)", Resources.FilesArgumentDescription) { Arity = ArgumentArity.OneOrMore };
 
         internal AzureKeyVaultCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
@@ -37,13 +37,13 @@ namespace Sign.Cli
             AddOption(CertificateOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
-            AddArgument(FileArgument);
+            AddArgument(FilesArgument);
 
             this.SetHandler(async (InvocationContext context) =>
             {
-                string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
+                List<string>? filesArgument = context.ParseResult.GetValueForArgument(FilesArgument);
 
-                if (string.IsNullOrEmpty(fileArgument))
+                if (filesArgument is not { Count: > 0 })
                 {
                     context.Console.Error.WriteLine(Resources.MissingFileValue);
                     context.ExitCode = ExitCode.InvalidOptions;
@@ -52,7 +52,7 @@ namespace Sign.Cli
 
                 // this check exists as a courtesy to users who may have been signing .clickonce files via the old workaround.
                 // at some point we should remove this check, probably once we hit v1.0
-                if (fileArgument.EndsWith(".clickonce", StringComparison.OrdinalIgnoreCase))
+                if (filesArgument.Any(x => x.EndsWith(".clickonce", StringComparison.OrdinalIgnoreCase)))
                 {
                     context.Console.Error.WriteLine(AzureKeyVaultResources.ClickOnceExtensionNotSupported);
                     context.ExitCode = ExitCode.InvalidOptions;
@@ -105,7 +105,7 @@ namespace Sign.Cli
 
                 KeyVaultServiceProvider keyVaultServiceProvider = new();
 
-                await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, fileArgument);
+                await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, filesArgument);
             });
         }
     }
