@@ -30,13 +30,22 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void AddServices_WhenServiceIsAlreadyPresent_AddsOnlyNewService()
+        public void AddServices_WhenSameServiceIsNotAlreadyPresent_AddsService()
         {
             var factory = new ServiceProviderFactory();
             factory.AddServices(services => services.AddSingleton<ITestService, TestService>());
             IServiceProvider serviceProvider = factory.Create(addServices: services => services.AddSingleton<ITestService2, TestService2>());
             Assert.NotNull(serviceProvider.GetRequiredService<ITestService>());
             Assert.NotNull(serviceProvider.GetRequiredService<ITestService2>());
+        }
+
+        [Fact]
+        public void AddServices_WhenSameServiceIsAlreadyPresent_AddsService()
+        {
+            var factory = new ServiceProviderFactory();
+            factory.AddServices(services => services.AddSingleton<ITestService, TestService>());
+            IServiceProvider serviceProvider = factory.Create(addServices: services => services.AddSingleton<ITestService, TestService>());
+            Assert.NotNull(serviceProvider.GetRequiredService<ITestService>());
         }
 
         [Fact]
