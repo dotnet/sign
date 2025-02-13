@@ -6,6 +6,12 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using Azure.Core;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
+using Azure.Security.KeyVault.Keys.Cryptography;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sign.Core;
 using Sign.SignatureProviders.KeyVault;
 
@@ -65,7 +71,48 @@ namespace Sign.Cli
                 Uri url = context.ParseResult.GetValueForOption(UrlOption)!;
                 string certificateId = context.ParseResult.GetValueForOption(CertificateOption)!;
 
-                KeyVaultServiceProvider keyVaultServiceProvider = new(credential, url, certificateId);
+                // Construct the URI for the certificate and the key from user parameters. We'll validate those with the SDK
+                var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}");
+
+                if (!KeyVaultCertificateIdentifier.TryCreate(certUri, out var certId))
+                {
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidKeyVaultUrl);
+                    context.ExitCode = ExitCode.InvalidOptions;
+                    return;
+                }
+
+                // The key uri is similar and the key name matches the certificate name
+                var keyUri = new Uri($"{url.Scheme}://{url.Authority}/keys/{certificateId}");
+
+                if (!KeyVaultKeyIdentifier.TryCreate(certUri, out var keyId))
+                {
+                    context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidKeyVaultUrl);
+                    context.ExitCode = ExitCode.InvalidOptions;
+                    return;
+                }
+
+                serviceProviderFactory.AddServices(services =>
+                {
+                    services.AddAzureClients(builder =>
+                    {
+                        builder.AddCertificateClient(certId.VaultUri);
+                        builder.AddKeyClient(keyId.VaultUri);
+                        builder.UseCredential(credential);
+                        builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
+                    });
+
+                    services.AddSingleton<KeyVaultService>(serviceProvider =>
+                    {
+                        return new KeyVaultService(
+                            serviceProvider.GetRequiredService<CertificateClient>(),
+                            serviceProvider.GetRequiredService<CryptographyClient>(),
+                            certId.Name,
+                            serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());
+                    });
+                });
+
+                KeyVaultServiceProvider keyVaultServiceProvider = new();
+
                 await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, fileArgument);
             });
         }

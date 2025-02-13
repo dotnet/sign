@@ -167,6 +167,11 @@ namespace Sign.Core
                 _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
+            catch (SigningException)
+            {
+                _logger.LogError(Resources.SigningFailedAfterAllAttempts);
+                return ExitCode.Failed;
+            }
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);

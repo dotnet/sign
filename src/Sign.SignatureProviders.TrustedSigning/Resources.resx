@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CertificateDetails" xml:space="preserve">
+    <value>Certificate details:</value>
+  </data>
   <data name="FetchedCertificate" xml:space="preserve">
     <value>Fetched certificate. [{milliseconds} ms]</value>
     <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>

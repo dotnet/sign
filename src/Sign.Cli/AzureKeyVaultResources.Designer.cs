@@ -88,6 +88,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/).
+        /// </summary>
+        internal static string InvalidKeyVaultUrl {
+            get {
+                return ResourceManager.GetString("InvalidKeyVaultUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to URL to an Azure Key Vault..
         /// </summary>
         internal static string UrlOptionDescription {

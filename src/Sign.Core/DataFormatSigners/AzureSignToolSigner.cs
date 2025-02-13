@@ -111,7 +111,7 @@ namespace Sign.Core
                     {
                         string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
 
-                        throw new Exception(message);
+                        throw new SigningException(message);
                     }
                 });
             }

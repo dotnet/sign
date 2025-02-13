@@ -7,8 +7,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.CodeSigning;
-using Azure.CodeSigning.Models;
-using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
 
@@ -16,8 +14,6 @@ namespace Sign.SignatureProviders.TrustedSigning
 {
     internal sealed class TrustedSigningService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
-        private static readonly SignRequest _emptyRequest = new(SignatureAlgorithm.RS256, new byte[32]);
-
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
@@ -26,23 +22,20 @@ namespace Sign.SignatureProviders.TrustedSigning
         private X509Certificate2? _certificate;
 
         public TrustedSigningService(
-            TokenCredential tokenCredential,
-            Uri endpointUrl,
+            CertificateProfileClient certificateProfileClient,
             string accountName,
             string certificateProfileName,
             ILogger<TrustedSigningService> logger)
         {
-            ArgumentNullException.ThrowIfNull(tokenCredential, nameof(tokenCredential));
-            ArgumentNullException.ThrowIfNull(endpointUrl, nameof(endpointUrl));
+            ArgumentNullException.ThrowIfNull(certificateProfileClient, paramName: nameof(certificateProfileClient));
             ArgumentException.ThrowIfNullOrEmpty(accountName, nameof(accountName));
             ArgumentException.ThrowIfNullOrEmpty(certificateProfileName, nameof(certificateProfileName));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
+            _client = certificateProfileClient;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
             _logger = logger;
-
-            _client = new CertificateProfileClient(tokenCredential, endpointUrl);
         }
 
         public void Dispose()
@@ -71,17 +64,21 @@ namespace Sign.SignatureProviders.TrustedSigning
 
                     Response<Stream> response = await _client.GetSignCertificateChainAsync(_accountName, _certificateProfileName, cancellationToken: cancellationToken);
 
-                    byte[] rawData = new byte[response.Value.Length];
-                    response.Value.Read(rawData, 0, rawData.Length);
+                    using (response.Value)
+                    {
+                        byte[] rawData = new byte[response.Value.Length];
+                        response.Value.Read(rawData, 0, rawData.Length);
 
-                    X509Certificate2Collection collection = [];
-                    collection.Import(rawData);
+                        X509Certificate2Collection collection = [];
+                        collection.Import(rawData);
 
-                    // This should contain the certificate chain in root->leaf order.
-                    _certificate = collection[collection.Count - 1];
+                        // This should contain the certificate chain in root->leaf order.
+                        _certificate = collection[collection.Count - 1];
 
-                    _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
-                    response.Value.Dispose();
+                        _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
+                        //print the certificate info
+                        _logger.LogTrace($"{Resources.CertificateDetails}{Environment.NewLine}{_certificate.ToString(verbose: true)}");
+                    }
                 }
             }
             finally

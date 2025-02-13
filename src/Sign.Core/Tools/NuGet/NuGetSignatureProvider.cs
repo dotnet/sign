@@ -76,6 +76,7 @@ namespace Sign.Core
 
         private PrimarySignature CreatePrimarySignature(AuthorSignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
+            logger.LogInformation($"{nameof(CreateAuthorSignatureAsync)}: Retrieving certificate chain");
             const string PropertyName = "Chain";
 
             PropertyInfo? property = typeof(SignPackageRequest)
@@ -94,6 +95,10 @@ namespace Sign.Core
             }
 
             var certificates = (IReadOnlyList<X509Certificate2>?)getter.Invoke(request, parameters: null);
+            logger.LogInformation($"{nameof(CreateAuthorSignatureAsync)}: Retrieved certificate chain");
+
+
+            logger.LogInformation($"{nameof(CreateAuthorSignatureAsync)}: Computing signature");
             CmsSigner cmsSigner = CreateCmsSigner(request, certificates!);
             ContentInfo contentInfo = new(signatureContent.GetBytes());
             SignedCms signedCms = new(contentInfo);
@@ -107,6 +112,8 @@ namespace Sign.Core
                 StringBuilder stringBuilder = new();
                 stringBuilder.AppendLine("Invalid _rsa type");
                 stringBuilder.AppendLine(CertificateUtility.X509Certificate2ToString(request.Certificate, NuGet.Common.HashAlgorithmName.SHA256));
+
+                logger.LogError($"{nameof(CreateAuthorSignatureAsync)}: Cannot read private key");
 
                 throw new SignatureException(NuGetLogCode.NU3001, stringBuilder.ToString());
             }
