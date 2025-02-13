@@ -18,7 +18,7 @@ namespace Sign.Cli
         internal Option<string> CertificateProfileOption { get; } = new(["--trusted-signing-certificate-profile", "-tscp"], TrustedSigningResources.CertificateProfileOptionDescription);
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
-        internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
+        internal Argument<List<string>?> FilesArgument { get; } = new("file(s)", Resources.FilesArgumentDescription) { Arity = ArgumentArity.OneOrMore };
 
         internal TrustedSigningCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("trusted-signing", TrustedSigningResources.CommandDescription)
@@ -35,13 +35,13 @@ namespace Sign.Cli
             AddOption(CertificateProfileOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
-            AddArgument(FileArgument);
+            AddArgument(FilesArgument);
 
             this.SetHandler(async (InvocationContext context) =>
             {
-                string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
+                List<string>? filesArgument = context.ParseResult.GetValueForArgument(FilesArgument);
 
-                if (string.IsNullOrEmpty(fileArgument))
+                if (filesArgument is not { Count: > 0 })
                 {
                     context.Console.Error.WriteLine(Resources.MissingFileValue);
                     context.ExitCode = ExitCode.InvalidOptions;
@@ -62,7 +62,7 @@ namespace Sign.Cli
 
                 TrustedSigningServiceProvider trustedSigningServiceProvider = new(credential, endpointUrl, accountName, certificateProfileName);
 
-                await codeCommand.HandleAsync(context, serviceProviderFactory, trustedSigningServiceProvider, fileArgument);
+                await codeCommand.HandleAsync(context, serviceProviderFactory, trustedSigningServiceProvider, filesArgument);
             });
         }
     }

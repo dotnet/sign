@@ -58,7 +58,7 @@ namespace Sign.Cli
             AddGlobalOption(VerbosityOption);
         }
 
-        internal async Task HandleAsync(InvocationContext context, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, string fileArgument)
+        internal async Task HandleAsync(InvocationContext context, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, IEnumerable<string> filesArgument)
         {
             // Some of the options have a default value and that is why we can safely use
             // the null-forgiving operator (!) to simplify the code.
@@ -95,44 +95,47 @@ namespace Sign.Cli
                         (IServiceProvider serviceProvider) => signatureProvider.GetCertificateProvider(serviceProvider));
                 });
 
-            List<FileInfo> inputFiles;
+            List<FileInfo> inputFiles = [];
 
-            // If we're going to glob, we can't be fully rooted currently (fix me later)
-            bool isGlob = fileArgument.Contains('*');
-
-            if (isGlob)
+            foreach (var fileArgument in filesArgument)
             {
-                if (Path.IsPathRooted(fileArgument))
+                // If we're going to glob, we can't be fully rooted currently (fix me later)
+                bool isGlob = fileArgument.Contains('*');
+
+                if (isGlob)
                 {
-                    context.Console.Error.WriteLine(Resources.InvalidFileValue);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
-                }
-
-                IFileListReader fileListReader = serviceProvider.GetRequiredService<IFileListReader>();
-                IFileMatcher fileMatcher = serviceProvider.GetRequiredService<IFileMatcher>();
-
-                using (MemoryStream stream = new(Encoding.UTF8.GetBytes(fileArgument)))
-                using (StreamReader reader = new(stream))
-                {
-                    fileListReader.Read(reader, out Matcher? matcher, out Matcher? antiMatcher);
-
-                    DirectoryInfoBase directory = new DirectoryInfoWrapper(baseDirectory);
-
-                    IEnumerable<FileInfo> matches = fileMatcher.EnumerateMatches(directory, matcher);
-
-                    if (antiMatcher is not null)
+                    if (Path.IsPathRooted(fileArgument))
                     {
-                        IEnumerable<FileInfo> antiMatches = fileMatcher.EnumerateMatches(directory, antiMatcher);
-                        matches = matches.Except(antiMatches, FileInfoComparer.Instance);
+                        context.Console.Error.WriteLine(Resources.InvalidFileValue);
+                        context.ExitCode = ExitCode.InvalidOptions;
+                        return;
                     }
 
-                    inputFiles = matches.ToList();
+                    IFileListReader fileListReader = serviceProvider.GetRequiredService<IFileListReader>();
+                    IFileMatcher fileMatcher = serviceProvider.GetRequiredService<IFileMatcher>();
+
+                    using (MemoryStream stream = new(Encoding.UTF8.GetBytes(fileArgument)))
+                    using (StreamReader reader = new(stream))
+                    {
+                        fileListReader.Read(reader, out Matcher? matcher, out Matcher? antiMatcher);
+
+                        DirectoryInfoBase directory = new DirectoryInfoWrapper(baseDirectory);
+
+                        IEnumerable<FileInfo> matches = fileMatcher.EnumerateMatches(directory, matcher);
+
+                        if (antiMatcher is not null)
+                        {
+                            IEnumerable<FileInfo> antiMatches = fileMatcher.EnumerateMatches(directory, antiMatcher);
+                            matches = matches.Except(antiMatches, FileInfoComparer.Instance);
+                        }
+
+                        inputFiles.AddRange(matches);
+                    }
                 }
-            }
-            else
-            {
-                inputFiles = [new FileInfo(ExpandFilePath(baseDirectory, fileArgument))];
+                else
+                {
+                    inputFiles.Add(new FileInfo(ExpandFilePath(baseDirectory, fileArgument)));
+                }
             }
 
             FileInfo? fileList = null;

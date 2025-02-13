@@ -93,7 +93,7 @@ namespace Sign.Cli.Test
             Assert.Equal(KeyVaultUrl, result.GetValueForOption(_azureKeyVaultCommand.UrlOption)!.OriginalString);
             Assert.Equal(CertificateName, result.GetValueForOption(_azureKeyVaultCommand.CertificateOption));
             Assert.Equal(TimestampUrl, result.GetValueForOption(_codeCommand.TimestampUrlOption)!.OriginalString);
-            Assert.Equal(File, result.GetValueForArgument(_azureKeyVaultCommand.FileArgument));
+            Assert.Equal([File], result.GetValueForArgument(_azureKeyVaultCommand.FilesArgument));
         }
     }
 }
