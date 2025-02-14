@@ -17,11 +17,6 @@
         <target state="translated">Use o Azure Key Vault.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidKeyVaultUrl">
-        <source>URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</source>
-        <target state="new">URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UrlOptionDescription">
         <source>URL to an Azure Key Vault.</source>
         <target state="translated">URL para um Azure Key Vault.</target>
