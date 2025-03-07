@@ -96,7 +96,7 @@ namespace Sign.Cli
                     services.AddAzureClients(builder =>
                     {
                         builder.AddCertificateClient(certId.VaultUri);
-                        builder.AddKeyClient(keyId.VaultUri);
+                        builder.AddCryptographyClient(keyId.VaultUri);
                         builder.UseCredential(credential);
                         builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
                     });
