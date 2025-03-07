@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="InvalidKeyVaultUrl">
         <source>URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</source>
-        <target state="new">URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</target>
+        <target state="translated">Die URL darf nur das Protokoll und den Host enthalten. (Beispiel: https://&lt;vault-name&gt;.vault.azure.net/)</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">
