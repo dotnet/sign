@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="CertificateDetails">
         <source>Certificate details:</source>
-        <target state="new">Certificate details:</target>
+        <target state="translated">Zertifikatdetails:</target>
         <note />
       </trans-unit>
       <trans-unit id="FetchedCertificate">
