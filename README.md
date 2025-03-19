@@ -58,15 +58,18 @@ You should also use the `filter` parameter with the file list to sign, something
 
 * Create a [ServicePrincipal with minimum permissions](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). Note that you do not need to assign any subscription-level roles to this identity. Only access to Key Vault is required.
 * Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices). The Premium SKU is required for code signing certificates to meet key storage requirements.
-* [Configure an Azure Key Vault access policy](https://learn.microsoft.com/en-us/azure/key-vault/general/assign-access-policy?tabs=azure-portal) for your signing account to have minimal permissions:
-  - Key permissions
-    - Cryptographic Operations
-      - Sign
-    - Key Management Operations
-      - Get  _(Note:  this is only for the public key not the private key.)_
-  - Certificate permissions
-    - Certificate Management Operations
-      - Get
+   * If using Azure role-based access control (RBAC), [configure your signing account to have these roles](https://learn.microsoft.com/azure/key-vault/general/rbac-guide?tabs=azure-portal):
+     - Key Vault Reader
+     - Key Vault Crypto User
+   * If using Azure Key Vault access policies, [configure an access policy](https://learn.microsoft.com/azure/key-vault/general/assign-access-policy?tabs=azure-portal) for your signing account to have minimal permissions:
+     - Key permissions
+       - Cryptographic Operations
+         - Sign
+       - Key Management Operations
+         - Get  _(Note:  this is only for the public key not the private key.)_
+     - Certificate permissions
+       - Certificate Management Operations
+         - Get
 * Isolate signing operations in a separate leg of your build pipeline.
 * Ensure that this CLI and all files to be signed are in a directory under your control.
 * Execute this CLI as a standard user.  Elevation is not required.
