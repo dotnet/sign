@@ -84,13 +84,6 @@ namespace Sign.Cli
                 // The key uri is similar and the key name matches the certificate name
                 var keyUri = new Uri($"{url.Scheme}://{url.Authority}/keys/{certificateId}");
 
-                if (!KeyVaultKeyIdentifier.TryCreate(certUri, out var keyId))
-                {
-                    context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidKeyVaultUrl);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
-                }
-
                 serviceProviderFactory.AddServices(services =>
                 {
                     services.AddAzureClients(builder =>
