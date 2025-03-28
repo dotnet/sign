@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Text;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -68,6 +70,66 @@ namespace Sign.Core.Test
             FileInfo file = new($"file{extension}");
 
             Assert.False(_signer.CanSign(file));
+        }
+
+        [Theory]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2017", "MainBundle")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2017", "MainPackage")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2017/2", "MainBundle")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2017/2", "MainPackage")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2018", "MainBundle")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2018", "MainPackage")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2021", "MainBundle")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2021", "MainPackage")]
+        public void TryGetMainElement_WhenNamespaceAndElementAreKnown_ReturnsElement(string xmlNamespace, string elementName)
+        {
+            CreateAppInstallerManifest(
+                xmlNamespace,
+                elementName,
+                out XDocument appInstallerManifest,
+                out string expectedPublisher);
+
+            Assert.True(AppInstallerServiceSigner.TryGetMainElement(appInstallerManifest, out XElement? mainElement));
+            Assert.NotNull(mainElement);
+
+            XAttribute? publisherAttribute = mainElement.Attribute("Publisher");
+            Assert.NotNull(publisherAttribute);
+
+            Assert.Equal(expectedPublisher, publisherAttribute.Value);
+        }
+
+        [Theory]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2024", "MainBundle")]
+        [InlineData("http://schemas.microsoft.com/appx/appinstaller/2024", "MainPackage")]
+        public void TryGetMainElement_WhenNamespaceAndElementAreUnknown_ReturnsNull(string xmlNamespace, string elementName)
+        {
+            CreateAppInstallerManifest(
+                xmlNamespace,
+                elementName,
+                out XDocument appInstallerManifest,
+                out string _);
+
+            Assert.False(AppInstallerServiceSigner.TryGetMainElement(appInstallerManifest, out XElement? mainElement));
+            Assert.Null(mainElement);
+        }
+
+        private static void CreateAppInstallerManifest(
+            string xmlNamespace,
+            string mainElementName,
+            out XDocument appInstallerManifest,
+            out string expectedPublisher)
+        {
+            expectedPublisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
+
+            string xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + Environment.NewLine +
+                $"<AppInstaller xmlns=\"{xmlNamespace}\" Version=\"1.0.0.0\" Uri=\"http://sign.test/app.appinstaller\">" + Environment.NewLine +
+                $"  <{mainElementName} Name=\"sign.test\" Publisher=\"{expectedPublisher}\" />" + Environment.NewLine +
+                "</AppInstaller>";
+
+            using (MemoryStream stream = new(Encoding.UTF8.GetBytes(xml), writable: false))
+            {
+                appInstallerManifest = XDocument.Load(stream, LoadOptions.PreserveWhitespace);
+            }
         }
     }
 }

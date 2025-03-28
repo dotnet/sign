@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,15 @@ namespace Sign.Core
     // correct publisher information
     internal sealed class AppInstallerServiceSigner : IDataFormatSigner
     {
+        // Windows 10, version 1709.
+        internal static readonly XNamespace AppInstaller2017 = XNamespace.Get("http://schemas.microsoft.com/appx/appinstaller/2017");
+        // Windows 10, version 1803.
+        internal static readonly XNamespace AppInstaller2017_2 = XNamespace.Get("http://schemas.microsoft.com/appx/appinstaller/2017/2");
+        // Windows 10, version 1809.
+        internal static readonly XNamespace AppInstaller2018 = XNamespace.Get("http://schemas.microsoft.com/appx/appinstaller/2018");
+        // Windows version 21H2 build 22000
+        internal static readonly XNamespace AppInstaller2021 = XNamespace.Get("http://schemas.microsoft.com/appx/appinstaller/2021");
+
         private readonly ICertificateProvider _certificateProvider;
         private readonly ILogger<IDataFormatSigner> _logger;
 
@@ -50,11 +60,13 @@ namespace Sign.Core
                     using (FileStream stream = file.OpenRead())
                     {
                         manifest = XDocument.Load(stream, LoadOptions.PreserveWhitespace);
-                        XNamespace ns = "http://schemas.microsoft.com/appx/appinstaller/2017/2";
 
-                        XElement? idElement = manifest.Root?.Element(ns + "MainBundle") ?? manifest.Root?.Element(ns + "MainPackage"); // look for appxbundle tag, if not found check for appx tag
-                        string publisher = certificate.SubjectName.Name;
-                        idElement?.SetAttributeValue("Publisher", publisher);
+                        if (TryGetMainElement(manifest, out XElement? mainElement))
+                        {
+                            string publisher = certificate.SubjectName.Name;
+
+                            mainElement.SetAttributeValue("Publisher", publisher);
+                        }
                     }
 
                     using (FileStream stream = file.Open(FileMode.Create, FileAccess.Write, FileShare.None))
@@ -63,6 +75,32 @@ namespace Sign.Core
                     }
                 }
             }
+        }
+
+        internal static bool TryGetMainElement(XDocument appInstallerManifest, [NotNullWhen(true)] out XElement? mainElement)
+        {
+            mainElement = null;
+
+            XElement? rootElement = appInstallerManifest.Root;
+
+            if (rootElement is null)
+            {
+                return false;
+            }
+
+            XNamespace[] xmlNamespaces = [AppInstaller2017, AppInstaller2017_2, AppInstaller2018, AppInstaller2021];
+
+            foreach (XNamespace xmlNamespace in xmlNamespaces)
+            {
+                mainElement = rootElement.Element(xmlNamespace + "MainBundle") ?? rootElement.Element(xmlNamespace + "MainPackage");
+
+                if (mainElement is not null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
