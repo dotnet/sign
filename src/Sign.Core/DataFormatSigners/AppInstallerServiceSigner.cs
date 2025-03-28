@@ -81,11 +81,18 @@ namespace Sign.Core
         {
             mainElement = null;
 
+            XElement? rootElement = appInstallerManifest.Root;
+
+            if (rootElement is null)
+            {
+                return false;
+            }
+
             XNamespace[] xmlNamespaces = [AppInstaller2017, AppInstaller2017_2, AppInstaller2018, AppInstaller2021];
 
             foreach (XNamespace xmlNamespace in xmlNamespaces)
             {
-                mainElement = appInstallerManifest.Root?.Element(xmlNamespace + "MainBundle") ?? appInstallerManifest.Root?.Element(xmlNamespace + "MainPackage");
+                mainElement = rootElement.Element(xmlNamespace + "MainBundle") ?? rootElement.Element(xmlNamespace + "MainPackage");
 
                 if (mainElement is not null)
                 {
