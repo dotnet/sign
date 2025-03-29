@@ -197,6 +197,86 @@ namespace Sign.Core.Test
             Assert.Equal("options", exception.ParamName);
         }
 
+        [Fact]
+        public async Task SignAsync_WhenSigningFails_Throws()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo applicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "MyApp.application");
+
+                SignOptions options = new(
+                    "ApplicationName",
+                    "PublisherName",
+                    "Description",
+                    new Uri("https://description.test"),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("http://timestamp.test"),
+                    matcher: null,
+                    antiMatcher: null);
+
+                using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
+                    Mock<ICertificateProvider> certificateProvider = new();
+
+                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(certificate);
+
+                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(privateKey);
+
+                    Mock<IServiceProvider> serviceProvider = new();
+                    AggregatingSignerSpy aggregatingSignerSpy = new();
+
+                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
+                        .Returns(aggregatingSignerSpy);
+
+                    Mock<IMageCli> mageCli = new();
+
+                    mageCli.Setup(x => x.RunAsync(
+                            It.IsAny<string>()))
+                        .ReturnsAsync(1);
+
+                    Mock<IManifestSigner> manifestSigner = new();
+                    Mock<IFileMatcher> fileMatcher = new();
+                    Mock<ILogger<IDataFormatSigner>> logger = new();
+
+                    manifestSigner.Setup(
+                        x => x.Sign(
+                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+
+                    ClickOnceSigner signer = new(
+                        signatureAlgorithmProvider.Object,
+                        certificateProvider.Object,
+                        serviceProvider.Object,
+                        mageCli.Object,
+                        manifestSigner.Object,
+                        logger.Object,
+                        fileMatcher.Object);
+
+                    signer.Retry = TimeSpan.FromMicroseconds(1);
+
+                    await Assert.ThrowsAsync<SigningException>(() => signer.SignAsync(new[] { applicationFile }, options));
+                }
+            }
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("PublisherName")]

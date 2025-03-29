@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
@@ -101,5 +104,58 @@ namespace Sign.Core.Test
 
             Assert.False(_signer.CanSign(file));
         }
+
+        [Fact]
+        public async Task SignAsync_WhenSigningFails_Throws()
+        {
+            SignOptions options = new(
+                "ApplicationName",
+                "PublisherName",
+                "Description",
+                new Uri("https://description.test"),
+                HashAlgorithmName.SHA384,
+                HashAlgorithmName.SHA384,
+                new Uri("http://timestamp.test"),
+                matcher: null,
+                antiMatcher: null);
+
+            DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
+
+            using (TemporaryDirectory temporaryDirectory = new(directoryService))
+            {
+                FileInfo vsixFile = TestFileCreator.CreateEmptyZipFile(temporaryDirectory, fileExtension: ".vsix");
+
+                using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    Mock<IVsixSignTool> vsixSignTool = new();
+
+                    SignConfigurationSet configuration = new(
+                        options.FileHashAlgorithm,
+                        options.FileHashAlgorithm,
+                        privateKey,
+                        certificate);
+
+                    vsixSignTool.Setup(
+                        x => x.SignAsync(
+                            It.IsNotNull<FileInfo>(),
+                            It.IsNotNull<SignConfigurationSet>(),
+                            It.IsNotNull<SignOptions>()))
+                        .Returns(Task.FromResult(false));
+
+                    VsixSigner signer = new(
+                        Mock.Of<ISignatureAlgorithmProvider>(),
+                        Mock.Of<ICertificateProvider>(),
+                        vsixSignTool.Object,
+                        Mock.Of<ILogger<IDataFormatSigner>>());
+
+                    signer.Retry = TimeSpan.FromMicroseconds(1);
+
+                    await Assert.ThrowsAsync<SigningException>(() => signer.SignAsync([vsixFile], options));
+                }
+            }
+        }
+
+
     }
 }

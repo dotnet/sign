@@ -12,6 +12,9 @@ namespace Sign.Core
     {
         protected ILogger Logger { get; }
 
+        // Non-private for testing purposes.
+        internal TimeSpan Retry { get; set; } = TimeSpan.FromSeconds(5);
+
         protected RetryingSigner(ILogger logger)
         {
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
@@ -24,7 +27,7 @@ namespace Sign.Core
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
         protected async Task<bool> SignAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 publicCertificate, SignOptions options)
         {
-            var retry = TimeSpan.FromSeconds(5);
+            TimeSpan retry = Retry;
             const int maxAttempts = 3;
             var attempt = 1;
 
