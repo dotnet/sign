@@ -135,7 +135,7 @@ namespace Sign.Core
                     {
                         string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
 
-                        throw new Exception(message);
+                        throw new SigningException(message);
                     }
 
                     string publisherParam = string.Empty;
@@ -178,7 +178,7 @@ namespace Sign.Core
                         {
                             string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, deploymentManifestFile.FullName);
 
-                            throw new Exception(message);
+                            throw new SigningException(message);
                         }
                     }
 

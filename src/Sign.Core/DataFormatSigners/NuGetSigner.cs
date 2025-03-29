@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
@@ -47,9 +48,28 @@ namespace Sign.Core
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
             using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
             {
-                IEnumerable<Task<bool>> tasks = files.Select(file => SignAsync(args: null, file, rsa, certificate, options));
+                var fileTaskPairs = files
+                    .Select(file => new
+                    {
+                        File = file,
+                        Task = SignAsync(args: null, file, rsa, certificate, options)
+                    })
+                    .ToList();
 
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(fileTaskPairs.Select(pair => pair.Task));
+
+                List<string> failedFiles = fileTaskPairs
+                    .Where(pair => !pair.Task.Result)
+                    .Select(pair => pair.File.FullName)
+                    .ToList();
+
+                if (failedFiles.Count > 0)
+                {
+                    string failedFilePaths = string.Join(", ", failedFiles);
+                    string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, failedFilePaths);
+
+                    throw new SigningException(message);
+                }
             }
         }
 
