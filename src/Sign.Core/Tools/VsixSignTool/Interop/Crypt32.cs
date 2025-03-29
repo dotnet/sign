@@ -13,7 +13,7 @@ namespace Sign.Core.Interop
             [param: In, MarshalAs(UnmanagedType.SysInt)] IntPtr pv
         );
 
-        [method: DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi)]
+        [method: DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CryptRetrieveTimeStamp(
             [param: In, MarshalAs(UnmanagedType.LPWStr)] string wszUrl,
