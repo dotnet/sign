@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using Sign.Core.Interop;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Sign.Core.Interop;
+using Xunit.Abstractions;
 
 namespace Sign.Core.Test
 {
@@ -11,12 +13,15 @@ namespace Sign.Core.Test
     public class Crypt32Tests
     {
         private readonly CertificatesFixture _certificatesFixture;
+        private readonly ITestOutputHelper _testOutputHelper;
 
-        public Crypt32Tests(CertificatesFixture certificatesFixture)
+        public Crypt32Tests(CertificatesFixture certificatesFixture, ITestOutputHelper testOutputHelper)
         {
             ArgumentNullException.ThrowIfNull(certificatesFixture, nameof(certificatesFixture));
+            ArgumentNullException.ThrowIfNull(testOutputHelper, nameof(testOutputHelper));
 
             _certificatesFixture = certificatesFixture;
+            _testOutputHelper = testOutputHelper;
         }
 
         [Fact]
@@ -30,8 +35,15 @@ namespace Sign.Core.Test
                 pszTSAPolicyId = null
             };
 
-            var ok = Crypt32.CryptRetrieveTimeStamp(_certificatesFixture.TimestampServiceUrl.AbsoluteUri, CryptRetrieveTimeStampRetrievalFlags.NONE, 30 * 1000, Oids.Sha512.Value, ref parameters, data, (uint)data.Length, out var pointer, IntPtr.Zero, IntPtr.Zero);
-            Assert.True(ok);
+            bool ok = Crypt32.CryptRetrieveTimeStamp(_certificatesFixture.TimestampServiceUrl.AbsoluteUri, CryptRetrieveTimeStampRetrievalFlags.NONE, 30 * 1000, Oids.Sha512.Value, ref parameters, data, (uint)data.Length, out var pointer, IntPtr.Zero, IntPtr.Zero);
+
+            LogTimestampDetails();
+
+            if (!ok)
+            {
+                throw new Win32Exception();
+            }
+
             bool success = false;
             try
             {
@@ -47,6 +59,20 @@ namespace Sign.Core.Test
                 {
                     pointer.DangerousRelease();
                 }
+            }
+        }
+
+        private void LogTimestampDetails()
+        {
+            FileInfo? file = _certificatesFixture.TimestampServiceLogDirectory.GetFiles()
+                .OrderByDescending(file => file.Name)
+                .FirstOrDefault();
+
+            if (file is not null)
+            {
+                string content = File.ReadAllText(file.FullName);
+
+                _testOutputHelper.WriteLine(content);
             }
         }
     }

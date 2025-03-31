@@ -5,6 +5,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Sign.Core.Timestamp;
+using Xunit.Abstractions;
 
 namespace Sign.Core.Test
 {
@@ -16,14 +17,20 @@ namespace Sign.Core.Test
 
         private readonly CertificatesFixture _certificatesFixture;
         private readonly PfxFilesFixture _pfxFilesFixture;
+        private readonly ITestOutputHelper _testOutputHelper;
 
-        public OpcPackageSigningTests(CertificatesFixture certificatesFixture, PfxFilesFixture pfxFilesFixture)
+        public OpcPackageSigningTests(
+            CertificatesFixture certificatesFixture,
+            PfxFilesFixture pfxFilesFixture,
+            ITestOutputHelper testOutputHelper)
         {
             ArgumentNullException.ThrowIfNull(certificatesFixture, nameof(certificatesFixture));
             ArgumentNullException.ThrowIfNull(pfxFilesFixture, nameof(pfxFilesFixture));
+            ArgumentNullException.ThrowIfNull(testOutputHelper, nameof(testOutputHelper));
 
             _certificatesFixture = certificatesFixture;
             _pfxFilesFixture = pfxFilesFixture;
+            _testOutputHelper = testOutputHelper;
         }
 
         [Theory]
@@ -80,9 +87,33 @@ namespace Sign.Core.Test
                             fileDigestAlgorithm: HashAlgorithmName.SHA256,
                             signingKey: rsaPrivateKey!));
                     OpcPackageTimestampBuilder timestampBuilder = signature.CreateTimestampBuilder();
-                    TimestampResult result = await timestampBuilder.SignAsync(_certificatesFixture.TimestampServiceUrl, timestampDigestAlgorithm);
+                    TimestampResult result;
+
+                    try
+                    {
+                        result = await timestampBuilder.SignAsync(_certificatesFixture.TimestampServiceUrl, timestampDigestAlgorithm);
+                    }
+                    finally
+                    {
+                        LogTimestampDetails();
+                    }
+
                     Assert.Equal(TimestampResult.Success, result);
                 }
+            }
+        }
+
+        private void LogTimestampDetails()
+        {
+            FileInfo? file = _certificatesFixture.TimestampServiceLogDirectory.GetFiles()
+                .OrderByDescending(file => file.Name)
+                .FirstOrDefault();
+
+            if (file is not null)
+            {
+                string content = File.ReadAllText(file.FullName);
+
+                _testOutputHelper.WriteLine(content);
             }
         }
 
