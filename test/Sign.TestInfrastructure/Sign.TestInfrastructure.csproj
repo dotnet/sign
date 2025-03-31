@@ -18,4 +18,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sign.Core\Sign.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sign.Core.Test" />
+  </ItemGroup>
 </Project>
