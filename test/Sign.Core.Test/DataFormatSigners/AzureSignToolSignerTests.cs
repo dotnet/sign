@@ -12,10 +12,10 @@ using Sign.TestInfrastructure;
 namespace Sign.Core.Test
 {
     [Collection(SigningTestsCollection.Name)]
-    public class AzureSignToolSignerTests
+    public sealed class AzureSignToolSignerTests : IDisposable
     {
         private readonly TrustedCertificateFixture _certificateFixture;
-        private readonly DirectoryService _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
+        private readonly DirectoryService _directoryService;
         private readonly AzureSignToolSigner _signer;
 
         public AzureSignToolSignerTests(TrustedCertificateFixture certificateFixture)
@@ -23,11 +23,17 @@ namespace Sign.Core.Test
             ArgumentNullException.ThrowIfNull(certificateFixture, nameof(certificateFixture));
 
             _certificateFixture = certificateFixture;
+            _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
             _signer = new AzureSignToolSigner(
                 Mock.Of<IToolConfigurationProvider>(),
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
                 Mock.Of<ILogger<IDataFormatSigner>>());
+        }
+
+        public void Dispose()
+        {
+            _directoryService.Dispose();
         }
 
         [Fact]

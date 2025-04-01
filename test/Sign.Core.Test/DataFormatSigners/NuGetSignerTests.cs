@@ -135,8 +135,7 @@ namespace Sign.Core.Test
                 matcher: null,
                 antiMatcher: null);
 
-            DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
-
+            using (DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>()))
             using (TemporaryDirectory temporaryDirectory = new(directoryService))
             {
                 FileInfo nupkgFile = TestFileCreator.CreateEmptyZipFile(temporaryDirectory, fileExtension: ".nupkg");

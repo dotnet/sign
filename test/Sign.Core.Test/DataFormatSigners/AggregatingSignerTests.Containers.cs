@@ -345,7 +345,7 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenFileIsZipContainerAndGlobAndAntiGlobPatternsAreUsed_SignsOnlyMatchingFiles()
         {
-            const string fileListContents = 
+            const string fileListContents =
 @"**/*.dll
 **/*.exe
 !**/*.txt

@@ -42,7 +42,7 @@ namespace Sign.Core
         }
 
         internal SignOptions(HashAlgorithmName fileHashAlgorithm, Uri timestampService)
-            : this(applicationName: null, publisherName: null, description: null, descriptionUrl: null, 
+            : this(applicationName: null, publisherName: null, description: null, descriptionUrl: null,
                   fileHashAlgorithm, HashAlgorithmName.SHA256, timestampService, matcher: null,
                   antiMatcher: null)
         {

@@ -12,11 +12,12 @@ namespace Sign.Core.Test
 {
     public sealed class ClickOnceSignerTests : IDisposable
     {
-        private readonly DirectoryService _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
+        private readonly DirectoryService _directoryService;
         private readonly ClickOnceSigner _signer;
 
         public ClickOnceSignerTests()
         {
+            _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
             _signer = new ClickOnceSigner(
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
