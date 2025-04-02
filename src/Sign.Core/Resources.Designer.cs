@@ -61,6 +61,15 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument cannot be empty..
+        /// </summary>
+        internal static string ArgumentCannotBeEmpty {
+            get {
+                return ResourceManager.GetString("ArgumentCannotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Signing SignTool job with {count} files..
         /// </summary>
         internal static string AzureSignToolSignatureProviderSigning {
