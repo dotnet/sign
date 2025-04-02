@@ -128,7 +128,7 @@ Here are two examples of how the current algorithm overcopies and oversigns.
 1. Interate through both [`AssemblyReferences`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.manifest.assemblyreferences?view=msbuild-17-netcore) and [`FileReferences`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.manifest.filereferences?view=msbuild-17-netcore), manually resolve `TargetPath` property to the base path of the application manifest file.
    * Note:  it seems like calling `Manifest.ResolveFiles()` would resolve the full file path for every file dependency in the application manifest.  However, this fails because `ResolveFiles()` assumes dependency files do not have `.deploy` file extension, but they do.  We could temporarily remove the `.deploy` extension and then call `ResolveFiles()` but a user's glob patterns might filter out files based on the `.deploy` extension.  The safest option is to resolve file paths ourselves.
 1. Copy all files from the previous step, including the application manifest file itself, to a temporary directory.
-1. Sign files in the following order:  files alongside the application manifest, the application manifest itself, then the deployment manifest.
+1. Sign files in the following order:  files alongside the application manifest, the application manifest itself, the deployment manifest, then `setup.exe`.
 1. Copy the files back.
 1. If the signed deployment manifest file is a `.vsto` file, copy it to the versioned application manifest file directory and overwrite if necessary.
 
