@@ -46,7 +46,6 @@ namespace Sign.Core.Test
         }
 
         [Theory]
-        [InlineData(".app")]
         [InlineData(".appx")]
         [InlineData(".appxbundle")]
         [InlineData(".cab")]
@@ -79,6 +78,33 @@ namespace Sign.Core.Test
             FileInfo file = new($"file{extension}");
 
             Assert.True(_signer.CanSign(file));
+        }
+
+
+        [Fact]
+        public void CanSign_WithNonDynamicsBusinessCentralAppFile_ReturnsFalse()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo file = new(Path.Combine(temporaryDirectory.Directory.FullName, "file.app"));
+
+                File.WriteAllText(file.FullName, "{}");
+
+                Assert.False(_signer.CanSign(file));
+            }
+        }
+
+        [Fact]
+        public void CanSign_WithDynamicsBusinessCentralAppFile_ReturnsTrue()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo file = new(Path.Combine(temporaryDirectory.Directory.FullName, "file.app"));
+
+                File.WriteAllBytes(file.FullName, new byte[] { 0x4e, 0x41, 0x56, 0x58 });
+
+                Assert.True(_signer.CanSign(file));
+            }
         }
 
         [Theory]

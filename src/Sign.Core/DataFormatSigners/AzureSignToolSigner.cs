@@ -15,7 +15,7 @@ namespace Sign.Core
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly ILogger<IDataFormatSigner> _logger;
-        private readonly HashSet<string> _supportedFileExtensions;
+        private readonly IReadOnlyList<ISignableFileType> _signableFileTypes;
         private readonly IToolConfigurationProvider _toolConfigurationProvider;
 
         // Dependency injection requires a public constructor.
@@ -36,37 +36,39 @@ namespace Sign.Core
             _logger = logger;
             _toolConfigurationProvider = toolConfigurationProvider;
 
-            // For PowerShell file extensions, see https://github.com/PowerShell/PowerShell/blob/2f4f585e7fe075f5c1669397ae738c554fa18391/src/System.Management.Automation/security/SecurityManager.cs#L97C1-L106C10
-            _supportedFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            _signableFileTypes = new List<ISignableFileType>()
             {
-                ".app",
-                ".appx",
-                ".appxbundle",
-                ".cab",
-                ".cat",
-                ".cdxml",       // PowerShell cmdlet definition XML
-                ".dll",
-                ".eappx",
-                ".eappxbundle",
-                ".emsix",
-                ".emsixbundle",
-                ".exe",
-                ".msi",
-                ".msix",
-                ".msixbundle",
-                ".msm",
-                ".msp",
-                ".mst",
-                ".ocx",
-                ".ps1",         // PowerShell script files
-                ".ps1xml",      // PowerShell display configuration files
-                ".psd1",        // PowerShell data files
-                ".psm1",        // PowerShell module files
-                ".stl",
-                ".sys",
-                ".vbs",
-                ".vxd",
-                ".winmd"
+                // For PowerShell file extensions, see https://github.com/PowerShell/PowerShell/blob/2f4f585e7fe075f5c1669397ae738c554fa18391/src/System.Management.Automation/security/SecurityManager.cs#L97C1-L106C10
+                new SignableFileTypeByExtension(
+                    ".appx",
+                    ".appxbundle",
+                    ".cab",
+                    ".cat",
+                    ".cdxml",       // PowerShell cmdlet definition XML
+                    ".dll",
+                    ".eappx",
+                    ".eappxbundle",
+                    ".emsix",
+                    ".emsixbundle",
+                    ".exe",
+                    ".msi",
+                    ".msix",
+                    ".msixbundle",
+                    ".msm",
+                    ".msp",
+                    ".mst",
+                    ".ocx",
+                    ".ps1",         // PowerShell script files
+                    ".ps1xml",      // PowerShell display configuration files
+                    ".psd1",        // PowerShell data files
+                    ".psm1",        // PowerShell module files
+                    ".stl",
+                    ".sys",
+                    ".vbs",
+                    ".vxd",
+                    ".winmd"
+                ),
+                new DynamicsBusinessCentralAppFileType()
             };
         }
 
@@ -74,7 +76,15 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
-            return _supportedFileExtensions.Contains(file.Extension);
+            foreach (ISignableFileType signableFileType in _signableFileTypes)
+            {
+                if (signableFileType.IsMatch(file))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)
