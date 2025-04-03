@@ -14,6 +14,7 @@ namespace Sign.Cli.Test
     {
         public sealed class GlobbingTests : IDisposable
         {
+            private readonly DirectoryService _directoryService;
             private readonly Parser _parser;
             private readonly SignerSpy _signerSpy;
             private readonly TemporaryDirectory _temporaryDirectory;
@@ -33,7 +34,8 @@ namespace Sign.Cli.Test
 
                 _parser = Program.CreateParser(serviceProviderFactory);
 
-                _temporaryDirectory = new TemporaryDirectory(new DirectoryService(Mock.Of<ILogger<IDirectoryService>>()));
+                _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+                _temporaryDirectory = new TemporaryDirectory(_directoryService);
 
                 CreateFileSystemInfos(
                     _temporaryDirectory,
@@ -52,6 +54,7 @@ namespace Sign.Cli.Test
             public void Dispose()
             {
                 _temporaryDirectory.Dispose();
+                _directoryService.Dispose();
 
                 GC.SuppressFinalize(this);
             }

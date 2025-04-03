@@ -143,7 +143,7 @@ namespace Sign.Core
                     if (string.IsNullOrEmpty(options.PublisherName))
                     {
                         string publisherName = certificate.SubjectName.Name;
- 
+
                         // get the DN. it may be quoted
                         publisherParam = $@"-pub ""{publisherName.Replace("\"", "")}""";
                     }

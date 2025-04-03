@@ -12,12 +12,14 @@ namespace Sign.Core.Test
 {
     public sealed class PfxFilesFixture : IDisposable
     {
+        private readonly DirectoryService _directoryService;
         private readonly TemporaryDirectory _directory;
         private readonly ConcurrentDictionary<Tuple<int, HashAlgorithmName>, FileInfo> _pfxFiles;
 
         public PfxFilesFixture()
         {
-            _directory = new TemporaryDirectory(new DirectoryService(Mock.Of<ILogger<IDirectoryService>>()));
+            _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+            _directory = new TemporaryDirectory(_directoryService);
             _pfxFiles = new ConcurrentDictionary<Tuple<int, HashAlgorithmName>, FileInfo>();
         }
 
@@ -33,6 +35,7 @@ namespace Sign.Core.Test
         public void Dispose()
         {
             _directory.Dispose();
+            _directoryService.Dispose();
         }
 
         private FileInfo CreateSelfIssuedCertificate(int keySizeInBits, HashAlgorithmName hashAlgorithmName)

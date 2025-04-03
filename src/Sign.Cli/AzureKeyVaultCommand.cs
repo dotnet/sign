@@ -7,7 +7,6 @@ using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
