@@ -162,6 +162,13 @@ namespace Sign.Core
                         .Select(f => f.file)
                         .ToList();
 
+                    // If the user supplies the path to a deployment manifest as the file to sign, and also supplies
+                    // a file path filter via --file-list which DOES NOT match the deployment manifest path, then
+                    // it won't be signed even though the rest of the files were. This is not an expected configuration
+                    // so we should explicitly reject such a situation.
+                    if (!deploymentManifestFiles.Any())
+                        throw new InvalidOperationException(Resources.NoDeploymentManifestsSelectedForSigning);
+
                     foreach (FileInfo deploymentManifestFile in deploymentManifestFiles)
                     {
                         fileArgs = $@"-update ""{deploymentManifestFile.FullName}"" {args} {publisherParam}";
