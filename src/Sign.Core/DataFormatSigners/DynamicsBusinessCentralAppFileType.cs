@@ -8,7 +8,7 @@ namespace Sign.Core
     {
         private const string FileExtension = ".app";
 
-        private readonly ReadOnlyMemory<byte> _expectedHeader;
+        private readonly byte[] _expectedHeader;
 
         internal DynamicsBusinessCentralAppFileType()
         {
@@ -33,7 +33,7 @@ namespace Sign.Core
                     return false;
                 }
 
-                return header.AsSpan().SequenceEqual(_expectedHeader.Span);
+                return header.SequenceEqual(_expectedHeader);
             }
         }
     }
