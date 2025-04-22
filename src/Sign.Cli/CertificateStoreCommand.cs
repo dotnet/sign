@@ -23,7 +23,7 @@ namespace Sign.Cli
         internal Option<bool> UseMachineKeyContainerOption { get; } = new(["--use-machine-key-container", "-km"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
         internal Option<bool> InteractiveOption { get; } = new(["--interactive", "-i"], getDefaultValue: () => false, description: CertificateStoreResources.InteractiveDescription);
 
-        internal Argument<string?> FileArgument { get; } = new("file(s)", Resources.FilesArgumentDescription);
+        internal Argument<List<string>?> FilesArgument { get; } = new("file(s)", Resources.FilesArgumentDescription) { Arity = ArgumentArity.OneOrMore };
 
         internal CertificateStoreCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("certificate-store", Resources.CertificateStoreCommandDescription)
@@ -40,13 +40,13 @@ namespace Sign.Cli
             AddOption(PrivateKeyContainerOption);
             AddOption(UseMachineKeyContainerOption);
             AddOption(InteractiveOption);
-            AddArgument(FileArgument);
+            AddArgument(FilesArgument);
 
             this.SetHandler(async (InvocationContext context) =>
             {
-                string? fileArgument = context.ParseResult.GetValueForArgument(FileArgument);
+                List<string>? filesArgument = context.ParseResult.GetValueForArgument(FilesArgument);
 
-                if (string.IsNullOrEmpty(fileArgument))
+                if (filesArgument is not { Count: > 0 })
                 {
                     context.Console.Error.WriteLine(Resources.MissingFileValue);
                     context.ExitCode = ExitCode.InvalidOptions;
@@ -111,7 +111,7 @@ namespace Sign.Cli
                     useMachineKeyContainer,
                     isInteractive);
 
-                await codeCommand.HandleAsync(context, serviceProviderFactory, certificateStoreServiceProvider, fileArgument);
+                await codeCommand.HandleAsync(context, serviceProviderFactory, certificateStoreServiceProvider, filesArgument);
             });
         }
 
