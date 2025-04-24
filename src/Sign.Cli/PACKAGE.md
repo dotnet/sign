@@ -9,13 +9,14 @@ The tool signs files inside-out, starting with the most nested files and then th
 - An up-to-date x64-based version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
 - [.NET 8 SDK or later](https://dotnet.microsoft.com/download)
 - [Microsoft Visual C++ 14 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- For ClickOnce and VSTO signing:  A recent --- ideally, the latest --- version of [.NET Framework](https://dotnet.microsoft.com/download/dotnet-framework)
 
 ## Usage
 
 - For help with...
-    - Azure Key Vault:  `sign code azure-key-vault --help` 
-    - Trusted Signing:  `sign code trusted-signing --help` 
-    - local signing:  `sign code certificate-store --help` 
+    - Azure Key Vault:  `sign code azure-key-vault --help`
+    - Trusted Signing:  `sign code trusted-signing --help`
+    - local signing:  `sign code certificate-store --help`
 - Version information:  `sign --version`
 
 See the [GitHub repository](https://github.com/dotnet/sign) for additional information and samples.
