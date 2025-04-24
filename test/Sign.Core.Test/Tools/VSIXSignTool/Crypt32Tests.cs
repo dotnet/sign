@@ -36,12 +36,14 @@ namespace Sign.Core.Test
             };
 
             bool ok = Crypt32.CryptRetrieveTimeStamp(_certificatesFixture.TimestampServiceUrl.AbsoluteUri, CryptRetrieveTimeStampRetrievalFlags.NONE, 30 * 1000, Oids.Sha512.Value, ref parameters, data, (uint)data.Length, out var pointer, IntPtr.Zero, IntPtr.Zero);
+            // Capture the last P/Invoke error and throw later.
+            Win32Exception exception = new();
 
             LogTimestampDetails();
 
             if (!ok)
             {
-                throw new Win32Exception();
+                throw exception;
             }
 
             bool success = false;
