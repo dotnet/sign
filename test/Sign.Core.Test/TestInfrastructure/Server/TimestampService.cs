@@ -146,6 +146,8 @@ namespace Sign.Core.Test
                     return Task.CompletedTask;
                 }
 
+                reqAndResp.Request = request;
+
                 ReadOnlyMemory<byte> response;
 
                 if (request.HashAlgorithmId.IsEqualTo(Oids.Sha1))
@@ -176,6 +178,10 @@ namespace Sign.Core.Test
 
                 WriteResponseBody(context.Response, response);
             }
+            catch (Exception ex)
+            {
+                reqAndResp.Exception = ex;
+            }
             finally
             {
                 Write(reqAndResp);
@@ -198,10 +204,27 @@ namespace Sign.Core.Test
                 writer.WriteLine(reqAndResp.RequestContentType);
                 writer.Write($"Request body:  ");
                 writer.WriteLine(reqAndResp.RequestBody);
+
+                if (reqAndResp.Request is not null)
+                {
+                    writer.Write($"Request version:  ");
+                    writer.WriteLine(reqAndResp.Request.Version);
+                    writer.Write($"Request hash algorithm OID:  ");
+                    writer.WriteLine(reqAndResp.Request.HashAlgorithmId.Value);
+                    writer.Write($"Request requested policy OID:  ");
+                    writer.WriteLine(reqAndResp.Request.RequestedPolicyId?.Value);
+                    writer.Write($"Request request signer certificate:  ");
+                    writer.WriteLine(reqAndResp.Request.RequestSignerCertificate);
+                    writer.Write($"Request has extensions:  ");
+                    writer.WriteLine(reqAndResp.Request.HasExtensions);
+                }
+
                 writer.Write($"Response status:  ");
                 writer.WriteLine(reqAndResp.ResponseStatus);
                 writer.Write($"Response body:  ");
                 writer.WriteLine(reqAndResp.ResponseBody);
+                writer.Write($"Exception:  ");
+                writer.WriteLine(reqAndResp.Exception);
             }
         }
 
@@ -314,6 +337,8 @@ namespace Sign.Core.Test
         {
             internal string? RequestContentType { get; set; }
             internal string? RequestBody { get; set; }
+            internal Rfc3161TimestampRequest? Request { get; set; }
+            internal Exception? Exception { get; set; }
             internal int? ResponseStatus { get; set; }
             internal string? ResponseBody { get; set; }
         }
