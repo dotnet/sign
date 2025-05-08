@@ -71,6 +71,8 @@ namespace Sign.Cli
             }
 
             DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(context.ParseResult);
+
+            // CodeQL [SM05137] Sign CLI is not a production service.
             return new DefaultAzureCredential(options);
         }
     }
