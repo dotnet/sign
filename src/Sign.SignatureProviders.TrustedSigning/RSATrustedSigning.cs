@@ -15,7 +15,7 @@ namespace Sign.SignatureProviders.TrustedSigning
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
-        private readonly X509Certificate2 _certificate;
+        private readonly RSA _rsaPublicKey;
 
         public RSATrustedSigning(
             CertificateProfileClient client,
@@ -26,11 +26,18 @@ namespace Sign.SignatureProviders.TrustedSigning
             _client = client;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
-            _certificate = certificate;
+            _rsaPublicKey = certificate.GetRSAPublicKey()!;
         }
 
-        private RSA PublicKey
-            => _certificate.GetRSAPublicKey()!;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _rsaPublicKey.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
 
         public override RSAParameters ExportParameters(bool includePrivateParameters)
         {
@@ -39,7 +46,7 @@ namespace Sign.SignatureProviders.TrustedSigning
                 throw new NotSupportedException();
             }
 
-            return PublicKey.ExportParameters(false);
+            return _rsaPublicKey.ExportParameters(false);
         }
 
         public override void ImportParameters(RSAParameters parameters)
@@ -55,7 +62,7 @@ namespace Sign.SignatureProviders.TrustedSigning
         }
 
         public override bool VerifyHash(byte[] hash, byte[] signature, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)
-            => PublicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
+            => _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
 
         protected override byte[] HashData(byte[] data, int offset, int count, HashAlgorithmName hashAlgorithm)
         {
