@@ -83,7 +83,9 @@ namespace Sign.SignatureProviders.KeyVault
 
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
-            return await _cryptographyClient.CreateRSAAsync(cancellationToken);
+            using X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
+            RSAKeyVault rsaKeyVault = await _cryptographyClient.CreateRSAAsync(cancellationToken);
+            return new RSAKeyVaultWrapper(rsaKeyVault, certificate);
         }
     }
 }
