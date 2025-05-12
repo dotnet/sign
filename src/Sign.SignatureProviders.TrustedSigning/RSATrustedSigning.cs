@@ -3,7 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
@@ -21,12 +20,12 @@ namespace Sign.SignatureProviders.TrustedSigning
             CertificateProfileClient client,
             string accountName,
             string certificateProfileName,
-            X509Certificate2 certificate)
+            RSA rsaPublicKey)
         {
             _client = client;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
-            _rsaPublicKey = certificate.GetRSAPublicKey()!;
+            _rsaPublicKey = rsaPublicKey;
         }
 
         protected override void Dispose(bool disposing)

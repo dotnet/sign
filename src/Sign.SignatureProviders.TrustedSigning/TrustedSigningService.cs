@@ -92,7 +92,8 @@ namespace Sign.SignatureProviders.TrustedSigning
         public async Task<RSA> GetRsaAsync(CancellationToken cancellationToken)
         {
             using X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
-            return new RSATrustedSigning(_client, _accountName, _certificateProfileName, certificate);
+            RSA rsaPublicKey = certificate.GetRSAPublicKey()!;
+            return new RSATrustedSigning(_client, _accountName, _certificateProfileName, rsaPublicKey);
         }
     }
 }
