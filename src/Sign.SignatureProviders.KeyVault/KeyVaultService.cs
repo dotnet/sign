@@ -85,7 +85,8 @@ namespace Sign.SignatureProviders.KeyVault
         {
             using X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
             RSAKeyVault rsaKeyVault = await _cryptographyClient.CreateRSAAsync(cancellationToken);
-            return new RSAKeyVaultWrapper(rsaKeyVault, certificate);
+            RSA rsaPublicKey = certificate.GetRSAPrivateKey()!;
+            return new RSAKeyVaultWrapper(rsaKeyVault, rsaPublicKey);
         }
     }
 }

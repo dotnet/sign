@@ -4,19 +4,18 @@
 
 using System.Security.Cryptography;
 using Azure.Security.KeyVault.Keys.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.SignatureProviders.KeyVault
 {
     internal sealed class RSAKeyVaultWrapper : RSA
     {
         private readonly RSAKeyVault _rsaKeyVault;
-        private readonly RSA _publicKey;
+        private readonly RSA _rsaPublicKey;
 
-        public RSAKeyVaultWrapper(RSAKeyVault rsaKeyVault, X509Certificate2 certificate)
+        public RSAKeyVaultWrapper(RSAKeyVault rsaKeyVault, RSA publicKey)
         {
             _rsaKeyVault = rsaKeyVault;
-            _publicKey = certificate.GetRSAPublicKey()!;
+            _rsaPublicKey = publicKey;
         }
 
         protected override void Dispose(bool disposing)
@@ -24,7 +23,7 @@ namespace Sign.SignatureProviders.KeyVault
             if (disposing)
             {
                 _rsaKeyVault.Dispose();
-                _publicKey.Dispose();
+                _rsaPublicKey.Dispose();
             }
 
             base.Dispose(disposing);
@@ -38,7 +37,7 @@ namespace Sign.SignatureProviders.KeyVault
                 throw new NotSupportedException();
             }
 
-            return _publicKey.ExportParameters(false);
+            return _rsaPublicKey.ExportParameters(false);
         }
 
         public override void ImportParameters(RSAParameters parameters)
@@ -48,6 +47,6 @@ namespace Sign.SignatureProviders.KeyVault
             => _rsaKeyVault.SignHash(hash, hashAlgorithm, padding);
 
         public override bool VerifyHash(byte[] hash, byte[] signature, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)
-            => _publicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
+            => _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
     }
 }
