@@ -179,6 +179,36 @@ namespace Sign.Core
                 containers.Clear();
             }
 
+            List<FileInfo> msis = (from file in files
+                                   where _containerProvider.IsMsiContainer(file)
+                                   select file).ToList();
+
+            try
+            {
+                foreach (FileInfo msi in msis)
+                {
+                    IContainer container = _containerProvider.GetContainer(msi)!;
+
+                    await container.OpenAsync();
+
+                    containers.Add(container);
+                }
+
+                List<FileInfo> allFiles = containers.SelectMany(c => GetFiles(c, options)).ToList();
+
+                if (allFiles.Count > 0)
+                {
+                    await SignAsync(allFiles, options);
+
+                    await Parallel.ForEachAsync(containers, (c, cancellationToken) => c.SaveAsync());
+                }
+            }
+            finally
+            {
+                containers.ForEach(c => c.Dispose());
+                containers.Clear();
+            }
+
             // split by code sign service and fallback to default
 
             var grouped = (from signer in _signers
