@@ -112,6 +112,8 @@ namespace Sign.SignatureProviders.KeyVault.Test
             using KeyVaultService service = new(_certificateClient.Object, _cryptographyClient.Object, CertificateName, Logger);
 
             using RSA rsa = await service.GetRsaAsync(cancellationToken);
+
+            Assert.IsType<RSAKeyVaultWrapper>(rsa);
         }
 
         private static Mock<KeyVaultCertificateWithPolicy> CreateMockKeyVaultCertificateWithPolicy()
