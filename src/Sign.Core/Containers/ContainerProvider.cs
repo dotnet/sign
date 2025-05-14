@@ -17,6 +17,7 @@ namespace Sign.Core
         private readonly IMakeAppxCli _makeAppxCli;
         private readonly HashSet<string> _nuGetExtensions;
         private readonly HashSet<string> _zipExtensions;
+        private const string _cabExtension = ".cab";
 
         // Dependency injection requires a public constructor.
         public ContainerProvider(
@@ -98,6 +99,13 @@ namespace Sign.Core
             return _zipExtensions.Contains(file.Extension);
         }
 
+        public bool IsCabContainer(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return string.Equals(file.Extension, _cabExtension, StringComparison.OrdinalIgnoreCase);
+        }
+
         public IContainer? GetContainer(FileInfo file)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
@@ -120,6 +128,11 @@ namespace Sign.Core
             if (IsNuGetContainer(file))
             {
                 return new NuGetContainer(file, _directoryService, _fileMatcher, _logger);
+            }
+
+            if (IsCabContainer(file))
+            {
+                return new CabContainer(file, _directoryService, _fileMatcher, _logger);
             }
 
             return null;
