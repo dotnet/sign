@@ -12,10 +12,13 @@ namespace Sign.SignatureProviders.KeyVault
         private readonly RSAKeyVault _rsaKeyVault;
         private readonly RSA _rsaPublicKey;
 
-        public RSAKeyVaultWrapper(RSAKeyVault rsaKeyVault, RSA publicKey)
+        public RSAKeyVaultWrapper(RSAKeyVault rsaKeyVault, RSA rsaPublicKey)
         {
+            ArgumentNullException.ThrowIfNull(rsaKeyVault, nameof(rsaKeyVault));
+            ArgumentNullException.ThrowIfNull(rsaPublicKey, nameof(rsaPublicKey));
+
             _rsaKeyVault = rsaKeyVault;
-            _rsaPublicKey = publicKey;
+            _rsaPublicKey = rsaPublicKey;
         }
 
         protected override void Dispose(bool disposing)
