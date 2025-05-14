@@ -43,6 +43,11 @@ namespace Sign.Core.Test
             return _containerProvider.IsZipContainer(file);
         }
 
+        public bool IsCabContainer(FileInfo file)
+        {
+            return _containerProvider.IsCabContainer(file);
+        }
+
         public IContainer? GetContainer(FileInfo file)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));

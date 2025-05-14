@@ -179,6 +179,36 @@ namespace Sign.Core
                 containers.Clear();
             }
 
+            List<FileInfo> cabs = (from file in files
+                                   where _containerProvider.IsCabContainer(file)
+                                   select file).ToList();
+
+            try
+            {
+                foreach (FileInfo cab in cabs)
+                {
+                    IContainer container = _containerProvider.GetContainer(cab)!;
+
+                    await container.OpenAsync();
+
+                    containers.Add(container);
+                }
+
+                List<FileInfo> allFiles = containers.SelectMany(c => c.GetFiles()).ToList();
+
+                if (allFiles.Count > 0)
+                {
+                    await SignAsync(allFiles, options);
+
+                    await Parallel.ForEachAsync(containers, (container, cancellationToken) => container.SaveAsync());
+                }
+            }
+            finally
+            {
+                containers.ForEach(c => c.Dispose());
+                containers.Clear();
+            }
+
             // split by code sign service and fallback to default
 
             var grouped = (from signer in _signers
