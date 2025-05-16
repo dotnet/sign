@@ -85,7 +85,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         }
 
         [Fact]
-        public void VerifyHash_UsesRSAKeyVault()
+        public void VerifyHash_UsesPublicKey()
         {
             using RSAKeyVaultWrapper wrapper = new(_rsaKeyVault.Object, _rsaPublicKey.Object);
 
