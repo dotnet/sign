@@ -57,7 +57,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         }
 
         [Fact]
-        public void Constructor_WhenertificateProfileNameIsEmpty_Throws()
+        public void Constructor_WhenCertificateProfileNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
                 () => new RSATrustedSigning(_client.Object, AccountName, certificateProfileName: string.Empty, _rsaPublicKey.Object));
