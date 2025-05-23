@@ -22,6 +22,11 @@ namespace Sign.SignatureProviders.TrustedSigning
             string certificateProfileName,
             RSA rsaPublicKey)
         {
+            ArgumentNullException.ThrowIfNull(client, nameof(client));
+            ArgumentException.ThrowIfNullOrEmpty(accountName, nameof(accountName));
+            ArgumentException.ThrowIfNullOrEmpty(certificateProfileName, nameof(certificateProfileName));
+            ArgumentNullException.ThrowIfNull(rsaPublicKey, nameof(rsaPublicKey));
+
             _client = client;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
@@ -63,27 +68,12 @@ namespace Sign.SignatureProviders.TrustedSigning
         public override bool VerifyHash(byte[] hash, byte[] signature, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)
             => _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
 
-        protected override byte[] HashData(byte[] data, int offset, int count, HashAlgorithmName hashAlgorithm)
-        {
-            using HashAlgorithm hasher = CreateHasher(hashAlgorithm);
-            return hasher.ComputeHash(data, offset, count);
-        }
-
         private static SignatureAlgorithm GetSignatureAlgorithm(byte[] digest, RSASignaturePadding padding)
             => digest.Length switch
             {
                 32 => padding == RSASignaturePadding.Pss ? Azure.CodeSigning.Models.SignatureAlgorithm.PS256 : Azure.CodeSigning.Models.SignatureAlgorithm.RS256,
                 48 => padding == RSASignaturePadding.Pss ? Azure.CodeSigning.Models.SignatureAlgorithm.PS384 : Azure.CodeSigning.Models.SignatureAlgorithm.RS384,
                 64 => padding == RSASignaturePadding.Pss ? Azure.CodeSigning.Models.SignatureAlgorithm.PS512 : Azure.CodeSigning.Models.SignatureAlgorithm.RS512,
-                _ => throw new NotSupportedException(),
-            };
-
-        private static HashAlgorithm CreateHasher(HashAlgorithmName hashAlgorithm)
-            => hashAlgorithm.Name switch
-            {
-                nameof(SHA256) => SHA256.Create(),
-                nameof(SHA384) => SHA384.Create(),
-                nameof(SHA512) => SHA512.Create(),
                 _ => throw new NotSupportedException(),
             };
     }
