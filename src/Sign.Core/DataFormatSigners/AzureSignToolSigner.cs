@@ -53,6 +53,7 @@ namespace Sign.Core
                     ".emsix",
                     ".emsixbundle",
                     ".exe",
+                    ".js",
                     ".msi",
                     ".msix",
                     ".msixbundle",
