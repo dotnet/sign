@@ -19,7 +19,6 @@ namespace Sign.Core.Test
         private const string RequestContentType = "application/timestamp-query";
         private const string ResponseContentType = "application/timestamp-response";
 
-        private readonly HashSet<BigInteger> _serialNumbers;
         private BigInteger _nextSerialNumber;
         private IDisposable? _disposable;
         private readonly DirectoryService _directoryService;
@@ -53,7 +52,6 @@ namespace Sign.Core.Test
             CertificateAuthority = certificateAuthority;
             Certificate = certificate;
             Url = uri;
-            _serialNumbers = new HashSet<BigInteger>();
             _nextSerialNumber = BigInteger.One;
             _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
             _temporaryDirectory = new TemporaryDirectory(_directoryService);
@@ -161,8 +159,6 @@ namespace Sign.Core.Test
                         request.GetMessageHash(),
                         _nextSerialNumber,
                         request.GetNonce());
-
-                    _serialNumbers.Add(_nextSerialNumber);
 
                     ++_nextSerialNumber;
 
