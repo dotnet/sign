@@ -37,6 +37,11 @@
         <target state="translated">이진 파일 및 컨테이너에 서명합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CredentialTypeOptionDescription">
+        <source>Azure credential type that will be used. This defaults to DefaultAzureCredential.</source>
+        <target state="new">Azure credential type that will be used. This defaults to DefaultAzureCredential.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">서명 인증서에 대한 설명입니다.</target>
