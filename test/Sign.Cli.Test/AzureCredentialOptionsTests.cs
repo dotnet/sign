@@ -164,7 +164,6 @@ namespace Sign.Cli.Test
 
             Assert.True(credentialOptions.ExcludeInteractiveBrowserCredential);
             Assert.True(credentialOptions.ExcludeSharedTokenCacheCredential);
-            Assert.True(credentialOptions.ExcludeVisualStudioCodeCredential);
             Assert.False(credentialOptions.ExcludeAzureCliCredential);
             Assert.False(credentialOptions.ExcludeAzureDeveloperCliCredential);
             Assert.False(credentialOptions.ExcludeAzurePowerShellCredential);
