@@ -37,6 +37,11 @@
         <target state="translated">Firmar archivos binarios y contenedores.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CredentialTypeOptionDescription">
+        <source>Azure credential type that will be used. This defaults to DefaultAzureCredential.</source>
+        <target state="new">Azure credential type that will be used. This defaults to DefaultAzureCredential.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
         <source>Description of the signing certificate.</source>
         <target state="translated">Descripción del certificado de firma.</target>

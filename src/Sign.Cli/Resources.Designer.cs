@@ -124,6 +124,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Azure credential type that will be used. This defaults to DefaultAzureCredential..
+        /// </summary>
+        internal static string CredentialTypeOptionDescription {
+            get {
+                return ResourceManager.GetString("CredentialTypeOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Description of the signing certificate..
         /// </summary>
         internal static string DescriptionOptionDescription {
