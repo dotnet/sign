@@ -44,6 +44,9 @@
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="PACKAGE.md">
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
