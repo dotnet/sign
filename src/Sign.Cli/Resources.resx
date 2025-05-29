@@ -234,4 +234,7 @@
     <value>Warning:  The Microsoft Visual C++ 14 runtime is required but was not detected on your system.  Download and install from https://aka.ms/vs/17/release/vc_redist.x64.exe</value>
     <comment>{Locked="https://aka.ms/vs/17/release/vc_redist.x64.exe"} is a URL.</comment>
   </data>
+  <data name="CredentialTypeOptionDescription" xml:space="preserve">
+    <value>Azure credential type that will be used. This defaults to DefaultAzureCredential.</value>
+  </data>
 </root>
