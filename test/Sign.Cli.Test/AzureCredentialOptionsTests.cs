@@ -4,7 +4,10 @@
 
 using System.CommandLine;
 using System.CommandLine.Builder;
+using System.CommandLine.Completions;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using Azure.Core;
 using Azure.Identity;
 using Moq;
 using Sign.Core;
@@ -22,6 +25,30 @@ namespace Sign.Cli.Test
             _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
             _parser = new CommandLineBuilder(_command).Build();
             _options = _command.AzureCredentialOptions;
+        }
+
+        [Fact]
+        public void CredentialTypeOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _options.CredentialTypeOption.Arity);
+        }
+
+        [Fact]
+        public void CredentialTypeOption_Always_IsNotRequired()
+        {
+            Assert.False(_options.CredentialTypeOption.IsRequired);
+        }
+
+        [Fact]
+        public void CredentialTypeOption_Always_HasCorrectCompletions()
+        {
+            CompletionItem[] completions = [.. _options.CredentialTypeOption.GetCompletions()];
+
+            Assert.Equal(4, completions.Length);
+            Assert.Equal("azure-cli", completions[0].Label);
+            Assert.Equal("azure-power-shell", completions[1].Label);
+            Assert.Equal("managed-identity", completions[2].Label);
+            Assert.Equal("workload-identity", completions[3].Label);
         }
 
         [Fact]
@@ -127,6 +154,7 @@ namespace Sign.Cli.Test
 
             _options.AddOptionsToCommand(command);
 
+            Assert.Contains(_options.CredentialTypeOption, command.Options);
             Assert.Contains(_options.ManagedIdentityClientIdOption, command.Options);
             Assert.Contains(_options.ManagedIdentityResourceIdOption, command.Options);
             Assert.Contains(_options.ObsoleteManagedIdentityOption, command.Options);
@@ -171,6 +199,72 @@ namespace Sign.Cli.Test
             Assert.False(credentialOptions.ExcludeManagedIdentityCredential);
             Assert.False(credentialOptions.ExcludeVisualStudioCredential);
             Assert.False(credentialOptions.ExcludeWorkloadIdentityCredential);
+        }
+
+        [Fact]
+        public void CreateTokenCredential_WhenClientSecretOptionsAreSet_ReturnsClientSecretCredential()
+        {
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e");
+            InvocationContext invocationContext = new(result);
+
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+
+            Assert.IsType<ClientSecretCredential>(tokenCredential);
+        }
+
+        [Fact]
+        public void CreateTokenCredential_WhenCredentialTypeIsAzureCli_ReturnsAzureCliCredential()
+        {
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act azure-cli b");
+            InvocationContext invocationContext = new(result);
+
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+
+            Assert.IsType<AzureCliCredential>(tokenCredential);
+        }
+
+        [Fact]
+        public void CreateTokenCredential_WhenCredentialTypeIsAzurePowerShell_ReturnsAzurePowerShellCredential()
+        {
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act azure-power-shell b");
+            InvocationContext invocationContext = new(result);
+
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+
+            Assert.IsType<AzurePowerShellCredential>(tokenCredential);
+        }
+
+        [Fact]
+        public void CreateTokenCredential_WhenCredentialTypeIsWorkloadIdenity_ReturnsManagedIdentityCredential()
+        {
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act managed-identity b");
+            InvocationContext invocationContext = new(result);
+
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+
+            Assert.IsType<ManagedIdentityCredential>(tokenCredential);
+        }
+
+        [Fact]
+        public void CreateTokenCredential_WhenCredentialTypeIsWorkloadIdenity_WReturnsorkloadIdentityCredential()
+        {
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act workload-identity b");
+            InvocationContext invocationContext = new(result);
+
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+
+            Assert.IsType<WorkloadIdentityCredential>(tokenCredential);
+        }
+
+        [Fact]
+        public void CreateTokenCredential_WhenCredentialTypeIsNotSet_ReturnsDefaultAzureCredential()
+        {
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a b");
+            InvocationContext invocationContext = new(result);
+
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+
+            Assert.IsType<DefaultAzureCredential>(tokenCredential);
         }
     }
 }
