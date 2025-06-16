@@ -235,7 +235,7 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CreateTokenCredential_WhenCredentialTypeIsWorkloadIdenity_ReturnsManagedIdentityCredential()
+        public void CreateTokenCredential_WhenCredentialTypeIsManagedIdentity_ReturnsManagedIdentityCredential()
         {
             ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act managed-identity b");
             InvocationContext invocationContext = new(result);
@@ -246,7 +246,7 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CreateTokenCredential_WhenCredentialTypeIsWorkloadIdenity_WReturnsorkloadIdentityCredential()
+        public void CreateTokenCredential_WhenCredentialTypeIsWorkloadIdentity_ReturnsWorkloadIdentityCredential()
         {
             ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act workload-identity b");
             InvocationContext invocationContext = new(result);
