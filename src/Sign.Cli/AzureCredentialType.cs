@@ -7,7 +7,7 @@ namespace Sign.Cli
     internal static class AzureCredentialType
     {
         public const string AzureCli = "azure-cli";
-        public const string AzurePowerShell = "azure-power-shell";
+        public const string AzurePowerShell = "azure-powershell";
         public const string ManagedIdentity = "managed-identity";
         public const string WorkloadIdentity = "workload-identity";
     }

@@ -46,7 +46,7 @@ namespace Sign.Cli.Test
 
             Assert.Equal(4, completions.Length);
             Assert.Equal("azure-cli", completions[0].Label);
-            Assert.Equal("azure-power-shell", completions[1].Label);
+            Assert.Equal("azure-powershell", completions[1].Label);
             Assert.Equal("managed-identity", completions[2].Label);
             Assert.Equal("workload-identity", completions[3].Label);
         }
@@ -226,7 +226,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenCredentialTypeIsAzurePowerShell_ReturnsAzurePowerShellCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act azure-power-shell b");
+            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act azure-powershell b");
             InvocationContext invocationContext = new(result);
 
             TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
