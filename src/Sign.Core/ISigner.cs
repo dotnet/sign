@@ -12,6 +12,7 @@ namespace Sign.Core
             IReadOnlyList<FileInfo> inputFiles,
             string? outputFile,
             FileInfo? fileList,
+            bool recurseContainers,
             DirectoryInfo baseDirectory,
             string? applicationName,
             string? publisherName,
