@@ -17,6 +17,11 @@
         <target state="translated">证书文件的密码。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainersDescription">
+        <source>Sign container contents</source>
+        <target state="new">Sign container contents</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">包含私钥容器的加密服务提供程序。需要 /k 和 /km (可选)。</target>
