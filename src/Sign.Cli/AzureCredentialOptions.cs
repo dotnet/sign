@@ -13,6 +13,11 @@ namespace Sign.Cli
 {
     internal sealed class AzureCredentialOptions
     {
+        internal Option<string?> CredentialTypeOption = new Option<string?>(["--azure-credential-type", "-act"], Resources.CredentialTypeOptionDescription).FromAmong(
+            AzureCredentialType.AzureCli,
+            AzureCredentialType.AzurePowerShell,
+            AzureCredentialType.ManagedIdentity,
+            AzureCredentialType.WorkloadIdentity);
         internal Option<string?> ManagedIdentityClientIdOption = new(["--managed-identity-client-id", "-mici"], Resources.ManagedIdentityClientIdOptionDescription);
         internal Option<string?> ManagedIdentityResourceIdOption = new(["--managed-identity-resource-id", "-miri"], Resources.ManagedIdentityResourceIdOptionDescription);
         internal Option<bool?> ObsoleteManagedIdentityOption { get; } = new(["--azure-key-vault-managed-identity", "-kvm"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
@@ -22,6 +27,7 @@ namespace Sign.Cli
 
         internal void AddOptionsToCommand(Command command)
         {
+            command.AddOption(CredentialTypeOption);
             command.AddOption(ManagedIdentityClientIdOption);
             command.AddOption(ManagedIdentityResourceIdOption);
             command.AddOption(ObsoleteManagedIdentityOption);
@@ -70,10 +76,38 @@ namespace Sign.Cli
                 return new ClientSecretCredential(tenantId, clientId, secret);
             }
 
-            DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(context.ParseResult);
+            switch (context.ParseResult.GetValueForOption(CredentialTypeOption))
+            {
+                case AzureCredentialType.AzureCli:
+                    return new AzureCliCredential();
 
-            // CodeQL [SM05137] Sign CLI is not a production service.
-            return new DefaultAzureCredential(options);
+                case AzureCredentialType.AzurePowerShell:
+                    return new AzurePowerShellCredential();
+
+                case AzureCredentialType.ManagedIdentity:
+                    string? managedIdentityClientId = context.ParseResult.GetValueForOption(ManagedIdentityClientIdOption);
+                    if (managedIdentityClientId is not null)
+                    {
+                        return new ManagedIdentityCredential(managedIdentityClientId);
+                    }
+
+                    string? managedIdentityResourceId = context.ParseResult.GetValueForOption(ManagedIdentityResourceIdOption);
+                    if (managedIdentityResourceId is not null)
+                    {
+                        return new ManagedIdentityCredential(new ResourceIdentifier(managedIdentityResourceId));
+                    }
+
+                    return new ManagedIdentityCredential();
+
+                case AzureCredentialType.WorkloadIdentity:
+                    return new WorkloadIdentityCredential();
+
+                default:
+                    DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(context.ParseResult);
+
+                    // CodeQL [SM05137] Sign CLI is not a production service.
+                    return new DefaultAzureCredential(options);
+            }
         }
     }
 }
