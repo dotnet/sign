@@ -17,6 +17,11 @@
         <target state="translated">Heslo pro soubor certifikátu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainersDescription">
+        <source>Sign container contents</source>
+        <target state="new">Sign container contents</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">Zprostředkovatel kryptografických služeb obsahující kontejner privátního klíče. Vyžaduje /k a volitelně /km.</target>

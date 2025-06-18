@@ -17,6 +17,11 @@
         <target state="translated">인증서 파일의 암호입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainersDescription">
+        <source>Sign container contents</source>
+        <target state="new">Sign container contents</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">프라이빗 키 컨테이너를 포함하는 암호화 서비스 공급자입니다. /k 및 선택적으로 /km이 필요합니다.</target>
