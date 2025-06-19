@@ -150,6 +150,6 @@
     <value>Use a machine-level private key container.  (The default is user-level.)</value>
   </data>
   <data name="ContainersDescription" xml:space="preserve">
-    <value>Sign container contents</value>
+    <value>Sign container contents.</value>
   </data>
 </root>
