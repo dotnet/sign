@@ -6,12 +6,12 @@ When using the file list option you must use a path relative to the working dire
 
 Example:
 
-`sign.exe code certificate-store test.pfx -fl F:\Sign\file_sign_list.txt *`
+`sign.exe code certificate-store -cf test.pfx -fl F:\Sign\file_sign_list.txt *`
 
 
 ## File List Format
 
-You can provide a list of string patterns which describe files to include or exclude, or literal file paths. Filtering uses globbing, and supports advanced features such as brace expansion and negation.
+You can provide a list of string patterns (one pattern per line) which describe files to include or exclude, or literal file paths. Filtering uses globbing, and supports advanced features such as brace expansion and negation.
 
 The following is supported:
 
@@ -29,11 +29,11 @@ The following is supported:
 |------------------------|------------------------------------------|------------------------------|
 |`File.appx`             | Include `File.appx`                      | `File.appx`                  |
 |`!Installer.msix`       | Exclude `Installer.msix`                 | excludes `Installer.msix`    |
-|`*.txt`                 | All .txt files in the current directory  | `file.txt`, `notes.txt`      |
-|`**/*.cs`               | All .cs files in all subdirectories      | `src/Program.cs`             |
+|`*.txt`                 | All `.txt` files in the current directory  | `file.txt`, `notes.txt`      |
+|`**/*.cs`               | All `.cs` files in all subdirectories      | `src/Program.cs`             |
 |`docs/{README,HELP}.md` | `docs/README.md` and `docs/HELP.md`      | `docs/README.md`, `docs/HELP.md` |
-|`images/*.{png,jpg}`    | All `.png` and .jpg files in images      | `images/a.png`, `images/b.jpg`   |
+|`images/*.{png,jpg}`    | All `.png` and `.jpg` files in images      | `images/a.png`, `images/b.jpg`   |
 |`file{1..3}.log`        | `file1.log`, `file2.log`, `file3.log`    | `file2.log`                  |
-|`!bin/**`               | Exclude everything under bin directory   | excludes `bin/Debug/app.exe` |
-|`foo/\{bar\}.txt`       | Matches the literal file foo/{bar}.txt   | `foo/{bar}.txt`              |
-|`!**/obj/**`            | Exclude all files in any obj directory   | excludes `foo/obj/out.log`   |
+|`!bin/**`               | Exclude everything under `bin` directory   | excludes `bin/Debug/app.exe` |
+|`foo/\{bar\}.txt`       | Matches the literal file `foo/{bar}.txt`   | `foo/{bar}.txt`              |
+|`!**/obj/**`            | Exclude all files in any `obj` directory   | excludes `foo/obj/out.log`   |
