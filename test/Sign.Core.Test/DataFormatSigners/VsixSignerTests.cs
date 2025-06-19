@@ -117,7 +117,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA384,
                 new Uri("http://timestamp.test"),
                 matcher: null,
-                antiMatcher: null);
+                antiMatcher: null,
+                recurseContainers: true);
 
             using (DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>()))
             using (TemporaryDirectory temporaryDirectory = new(directoryService))

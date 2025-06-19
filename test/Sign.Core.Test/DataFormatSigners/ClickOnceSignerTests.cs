@@ -225,7 +225,8 @@ namespace Sign.Core.Test
                     HashAlgorithmName.SHA256,
                     new Uri("http://timestamp.test"),
                     matcher: null,
-                    antiMatcher: null);
+                    antiMatcher: null,
+                    recurseContainers: true);
 
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
@@ -333,7 +334,8 @@ namespace Sign.Core.Test
                     HashAlgorithmName.SHA256,
                     new Uri("http://timestamp.test"),
                     matcher: null,
-                    antiMatcher: null);
+                    antiMatcher: null,
+                    recurseContainers: true);
 
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
@@ -458,7 +460,8 @@ namespace Sign.Core.Test
                     HashAlgorithmName.SHA256,
                     new Uri("http://timestamp.test"),
                     matcher: null,
-                    antiMatcher: null);
+                    antiMatcher: null,
+                    recurseContainers: true);
 
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
@@ -590,7 +593,8 @@ namespace Sign.Core.Test
                         HashAlgorithmName.SHA256,
                         new Uri("http://timestamp.test"),
                         matcher: null,
-                        antiMatcher: null
+                        antiMatcher: null,
+                        recurseContainers: true
                     );
 
                     manifestSigner.Setup(
