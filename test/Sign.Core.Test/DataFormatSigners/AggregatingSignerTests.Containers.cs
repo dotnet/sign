@@ -61,7 +61,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task SignAsync_WhenRecurseFilesIsFalse_SignsOnlyAppxItself()
+        public async Task SignAsync_WhenRecurseContainersIsFalse_SignsOnlyAppxItself()
         {
             AggregatingSignerTest test = new(
                 $"{AppxBundleContainerName}/nestedcontainer.appx/a.dll",
@@ -115,7 +115,7 @@ namespace Sign.Core.Test
                 new Uri("https://timestamp.test"),
                 matcher,
                 antiMatcher,
-                true);
+                recurseContainers: true);
 
             AggregatingSignerTest test = new(
                 $"{AppxBundleContainerName}/a.dll",
@@ -256,7 +256,7 @@ namespace Sign.Core.Test
                 new Uri("https://timestamp.test"),
                 matcher,
                 antiMatcher,
-                true);
+                recurseContainers: true);
 
             AggregatingSignerTest test = new(
                 $"{AppxContainerName}/a.dll",
@@ -399,7 +399,7 @@ namespace Sign.Core.Test
                 new Uri("https://timestamp.test"),
                 matcher,
                 antiMatcher,
-                true);
+                recurseContainers: true);
 
             AggregatingSignerTest test = new(
                 $"{ZipContainerName}/a.dll",
