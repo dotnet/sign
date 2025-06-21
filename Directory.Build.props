@@ -18,8 +18,7 @@
     <IsShipping>false</IsShipping>
     <LangVersion>Latest</LangVersion>
     <!-- CS8002:  some dependencies are not strong name signed. -->
-    <!-- NU1507:  have not yet onboarded to package source mapping. -->
-    <NoWarn>CS8002;NU1507</NoWarn>
+    <NoWarn>CS8002</NoWarn>
     <Nullable>enable</Nullable>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
