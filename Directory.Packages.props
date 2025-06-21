@@ -7,13 +7,13 @@
     <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.135" />
     <PackageVersion Include="Azure.Core" Version="1.46.2" />
     <PackageVersion Include="Azure.Identity" Version="1.14.0" />
-    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
+    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.7.0" />
     <PackageVersion Include="AzureSign.Core" Version="4.0.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0" />
     <PackageVersion Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" Version="24.0.15760" />
-    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.11.0" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.12.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.6" />
