@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CredentialTypeOptionDescription">
         <source>Azure credential type that will be used. This defaults to DefaultAzureCredential.</source>
-        <target state="new">Azure credential type that will be used. This defaults to DefaultAzureCredential.</target>
+        <target state="translated">將使用的 Azure 認證類型。這會預設為 DefaultAzureCredential。</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">

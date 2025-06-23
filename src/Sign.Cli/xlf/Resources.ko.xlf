@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CredentialTypeOptionDescription">
         <source>Azure credential type that will be used. This defaults to DefaultAzureCredential.</source>
-        <target state="new">Azure credential type that will be used. This defaults to DefaultAzureCredential.</target>
+        <target state="translated">사용할 Azure 자격 증명 형식입니다. 기본값은 DefaultAzureCredential입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DescriptionOptionDescription">
