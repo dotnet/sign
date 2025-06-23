@@ -71,13 +71,13 @@ namespace Sign.Core.Test
                 applicationName: null,
                 publisherName: null,
                 description: null,
-                new Uri("https://description.test"),
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256,
-                new Uri("https://timestamp.test"),
-                null,
-                null,
-                false);
+                descriptionUrl: new Uri("https://description.test"),
+                fileHashAlgorithm: HashAlgorithmName.SHA256,
+                timestampHashAlgorithm: HashAlgorithmName.SHA256,
+                timestampService: new Uri("https://timestamp.test"),
+                matcher: null,
+                antiMatcher: null,
+                recurseContainers: false);
 
             await test.Signer.SignAsync(test.Files, options);
 

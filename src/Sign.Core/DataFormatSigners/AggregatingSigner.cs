@@ -64,7 +64,7 @@ namespace Sign.Core
 
             if (options.RecurseContainers)
             {
-                await SignContainersAsync(files, options);
+                await SignContainerContentsAsync(files, options);
             }
 
             // split by code sign service and fallback to default
@@ -92,7 +92,7 @@ namespace Sign.Core
             await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
         }
 
-        private async Task SignContainersAsync(IEnumerable<FileInfo> files, SignOptions options)
+        private async Task SignContainerContentsAsync(IEnumerable<FileInfo> files, SignOptions options)
         {
             // See if any of them are archives
             List<FileInfo> archives = (from file in files
