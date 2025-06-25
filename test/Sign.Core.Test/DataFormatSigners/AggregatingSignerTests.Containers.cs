@@ -61,6 +61,41 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task SignAsync_WhenRecurseContainersIsFalse_SignsOnlyAppxItself()
+        {
+            AggregatingSignerTest test = new(
+                $"{AppxBundleContainerName}/nestedcontainer.appx/a.dll",
+                $"{AppxBundleContainerName}/nestedcontainer.msix/b.dll");
+
+            SignOptions options = new(
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: new Uri("https://description.test"),
+                fileHashAlgorithm: HashAlgorithmName.SHA256,
+                timestampHashAlgorithm: HashAlgorithmName.SHA256,
+                timestampService: new Uri("https://timestamp.test"),
+                matcher: null,
+                antiMatcher: null,
+                recurseContainers: false);
+
+            await test.Signer.SignAsync(test.Files, options);
+
+            ContainerSpy container = test.Containers[AppxBundleContainerName];
+
+            Assert.Equal(0, container.OpenAsync_CallCount);
+            Assert.Equal(0, container.GetFiles_CallCount);
+            Assert.Equal(0, container.GetFilesWithMatcher_CallCount);
+            Assert.Equal(0, container.SaveAsync_CallCount);
+            Assert.Equal(0, container.Dispose_CallCount);
+
+            // The only file should be the appx bundle container itself, since we did not recurse into it
+            Assert.Collection(
+                test.SignerSpy.SignedFiles,
+                signedFile => Assert.Equal(AppxBundleContainerName, signedFile.Name));
+        }
+
+        [Fact]
         public async Task SignAsync_WhenFileIsAppxBundleContainerAndGlobAndAntiGlobPatternsAreUsed_SignsOnlyMatchingFiles()
         {
             const string fileListContents =
@@ -79,7 +114,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256,
                 new Uri("https://timestamp.test"),
                 matcher,
-                antiMatcher);
+                antiMatcher,
+                recurseContainers: true);
 
             AggregatingSignerTest test = new(
                 $"{AppxBundleContainerName}/a.dll",
@@ -219,7 +255,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256,
                 new Uri("https://timestamp.test"),
                 matcher,
-                antiMatcher);
+                antiMatcher,
+                recurseContainers: true);
 
             AggregatingSignerTest test = new(
                 $"{AppxContainerName}/a.dll",
@@ -361,7 +398,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256,
                 new Uri("https://timestamp.test"),
                 matcher,
-                antiMatcher);
+                antiMatcher,
+                recurseContainers: true);
 
             AggregatingSignerTest test = new(
                 $"{ZipContainerName}/a.dll",

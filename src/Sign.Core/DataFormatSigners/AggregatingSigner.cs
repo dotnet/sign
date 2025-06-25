@@ -62,6 +62,38 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
+            if (options.RecurseContainers)
+            {
+                await SignContainerContentsAsync(files, options);
+            }
+
+            // split by code sign service and fallback to default
+
+            var grouped = (from signer in _signers
+                           from file in files
+                           where signer.CanSign(file)
+                           group file by signer into groups
+                           select groups).ToList();
+
+            // get all files and exclude existing; 
+
+            // This is to catch PE files that don't have the correct extension set
+            var defaultFiles = files.Except(grouped.SelectMany(g => g))
+                                    .Where(_fileMetadataService.IsPortableExecutable)
+                                    .Select(f => new { _defaultSigner.Signer, f })
+                                    .GroupBy(a => a.Signer, k => k.f)
+                                    .SingleOrDefault(); // one group here
+
+            if (defaultFiles != null)
+            {
+                grouped.Add(defaultFiles);
+            }
+
+            await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
+        }
+
+        private async Task SignContainerContentsAsync(IEnumerable<FileInfo> files, SignOptions options)
+        {
             // See if any of them are archives
             List<FileInfo> archives = (from file in files
                                        where _containerProvider.IsZipContainer(file) || _containerProvider.IsNuGetContainer(file)
@@ -178,31 +210,8 @@ namespace Sign.Core
                 containers.ForEach(tz => tz.Dispose());
                 containers.Clear();
             }
-
-            // split by code sign service and fallback to default
-
-            var grouped = (from signer in _signers
-                           from file in files
-                           where signer.CanSign(file)
-                           group file by signer into groups
-                           select groups).ToList();
-
-            // get all files and exclude existing; 
-
-            // This is to catch PE files that don't have the correct extension set
-            var defaultFiles = files.Except(grouped.SelectMany(g => g))
-                                    .Where(_fileMetadataService.IsPortableExecutable)
-                                    .Select(f => new { _defaultSigner.Signer, f })
-                                    .GroupBy(a => a.Signer, k => k.f)
-                                    .SingleOrDefault(); // one group here
-
-            if (defaultFiles != null)
-            {
-                grouped.Add(defaultFiles);
-            }
-
-            await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
         }
+
 
         public void CopySigningDependencies(FileInfo file, DirectoryInfo destination, SignOptions options)
         {

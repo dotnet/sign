@@ -17,6 +17,11 @@
         <target state="translated">Sertifika dosyasının parolası.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainersDescription">
+        <source>Sign container contents</source>
+        <target state="new">Sign container contents</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">Özel anahtar kapsayıcısını içeren Şifreleme Hizmeti Sağlayıcısı. /k ve alternatif olarak /km gerektirir.</target>

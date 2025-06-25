@@ -139,7 +139,8 @@ namespace Sign.Core.Test
                     HashAlgorithmName.SHA256,
                     timestampService: null!,
                     matcher: null,
-                    antiMatcher: null);
+                    antiMatcher: null,
+                    recurseContainers: true);
 
                 X509Certificate2 certificate = _certificateFixture.TrustedCertificate;
 

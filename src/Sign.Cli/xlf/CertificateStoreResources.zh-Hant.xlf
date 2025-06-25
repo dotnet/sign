@@ -17,6 +17,11 @@
         <target state="translated">憑證檔案的密碼。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainersDescription">
+        <source>Sign container contents</source>
+        <target state="new">Sign container contents</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">包含私密金鑰容器的加密服務提供者。需要 /k 並選擇性地 /km。</target>

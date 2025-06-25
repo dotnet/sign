@@ -231,6 +231,7 @@ namespace Sign.Core.Test
                 files,
                 outputFile: outputFile,
                 fileList: null,
+                recurseContainers: true,
                 temporaryDirectory.Directory,
                 applicationName: "a",
                 publisherName: null,

@@ -25,6 +25,7 @@ namespace Sign.Cli
         internal Option<Uri?> DescriptionUrlOption { get; } = new(["--description-url", "-u"], ParseUrl, description: Resources.DescriptionUrlOptionDescription);
         internal Option<HashAlgorithmName> FileDigestOption { get; } = new(["--file-digest", "-fd"], HashAlgorithmParser.ParseHashAlgorithmName, description: Resources.FileDigestOptionDescription);
         internal Option<string?> FileListOption = new(["--file-list", "-fl"], Resources.FileListOptionDescription);
+        internal Option<bool> RecurseContainersOption { get; } = new(["--recurse-containers", "-rc"], getDefaultValue: () => true, description: CertificateStoreResources.ContainersDescription);
         internal Option<int> MaxConcurrencyOption { get; } = new(["--max-concurrency", "-m"], ParseMaxConcurrencyOption, description: Resources.MaxConcurrencyOptionDescription);
         internal Option<string?> OutputOption { get; } = new(["--output", "-o"], Resources.OutputOptionDescription);
         internal Option<string?> PublisherNameOption { get; } = new(["--publisher-name", "-pn"], Resources.PublisherNameOptionDescription);
@@ -51,6 +52,7 @@ namespace Sign.Cli
             AddGlobalOption(OutputOption);
             AddGlobalOption(PublisherNameOption);
             AddGlobalOption(FileListOption);
+            AddGlobalOption(RecurseContainersOption);
             AddGlobalOption(FileDigestOption);
             AddGlobalOption(TimestampUrlOption);
             AddGlobalOption(TimestampDigestOption);
@@ -68,6 +70,7 @@ namespace Sign.Cli
             string? description = context.ParseResult.GetValueForOption(DescriptionOption);
             Uri? descriptionUrl = context.ParseResult.GetValueForOption(DescriptionUrlOption);
             string? fileListFilePath = context.ParseResult.GetValueForOption(FileListOption);
+            bool recurseContainers = context.ParseResult.GetValueForOption(RecurseContainersOption);
             HashAlgorithmName fileHashAlgorithmName = context.ParseResult.GetValueForOption(FileDigestOption);
             HashAlgorithmName timestampHashAlgorithmName = context.ParseResult.GetValueForOption(TimestampDigestOption);
             Uri timestampUrl = context.ParseResult.GetValueForOption(TimestampUrlOption)!;
@@ -179,6 +182,7 @@ namespace Sign.Cli
                 inputFiles,
                 output,
                 fileList,
+                recurseContainers,
                 baseDirectory,
                 applicationName,
                 publisherName,

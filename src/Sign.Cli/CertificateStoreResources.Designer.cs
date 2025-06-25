@@ -88,6 +88,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sign container contents.
+        /// </summary>
+        internal static string ContainersDescription {
+            get {
+                return ResourceManager.GetString("ContainersDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cryptographic Service Provider containing the private key container. Requires /k and optionally /km..
         /// </summary>
         internal static string CspOptionDescription {

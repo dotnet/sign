@@ -13,6 +13,7 @@ namespace Sign.Cli.Test
         internal string? OutputFile { get; private set; }
         internal FileInfo? FileList { get; private set; }
         internal DirectoryInfo? BaseDirectory { get; private set; }
+        internal bool RecurseContainers { get; private set; }
         internal string? ApplicationName { get; private set; }
         internal string? PublisherName { get; private set; }
         internal string? Description { get; private set; }
@@ -32,6 +33,7 @@ namespace Sign.Cli.Test
             IReadOnlyList<FileInfo> inputFiles,
             string? outputFile,
             FileInfo? fileList,
+            bool recurseContainers,
             DirectoryInfo baseDirectory,
             string? applicationName,
             string? publisherName,
@@ -45,6 +47,7 @@ namespace Sign.Cli.Test
             InputFiles = inputFiles;
             OutputFile = outputFile;
             FileList = fileList;
+            RecurseContainers = recurseContainers;
             BaseDirectory = baseDirectory;
             ApplicationName = applicationName;
             PublisherName = publisherName;

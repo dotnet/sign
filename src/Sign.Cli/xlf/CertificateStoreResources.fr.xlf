@@ -17,6 +17,11 @@
         <target state="translated">Mot de passe du fichier du certificat.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainersDescription">
+        <source>Sign container contents</source>
+        <target state="new">Sign container contents</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CspOptionDescription">
         <source>Cryptographic Service Provider containing the private key container. Requires /k and optionally /km.</source>
         <target state="translated">Fournisseur de services de chiffrement contenant le conteneur de clé privée. Nécessite /k et éventuellement /km.</target>
