@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+    <HighEntropyVA>true</HighEntropyVA>
     <Copyright>$(CopyrightNetFoundation)</Copyright>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>embedded</DebugType>
