@@ -5,8 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.CodeSigning.Sdk" Version="0.1.135" />
-    <PackageVersion Include="Azure.Core" Version="1.46.2" />
-    <PackageVersion Include="Azure.Identity" Version="1.14.1" />
+    <PackageVersion Include="Azure.Core" Version="1.47.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.14.2" />
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.8.0" />
     <PackageVersion Include="AzureSign.Core" Version="4.0.1" />
@@ -14,15 +14,15 @@
     <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0" />
     <PackageVersion Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" Version="24.0.15760" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.12.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.7" />
     <!-- Lift this dependency to enable Sign.Core.Test override the version. -->
-    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="9.0.7" />
     <!-- Only use release versions.  Pre-release versions are signed with an untrusted certificate. -->
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4188" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
     <!-- We're staying on 4.18.4 until we migrate to another mocking framework.
          See https://github.com/dotnet/runtime/issues/90222 and https://github.com/devlooped/moq/issues/1374
          for context.   -->
@@ -30,8 +30,8 @@
     <PackageVersion Include="NuGet.Packaging" Version="6.14.0" />
     <PackageVersion Include="NuGet.Protocol" Version="6.14.0" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.6" />
-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.6" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.6" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="9.0.7" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.7" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.7" />
   </ItemGroup>
 </Project>
