@@ -1,10 +1,10 @@
 {
     "tools": {
         "_comment": "Because this affects the runtime environment of Sign CLI *when run from this directory*, the dotnet and runtime properties should reference the latest .NET SDK and runtime versions for Sign CLI's target framework, which is specified in Directory.Build.props.  However, the SDK and runtime versions are currently out of sync because of vulnerabilities in older versions of xcopy-msbuild.  The current version requires .NET 9 SDK.",
-        "dotnet": "9.0.301",
+        "dotnet": "9.0.303",
         "runtimes": {
             "dotnet/x64": [
-                "8.0.17"
+                "8.0.18"
             ]
         },
         "xcopy-msbuild": "17.13.0"
