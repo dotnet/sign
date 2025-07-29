@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="ContainersDescription">
         <source>Sign container contents.</source>
-        <target state="new">Sign container contents.</target>
+        <target state="translated">Firmar el contenido del contenedor.</target>
         <note />
       </trans-unit>
       <trans-unit id="CspOptionDescription">
