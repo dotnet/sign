@@ -60,20 +60,19 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.x
+        dotnet-version: '9.x'
 
     # Install the code signing tool    
     - name: Install Sign CLI tool
-      run: dotnet tool install --tool-path . sign --version 0.9.0-beta.23127.3
+      run: dotnet tool install --tool-path . --prerelease sign
     
     # Login to Azure using a ServicePrincipal configured to authenticate agaist a GitHub Action
     - name: 'Az CLI login'
       uses: azure/login@v1
       with:
         allow-no-subscriptions: true
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }} # This does not need to be a secret and is just a placeholder
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }} # This does not need to be a secret and is just a placeholder
 
     # Run the signing command
     - name: Sign artifacts
@@ -86,9 +85,9 @@ jobs:
         --publisher-name "Contoso"
         --description "One Sign CLI demo"
         --description-url "https://github.com/dotnet/sign"
-        --azure-key-vault-managed-identity true
-        --azure-key-vault-url "${{ secrets.KEY_VAULT_URL }}"
-        --azure-key-vault-certificate "${{ secrets.KEY_VAULT_CERTIFICATE_ID }}"
+        --azure-credential-type "azure-cli"
+        --azure-key-vault-url "${{ secrets.KEY_VAULT_URL }}" # This does not need to be a secret and is just a placeholder
+        --azure-key-vault-certificate "${{ secrets.KEY_VAULT_CERTIFICATE_ID }}" # This does not need to be a secret and is just a placeholder
     
     # Publish the signed packages
     - name: Upload build artifacts
