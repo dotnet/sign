@@ -1,6 +1,6 @@
 # Trusted Signing integration for Sign CLI
 
-This doc explains the usage of theSign CLI with a Trusted Signing account so you can perform code signing using the Trusted Signing provider. See `docs/signing-tool-spec.md` for higher-level background of this tool and the implementation at `src/Sign.SignatureProviders.TrustedSigning` for details.
+This document explains the usage of the Sign CLI with a Trusted Signing account so you can perform code signing using the Trusted Signing provider. See `docs/signing-tool-spec.md` for higher-level background of this tool and the implementation at `src/Sign.SignatureProviders.TrustedSigning` for details.
 
 ## Overview
 
@@ -16,7 +16,7 @@ For more information see the Trusted Signing [setup documentation](https://learn
 ## Prerequisites
 
 - An Azure subscription and a Trusted Signing account with at least one active certificate profile.
-- An identity (user, service principal, or managed identity) with the `Trusted Signing Certificate Profile Signer` permission to perform signing.
+- An identity (user, service principal, or managed identity) that has the `Trusted Signing Certificate Profile Signer` permission to perform signing.
 
 ## How the CLI authenticates
 
@@ -43,10 +43,10 @@ Example — sign a file using your current Azure CLI login (DefaultAzureCredenti
 az login
 
 # Sign a file using Trusted Signing
-sign code trusted-signing \
-  -tse https://<your-trusted-signing-endpoint> \
-  -tsa <your-account-name> \
-  -tscp <your-certificate-profile> \
+sign code trusted-signing `
+  -tse https://<your-trusted-signing-endpoint> `
+  -tsa <your-account-name> `
+  -tscp <your-certificate-profile> `
   C:\path\to\artifact.dll
 ```
 
@@ -56,10 +56,10 @@ Example — service principal (PowerShell session variables; prefer secrets or p
 $env:AZURE_CLIENT_ID = 'your-client-id'
 $env:AZURE_TENANT_ID = 'your-tenant-id'
 
-sign code trusted-signing \
-  -tse https://<your-trusted-signing-endpoint> \
-  -tsa <your-account-name> \
-  -tscp <your-certificate-profile> \
+sign code trusted-signing `
+  -tse https://<your-trusted-signing-endpoint> `
+  -tsa <your-account-name> `
+  -tscp <your-certificate-profile> `
   C:\path\to\artifact.dll
 ```
 
@@ -67,12 +67,12 @@ Example — managed identity (useful for Azure-hosted agents):
 
 ```powershell
 # Use managed identity by selecting the credential type explicitly and, if needed, the client id
-sign code trusted-signing \
-  -tse https://<your-trusted-signing-endpoint> \
-  -tsa <your-account-name> \
-  -tscp <your-certificate-profile> \
-  -act managed-identity \
-  -mici <managed-identity-client-id> \
+sign code trusted-signing `
+  -tse https://<your-trusted-signing-endpoint> `
+  -tsa <your-account-name> `
+  -tscp <your-certificate-profile> `
+  -act managed-identity `
+  -mici <managed-identity-client-id> `
   C:\path\to\artifact.dll
 ```
 
@@ -88,7 +88,7 @@ Notes:
 ## Troubleshooting
 
 - Authentication errors: verify the authentication method (Azure CLI login, environment variables, or managed identity) and that the identity has permission to the Trusted Signing account.
-- Permission errors: ensure your principal has the necessary rights on the Azure Code Signing account and certificate profile. If unsure, contact your Azure admin or the team that provisioned the Trusted Signing account.
+- Permission errors: ensure your principal has the necessary rights on the Trusted Signing account and certificate profile. If unsure, contact your Azure admin or the team that provisioned the Trusted Signing account.
 - Endpoint/profile not found: confirm the exact endpoint URL, account name, and certificate profile name from your Trusted Signing account metadata or onboarding docs.
 - See the [Trusted Signing FAQ](https://learn.microsoft.com/en-us/azure/trusted-signing/faq) for more information.
 
