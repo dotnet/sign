@@ -1,6 +1,6 @@
 # Trusted Signing integration for Sign CLI
 
-This document explains the usage of the Sign CLI with a Trusted Signing account so you can perform code signing using the Trusted Signing provider. See `docs/signing-tool-spec.md` for higher-level background of this tool and the implementation at `src/Sign.SignatureProviders.TrustedSigning` for details.
+This document explains how to use the Sign CLI with a Trusted Signing account to perform code signing using the Trusted Signing provider. See `docs/signing-tool-spec.md` for higher-level background of this tool and the implementation at `src/Sign.SignatureProviders.TrustedSigning` for details.
 
 ## Overview
 
@@ -11,7 +11,7 @@ Key concepts for this provider:
 - Account name: the account within the Trusted Signing service.
 - Certificate profile: the certificate profile configured in the account that will be used to sign.
 
-For more information see the Trusted Signing [setup documentation](https://learn.microsoft.com/en-us/azure/trusted-signing/quickstart).
+For more information, see the Trusted Signing [setup documentation](https://learn.microsoft.com/en-us/azure/trusted-signing/quickstart).
 
 ## Prerequisites
 
@@ -30,7 +30,7 @@ The Trusted Signing subcommand is `sign code trusted-signing` and it requires th
 - `--trusted-signing-account`, `-tsa` : the account name in the Trusted Signing service.
 - `--trusted-signing-certificate-profile`, `-tscp` : the certificate profile name to use for signing.
 
-The Azure authentication options are available on the same command and include `--azure-credential-type` (`-act`) and managed identity options such as `--managed-identity-client-id` (`-mici`). By default the CLI uses DefaultAzureCredential.
+The Azure authentication options are available on the same command and include `--azure-credential-type` (`-act`) and managed identity options such as `--managed-identity-client-id` (`-mici`). By default, the CLI uses DefaultAzureCredential.
 
 ## Examples
 
@@ -77,7 +77,7 @@ sign code trusted-signing `
 ```
 
 Notes:
-- If you omit `-act`, the CLI uses DefaultAzureCredential which already supports Azure CLI, environment variables for service principals, managed identities, and workload identity flows.
+- If you omit `-act`, the CLI uses DefaultAzureCredential, which already supports Azure CLI, environment variables for service principals, managed identities, and workload identity flows.
 - The endpoint URL and exact account/profile names are provided by your Trusted Signing onboarding or Azure portal.
 
 ## CI/CD integration tips
