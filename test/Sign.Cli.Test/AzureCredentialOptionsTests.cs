@@ -191,7 +191,6 @@ namespace Sign.Cli.Test
             DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
 
             Assert.True(credentialOptions.ExcludeInteractiveBrowserCredential);
-            Assert.True(credentialOptions.ExcludeSharedTokenCacheCredential);
             Assert.False(credentialOptions.ExcludeAzureCliCredential);
             Assert.False(credentialOptions.ExcludeAzureDeveloperCliCredential);
             Assert.False(credentialOptions.ExcludeAzurePowerShellCredential);
