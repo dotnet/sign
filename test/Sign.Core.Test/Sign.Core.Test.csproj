@@ -14,6 +14,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <!-- Add an explicit reference to updated Kestrel.Core package version to bring in fix for CVE-2025-55315 -->
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <!-- Microsoft.AspNetCore.Server.Kestrel is old and requires an older version of Microsoft.Extensions.Primitives to function. -->
     <PackageReference Include="Microsoft.Extensions.Primitives" VersionOverride="2.2.0" />
     <PackageReference Include="Moq" />
