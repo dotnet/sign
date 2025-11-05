@@ -4,10 +4,10 @@
     "dotnet": "10.0.100-rc.2.25502.107",
     "runtimes": {
       "dotnet/x64": [
-        "8.0.20"
+        "8.0.21"
       ]
     },
-    "xcopy-msbuild": "17.13.0"
+    "xcopy-msbuild": "17.14.16"
   },
   "sdk": {
     "version": "10.0.100-rc.2.25502.107",
