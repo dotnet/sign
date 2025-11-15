@@ -7,7 +7,7 @@
         "8.0.22"
       ]
     },
-    "xcopy-msbuild": "17.14.16"
+    "xcopy-msbuild": "18.0.0"
   },
   "sdk": {
     "version": "10.0.100",
