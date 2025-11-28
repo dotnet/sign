@@ -31,7 +31,7 @@ namespace Sign.Cli
                     return HashAlgorithmName.SHA512;
 
                 default:
-                    result.ErrorMessage = string.Format(CultureInfo.CurrentCulture, Resources.InvalidDigestValue, $"--{result.Argument.Name}");
+                    result.AddError(string.Format(CultureInfo.CurrentCulture, Resources.InvalidDigestValue, result.Argument.Name));
 
                     return HashAlgorithmName.SHA256;
             }

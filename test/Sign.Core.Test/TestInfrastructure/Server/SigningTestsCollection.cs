@@ -6,7 +6,7 @@ using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
-    [CollectionDefinition(Name)]
+    [CollectionDefinition(Name, DisableParallelization = true)]
     public sealed class SigningTestsCollection :
         ICollectionFixture<CertificatesFixture>,
         ICollectionFixture<TrustedCertificateFixture>,

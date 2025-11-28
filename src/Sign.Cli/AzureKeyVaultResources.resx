@@ -129,6 +129,9 @@
   <data name="InvalidKeyVaultUrl" xml:space="preserve">
     <value>URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</value>
   </data>
+  <data name="InvalidUrlValue" xml:space="preserve">
+    <value>URL must be an absolute HTTPS URL to an Azure Key Vault.</value>
+  </data>
   <data name="UrlOptionDescription" xml:space="preserve">
     <value>URL to an Azure Key Vault.</value>
   </data>

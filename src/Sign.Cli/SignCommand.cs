@@ -7,33 +7,33 @@ using Sign.Core;
 
 namespace Sign.Cli
 {
-    internal sealed class SignCommand : Command
+    internal sealed class SignCommand : RootCommand
     {
         internal SignCommand(IServiceProviderFactory? serviceProviderFactory = null)
-            : base("sign", Resources.SignCommandDescription)
+            : base(Resources.SignCommandDescription)
         {
             CodeCommand codeCommand = new();
             serviceProviderFactory ??= new ServiceProviderFactory();
 
-            AddCommand(codeCommand);
+            Subcommands.Add(codeCommand);
 
             AzureKeyVaultCommand azureKeyVaultCommand = new(
                 codeCommand,
                 serviceProviderFactory);
 
-            codeCommand.AddCommand(azureKeyVaultCommand);
+            codeCommand.Subcommands.Add(azureKeyVaultCommand);
 
             CertificateStoreCommand certificateStoreCommand = new(
                 codeCommand,
                 serviceProviderFactory);
 
-            codeCommand.AddCommand(certificateStoreCommand);
+            codeCommand.Subcommands.Add(certificateStoreCommand);
 
             TrustedSigningCommand trustedSigningCommand = new(
                 codeCommand,
                 serviceProviderFactory);
 
-            codeCommand.AddCommand(trustedSigningCommand);
+            codeCommand.Subcommands.Add(trustedSigningCommand);
         }
     }
 }

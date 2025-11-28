@@ -1,11 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
-using System.CommandLine.Parsing;
 using Azure.Core;
 using Azure.Identity;
 
@@ -13,40 +10,78 @@ namespace Sign.Cli
 {
     internal sealed class AzureCredentialOptions
     {
-        internal Option<string?> CredentialTypeOption = new Option<string?>(["--azure-credential-type", "-act"], Resources.CredentialTypeOptionDescription).FromAmong(
-            AzureCredentialType.AzureCli,
-            AzureCredentialType.AzurePowerShell,
-            AzureCredentialType.ManagedIdentity,
-            AzureCredentialType.WorkloadIdentity);
-        internal Option<string?> ManagedIdentityClientIdOption = new(["--managed-identity-client-id", "-mici"], Resources.ManagedIdentityClientIdOptionDescription);
-        internal Option<string?> ManagedIdentityResourceIdOption = new(["--managed-identity-resource-id", "-miri"], Resources.ManagedIdentityResourceIdOptionDescription);
-        internal Option<bool?> ObsoleteManagedIdentityOption { get; } = new(["--azure-key-vault-managed-identity", "-kvm"], Resources.ManagedIdentityOptionDescription) { IsHidden = true };
-        internal Option<string?> ObsoleteTenantIdOption { get; } = new(["--azure-key-vault-tenant-id", "-kvt"], Resources.TenantIdOptionDescription) { IsHidden = true };
-        internal Option<string?> ObsoleteClientIdOption { get; } = new(["--azure-key-vault-client-id", "-kvi"], Resources.ClientIdOptionDescription) { IsHidden = true };
-        internal Option<string?> ObsoleteClientSecretOption { get; } = new(["--azure-key-vault-client-secret", "-kvs"], Resources.ClientSecretOptionDescription) { IsHidden = true };
+        internal Option<string?> CredentialTypeOption { get; }
+        internal Option<string?> ManagedIdentityClientIdOption { get; }
+        internal Option<string?> ManagedIdentityResourceIdOption { get; }
+        internal Option<bool?> ObsoleteManagedIdentityOption { get; }
+        internal Option<string?> ObsoleteTenantIdOption { get; }
+        internal Option<string?> ObsoleteClientIdOption { get; }
+        internal Option<string?> ObsoleteClientSecretOption { get; }
+
+        internal AzureCredentialOptions()
+        {
+            CredentialTypeOption = new Option<string?>("--azure-credential-type", "-act")
+            {
+                Description = Resources.CredentialTypeOptionDescription
+            };
+            CredentialTypeOption.AcceptOnlyFromAmong(
+                AzureCredentialType.AzureCli,
+                AzureCredentialType.AzurePowerShell,
+                AzureCredentialType.ManagedIdentity,
+                AzureCredentialType.WorkloadIdentity);
+
+            ManagedIdentityClientIdOption = new Option<string?>("--managed-identity-client-id", "-mici")
+            {
+                Description = Resources.ManagedIdentityClientIdOptionDescription
+            };
+            ManagedIdentityResourceIdOption = new Option<string?>("--managed-identity-resource-id", "-miri")
+            {
+                Description = Resources.ManagedIdentityResourceIdOptionDescription
+            };
+            ObsoleteManagedIdentityOption = new Option<bool?>("--azure-key-vault-managed-identity", "-kvm")
+            {
+                Description = Resources.ManagedIdentityOptionDescription,
+                Hidden = true
+            };
+            ObsoleteTenantIdOption = new Option<string?>("--azure-key-vault-tenant-id", "-kvt")
+            {
+                Description = Resources.TenantIdOptionDescription,
+                Hidden = true
+            };
+            ObsoleteClientIdOption = new Option<string?>("--azure-key-vault-client-id", "-kvi")
+            {
+                Description = Resources.ClientIdOptionDescription,
+                Hidden = true
+            };
+            ObsoleteClientSecretOption = new Option<string?>("--azure-key-vault-client-secret", "-kvs")
+            {
+                Description = Resources.ClientSecretOptionDescription,
+                Hidden = true
+            };
+        }
 
         internal void AddOptionsToCommand(Command command)
         {
-            command.AddOption(CredentialTypeOption);
-            command.AddOption(ManagedIdentityClientIdOption);
-            command.AddOption(ManagedIdentityResourceIdOption);
-            command.AddOption(ObsoleteManagedIdentityOption);
-            command.AddOption(ObsoleteTenantIdOption);
-            command.AddOption(ObsoleteClientIdOption);
-            command.AddOption(ObsoleteClientSecretOption);
+            command.Options.Add(CredentialTypeOption);
+            command.Options.Add(ManagedIdentityClientIdOption);
+            command.Options.Add(ManagedIdentityResourceIdOption);
+            command.Options.Add(ObsoleteManagedIdentityOption);
+            command.Options.Add(ObsoleteTenantIdOption);
+            command.Options.Add(ObsoleteClientIdOption);
+            command.Options.Add(ObsoleteClientSecretOption);
         }
 
         internal DefaultAzureCredentialOptions CreateDefaultAzureCredentialOptions(ParseResult parseResult)
         {
             DefaultAzureCredentialOptions options = new();
 
-            string? managedIdentityClientId = parseResult.GetValueForOption(ManagedIdentityClientIdOption);
+            string? managedIdentityClientId = parseResult.GetValue(ManagedIdentityClientIdOption);
             if (managedIdentityClientId is not null)
             {
                 options.ManagedIdentityClientId = managedIdentityClientId;
             }
 
-            string? managedIdentityResourceId = parseResult.GetValueForOption(ManagedIdentityResourceIdOption);
+            string? managedIdentityResourceId = parseResult.GetValue(ManagedIdentityResourceIdOption);
             if (managedIdentityResourceId is not null)
             {
                 options.ManagedIdentityResourceId = new ResourceIdentifier(managedIdentityResourceId);
@@ -55,28 +90,28 @@ namespace Sign.Cli
             return options;
         }
 
-        internal TokenCredential? CreateTokenCredential(InvocationContext context)
+        internal TokenCredential? CreateTokenCredential(ParseResult parseResult)
         {
-            bool? useManagedIdentity = context.ParseResult.GetValueForOption(ObsoleteManagedIdentityOption);
+            bool? useManagedIdentity = parseResult.GetValue(ObsoleteManagedIdentityOption);
 
             if (useManagedIdentity is not null)
             {
-                context.Console.Out.WriteLine(Resources.ManagedIdentityOptionObsolete);
+                Console.Out.WriteLine(Resources.ManagedIdentityOptionObsolete);
             }
 
-            string? tenantId = context.ParseResult.GetValueForOption(ObsoleteTenantIdOption);
-            string? clientId = context.ParseResult.GetValueForOption(ObsoleteClientIdOption);
-            string? secret = context.ParseResult.GetValueForOption(ObsoleteClientSecretOption);
+            string? tenantId = parseResult.GetValue(ObsoleteTenantIdOption);
+            string? clientId = parseResult.GetValue(ObsoleteClientIdOption);
+            string? secret = parseResult.GetValue(ObsoleteClientSecretOption);
 
             if (!string.IsNullOrEmpty(tenantId) &&
                 !string.IsNullOrEmpty(clientId) &&
                 !string.IsNullOrEmpty(secret))
             {
-                context.Console.Out.WriteLine(Resources.ClientSecretOptionsObsolete);
+                Console.Out.WriteLine(Resources.ClientSecretOptionsObsolete);
                 return new ClientSecretCredential(tenantId, clientId, secret);
             }
 
-            switch (context.ParseResult.GetValueForOption(CredentialTypeOption))
+            switch (parseResult.GetValue(CredentialTypeOption))
             {
                 case AzureCredentialType.AzureCli:
                     return new AzureCliCredential();
@@ -85,13 +120,13 @@ namespace Sign.Cli
                     return new AzurePowerShellCredential();
 
                 case AzureCredentialType.ManagedIdentity:
-                    string? managedIdentityClientId = context.ParseResult.GetValueForOption(ManagedIdentityClientIdOption);
+                    string? managedIdentityClientId = parseResult.GetValue(ManagedIdentityClientIdOption);
                     if (managedIdentityClientId is not null)
                     {
                         return new ManagedIdentityCredential(managedIdentityClientId);
                     }
 
-                    string? managedIdentityResourceId = context.ParseResult.GetValueForOption(ManagedIdentityResourceIdOption);
+                    string? managedIdentityResourceId = parseResult.GetValue(ManagedIdentityResourceIdOption);
                     if (managedIdentityResourceId is not null)
                     {
                         return new ManagedIdentityCredential(new ResourceIdentifier(managedIdentityResourceId));
@@ -103,7 +138,7 @@ namespace Sign.Cli
                     return new WorkloadIdentityCredential();
 
                 default:
-                    DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(context.ParseResult);
+                    DefaultAzureCredentialOptions options = CreateDefaultAzureCredentialOptions(parseResult);
 
                     // CodeQL [SM05137] Sign CLI is not a production service.
                     return new DefaultAzureCredential(options);

@@ -22,6 +22,11 @@
         <target state="translated">URL은 프로토콜과 호스트만 포함해야 합니다. (예: https://&lt;vault-name&gt;.vault.azure.net/)</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidUrlValue">
+        <source>URL must be an absolute HTTPS URL to an Azure Key Vault.</source>
+        <target state="new">URL must be an absolute HTTPS URL to an Azure Key Vault.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UrlOptionDescription">
         <source>URL to an Azure Key Vault.</source>
         <target state="translated">Azure Key Vault에 대한 URL입니다.</target>

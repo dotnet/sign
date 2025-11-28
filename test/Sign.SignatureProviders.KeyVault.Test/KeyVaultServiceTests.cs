@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Sign.TestInfrastructure;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.SignatureProviders.KeyVault.Test
 {
