@@ -158,7 +158,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 .Setup(_ => _.WaitForCompletion(default))
                 .Returns(response.Object);
 
-            _client.Setup(_ => _.StartSign(AccountName, CertificateProfileName, It.IsAny<SignRequest>(), null, null, default))
+            _client.Setup(_ => _.StartSign(AccountName, CertificateProfileName, It.IsAny<SignRequest>(), null, null, null, default))
                     .Returns(operation.Object);
 
             var result = rsa.SignHash(hash, hashAlgorithmName, padding);
@@ -169,6 +169,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 AccountName,
                 CertificateProfileName,
                 It.Is<SignRequest>(request => request.SignatureAlgorithm == expectedSignatureAlgorithm && ReferenceEquals(request.Digest, hash)),
+                null,
                 null,
                 null,
                 default), Times.Once());

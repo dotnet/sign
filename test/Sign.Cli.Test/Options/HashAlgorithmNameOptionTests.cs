@@ -3,7 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Security.Cryptography;
 
 namespace Sign.Cli.Test
@@ -56,7 +55,7 @@ namespace Sign.Cli.Test
         public void Option_WhenOptionIsMissing_HasDefaultValue()
         {
             ParseResult result = Parse();
-            HashAlgorithmName value = result.GetValueForOption(Option);
+            HashAlgorithmName value = result.GetValue(Option);
 
             Assert.Equal(HashAlgorithmName.SHA256, value);
         }

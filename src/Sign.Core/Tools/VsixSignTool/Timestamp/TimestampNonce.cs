@@ -19,7 +19,7 @@ namespace Sign.Core.Timestamp
         {
             var nonce = new byte[nonceSize];
 #if NET
-                RandomNumberGenerator.Fill(nonce);
+            RandomNumberGenerator.Fill(nonce);
 #else
             using (var rng = RandomNumberGenerator.Create())
             {

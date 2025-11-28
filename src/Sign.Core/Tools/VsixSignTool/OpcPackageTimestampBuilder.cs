@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using Sign.Core.Timestamp;
 using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Linq;
+using Sign.Core.Timestamp;
 
 namespace Sign.Core
 {

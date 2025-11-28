@@ -121,7 +121,7 @@ namespace Sign.Core
         {
             XName TranslateToElementName(OpcContentTypeMode mode)
             {
-                switch(mode)
+                switch (mode)
                 {
                     case OpcContentTypeMode.Default:
                         return _opcContentTypeNamespace + "Default";
@@ -135,7 +135,7 @@ namespace Sign.Core
             var document = new XDocument();
             var root = new XElement(_opcContentTypeNamespace + "Types");
 
-            foreach(var contentType in _contentTypes)
+            foreach (OpcContentType contentType in _contentTypes)
             {
                 var element = new XElement(TranslateToElementName(contentType.Mode));
                 element.SetAttributeValue("Extension", contentType.Extension);

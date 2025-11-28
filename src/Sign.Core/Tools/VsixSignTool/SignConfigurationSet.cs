@@ -46,6 +46,5 @@ namespace Sign.Core
         /// An <see cref="X509Certificate2"/> that contains the public key and certificate used to embed in the signature.
         /// </summary>
         public X509Certificate2 PublicCertificate { get; }
-        
     }
 }

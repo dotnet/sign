@@ -21,7 +21,7 @@ namespace Sign.Core
         public HashAlgorithmInfo(HashAlgorithmName name)
         {
             Name = name;
-            
+
             if (name == HashAlgorithmName.SHA256)
             {
                 XmlDSigIdentifier = OpcKnownUris.HashAlgorithms.Sha256DigestUri;
