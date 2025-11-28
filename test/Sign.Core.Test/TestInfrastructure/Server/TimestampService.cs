@@ -116,7 +116,7 @@ namespace Sign.Core.Test
             }
         }
 
-        public override Task RespondAsync(HttpContext context)
+        public override async Task RespondAsync(HttpContext context)
         {
             RequestAndResponse reqAndResp = new();
 
@@ -129,7 +129,7 @@ namespace Sign.Core.Test
                     context.Response.StatusCode = 400;
                     reqAndResp.ResponseStatus = 400;
 
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 byte[] bytes = ReadRequestBody(context.Request);
@@ -141,7 +141,7 @@ namespace Sign.Core.Test
                     context.Response.StatusCode = 400;
                     reqAndResp.ResponseStatus = 400;
 
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 reqAndResp.Request = request;
@@ -180,47 +180,45 @@ namespace Sign.Core.Test
             }
             finally
             {
-                Write(reqAndResp);
+                await WriteAsync(reqAndResp);
             }
-
-            return Task.CompletedTask;
         }
 
-        private void Write(RequestAndResponse reqAndResp)
+        private async Task WriteAsync(RequestAndResponse reqAndResp)
         {
             string filePath = Path.Combine(
                 _temporaryDirectory.Directory.FullName,
                 $"TimestampServer_{DateTimeOffset.UtcNow:yyyyMMdd-HHmmss.fffffffZ}_{Guid.NewGuid():N}.txt");
             FileInfo file = new(filePath);
 
-            using (FileStream stream = file.OpenWrite())
-            using (StreamWriter writer = new(stream))
+            await using (FileStream stream = file.OpenWrite())
+            await using (StreamWriter writer = new(stream))
             {
-                writer.Write($"Request Content-Type:  ");
-                writer.WriteLine(reqAndResp.RequestContentType);
-                writer.Write($"Request body:  ");
-                writer.WriteLine(reqAndResp.RequestBody);
+                await writer.WriteAsync($"Request Content-Type:  ");
+                await writer.WriteLineAsync(reqAndResp.RequestContentType);
+                await writer.WriteAsync($"Request body:  ");
+                await writer.WriteLineAsync(reqAndResp.RequestBody);
 
                 if (reqAndResp.Request is not null)
                 {
-                    writer.Write($"Request version:  ");
-                    writer.WriteLine(reqAndResp.Request.Version);
-                    writer.Write($"Request hash algorithm OID:  ");
-                    writer.WriteLine(reqAndResp.Request.HashAlgorithmId.Value);
-                    writer.Write($"Request requested policy OID:  ");
-                    writer.WriteLine(reqAndResp.Request.RequestedPolicyId?.Value);
-                    writer.Write($"Request request signer certificate:  ");
-                    writer.WriteLine(reqAndResp.Request.RequestSignerCertificate);
-                    writer.Write($"Request has extensions:  ");
-                    writer.WriteLine(reqAndResp.Request.HasExtensions);
+                    await writer.WriteAsync($"Request version:  ");
+                    await writer.WriteLineAsync(reqAndResp.Request.Version.ToString());
+                    await writer.WriteAsync($"Request hash algorithm OID:  ");
+                    await writer.WriteLineAsync(reqAndResp.Request.HashAlgorithmId.Value);
+                    await writer.WriteAsync($"Request requested policy OID:  ");
+                    await writer.WriteLineAsync(reqAndResp.Request.RequestedPolicyId?.Value);
+                    await writer.WriteAsync($"Request request signer certificate:  ");
+                    await writer.WriteLineAsync(reqAndResp.Request.RequestSignerCertificate.ToString());
+                    await writer.WriteAsync($"Request has extensions:  ");
+                    await writer.WriteLineAsync(reqAndResp.Request.HasExtensions.ToString());
                 }
 
-                writer.Write($"Response status:  ");
-                writer.WriteLine(reqAndResp.ResponseStatus);
-                writer.Write($"Response body:  ");
-                writer.WriteLine(reqAndResp.ResponseBody);
-                writer.Write($"Exception:  ");
-                writer.WriteLine(reqAndResp.Exception);
+                await writer.WriteAsync($"Response status:  ");
+                await writer.WriteLineAsync(reqAndResp.ResponseStatus?.ToString());
+                await writer.WriteAsync($"Response body:  ");
+                await writer.WriteLineAsync(reqAndResp.ResponseBody);
+                await writer.WriteAsync($"Exception:  ");
+                await writer.WriteLineAsync(reqAndResp.Exception?.ToString());
             }
         }
 
