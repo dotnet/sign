@@ -1,12 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Completions;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Azure.Core;
 using Azure.Identity;
 using Moq;
@@ -18,12 +14,15 @@ namespace Sign.Cli.Test
     {
         private readonly AzureCredentialOptions _options;
         private readonly AzureKeyVaultCommand _command;
-        private readonly Parser _parser;
+        private readonly RootCommand _rootCommand;
 
         public AzureCredentialOptionsTests()
         {
-            _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
-            _parser = new CommandLineBuilder(_command).Build();
+            CodeCommand codeCommand = new();
+            _command = new(codeCommand, Mock.Of<IServiceProviderFactory>());
+            _rootCommand = new RootCommand();
+            _rootCommand.Subcommands.Add(codeCommand);
+            codeCommand.Subcommands.Add(_command);
             _options = _command.AzureCredentialOptions;
         }
 
@@ -36,19 +35,28 @@ namespace Sign.Cli.Test
         [Fact]
         public void CredentialTypeOption_Always_IsNotRequired()
         {
-            Assert.False(_options.CredentialTypeOption.IsRequired);
+            Assert.False(_options.CredentialTypeOption.Required);
         }
 
         [Fact]
         public void CredentialTypeOption_Always_HasCorrectCompletions()
         {
-            CompletionItem[] completions = [.. _options.CredentialTypeOption.GetCompletions()];
+            // Verify valid values are accepted
+            ParseResult result1 = _rootCommand.Parse("code azure-key-vault --azure-key-vault-url https://test --azure-key-vault-certificate cert --azure-credential-type azure-cli test.dll");
+            Assert.Empty(result1.Errors);
 
-            Assert.Equal(4, completions.Length);
-            Assert.Equal("azure-cli", completions[0].Label);
-            Assert.Equal("azure-powershell", completions[1].Label);
-            Assert.Equal("managed-identity", completions[2].Label);
-            Assert.Equal("workload-identity", completions[3].Label);
+            ParseResult result2 = _rootCommand.Parse("code azure-key-vault --azure-key-vault-url https://test --azure-key-vault-certificate cert --azure-credential-type azure-powershell test.dll");
+            Assert.Empty(result2.Errors);
+
+            ParseResult result3 = _rootCommand.Parse("code azure-key-vault --azure-key-vault-url https://test --azure-key-vault-certificate cert --azure-credential-type managed-identity test.dll");
+            Assert.Empty(result3.Errors);
+
+            ParseResult result4 = _rootCommand.Parse("code azure-key-vault --azure-key-vault-url https://test --azure-key-vault-certificate cert --azure-credential-type workload-identity test.dll");
+            Assert.Empty(result4.Errors);
+
+            // Verify invalid values are rejected
+            ParseResult result5 = _rootCommand.Parse("code azure-key-vault --azure-key-vault-url https://test --azure-key-vault-certificate cert --azure-credential-type invalid test.dll");
+            Assert.NotEmpty(result5.Errors);
         }
 
         [Fact]
@@ -60,7 +68,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void ManagedIdentityClientIdOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ManagedIdentityClientIdOption.IsRequired);
+            Assert.False(_options.ManagedIdentityClientIdOption.Required);
         }
 
         [Fact]
@@ -72,7 +80,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void ManagedIdentityResourceIdOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ManagedIdentityResourceIdOption.IsRequired);
+            Assert.False(_options.ManagedIdentityResourceIdOption.Required);
         }
 
         [Fact]
@@ -84,13 +92,13 @@ namespace Sign.Cli.Test
         [Fact]
         public void ObsoleteManagedIdentityOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ObsoleteManagedIdentityOption.IsRequired);
+            Assert.False(_options.ObsoleteManagedIdentityOption.Required);
         }
 
         [Fact]
         public void ObsoleteManagedIdentityOption_Always_IsHidden()
         {
-            Assert.True(_options.ObsoleteManagedIdentityOption.IsHidden);
+            Assert.True(_options.ObsoleteManagedIdentityOption.Hidden);
         }
 
         [Fact]
@@ -102,13 +110,13 @@ namespace Sign.Cli.Test
         [Fact]
         public void ObsoleteTenantIdOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ObsoleteTenantIdOption.IsRequired);
+            Assert.False(_options.ObsoleteTenantIdOption.Required);
         }
 
         [Fact]
         public void ObsoleteTenantIdOption_Always_IsHidden()
         {
-            Assert.True(_options.ObsoleteTenantIdOption.IsHidden);
+            Assert.True(_options.ObsoleteTenantIdOption.Hidden);
         }
 
         [Fact]
@@ -120,13 +128,13 @@ namespace Sign.Cli.Test
         [Fact]
         public void ObsoleteClientIdOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ObsoleteClientIdOption.IsRequired);
+            Assert.False(_options.ObsoleteClientIdOption.Required);
         }
 
         [Fact]
         public void ObsoleteClientIdOption_Always_IsHidden()
         {
-            Assert.True(_options.ObsoleteClientIdOption.IsHidden);
+            Assert.True(_options.ObsoleteClientIdOption.Hidden);
         }
 
         [Fact]
@@ -138,13 +146,13 @@ namespace Sign.Cli.Test
         [Fact]
         public void ObsoleteClientSecretOption_Always_IsNotRequired()
         {
-            Assert.False(_options.ObsoleteClientSecretOption.IsRequired);
+            Assert.False(_options.ObsoleteClientSecretOption.Required);
         }
 
         [Fact]
         public void ObsoleteClientSecretOption_Always_IsHidden()
         {
-            Assert.True(_options.ObsoleteClientSecretOption.IsHidden);
+            Assert.True(_options.ObsoleteClientSecretOption.Hidden);
         }
 
         [Fact]
@@ -166,7 +174,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateDefaultAzureCredentialOptions_WhenManagedIdentityClientIdIsSpecified_ManagedIdentityClientIdIsSet()
         {
-            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -mici b c");
+            ParseResult result = _rootCommand.Parse(@"code azure-key-vault -kvu https://keyvault.test -kvc a -mici b c");
 
             DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
 
@@ -176,7 +184,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateDefaultAzureCredentialOptions_WhenManagedIdentityResourceIdIsSpecified_ManagedIdentityResourceIdIsSet()
         {
-            ParseResult result = _parser.Parse(@"azure-key-vault -kvu https://keyvault.test -kvc a -miri b c");
+            ParseResult result = _rootCommand.Parse(@"code azure-key-vault -kvu https://keyvault.test -kvc a -miri b c");
 
             DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
 
@@ -186,7 +194,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateDefaultAzureCredentialOptions_WhenNoOptionsAreSpecified_ExcludeOptionsHaveTheCorrectDefaultValues()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a b");
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a b");
 
             DefaultAzureCredentialOptions credentialOptions = _options.CreateDefaultAzureCredentialOptions(result);
 
@@ -203,10 +211,9 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenClientSecretOptionsAreSet_ReturnsClientSecretCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e");
-            InvocationContext invocationContext = new(result);
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e");
 
-            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(result);
 
             Assert.IsType<ClientSecretCredential>(tokenCredential);
         }
@@ -214,10 +221,9 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenCredentialTypeIsAzureCli_ReturnsAzureCliCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act azure-cli b");
-            InvocationContext invocationContext = new(result);
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a -act azure-cli b");
 
-            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(result);
 
             Assert.IsType<AzureCliCredential>(tokenCredential);
         }
@@ -225,10 +231,9 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenCredentialTypeIsAzurePowerShell_ReturnsAzurePowerShellCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act azure-powershell b");
-            InvocationContext invocationContext = new(result);
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a -act azure-powershell b");
 
-            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(result);
 
             Assert.IsType<AzurePowerShellCredential>(tokenCredential);
         }
@@ -236,10 +241,9 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenCredentialTypeIsManagedIdentity_ReturnsManagedIdentityCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act managed-identity b");
-            InvocationContext invocationContext = new(result);
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a -act managed-identity b");
 
-            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(result);
 
             Assert.IsType<ManagedIdentityCredential>(tokenCredential);
         }
@@ -247,10 +251,9 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenCredentialTypeIsWorkloadIdentity_ReturnsWorkloadIdentityCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a -act workload-identity b");
-            InvocationContext invocationContext = new(result);
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a -act workload-identity b");
 
-            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(result);
 
             Assert.IsType<WorkloadIdentityCredential>(tokenCredential);
         }
@@ -258,10 +261,9 @@ namespace Sign.Cli.Test
         [Fact]
         public void CreateTokenCredential_WhenCredentialTypeIsNotSet_ReturnsDefaultAzureCredential()
         {
-            ParseResult result = _parser.Parse("azure-key-vault -kvu https://keyvault.test -kvc a b");
-            InvocationContext invocationContext = new(result);
+            ParseResult result = _rootCommand.Parse("code azure-key-vault -kvu https://keyvault.test -kvc a b");
 
-            TokenCredential? tokenCredential = _options.CreateTokenCredential(invocationContext);
+            TokenCredential? tokenCredential = _options.CreateTokenCredential(result);
 
             Assert.IsType<DefaultAzureCredential>(tokenCredential);
         }

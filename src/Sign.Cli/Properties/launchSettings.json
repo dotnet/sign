@@ -2,7 +2,7 @@
   "profiles": {
     "Sign.Cli": {
       "commandName": "Project",
-      "commandLineArgs": "code certificate-store -cf F:\\git\\Entropy\\MakeTestCert\\c6a45139645123ddfd0cab9789473d4cdd26782b.pfx -cfp 076281aa18694128ce8571fdfb37ba454fd5c8981aac1708d13c204091e1b861 -t http://timestamp.acs.microsoft.com -b F:\\git\\NuGet.Client\\artifacts\\nupkgs -o _signed.NuGet.Common.6.13.0-zlocal.32767.nupkg -m 1 -v trace -fl F:\\git\\sign\\filelist.txt *"
+      "commandLineArgs": "code certificate-store -b C:\\Trash -v trace -cf C:\\git\\Entropy\\MakeTestCert\\af994810f3d0d01b5f6f37e8be085e1a537d40c9.pfx -cfp 0695cf4875ae67f2194ea4c2cbcdcb1327c6874d5949321c4d8028bed308b7a6 MakeTestCert.dll -o MakeTestCert.signed.dll"
     }
   }
 }

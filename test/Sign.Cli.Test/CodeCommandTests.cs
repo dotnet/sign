@@ -19,7 +19,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void BaseDirectoryOption_Always_IsNotRequired()
         {
-            Assert.False(_command.BaseDirectoryOption.IsRequired);
+            Assert.False(_command.BaseDirectoryOption.Required);
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void DescriptionOption_Always_IsNotRequired()
         {
-            Assert.False(_command.DescriptionOption.IsRequired);
+            Assert.False(_command.DescriptionOption.Required);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void DescriptionUrlOption_Always_IsNotRequired()
         {
-            Assert.False(_command.DescriptionUrlOption.IsRequired);
+            Assert.False(_command.DescriptionUrlOption.Required);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void FileDigestOption_Always_IsNotRequired()
         {
-            Assert.False(_command.FileDigestOption.IsRequired);
+            Assert.False(_command.FileDigestOption.Required);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void FileListOption_Always_IsNotRequired()
         {
-            Assert.False(_command.FileListOption.IsRequired);
+            Assert.False(_command.FileListOption.Required);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void MaxConcurrencyOption_Always_IsNotRequired()
         {
-            Assert.False(_command.MaxConcurrencyOption.IsRequired);
+            Assert.False(_command.MaxConcurrencyOption.Required);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void OutputOption_Always_IsNotRequired()
         {
-            Assert.False(_command.OutputOption.IsRequired);
+            Assert.False(_command.OutputOption.Required);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void PublisherNameOption_Always_IsNotRequired()
         {
-            Assert.False(_command.PublisherNameOption.IsRequired);
+            Assert.False(_command.PublisherNameOption.Required);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void TimestampDigestOption_Always_IsNotRequired()
         {
-            Assert.False(_command.TimestampDigestOption.IsRequired);
+            Assert.False(_command.TimestampDigestOption.Required);
         }
 
         [Fact]
@@ -127,7 +127,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void TimestampUrlOption_Always_IsNotRequired()
         {
-            Assert.False(_command.TimestampUrlOption.IsRequired);
+            Assert.False(_command.TimestampUrlOption.Required);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void VerbosityOption_Always_IsNotRequired()
         {
-            Assert.False(_command.VerbosityOption.IsRequired);
+            Assert.False(_command.VerbosityOption.Required);
         }
     }
 }

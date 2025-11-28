@@ -1,10 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Extensions;
 using Azure.Core;
@@ -18,12 +16,12 @@ namespace Sign.Cli
 {
     internal sealed class TrustedSigningCommand : Command
     {
-        internal Option<Uri> EndpointOption { get; } = new(["--trusted-signing-endpoint", "-tse"], TrustedSigningResources.EndpointOptionDescription);
-        internal Option<string> AccountOption { get; } = new(["--trusted-signing-account", "-tsa"], TrustedSigningResources.AccountOptionDescription);
-        internal Option<string> CertificateProfileOption { get; } = new(["--trusted-signing-certificate-profile", "-tscp"], TrustedSigningResources.CertificateProfileOptionDescription);
+        internal Option<Uri> EndpointOption { get; }
+        internal Option<string> AccountOption { get; }
+        internal Option<string> CertificateProfileOption { get; }
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
-        internal Argument<List<string>?> FilesArgument { get; } = new("file(s)", Resources.FilesArgumentDescription) { Arity = ArgumentArity.OneOrMore };
+        internal Argument<List<string>?> FilesArgument { get; }
 
         internal TrustedSigningCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("trusted-signing", TrustedSigningResources.CommandDescription)
@@ -31,40 +29,57 @@ namespace Sign.Cli
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
-            EndpointOption.IsRequired = true;
-            AccountOption.IsRequired = true;
-            CertificateProfileOption.IsRequired = true;
+            EndpointOption = new Option<Uri>("--trusted-signing-endpoint", "-tse")
+            {
+                Description = TrustedSigningResources.EndpointOptionDescription,
+                Required = true
+            };
+            AccountOption = new Option<string>("--trusted-signing-account", "-tsa")
+            {
+                Description = TrustedSigningResources.AccountOptionDescription,
+                Required = true
+            };
+            CertificateProfileOption = new Option<string>("--trusted-signing-certificate-profile", "-tscp")
+            {
+                Description = TrustedSigningResources.CertificateProfileOptionDescription,
+                Required = true
+            };
+            FilesArgument = new Argument<List<string>?>("file(s)")
+            {
+                Description = Resources.FilesArgumentDescription,
+                Arity = ArgumentArity.OneOrMore
+            };
 
-            AddOption(EndpointOption);
-            AddOption(AccountOption);
-            AddOption(CertificateProfileOption);
+            Options.Add(EndpointOption);
+            Options.Add(AccountOption);
+            Options.Add(CertificateProfileOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
-            AddArgument(FilesArgument);
+            Arguments.Add(FilesArgument);
 
-            this.SetHandler(async (InvocationContext context) =>
+            SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
             {
-                List<string>? filesArgument = context.ParseResult.GetValueForArgument(FilesArgument);
+                List<string>? filesArgument = parseResult.GetValue(FilesArgument);
 
                 if (filesArgument is not { Count: > 0 })
                 {
-                    context.Console.Error.WriteLine(Resources.MissingFileValue);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
+                    Console.Error.WriteLine(Resources.MissingFileValue);
+
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
-                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
+                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(parseResult);
 
                 if (credential is null)
                 {
-                    return;
+                    return Task.FromResult(ExitCode.Failed);
                 }
 
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
-                Uri endpointUrl = context.ParseResult.GetValueForOption(EndpointOption)!;
-                string accountName = context.ParseResult.GetValueForOption(AccountOption)!;
-                string certificateProfileName = context.ParseResult.GetValueForOption(CertificateProfileOption)!;
+                Uri endpointUrl = parseResult.GetValue(EndpointOption)!;
+                string accountName = parseResult.GetValue(AccountOption)!;
+                string certificateProfileName = parseResult.GetValue(CertificateProfileOption)!;
 
                 serviceProviderFactory.AddServices(services =>
                 {
@@ -87,7 +102,7 @@ namespace Sign.Cli
 
                 TrustedSigningServiceProvider trustedSigningServiceProvider = new();
 
-                await codeCommand.HandleAsync(context, serviceProviderFactory, trustedSigningServiceProvider, filesArgument);
+                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, trustedSigningServiceProvider, filesArgument);
             });
         }
     }

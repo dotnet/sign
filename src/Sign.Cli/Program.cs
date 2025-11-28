@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
 using Sign.Core;
 
 namespace Sign.Cli
@@ -36,9 +33,9 @@ namespace Sign.Cli
 
                 try
                 {
-                    Parser parser = CreateParser();
+                    SignCommand rootCommand = CreateCommand(serviceProviderFactory: null);
 
-                    return await parser.InvokeAsync(args);
+                    return await rootCommand.Parse(args).InvokeAsync();
                 }
                 catch (Exception ex)
                 {
@@ -56,15 +53,9 @@ namespace Sign.Cli
             Console.ResetColor();
         }
 
-        internal static Parser CreateParser(IServiceProviderFactory? serviceProviderFactory = null)
+        internal static SignCommand CreateCommand(IServiceProviderFactory? serviceProviderFactory = null)
         {
-            SignCommand command = new(serviceProviderFactory);
-
-            return new CommandLineBuilder(command)
-                .UseVersionOption()
-                .UseParseErrorReporting()
-                .UseHelp()
-                .Build();
+            return new SignCommand(serviceProviderFactory);
         }
     }
 }

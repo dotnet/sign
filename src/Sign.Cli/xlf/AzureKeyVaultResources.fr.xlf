@@ -22,6 +22,11 @@
         <target state="translated">L’URL doit contenir uniquement le protocole et l’hôte. (par exemple : https://&lt;vault-name&gt;.vault.azure.net/)</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidUrlValue">
+        <source>URL must be an absolute HTTPS URL to an Azure Key Vault.</source>
+        <target state="new">URL must be an absolute HTTPS URL to an Azure Key Vault.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UrlOptionDescription">
         <source>URL to an Azure Key Vault.</source>
         <target state="translated">URL d’un Azure Key Vault.</target>

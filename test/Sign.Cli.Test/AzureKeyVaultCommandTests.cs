@@ -3,8 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
 using Moq;
 using Sign.Core;
 
@@ -41,7 +39,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void CertificateOption_Always_IsRequired()
         {
-            Assert.True(_command.CertificateOption.IsRequired);
+            Assert.True(_command.CertificateOption.Required);
         }
 
         [Fact]
@@ -53,49 +51,81 @@ namespace Sign.Cli.Test
         [Fact]
         public void UrlOption_Always_IsRequired()
         {
-            Assert.True(_command.UrlOption.IsRequired);
+            Assert.True(_command.UrlOption.Required);
         }
 
         public class ParserTests
         {
             private readonly AzureKeyVaultCommand _command;
-            private readonly Parser _parser;
+            private readonly RootCommand _rootCommand;
 
             public ParserTests()
             {
-                _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
-                _parser = new CommandLineBuilder(_command).Build();
+                CodeCommand codeCommand = new();
+                _command = new(codeCommand, Mock.Of<IServiceProviderFactory>());
+                _rootCommand = new RootCommand();
+                _rootCommand.Subcommands.Add(codeCommand);
+                codeCommand.Subcommands.Add(_command);
             }
 
             [Theory]
-            [InlineData("azure-key-vault")]
-            [InlineData("azure-key-vault a")]
-            [InlineData("azure-key-vault -kvu")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test a")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d")]
+            [InlineData("code azure-key-vault")]
+            [InlineData("code azure-key-vault a")]
+            [InlineData("code azure-key-vault -kvu")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test a")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.NotEmpty(result.Errors);
             }
 
             [Theory]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a b")]
-            [InlineData("azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a b")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.Empty(result.Errors);
+            }
+
+            [Theory]
+            [InlineData("code azure-key-vault -kvu \"\" -kvc a b")]
+            [InlineData("code azure-key-vault -kvu //keyvault.test -kvc a b")]
+            [InlineData("code azure-key-vault -kvu /path -kvc a b")]
+            [InlineData("code azure-key-vault -kvu file:///file.bin -kvc a b")]
+            [InlineData("code azure-key-vault -kvu http://keyvault.test -kvc a b")]
+            [InlineData("code azure-key-vault -kvu ftp://keyvault.test -kvc a b")]
+            public void Command_WhenUrlIsInvalid_HasError(string command)
+            {
+                ParseResult result = _rootCommand.Parse(command);
+
+                Assert.NotEmpty(result.Errors);
+                Assert.Contains(result.Errors, error => error.Message.Contains("URL"));
+            }
+
+            [Theory]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a b", "https://keyvault.test/")]
+            [InlineData("code azure-key-vault -kvu https://my-vault.vault.azure.test -kvc cert b", "https://my-vault.vault.azure.test/")]
+            [InlineData("code azure-key-vault -kvu HTTPS://KEYVAULT.TEST -kvc a b", "https://keyvault.test/")]
+            public void Command_WhenUrlIsValidHttps_ParsesCorrectly(string command, string expectedUrl)
+            {
+                ParseResult result = _rootCommand.Parse(command);
+
+                Assert.Empty(result.Errors);
+                Uri? actualUrl = result.GetValue(_command.UrlOption);
+                Assert.NotNull(actualUrl);
+                Assert.Equal(expectedUrl, actualUrl.AbsoluteUri);
             }
         }
     }
