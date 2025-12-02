@@ -11,7 +11,7 @@ Key concepts for this provider:
 - Account name: the account within the Trusted Signing service.
 - Certificate profile: the certificate profile configured in the account that will be used to sign.
 
-For more information, see the Trusted Signing [setup documentation](https://learn.microsoft.com/en-us/azure/trusted-signing/quickstart).
+For more information, see the Trusted Signing [setup documentation](https://learn.microsoft.com/azure/trusted-signing/quickstart).
 
 ## Prerequisites
 
@@ -90,7 +90,7 @@ Notes:
 - Authentication errors: verify the authentication method (Azure CLI login, environment variables, or managed identity) and that the identity has permission to the Trusted Signing account.
 - Permission errors: ensure your principal has the necessary rights on the Trusted Signing account and certificate profile. If unsure, contact your Azure admin or the team that provisioned the Trusted Signing account.
 - Endpoint/profile not found: confirm the exact endpoint URL, account name, and certificate profile name from your Trusted Signing account metadata or onboarding docs.
-- See the [Trusted Signing FAQ](https://learn.microsoft.com/en-us/azure/trusted-signing/faq) for more information.
+- See the [Trusted Signing FAQ](https://learn.microsoft.com/azure/trusted-signing/faq) for more information.
 
 ## Where to look in this repository
 
