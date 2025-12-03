@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.CommandLine.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -15,7 +14,7 @@ namespace Sign.Cli.Test
         public sealed class GlobbingTests : IDisposable
         {
             private readonly DirectoryService _directoryService;
-            private readonly Parser _parser;
+            private readonly SignCommand _signCommand;
             private readonly SignerSpy _signerSpy;
             private readonly TemporaryDirectory _temporaryDirectory;
 
@@ -32,7 +31,7 @@ namespace Sign.Cli.Test
 
                 TestServiceProviderFactory serviceProviderFactory = new(services.BuildServiceProvider());
 
-                _parser = Program.CreateParser(serviceProviderFactory);
+                _signCommand = Program.CreateCommand(serviceProviderFactory);
 
                 _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
                 _temporaryDirectory = new TemporaryDirectory(_directoryService);
@@ -62,11 +61,10 @@ namespace Sign.Cli.Test
             [Fact]
             public async Task Command_WhenFileIsGlobPattern_SignsOnlyMatches()
             {
-                string commandText = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                    + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} "
-                    + $"-b \"{_temporaryDirectory.Directory.FullName}\" **/*.dll";
+                string commandText = $"code --description {Description} --description-url {DescriptionUrl} --timestamp-url {TimestampUrl} "
+                    + $"-b \"{_temporaryDirectory.Directory.FullName}\" azure-key-vault -kvu {KeyVaultUrl} -kvc {CertificateName} **/*.dll";
 
-                int exitCode = await _parser.InvokeAsync(commandText);
+                int exitCode = await _signCommand.Parse(commandText).InvokeAsync();
 
                 Assert.Equal(_signerSpy.ExitCode, exitCode);
                 Assert.NotNull(_signerSpy.InputFiles);
@@ -80,11 +78,10 @@ namespace Sign.Cli.Test
             [Fact]
             public async Task Command_WhenFileIsGlobPatternWithSubdirectory_SignsOnlyMatches()
             {
-                string commandText = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                    + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} "
-                    + $"-b \"{_temporaryDirectory.Directory.FullName}\" **/e/*.dll";
+                string commandText = $"code --description {Description} --description-url {DescriptionUrl} --timestamp-url {TimestampUrl} "
+                    + $"-b \"{_temporaryDirectory.Directory.FullName}\" azure-key-vault -kvu {KeyVaultUrl} -kvc {CertificateName} **/e/*.dll";
 
-                int exitCode = await _parser.InvokeAsync(commandText);
+                int exitCode = await _signCommand.Parse(commandText).InvokeAsync();
 
                 Assert.Equal(_signerSpy.ExitCode, exitCode);
                 Assert.NotNull(_signerSpy.InputFiles);
@@ -96,11 +93,10 @@ namespace Sign.Cli.Test
             [Fact]
             public async Task Command_WhenFileIsGlobPatternWithBracedExpansion_SignsOnlyMatches()
             {
-                string commandText = $"code azure-key-vault --description {Description} --description-url {DescriptionUrl} "
-                      + $"-kvu {KeyVaultUrl} -kvc {CertificateName} --timestamp-url {TimestampUrl} "
-                      + $"-b \"{_temporaryDirectory.Directory.FullName}\" **/*.{{dll,exe}}";
+                string commandText = $"code --description {Description} --description-url {DescriptionUrl} --timestamp-url {TimestampUrl} "
+                      + $"-b \"{_temporaryDirectory.Directory.FullName}\" azure-key-vault -kvu {KeyVaultUrl} -kvc {CertificateName} **/*.{{dll,exe}}";
 
-                int exitCode = await _parser.InvokeAsync(commandText);
+                int exitCode = await _signCommand.Parse(commandText).InvokeAsync();
 
                 Assert.Equal(_signerSpy.ExitCode, exitCode);
                 Assert.NotNull(_signerSpy.InputFiles);

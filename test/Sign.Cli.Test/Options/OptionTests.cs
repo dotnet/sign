@@ -35,11 +35,11 @@ namespace Sign.Cli.Test
         {
             const string value = "x";
 
-            if (Option.IsRequired)
+            if (Option.Required)
             {
                 VerifyHasErrors(
                     value,
-                    GetOptionIsRequiredMessage(ShortOption),
+                    GetOptionRequiredMessage(ShortOption),
                     GetUnrecognizedCommandOrArgumentMessage(value));
             }
             else
@@ -101,7 +101,7 @@ namespace Sign.Cli.Test
 
             Assert.Empty(result.Errors);
 
-            T? actualValue = result.GetValueForOption(Option);
+            T? actualValue = result.GetValue(Option);
 
             VerifyEqual(expectedValue, actualValue);
         }
@@ -127,11 +127,11 @@ namespace Sign.Cli.Test
         {
             ParseResult result = Parse();
 
-            if (Option.IsRequired)
+            if (Option.Required)
             {
                 ParseError parseError = Assert.Single(result.Errors);
                 string actualMessage = parseError.Message;
-                string expectedMessage = GetOptionIsRequiredMessage(ShortOption);
+                string expectedMessage = GetOptionRequiredMessage(ShortOption);
 
                 Assert.Equal(expectedMessage, actualMessage);
             }
@@ -161,7 +161,7 @@ namespace Sign.Cli.Test
                 argumentName);
         }
 
-        protected static string GetOptionIsRequiredMessage(string optionName)
+        protected static string GetOptionRequiredMessage(string optionName)
         {
             return string.Format(
                 CultureInfo.CurrentCulture,

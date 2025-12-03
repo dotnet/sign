@@ -3,8 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
+using System.CommandLine.Parsing;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
@@ -18,11 +17,11 @@ namespace Sign.Cli
 {
     internal sealed class AzureKeyVaultCommand : Command
     {
-        internal Option<Uri> UrlOption { get; } = new(["--azure-key-vault-url", "-kvu"], AzureKeyVaultResources.UrlOptionDescription);
-        internal Option<string> CertificateOption { get; } = new(["--azure-key-vault-certificate", "-kvc"], AzureKeyVaultResources.CertificateOptionDescription);
+        internal Option<Uri> UrlOption { get; }
+        internal Option<string> CertificateOption { get; }
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
-        internal Argument<List<string>?> FilesArgument { get; } = new("file(s)", Resources.FilesArgumentDescription) { Arity = ArgumentArity.OneOrMore };
+        internal Argument<List<string>?> FilesArgument { get; }
 
         internal AzureKeyVaultCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("azure-key-vault", AzureKeyVaultResources.CommandDescription)
@@ -30,54 +29,68 @@ namespace Sign.Cli
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
-            CertificateOption.IsRequired = true;
-            UrlOption.IsRequired = true;
+            UrlOption = new Option<Uri>("--azure-key-vault-url", "-kvu")
+            {
+                Description = AzureKeyVaultResources.UrlOptionDescription,
+                Required = true,
+                CustomParser = ParseUrl
+            };
+            CertificateOption = new Option<string>("--azure-key-vault-certificate", "-kvc")
+            {
+                Description = AzureKeyVaultResources.CertificateOptionDescription,
+                Required = true
+            };
+            FilesArgument = new Argument<List<string>?>("file(s)")
+            {
+                Description = Resources.FilesArgumentDescription,
+                Arity = ArgumentArity.OneOrMore
+            };
 
-            AddOption(UrlOption);
-            AddOption(CertificateOption);
+            Options.Add(UrlOption);
+            Options.Add(CertificateOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
-            AddArgument(FilesArgument);
+            Arguments.Add(FilesArgument);
 
-            this.SetHandler(async (InvocationContext context) =>
+            SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
             {
-                List<string>? filesArgument = context.ParseResult.GetValueForArgument(FilesArgument);
+                List<string>? filesArgument = parseResult.GetValue(FilesArgument);
 
                 if (filesArgument is not { Count: > 0 })
                 {
-                    context.Console.Error.WriteLine(Resources.MissingFileValue);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
+                    Console.Error.WriteLine(Resources.MissingFileValue);
+
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
                 // this check exists as a courtesy to users who may have been signing .clickonce files via the old workaround.
                 // at some point we should remove this check, probably once we hit v1.0
                 if (filesArgument.Any(x => x.EndsWith(".clickonce", StringComparison.OrdinalIgnoreCase)))
                 {
-                    context.Console.Error.WriteLine(AzureKeyVaultResources.ClickOnceExtensionNotSupported);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
+                    Console.Error.WriteLine(AzureKeyVaultResources.ClickOnceExtensionNotSupported);
+
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
-                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
+                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(parseResult);
                 if (credential is null)
                 {
-                    return;
+                    return Task.FromResult(ExitCode.Failed);
                 }
 
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
-                Uri url = context.ParseResult.GetValueForOption(UrlOption)!;
-                string certificateId = context.ParseResult.GetValueForOption(CertificateOption)!;
+                Uri url = parseResult.GetValue(UrlOption)!;
+                string certificateId = parseResult.GetValue(CertificateOption)!;
 
                 // Construct the URI for the certificate and the key from user parameters. We'll validate those with the SDK
                 var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}");
 
                 if (!KeyVaultCertificateIdentifier.TryCreate(certUri, out var certId))
                 {
-                    context.Console.Error.WriteLine(AzureKeyVaultResources.InvalidKeyVaultUrl);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
+                    Console.Error.WriteLine(AzureKeyVaultResources.InvalidKeyVaultUrl);
+
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
                 // The key uri is similar and the key name matches the certificate name
@@ -105,8 +118,22 @@ namespace Sign.Cli
 
                 KeyVaultServiceProvider keyVaultServiceProvider = new();
 
-                await codeCommand.HandleAsync(context, serviceProviderFactory, keyVaultServiceProvider, filesArgument);
+                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, keyVaultServiceProvider, filesArgument);
             });
+        }
+
+        private static Uri? ParseUrl(ArgumentResult result)
+        {
+            if (result.Tokens.Count != 1 ||
+                !Uri.TryCreate(result.Tokens[0].Value, UriKind.Absolute, out Uri? uri)
+                || !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            {
+                result.AddError(AzureKeyVaultResources.InvalidUrlValue);
+
+                return null;
+            }
+
+            return uri;
         }
     }
 }

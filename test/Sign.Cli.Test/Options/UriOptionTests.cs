@@ -20,11 +20,11 @@ namespace Sign.Cli.Test
         {
             const string value = "3";
 
-            if (Option.IsRequired)
+            if (Option.Required)
             {
                 VerifyHasErrors(
                     value,
-                    GetOptionIsRequiredMessage(ShortOption),
+                    GetOptionRequiredMessage(ShortOption),
                     GetUnrecognizedCommandOrArgumentMessage(value));
             }
             else

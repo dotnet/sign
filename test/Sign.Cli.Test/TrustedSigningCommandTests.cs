@@ -3,8 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
 using Moq;
 using Sign.Core;
 
@@ -41,7 +39,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void EndpointOption_Always_IsRequired()
         {
-            Assert.True(_command.EndpointOption.IsRequired);
+            Assert.True(_command.EndpointOption.Required);
         }
 
         [Fact]
@@ -53,7 +51,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void AccountOption_Always_IsRequired()
         {
-            Assert.True(_command.AccountOption.IsRequired);
+            Assert.True(_command.AccountOption.Required);
         }
 
         [Fact]
@@ -65,47 +63,50 @@ namespace Sign.Cli.Test
         [Fact]
         public void CertificateProfileOption_Always_IsRequired()
         {
-            Assert.True(_command.CertificateProfileOption.IsRequired);
+            Assert.True(_command.CertificateProfileOption.Required);
         }
 
         public class ParserTests
         {
             private readonly TrustedSigningCommand _command;
-            private readonly Parser _parser;
+            private readonly RootCommand _rootCommand;
 
             public ParserTests()
             {
-                _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
-                _parser = new CommandLineBuilder(_command).Build();
+                CodeCommand codeCommand = new();
+                _command = new(codeCommand, Mock.Of<IServiceProviderFactory>());
+                _rootCommand = new RootCommand();
+                _rootCommand.Subcommands.Add(codeCommand);
+                codeCommand.Subcommands.Add(_command);
             }
 
             [Theory]
-            [InlineData("trusted-signing")]
-            [InlineData("trusted-signing a")]
-            [InlineData("trusted-signing -tse")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d -kvs")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d -kvs e")]
+            [InlineData("code trusted-signing")]
+            [InlineData("code trusted-signing a")]
+            [InlineData("code trusted-signing -tse")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d -kvs")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d -kvs e")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.NotEmpty(result.Errors);
             }
 
             [Theory]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b c")]
-            [InlineData("trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d -kvs e f")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b c")]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b -kvt c -kvi d -kvs e f")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.Empty(result.Errors);
             }

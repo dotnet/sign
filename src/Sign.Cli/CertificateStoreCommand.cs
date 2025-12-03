@@ -1,10 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -15,15 +13,15 @@ namespace Sign.Cli
 {
     internal sealed class CertificateStoreCommand : Command
     {
-        internal Option<string?> CertificateFingerprintOption { get; } = new(["--certificate-fingerprint", "-cfp"], ParseCertificateFingerprint, description: CertificateStoreResources.CertificateFingerprintOptionDescription);
-        internal Option<string?> CertificateFileOption { get; } = new(["--certificate-file", "-cf"], CertificateStoreResources.CertificateFileOptionDescription);
-        internal Option<string?> CertificatePasswordOption { get; } = new(["--password", "-p"], CertificateStoreResources.CertificatePasswordOptionDescription);
-        internal Option<string?> CryptoServiceProviderOption { get; } = new(["--crypto-service-provider", "-csp"], CertificateStoreResources.CspOptionDescription);
-        internal Option<string?> PrivateKeyContainerOption { get; } = new(["--key-container", "-k"], CertificateStoreResources.KeyContainerOptionDescription);
-        internal Option<bool> UseMachineKeyContainerOption { get; } = new(["--use-machine-key-container", "-km"], getDefaultValue: () => false, description: CertificateStoreResources.UseMachineKeyContainerOptionDescription);
-        internal Option<bool> InteractiveOption { get; } = new(["--interactive", "-i"], getDefaultValue: () => false, description: CertificateStoreResources.InteractiveDescription);
+        internal Option<string?> CertificateFingerprintOption { get; }
+        internal Option<string?> CertificateFileOption { get; }
+        internal Option<string?> CertificatePasswordOption { get; }
+        internal Option<string?> CryptoServiceProviderOption { get; }
+        internal Option<string?> PrivateKeyContainerOption { get; }
+        internal Option<bool> UseMachineKeyContainerOption { get; }
+        internal Option<bool> InteractiveOption { get; }
 
-        internal Argument<List<string>?> FilesArgument { get; } = new("file(s)", Resources.FilesArgumentDescription) { Arity = ArgumentArity.OneOrMore };
+        internal Argument<List<string>?> FilesArgument { get; }
 
         internal CertificateStoreCommand(CodeCommand codeCommand, IServiceProviderFactory serviceProviderFactory)
             : base("certificate-store", Resources.CertificateStoreCommandDescription)
@@ -31,57 +29,91 @@ namespace Sign.Cli
             ArgumentNullException.ThrowIfNull(codeCommand, nameof(codeCommand));
             ArgumentNullException.ThrowIfNull(serviceProviderFactory, nameof(serviceProviderFactory));
 
-            CertificateFingerprintOption.IsRequired = true;
-
-            AddOption(CertificateFingerprintOption);
-            AddOption(CertificateFileOption);
-            AddOption(CertificatePasswordOption);
-            AddOption(CryptoServiceProviderOption);
-            AddOption(PrivateKeyContainerOption);
-            AddOption(UseMachineKeyContainerOption);
-            AddOption(InteractiveOption);
-            AddArgument(FilesArgument);
-
-            this.SetHandler(async (InvocationContext context) =>
+            CertificateFingerprintOption = new Option<string?>("--certificate-fingerprint", "-cfp")
             {
-                List<string>? filesArgument = context.ParseResult.GetValueForArgument(FilesArgument);
+                CustomParser = ParseCertificateFingerprint,
+                Description = CertificateStoreResources.CertificateFingerprintOptionDescription,
+                Required = true
+            };
+            CertificateFileOption = new Option<string?>("--certificate-file", "-cf")
+            {
+                Description = CertificateStoreResources.CertificateFileOptionDescription
+            };
+            CertificatePasswordOption = new Option<string?>("--password", "-p")
+            {
+                Description = CertificateStoreResources.CertificatePasswordOptionDescription
+            };
+            CryptoServiceProviderOption = new Option<string?>("--crypto-service-provider", "-csp")
+            {
+                Description = CertificateStoreResources.CspOptionDescription
+            };
+            PrivateKeyContainerOption = new Option<string?>("--key-container", "-k")
+            {
+                Description = CertificateStoreResources.KeyContainerOptionDescription
+            };
+            UseMachineKeyContainerOption = new Option<bool>("--use-machine-key-container", "-km")
+            {
+                DefaultValueFactory = _ => false,
+                Description = CertificateStoreResources.UseMachineKeyContainerOptionDescription
+            };
+            InteractiveOption = new Option<bool>("--interactive", "-i")
+            {
+                DefaultValueFactory = _ => false,
+                Description = CertificateStoreResources.InteractiveDescription
+            };
+            FilesArgument = new Argument<List<string>?>("file(s)")
+            {
+                Description = Resources.FilesArgumentDescription,
+                Arity = ArgumentArity.OneOrMore
+            };
+
+            Options.Add(CertificateFingerprintOption);
+            Options.Add(CertificateFileOption);
+            Options.Add(CertificatePasswordOption);
+            Options.Add(CryptoServiceProviderOption);
+            Options.Add(PrivateKeyContainerOption);
+            Options.Add(UseMachineKeyContainerOption);
+            Options.Add(InteractiveOption);
+            Arguments.Add(FilesArgument);
+
+            SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
+            {
+                List<string>? filesArgument = parseResult.GetValue(FilesArgument);
 
                 if (filesArgument is not { Count: > 0 })
                 {
-                    context.Console.Error.WriteLine(Resources.MissingFileValue);
-                    context.ExitCode = ExitCode.InvalidOptions;
-                    return;
+                    Console.Error.WriteLine(Resources.MissingFileValue);
+
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
-                string certificateFingerprint = context.ParseResult.GetValueForOption(CertificateFingerprintOption)!;
-                string? certificatePath = context.ParseResult.GetValueForOption(CertificateFileOption);
-                string? certificatePassword = context.ParseResult.GetValueForOption(CertificatePasswordOption);
-                string? cryptoServiceProvider = context.ParseResult.GetValueForOption(CryptoServiceProviderOption);
-                string? privateKeyContainer = context.ParseResult.GetValueForOption(PrivateKeyContainerOption);
-                bool useMachineKeyContainer = context.ParseResult.GetValueForOption(UseMachineKeyContainerOption);
-                bool isInteractive = context.ParseResult.GetValueForOption(InteractiveOption);
+                string certificateFingerprint = parseResult.GetValue(CertificateFingerprintOption)!;
+                string? certificatePath = parseResult.GetValue(CertificateFileOption);
+                string? certificatePassword = parseResult.GetValue(CertificatePasswordOption);
+                string? cryptoServiceProvider = parseResult.GetValue(CryptoServiceProviderOption);
+                string? privateKeyContainer = parseResult.GetValue(PrivateKeyContainerOption);
+                bool useMachineKeyContainer = parseResult.GetValue(UseMachineKeyContainerOption);
+                bool isInteractive = parseResult.GetValue(InteractiveOption);
 
                 // Certificate fingerprint is required in case the provided certificate container contains multiple certificates.
                 if (string.IsNullOrEmpty(certificateFingerprint))
                 {
-                    context.Console.Error.WriteFormattedLine(
+                    Console.Error.WriteFormattedLine(
                         Resources.InvalidCertificateFingerprintValue,
                         CertificateFingerprintOption);
-                    context.ExitCode = ExitCode.InvalidOptions;
 
-                    return;
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
                 if (!TryDeduceHashAlgorithm(certificateFingerprint, out HashAlgorithmName certificateFingerprintAlgorithm))
                 {
-                    context.Console.Error.WriteFormattedLine(
+                    Console.Error.WriteFormattedLine(
                         Resources.InvalidCertificateFingerprintValue,
                         CertificateFingerprintOption);
-                    context.ExitCode = ExitCode.InvalidOptions;
 
-                    return;
+                    return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
                 // CSP requires a private key container to function.
@@ -89,15 +121,15 @@ namespace Sign.Cli
                 {
                     if (string.IsNullOrEmpty(privateKeyContainer))
                     {
-                        context.Console.Error.WriteLine(CertificateStoreResources.MissingPrivateKeyContainerError);
-                        context.ExitCode = ExitCode.InvalidOptions;
-                        return;
+                        Console.Error.WriteLine(CertificateStoreResources.MissingPrivateKeyContainerError);
+
+                        return Task.FromResult(ExitCode.InvalidOptions);
                     }
                     else
                     {
-                        context.Console.Error.WriteLine(CertificateStoreResources.MissingCspError);
-                        context.ExitCode = ExitCode.InvalidOptions;
-                        return;
+                        Console.Error.WriteLine(CertificateStoreResources.MissingCspError);
+
+                        return Task.FromResult(ExitCode.InvalidOptions);
                     }
                 }
 
@@ -111,7 +143,7 @@ namespace Sign.Cli
                     useMachineKeyContainer,
                     isInteractive);
 
-                await codeCommand.HandleAsync(context, serviceProviderFactory, certificateStoreServiceProvider, filesArgument);
+                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, certificateStoreServiceProvider, filesArgument);
             });
         }
 
@@ -125,22 +157,22 @@ namespace Sign.Cli
 
                 if (!HexHelpers.IsHex(token))
                 {
-                    result.ErrorMessage = FormatMessage(
+                    result.AddError(FormatMessage(
                         Resources.InvalidCertificateFingerprintValue,
-                        result.Argument);
+                        result.Argument));
                 }
                 else if (!TryDeduceHashAlgorithm(token, out HashAlgorithmName hashAlgorithmName))
                 {
-                    result.ErrorMessage = FormatMessage(
+                    result.AddError(FormatMessage(
                         Resources.InvalidCertificateFingerprintValue,
-                        result.Argument);
+                        result.Argument));
                 }
             }
             else
             {
-                result.ErrorMessage = FormatMessage(
+                result.AddError(FormatMessage(
                     Resources.InvalidCertificateFingerprintValue,
-                    result.Argument);
+                    result.Argument));
             }
 
             return token;
@@ -148,7 +180,7 @@ namespace Sign.Cli
 
         private static string FormatMessage(string format, Argument argument)
         {
-            return string.Format(CultureInfo.CurrentCulture, format, $"--{argument.Name}");
+            return string.Format(CultureInfo.CurrentCulture, format, argument.Name);
         }
 
         private static bool TryDeduceHashAlgorithm(

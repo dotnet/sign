@@ -3,8 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
 using Moq;
 using Sign.Core;
 
@@ -40,7 +38,7 @@ namespace Sign.Cli.Test
         [Fact]
         public void CertificateFingerprintOption_Always_IsRequired()
         {
-            Assert.True(_command.CertificateFingerprintOption.IsRequired);
+            Assert.True(_command.CertificateFingerprintOption.Required);
         }
 
         [Fact]
@@ -76,56 +74,59 @@ namespace Sign.Cli.Test
         public class ParserTests
         {
             private readonly CertificateStoreCommand _command;
-            private readonly Parser _parser;
+            private readonly RootCommand _rootCommand;
 
             public ParserTests()
             {
-                _command = new CertificateStoreCommand(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
-                _parser = new CommandLineBuilder(_command).Build();
+                CodeCommand codeCommand = new();
+                _command = new CertificateStoreCommand(codeCommand, Mock.Of<IServiceProviderFactory>());
+                _rootCommand = new RootCommand();
+                _rootCommand.Subcommands.Add(codeCommand);
+                codeCommand.Subcommands.Add(_command);
             }
 
             [Theory]
-            [InlineData("certificate-store a")]
-            [InlineData("certificate-store a -cfp")]
-            [InlineData("certificate-store a -cfp -cf")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf filePath -p")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -csp")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k")]
+            [InlineData("code certificate-store a")]
+            [InlineData("code certificate-store a -cfp")]
+            [InlineData("code certificate-store a -cfp -cf")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -p")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -csp")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k")]
             public void Command_WhenRequiredArgumentOrOptionsAreMissing_HasError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.NotEmpty(result.Errors);
             }
 
             [Theory]
-            [InlineData("certificate-store a -cfp \"\"")]
-            [InlineData("certificate-store a -cfp b")]
-            [InlineData("certificate-store a -cfp b c")]
-            [InlineData($"certificate-store a -cfp {Sha1Fingerprint}")]
-            [InlineData("certificate-store a -cfp Z3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")] // SHA-256 length, but contains a non-hex character
+            [InlineData("code certificate-store a -cfp \"\"")]
+            [InlineData("code certificate-store a -cfp b")]
+            [InlineData("code certificate-store a -cfp b c")]
+            [InlineData($"code certificate-store a -cfp {Sha1Fingerprint}")]
+            [InlineData("code certificate-store a -cfp Z3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")] // SHA-256 length, but contains a non-hex character
             public void Command_WhenCertificateFingerprintAlgorithmCannotBeDeduced_HasError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.NotEmpty(result.Errors);
             }
 
             [Theory]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint}")]
-            [InlineData($"certificate-store a -cfp {Sha384Fingerprint} -cf filePath")]
-            [InlineData($"certificate-store a -cfp {Sha512Fingerprint} -cf filePath -p password")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k keyContainer ")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k machineKeyContainer -km")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer ")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf filePath -p password -csp sampleCSP -k keyContainer")]
-            [InlineData($"certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer -km")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint}")]
+            [InlineData($"code certificate-store a -cfp {Sha384Fingerprint} -cf filePath")]
+            [InlineData($"code certificate-store a -cfp {Sha512Fingerprint} -cf filePath -p password")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k keyContainer ")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k machineKeyContainer -km")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer ")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -p password -csp sampleCSP -k keyContainer")]
+            [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer -km")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
-                ParseResult result = _parser.Parse(command);
+                ParseResult result = _rootCommand.Parse(command);
 
                 Assert.Empty(result.Errors);
             }

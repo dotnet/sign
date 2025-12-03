@@ -45,7 +45,7 @@ namespace Sign.Core
             {
                 var value = data[i];
                 buffer[j] = (char)LookupTable[(value & 0xF0) >> 4];
-                buffer[j+1] = (char)LookupTable[value & 0x0F];
+                buffer[j + 1] = (char)LookupTable[value & 0x0F];
             }
 
             return true;
