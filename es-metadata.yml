@@ -1,0 +1,12 @@
+schemaVersion: 1.0.0
+providers:
+- provider: InventoryAsCode
+  version: 1.0.0
+  metadata:
+    isProduction: true
+    accountableOwners:
+      service: b3b0bec4-5d05-420a-a013-d3162931ee4a
+    routing:
+      defaultAreaPath:
+        org: devdiv
+        path: DevDiv\NET Tools\sign
