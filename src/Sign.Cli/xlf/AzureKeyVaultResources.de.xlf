@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="InvalidUrlValue">
         <source>URL must be an absolute HTTPS URL to an Azure Key Vault.</source>
-        <target state="new">URL must be an absolute HTTPS URL to an Azure Key Vault.</target>
+        <target state="translated">Die URL muss eine absolute HTTPS-URL zu einem Azure Key Vault sein.</target>
         <note />
       </trans-unit>
       <trans-unit id="UrlOptionDescription">
