@@ -31,6 +31,7 @@ namespace Sign.Cli
 
             EndpointOption = new Option<Uri>("--trusted-signing-endpoint", "-tse")
             {
+                CustomParser = CodeCommand.ParseUrl,
                 Description = TrustedSigningResources.EndpointOptionDescription,
                 Required = true
             };

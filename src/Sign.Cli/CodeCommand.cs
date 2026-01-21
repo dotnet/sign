@@ -310,7 +310,7 @@ namespace Sign.Cli
             return value;
         }
 
-        private static Uri? ParseUrl(ArgumentResult result)
+        internal static Uri? ParseUrl(ArgumentResult result)
         {
             if (result.Tokens.Count != 1 ||
                 !Uri.TryCreate(result.Tokens[0].Value, UriKind.Absolute, out Uri? uri) ||
