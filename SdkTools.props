@@ -46,17 +46,17 @@
   <ItemGroup>
     <Content Include="@(SdkFile64)" Exclude="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini">
       <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      <PackagePath>tools\$(TargetFramework)\$(RuntimeIdentifier)\tools\SDK\x64</PackagePath>
       <Visible>false</Visible>
     </Content>
     <Content Include="$(OutputPath)\tools\SDK\x64\wintrust.dll.ini">
       <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      <PackagePath>tools\$(TargetFramework)\$(RuntimeIdentifier)\tools\SDK\x64</PackagePath>
       <Visible>false</Visible>
     </Content>
     <Content Include="@(SdkFile86)">
       <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
+      <PackagePath>tools\$(TargetFramework)\$(RuntimeIdentifier)\tools\SDK\x86</PackagePath>
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
