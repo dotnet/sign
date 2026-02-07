@@ -23,11 +23,6 @@ namespace Sign.Core.Test
             get => _timestampService.Certificate;
         }
 
-        internal DirectoryInfo TimestampServiceLogDirectory
-        {
-            get => _timestampService.LogDirectory;
-        }
-
         public CertificatesFixture()
         {
             TestUtility.RemoveTestIntermediateCertificates();
