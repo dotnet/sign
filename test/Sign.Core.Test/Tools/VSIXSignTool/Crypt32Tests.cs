@@ -39,8 +39,6 @@ namespace Sign.Core.Test
             // Capture the last P/Invoke error and throw later.
             Win32Exception exception = new();
 
-            LogTimestampDetails();
-
             if (!ok)
             {
                 throw exception;
@@ -61,20 +59,6 @@ namespace Sign.Core.Test
                 {
                     pointer.DangerousRelease();
                 }
-            }
-        }
-
-        private void LogTimestampDetails()
-        {
-            FileInfo? file = _certificatesFixture.TimestampServiceLogDirectory.GetFiles()
-                .OrderByDescending(file => file.Name)
-                .FirstOrDefault();
-
-            if (file is not null)
-            {
-                string content = File.ReadAllText(file.FullName);
-
-                _testOutputHelper.WriteLine(content);
             }
         }
     }
