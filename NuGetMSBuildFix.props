@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- 
+    When using Microsoft.Build.Locator, all NuGet.* packages must have ExcludeAssets="runtime" and PrivateAssets="all"
+    to prevent runtime assembly loading conflicts with MSBuild assemblies.
+    This file applies these settings globally to all projects that reference Sign.Core (which uses MSBuildLocator).
+  -->
+  <ItemGroup>
+    <PackageReference Include="NuGet.Common" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Configuration" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Frameworks" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Packaging" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Versioning" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

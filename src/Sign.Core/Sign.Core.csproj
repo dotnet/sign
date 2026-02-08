@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="AzureSign.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
+    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="none" PrivateAssets="build;analyzers" />
     <PackageReference Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" />
     <PackageReference Include="Microsoft.Extensions.Azure" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
@@ -14,7 +16,6 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" PrivateAssets="analyzers;build;compile;contentfiles" />
-    <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="System.Security.Cryptography.Xml" PrivateAssets="analyzers;build;compile;contentfiles" />
