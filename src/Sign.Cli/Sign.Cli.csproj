@@ -58,6 +58,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="TrustedSigningResources.Designer.cs">
+      <DependentUpon>TrustedSigningResources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="AzureKeyVaultResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -73,14 +78,18 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Update="TrustedSigningResources.Designer.cs">
+    <Compile Update="ArtifactSigningResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>TrustedSigningResources.resx</DependentUpon>
+      <DependentUpon>ArtifactSigningResources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="TrustedSigningResources.resx">
+      <LastGenOutput>TrustedSigningResources.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="AzureKeyVaultResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>AzureKeyVaultResources.Designer.cs</LastGenOutput>
@@ -93,9 +102,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="TrustedSigningResources.resx">
+    <EmbeddedResource Update="ArtifactSigningResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>TrustedSigningResources.Designer.cs</LastGenOutput>
+      <LastGenOutput>ArtifactSigningResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
