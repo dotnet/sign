@@ -8,24 +8,24 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Sign.TestInfrastructure;
 
-namespace Sign.SignatureProviders.TrustedSigning.Test
+namespace Sign.SignatureProviders.ArtifactSigning.Test
 {
-    public class TrustedSigningServiceProviderTests
+    public class ArtifactSigningServiceProviderTests
     {
-        private readonly TrustedSigningServiceProvider _provider = new();
+        private readonly ArtifactSigningServiceProvider _provider = new();
         private readonly IServiceProvider serviceProvider;
 
-        public TrustedSigningServiceProviderTests()
+        public ArtifactSigningServiceProviderTests()
         {
             ServiceCollection services = new();
-            services.AddSingleton<ILogger<TrustedSigningService>>(new TestLogger<TrustedSigningService>());
-            services.AddSingleton<TrustedSigningService>(sp =>
+            services.AddSingleton<ILogger<ArtifactSigningService>>(new TestLogger<ArtifactSigningService>());
+            services.AddSingleton<ArtifactSigningService>(sp =>
             {
-                return new TrustedSigningService(
+                return new ArtifactSigningService(
                      Mock.Of<CertificateProfileClient>(),
                      "account",
                      "profile",
-                     sp.GetRequiredService<ILogger<TrustedSigningService>>());
+                     sp.GetRequiredService<ILogger<ArtifactSigningService>>());
             });
             serviceProvider = services.BuildServiceProvider();
         }
@@ -42,13 +42,13 @@ namespace Sign.SignatureProviders.TrustedSigning.Test
         [Fact]
         public void GetSignatureAlgorithmProvider_WhenServiceProviderIsValid_ReturnsInstance()
         {
-            Assert.IsType<TrustedSigningService>(_provider.GetSignatureAlgorithmProvider(serviceProvider));
+            Assert.IsType<ArtifactSigningService>(_provider.GetSignatureAlgorithmProvider(serviceProvider));
         }
 
         [Fact]
         public void GetCertificateProvider_WhenServiceProviderIsValid_ReturnsInstance()
         {
-            Assert.IsType<TrustedSigningService>(_provider.GetCertificateProvider(serviceProvider));
+            Assert.IsType<ArtifactSigningService>(_provider.GetCertificateProvider(serviceProvider));
         }
     }
 }

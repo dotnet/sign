@@ -10,7 +10,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
-using Sign.SignatureProviders.TrustedSigning;
+using Sign.SignatureProviders.ArtifactSigning;
 
 namespace Sign.Cli
 {
@@ -91,17 +91,17 @@ namespace Sign.Cli
                         builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
                     });
 
-                    services.AddSingleton<TrustedSigningService>(serviceProvider =>
+                    services.AddSingleton<ArtifactSigningService>(serviceProvider =>
                     {
-                        return new TrustedSigningService(
+                        return new ArtifactSigningService(
                             serviceProvider.GetRequiredService<CertificateProfileClient>(),
                             accountName,
                             certificateProfileName,
-                            serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>());
+                            serviceProvider.GetRequiredService<ILogger<ArtifactSigningService>>());
                     });
                 });
 
-                TrustedSigningServiceProvider trustedSigningServiceProvider = new();
+                ArtifactSigningServiceProvider trustedSigningServiceProvider = new();
 
                 return codeCommand.HandleAsync(parseResult, serviceProviderFactory, trustedSigningServiceProvider, filesArgument);
             });

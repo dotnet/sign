@@ -7,16 +7,16 @@ using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
 
-namespace Sign.SignatureProviders.TrustedSigning
+namespace Sign.SignatureProviders.ArtifactSigning
 {
-    internal sealed class RSATrustedSigning : RSA
+    internal sealed class RSAArtifactSigning : RSA
     {
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
         private readonly RSA _rsaPublicKey;
 
-        public RSATrustedSigning(
+        public RSAArtifactSigning(
             CertificateProfileClient client,
             string accountName,
             string certificateProfileName,

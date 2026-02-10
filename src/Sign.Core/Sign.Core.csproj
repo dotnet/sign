@@ -29,8 +29,8 @@
     <InternalsVisibleTo Include="Sign.SignatureProviders.CertificateStore.Test" />
     <InternalsVisibleTo Include="Sign.SignatureProviders.KeyVault" />
     <InternalsVisibleTo Include="Sign.SignatureProviders.KeyVault.Test" />
-    <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning" />
-    <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning.Test" />
+    <InternalsVisibleTo Include="Sign.SignatureProviders.ArtifactSigning" />
+    <InternalsVisibleTo Include="Sign.SignatureProviders.ArtifactSigning.Test" />
     <InternalsVisibleTo Include="Sign.TestInfrastructure" />
   </ItemGroup>
 

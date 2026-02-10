@@ -10,22 +10,22 @@ using Azure.CodeSigning;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
 
-namespace Sign.SignatureProviders.TrustedSigning
+namespace Sign.SignatureProviders.ArtifactSigning
 {
-    internal sealed class TrustedSigningService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
+    internal sealed class ArtifactSigningService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
-        private readonly ILogger<TrustedSigningService> _logger;
+        private readonly ILogger<ArtifactSigningService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
         private X509Certificate2? _certificate;
 
-        public TrustedSigningService(
+        public ArtifactSigningService(
             CertificateProfileClient certificateProfileClient,
             string accountName,
             string certificateProfileName,
-            ILogger<TrustedSigningService> logger)
+            ILogger<ArtifactSigningService> logger)
         {
             ArgumentNullException.ThrowIfNull(certificateProfileClient, paramName: nameof(certificateProfileClient));
             ArgumentException.ThrowIfNullOrEmpty(accountName, nameof(accountName));
@@ -93,7 +93,7 @@ namespace Sign.SignatureProviders.TrustedSigning
         {
             using X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
             RSA rsaPublicKey = certificate.GetRSAPublicKey()!;
-            return new RSATrustedSigning(_client, _accountName, _certificateProfileName, rsaPublicKey);
+            return new RSAArtifactSigning(_client, _accountName, _certificateProfileName, rsaPublicKey);
         }
     }
 }
