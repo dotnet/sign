@@ -79,7 +79,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use Trusted Signing..
+        ///   Looks up a localized string similar to Use Trusted Signing. (obsolete, use artifact-signing instead).
         /// </summary>
         internal static string CommandDescription {
             get {
