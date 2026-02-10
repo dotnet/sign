@@ -8,7 +8,7 @@ using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
 using Moq;
 using Moq.Protected;
-using Sign.SignatureProviders.TrustedSigning;
+using Sign.SignatureProviders.ArtifactSigning;
 
 namespace Sign.SignatureProviders.KeyVault.Test
 {
@@ -24,7 +24,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenClientIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new RSATrustedSigning(client: null!, AccountName, CertificateProfileName, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(client: null!, AccountName, CertificateProfileName, _rsaPublicKey.Object));
 
             Assert.Equal("client", exception.ParamName);
         }
@@ -33,7 +33,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenAccountNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new RSATrustedSigning(_client.Object, accountName: null!, CertificateProfileName, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client.Object, accountName: null!, CertificateProfileName, _rsaPublicKey.Object));
 
             Assert.Equal("accountName", exception.ParamName);
         }
@@ -42,7 +42,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenAccountNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new RSATrustedSigning(_client.Object, accountName: string.Empty, CertificateProfileName, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client.Object, accountName: string.Empty, CertificateProfileName, _rsaPublicKey.Object));
 
             Assert.Equal("accountName", exception.ParamName);
         }
@@ -51,7 +51,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateProfileNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new RSATrustedSigning(_client.Object, AccountName, certificateProfileName: null!, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client.Object, AccountName, certificateProfileName: null!, _rsaPublicKey.Object));
 
             Assert.Equal("certificateProfileName", exception.ParamName);
         }
@@ -60,7 +60,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateProfileNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new RSATrustedSigning(_client.Object, AccountName, certificateProfileName: string.Empty, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client.Object, AccountName, certificateProfileName: string.Empty, _rsaPublicKey.Object));
 
             Assert.Equal("certificateProfileName", exception.ParamName);
         }
@@ -68,7 +68,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void Dispose_DisposesRSAKeyVaultAndRSAPublicKey()
         {
-            RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
             rsa.Dispose();
 
             _rsaPublicKey.Protected().Verify(nameof(RSA.Dispose), Times.Once(), [true]);
@@ -77,7 +77,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void ExportParameters_IncludePrivateParametersIsTrue_Throws()
         {
-            using RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
 
             Assert.Throws<NotSupportedException>(
                 () => rsa.ExportParameters(true));
@@ -86,7 +86,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void ExportParameters_IncludePrivateParametersIsFalse_UsesExportParametersOfPublicKey()
         {
-            using RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
 
             rsa.ExportParameters(false);
 
@@ -96,7 +96,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void ImportParameters_Throws()
         {
-            using RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
 
             Assert.Throws<NotImplementedException>(
                 () => rsa.ImportParameters(default));
@@ -105,7 +105,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void SignHash_InvalidHashLength_Throws()
         {
-            using RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
 
             byte[] hash = [];
             HashAlgorithmName hashAlgorithmName = HashAlgorithmName.SHA256;
@@ -124,7 +124,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [InlineData(64, nameof(RSASignaturePadding.Pss), nameof(SignatureAlgorithm.PS512))]
         public void SignHash_UsesClient(int hashLength, string paddingName, string expectedSignatureAlgorithmName)
         {
-            using RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
 
             RSASignaturePadding padding = paddingName switch
             {
@@ -178,7 +178,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void VerifyHash_UsesPublicKey()
         {
-            using RSATrustedSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
 
             byte[] hash = [];
             byte[] signature = [];

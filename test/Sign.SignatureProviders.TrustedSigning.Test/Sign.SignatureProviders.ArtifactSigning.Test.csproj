@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Sign.SignatureProviders.TrustedSigning\Sign.SignatureProviders.TrustedSigning.csproj" />
+    <ProjectReference Include="..\..\src\Sign.SignatureProviders.TrustedSigning\Sign.SignatureProviders.ArtifactSigning.csproj" />
     <ProjectReference Include="..\Sign.TestInfrastructure\Sign.TestInfrastructure.csproj" />
   </ItemGroup>
 </Project>
