@@ -172,6 +172,11 @@
         <target state="translated">URL del server di timestamp RFC 3161.</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
       </trans-unit>
+      <trans-unit id="TrustedSigningCommandObsolete">
+        <source>The trusted-signing command is obsolete. Use the artifact-signing command instead.</source>
+        <target state="new">The trusted-signing command is obsolete. Use the artifact-signing command instead.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
         <source>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</source>
         <target state="translated">Imposta il livello di dettaglio. I valori consentiti sono 'none', 'critical', 'error', 'warning', 'information', 'debug' e 'trace'.</target>

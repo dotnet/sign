@@ -376,6 +376,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The trusted-signing command is obsolete. Use the artifact-signing command instead..
+        /// </summary>
+        internal static string TrustedSigningCommandObsolete {
+            get {
+                return ResourceManager.GetString("TrustedSigningCommandObsolete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support..
         /// </summary>
         internal static string x86NotSupported {

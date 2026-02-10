@@ -60,6 +60,8 @@ namespace Sign.Cli
 
             SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
             {
+                Console.Out.WriteLine(Resources.TrustedSigningCommandObsolete);
+
                 List<string>? filesArgument = parseResult.GetValue(FilesArgument);
 
                 if (filesArgument is not { Count: > 0 })

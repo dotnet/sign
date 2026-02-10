@@ -237,4 +237,7 @@
   <data name="CredentialTypeOptionDescription" xml:space="preserve">
     <value>Azure credential type that will be used. This defaults to DefaultAzureCredential.</value>
   </data>
+  <data name="TrustedSigningCommandObsolete" xml:space="preserve">
+    <value>The trusted-signing command is obsolete. Use the artifact-signing command instead.</value>
+  </data>
 </root>
