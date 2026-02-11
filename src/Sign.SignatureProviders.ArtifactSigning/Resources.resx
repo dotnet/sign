@@ -125,6 +125,6 @@
     <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
   </data>
   <data name="FetchingCertificate" xml:space="preserve">
-    <value>Fetching certificate from Trusted Signing certificate profile.</value>
+    <value>Fetching certificate from Artifact Signing certificate profile.</value>
   </data>
 </root>

@@ -13,8 +13,8 @@
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
-        <source>Fetching certificate from Trusted Signing certificate profile.</source>
-        <target state="translated">Pobieranie certyfikatu z profilu certyfikatu usługi Zaufane podpisywanie.</target>
+        <source>Fetching certificate from Artifact Signing certificate profile.</source>
+        <target state="needs-review-translation">Pobieranie certyfikatu z profilu certyfikatu usługi Zaufane podpisywanie.</target>
         <note />
       </trans-unit>
     </body>

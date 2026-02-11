@@ -79,7 +79,7 @@ namespace Sign.SignatureProviders.ArtifactSigning {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fetching certificate from Trusted Signing certificate profile..
+        ///   Looks up a localized string similar to Fetching certificate from Artifact Signing certificate profile..
         /// </summary>
         internal static string FetchingCertificate {
             get {
