@@ -68,7 +68,7 @@ extends:
           - job: Windows
             pool: # See https://helix.dot.net/ for VM names.
               name: NetCore1ESPool-Internal
-              demands: ImageOverride -equals windows.vs2022preview.amd64
+              demands: ImageOverride -equals windows.vs2022.amd64
             variables:
             # Only enable publishing in official builds.
             - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
