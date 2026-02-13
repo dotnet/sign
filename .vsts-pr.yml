@@ -26,7 +26,7 @@ stages:
       - job: Windows
         pool: # See https://helix.dot.net/ for VM names.
           name: NetCore-Public
-          demands: ImageOverride -equals windows.vs2022preview.amd64.open
+          demands: ImageOverride -equals windows.vs2022.amd64.open
         variables:
           - name: _SignType
             value: test
