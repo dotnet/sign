@@ -43,9 +43,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.Cer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.CertificateStore.Test", "test\Sign.SignatureProviders.CertificateStore.Test\Sign.SignatureProviders.CertificateStore.Test.csproj", "{3AE48DC2-8422-4E3A-AFBC-12551D50DBCA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.TrustedSigning", "src\Sign.SignatureProviders.TrustedSigning\Sign.SignatureProviders.TrustedSigning.csproj", "{060800AF-42FC-493C-AD99-9C87212BA969}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.ArtifactSigning", "src\Sign.SignatureProviders.ArtifactSigning\Sign.SignatureProviders.ArtifactSigning.csproj", "{060800AF-42FC-493C-AD99-9C87212BA969}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.TrustedSigning.Test", "test\Sign.SignatureProviders.TrustedSigning.Test\Sign.SignatureProviders.TrustedSigning.Test.csproj", "{A81695AF-088A-436A-9A38-4D0B0DB2D826}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sign.SignatureProviders.ArtifactSigning.Test", "test\Sign.SignatureProviders.ArtifactSigning.Test\Sign.SignatureProviders.ArtifactSigning.Test.csproj", "{A81695AF-088A-436A-9A38-4D0B0DB2D826}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

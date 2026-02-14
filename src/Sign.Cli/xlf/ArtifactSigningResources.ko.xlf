@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../ArtifactSigningResources.resx">
+    <body>
+      <trans-unit id="AccountOptionDescription">
+        <source>The Artifact Signing Account name.</source>
+        <target state="new">The Artifact Signing Account name.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CertificateProfileOptionDescription">
+        <source>The Certificate Profile name.</source>
+        <target state="new">The Certificate Profile name.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Use Artifact Signing.</source>
+        <target state="new">Use Artifact Signing.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EndpointOptionDescription">
+        <source>The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</source>
+        <target state="new">The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
