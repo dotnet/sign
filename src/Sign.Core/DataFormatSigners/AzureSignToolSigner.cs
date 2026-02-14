@@ -12,6 +12,8 @@ namespace Sign.Core
 {
     internal sealed class AzureSignToolSigner : IAzureSignToolDataFormatSigner
     {
+        private static readonly string[] StaThreadExtensions = [".js", ".vbs"];
+
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly ILogger<IDataFormatSigner> _logger;
@@ -51,6 +53,7 @@ namespace Sign.Core
                     ".emsix",
                     ".emsixbundle",
                     ".exe",
+                    ".js",
                     ".msi",
                     ".msix",
                     ".msixbundle",
@@ -113,25 +116,23 @@ namespace Sign.Core
                 options.FileHashAlgorithm,
                 timestampConfiguration))
             {
+                FileInfo[] staThreadFiles = [.. files.Where(file => StaThreadExtensions.Contains(file.Extension))];
+                foreach (FileInfo file in staThreadFiles)
+                {
+                    await RunOnStaThread(() => SignAsync(signer, file, options));
+                }
+
                 // loop through all of the files here, looking for appx/eappx
                 // mark each as being signed and strip appx
                 await Parallel.ForEachAsync(files, async (file, state) =>
                 {
-                    if (!await SignAsync(signer, file, options))
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
-
-                        throw new SigningException(message);
-                    }
+                    await SignAsync(signer, file, options);
                 });
             }
         }
 
         // Inspired from https://github.com/squaredup/bettersigntool/blob/master/bettersigntool/bettersigntool/SignCommand.cs
-        private async Task<bool> SignAsync(
-            AuthenticodeKeyVaultSigner signer,
-            FileInfo file,
-            SignOptions options)
+        private async Task SignAsync(AuthenticodeKeyVaultSigner signer, FileInfo file, SignOptions options)
         {
             TimeSpan retry = TimeSpan.FromSeconds(5);
             const int maxAttempts = 3;
@@ -148,7 +149,7 @@ namespace Sign.Core
 
                 if (RunSignTool(signer, file, options))
                 {
-                    return true;
+                    return;
                 }
 
                 ++attempt;
@@ -157,7 +158,9 @@ namespace Sign.Core
 
             _logger.LogError(Resources.SigningFailedAfterAllAttempts);
 
-            return false;
+            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+            throw new SigningException(message);
         }
 
         private bool RunSignTool(AuthenticodeKeyVaultSigner signer, FileInfo file, SignOptions options)
@@ -197,6 +200,32 @@ namespace Sign.Core
             _logger.LogError(Resources.SigningFailedWithError, code);
 
             return false;
+        }
+
+        private static Task<bool> RunOnStaThread(Func<Task> func)
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new NotSupportedException();
+            }
+
+            TaskCompletionSource<bool> taskCompletionSource = new();
+            var thread = new Thread(async () =>
+            {
+                try
+                {
+                    await func();
+                    taskCompletionSource.SetResult(true);
+                }
+                catch (Exception exception)
+                {
+                    taskCompletionSource.SetException(exception);
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            return taskCompletionSource.Task;
         }
     }
 }
