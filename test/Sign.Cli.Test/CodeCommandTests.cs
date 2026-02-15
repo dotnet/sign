@@ -141,5 +141,29 @@ namespace Sign.Cli.Test
         {
             Assert.False(_command.VerbosityOption.Required);
         }
+
+        [Fact]
+        public void NoSignClickOnceDepsOption_Always_HasArityOfZeroOrOne()
+        {
+            Assert.Equal(ArgumentArity.ZeroOrOne, _command.NoSignClickOnceDepsOption.Arity);
+        }
+
+        [Fact]
+        public void NoSignClickOnceDepsOption_Always_IsNotRequired()
+        {
+            Assert.False(_command.NoSignClickOnceDepsOption.Required);
+        }
+
+        [Fact]
+        public void NoUpdateClickOnceManifestOption_Always_HasArityOfZeroOrOne()
+        {
+            Assert.Equal(ArgumentArity.ZeroOrOne, _command.NoUpdateClickOnceManifestOption.Arity);
+        }
+
+        [Fact]
+        public void NoUpdateClickOnceManifestOption_Always_IsNotRequired()
+        {
+            Assert.False(_command.NoUpdateClickOnceManifestOption.Required);
+        }
     }
 }

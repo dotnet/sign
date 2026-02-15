@@ -304,6 +304,42 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Update and sign only specified ClickOnce manifest files without signing dependencies. Requires --use-new-clickonce-signing..
+        /// </summary>
+        internal static string NoSignClickOnceDepsDescription {
+            get {
+                return ResourceManager.GetString("NoSignClickOnceDepsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sign ClickOnce manifest files without updating metadata. Requires --use-new-clickonce-signing..
+        /// </summary>
+        internal static string NoUpdateClickOnceManifestDescription {
+            get {
+                return ResourceManager.GetString("NoUpdateClickOnceManifestDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;{0}&apos; option requires &apos;{1}&apos; to be enabled..
+        /// </summary>
+        internal static string OptionRequiresAnotherOption {
+            get {
+                return ResourceManager.GetString("OptionRequiresAnotherOption", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;{0}&apos; and &apos;{1}&apos; options cannot be combined..
+        /// </summary>
+        internal static string OptionsMutuallyExclusive {
+            get {
+                return ResourceManager.GetString("OptionsMutuallyExclusive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Output file or directory. If omitted, input files will be overwritten..
         /// </summary>
         internal static string OutputOptionDescription {
@@ -363,6 +399,15 @@ namespace Sign.Cli {
         internal static string TimestampUrlOptionDescription {
             get {
                 return ResourceManager.GetString("TimestampUrlOptionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use new ClickOnce signing behavior..
+        /// </summary>
+        internal static string UseNewClickOnceSigningDescription {
+            get {
+                return ResourceManager.GetString("UseNewClickOnceSigningDescription", resourceCulture);
             }
         }
         

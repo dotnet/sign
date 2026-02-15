@@ -137,6 +137,26 @@
         <target state="translated">找不到要簽署的輸入。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoSignClickOnceDepsDescription">
+        <source>Update and sign only specified ClickOnce manifest files without signing dependencies. Requires --use-new-clickonce-signing.</source>
+        <target state="new">Update and sign only specified ClickOnce manifest files without signing dependencies. Requires --use-new-clickonce-signing.</target>
+        <note>{Locked="ClickOnce,--use-new-clickonce-signing"} is a Microsoft deployment technology and a CLI option.</note>
+      </trans-unit>
+      <trans-unit id="NoUpdateClickOnceManifestDescription">
+        <source>Sign ClickOnce manifest files without updating metadata. Requires --use-new-clickonce-signing.</source>
+        <target state="new">Sign ClickOnce manifest files without updating metadata. Requires --use-new-clickonce-signing.</target>
+        <note>{Locked="ClickOnce,--use-new-clickonce-signing"} is a Microsoft deployment technology and a CLI option.</note>
+      </trans-unit>
+      <trans-unit id="OptionRequiresAnotherOption">
+        <source>The '{0}' option requires '{1}' to be enabled.</source>
+        <target state="new">The '{0}' option requires '{1}' to be enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OptionsMutuallyExclusive">
+        <source>The '{0}' and '{1}' options cannot be combined.</source>
+        <target state="new">The '{0}' and '{1}' options cannot be combined.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>
         <target state="translated">輸出檔案或目錄。如果省略，則會覆寫輸入檔案。</target>
@@ -144,8 +164,8 @@
       </trans-unit>
       <trans-unit id="PublisherNameOptionDescription">
         <source>Publisher name (ClickOnce).</source>
-        <target state="translated">發行者名稱 (ClickOnce)。</target>
-        <note>ClickOnce is a Microsoft deployment technology.</note>
+        <target state="needs-review-translation">發行者名稱 (ClickOnce)。</target>
+        <note>{Locked="ClickOnce"} is a Microsoft deployment technology.</note>
       </trans-unit>
       <trans-unit id="SignCommandDescription">
         <source>Sign CLI</source>
@@ -171,6 +191,11 @@
         <source>RFC 3161 timestamp server URL.</source>
         <target state="translated">RFC 3161 時間戳記伺服器 URL。</target>
         <note>{Locked="RFC 3161"} is an Internet standard (https://www.rfc-editor.org/info/rfc3161) and should not be localized.</note>
+      </trans-unit>
+      <trans-unit id="UseNewClickOnceSigningDescription">
+        <source>Use new ClickOnce signing behavior.</source>
+        <target state="new">Use new ClickOnce signing behavior.</target>
+        <note>{Locked="ClickOnce"} is a Microsoft deployment technology.</note>
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
         <source>Sets the verbosity level. Allowed values are 'none', 'critical', 'error', 'warning', 'information', 'debug', and 'trace'.</source>

@@ -12,6 +12,8 @@ namespace Sign.Cli.Test
     {
         private readonly IServiceProvider _serviceProvider;
 
+        internal bool? UseNewClickOnceSigning { get; private set; }
+
         internal TestServiceProviderFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -23,6 +25,7 @@ namespace Sign.Cli.Test
             ILoggerProvider? loggerProvider = null,
             Action<IServiceCollection>? addServices = null)
         {
+            UseNewClickOnceSigning = useNewClickOnceSigning;
             return _serviceProvider;
         }
 

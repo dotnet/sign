@@ -29,6 +29,9 @@ namespace Sign.Cli
         internal Option<string?> PublisherNameOption { get; }
         internal Option<HashAlgorithmName> TimestampDigestOption { get; }
         internal Option<Uri?> TimestampUrlOption { get; }
+        internal Option<bool> UseNewClickOnceSigning { get; }
+        internal Option<bool> NoSignClickOnceDepsOption { get; }
+        internal Option<bool> NoUpdateClickOnceManifestOption { get; }
         internal Option<LogLevel> VerbosityOption { get; }
 
         internal CodeCommand()
@@ -106,6 +109,24 @@ namespace Sign.Cli
                 Description = Resources.TimestampUrlOptionDescription,
                 Recursive = true
             };
+            UseNewClickOnceSigning = new Option<bool>("--use-new-clickonce-signing", "-co")
+            {
+                DefaultValueFactory = _ => false,
+                Description = Resources.UseNewClickOnceSigningDescription,
+                Recursive = true
+            };
+            NoSignClickOnceDepsOption = new Option<bool>("--no-sign-clickonce-deps")
+            {
+                DefaultValueFactory = _ => false,
+                Description = Resources.NoSignClickOnceDepsDescription,
+                Recursive = true
+            };
+            NoUpdateClickOnceManifestOption = new Option<bool>("--no-update-clickonce-manifest")
+            {
+                DefaultValueFactory = _ => false,
+                Description = Resources.NoUpdateClickOnceManifestDescription,
+                Recursive = true
+            };
             VerbosityOption = new Option<LogLevel>("--verbosity", "-v")
             {
                 Description = Resources.VerbosityOptionDescription,
@@ -127,6 +148,9 @@ namespace Sign.Cli
             Options.Add(TimestampUrlOption);
             Options.Add(TimestampDigestOption);
             Options.Add(MaxConcurrencyOption);
+            Options.Add(UseNewClickOnceSigning);
+            Options.Add(NoSignClickOnceDepsOption);
+            Options.Add(NoUpdateClickOnceManifestOption);
             Options.Add(VerbosityOption);
         }
 
@@ -147,6 +171,44 @@ namespace Sign.Cli
             LogLevel verbosity = parseResult.GetValue(VerbosityOption);
             string? output = parseResult.GetValue(OutputOption);
             int maxConcurrency = parseResult.GetValue(MaxConcurrencyOption);
+            bool useNewClickOnceSigning = parseResult.GetValue(UseNewClickOnceSigning);
+            bool noSignClickOnceDeps = parseResult.GetValue(NoSignClickOnceDepsOption);
+            bool noUpdateClickOnceManifest = parseResult.GetValue(NoUpdateClickOnceManifestOption);
+
+            // Validate that --no-sign-clickonce-deps requires --use-new-clickonce-signing
+            if (noSignClickOnceDeps && !useNewClickOnceSigning)
+            {
+                Console.Error.WriteFormattedLine(
+                    Resources.OptionRequiresAnotherOption,
+                    NoSignClickOnceDepsOption,
+                    UseNewClickOnceSigning);
+
+                return ExitCode.InvalidOptions;
+            }
+
+            // Validate that --no-update-clickonce-manifest requires --use-new-clickonce-signing
+            if (noUpdateClickOnceManifest && !useNewClickOnceSigning)
+            {
+                Console.Error.WriteFormattedLine(
+                    Resources.OptionRequiresAnotherOption,
+                    NoUpdateClickOnceManifestOption,
+                    UseNewClickOnceSigning);
+
+                return ExitCode.InvalidOptions;
+            }
+
+            // --no-sign-clickonce-deps and --no-update-clickonce-manifest are mutually exclusive.
+            // --no-update-clickonce-manifest skips all discovery and metadata updates, which
+            // subsumes the dependency-skipping behavior of --no-sign-clickonce-deps.
+            if (noSignClickOnceDeps && noUpdateClickOnceManifest)
+            {
+                Console.Error.WriteFormattedLine(
+                    Resources.OptionsMutuallyExclusive,
+                    NoSignClickOnceDepsOption,
+                    NoUpdateClickOnceManifestOption);
+
+                return ExitCode.InvalidOptions;
+            }
 
             // Make sure this is rooted
             if (!Path.IsPathRooted(baseDirectory.FullName))
@@ -160,6 +222,7 @@ namespace Sign.Cli
 
             IServiceProvider serviceProvider = serviceProviderFactory.Create(
                 verbosity,
+                useNewClickOnceSigning,
                 addServices: (IServiceCollection services) =>
                 {
                     services.AddSingleton<ISignatureAlgorithmProvider>(
@@ -260,8 +323,8 @@ namespace Sign.Cli
                 maxConcurrency,
                 fileHashAlgorithmName,
                 timestampHashAlgorithmName,
-                noSignClickOnceDeps: false,
-                noUpdateClickOnceManifest: false);
+                noSignClickOnceDeps,
+                noUpdateClickOnceManifest);
 
             return exitCode;
         }

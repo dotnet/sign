@@ -203,7 +203,7 @@
   </data>
   <data name="PublisherNameOptionDescription" xml:space="preserve">
     <value>Publisher name (ClickOnce).</value>
-    <comment>ClickOnce is a Microsoft deployment technology.</comment>
+    <comment>{Locked="ClickOnce"} is a Microsoft deployment technology.</comment>
   </data>
   <data name="SignCommandDescription" xml:space="preserve">
     <value>Sign CLI</value>
@@ -236,5 +236,23 @@
   </data>
   <data name="CredentialTypeOptionDescription" xml:space="preserve">
     <value>Azure credential type that will be used. This defaults to DefaultAzureCredential.</value>
+  </data>
+  <data name="UseNewClickOnceSigningDescription" xml:space="preserve">
+    <value>Use new ClickOnce signing behavior.</value>
+    <comment>{Locked="ClickOnce"} is a Microsoft deployment technology.</comment>
+  </data>
+  <data name="NoSignClickOnceDepsDescription" xml:space="preserve">
+    <value>Update and sign only specified ClickOnce manifest files without signing dependencies. Requires --use-new-clickonce-signing.</value>
+    <comment>{Locked="ClickOnce,--use-new-clickonce-signing"} is a Microsoft deployment technology and a CLI option.</comment>
+  </data>
+  <data name="OptionRequiresAnotherOption" xml:space="preserve">
+    <value>The '{0}' option requires '{1}' to be enabled.</value>
+  </data>
+  <data name="NoUpdateClickOnceManifestDescription" xml:space="preserve">
+    <value>Sign ClickOnce manifest files without updating metadata. Requires --use-new-clickonce-signing.</value>
+    <comment>{Locked="ClickOnce,--use-new-clickonce-signing"} is a Microsoft deployment technology and a CLI option.</comment>
+  </data>
+  <data name="OptionsMutuallyExclusive" xml:space="preserve">
+    <value>The '{0}' and '{1}' options cannot be combined.</value>
   </data>
 </root>

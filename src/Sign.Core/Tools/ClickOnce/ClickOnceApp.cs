@@ -276,6 +276,14 @@ namespace Sign.Core
 
             deploymentManifest.ResolveFiles([deployManifestFile.DirectoryName!]);
 
+            bool hasErrors = LogOutputMessages(deploymentManifest, logger);
+            deploymentManifest.OutputMessages.Clear();
+
+            if (hasErrors)
+            {
+                return false;
+            }
+
             string? appManifestFilePath = deploymentManifest.EntryPoint?.ResolvedPath;
 
             if (string.IsNullOrEmpty(appManifestFilePath))
