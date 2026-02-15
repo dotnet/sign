@@ -10,7 +10,8 @@ namespace Sign.Core.Test
 {
     public partial class AggregatingSignerTests
     {
-        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, new Uri("http://timestamp.test"));
+        private static readonly Uri _timestampService = new("http://timestamp.test");
+        private static readonly SignOptions _options = new(HashAlgorithmName.SHA256, _timestampService);
 
         [Fact]
         public void Constructor_WhenSignersIsNull_Throws()

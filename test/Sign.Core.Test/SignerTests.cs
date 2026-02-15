@@ -48,16 +48,25 @@ namespace Sign.Core.Test
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new Signer(serviceProvider: null!, Mock.Of<ILogger<ISigner>>()));
+                () => new Signer(serviceProvider: null!, Mock.Of<ISignedFileTracker>(), Mock.Of<ILogger<ISigner>>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenSignedFileTrackerIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new Signer(Mock.Of<IServiceProvider>(), signedFileTracker: null!, Mock.Of<ILogger<ISigner>>()));
+
+            Assert.Equal("signedFileTracker", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new Signer(Mock.Of<IServiceProvider>(), logger: null!));
+                () => new Signer(Mock.Of<IServiceProvider>(), Mock.Of<ISignedFileTracker>(), logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -224,8 +233,9 @@ namespace Sign.Core.Test
         private async Task SignAsync(TemporaryDirectory temporaryDirectory, IReadOnlyList<FileInfo> files, string outputFile)
         {
             ServiceProvider serviceProvider = Create();
+            ISignedFileTracker tracker = new SignedFileTracker();
             TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
+            Signer signer = new(serviceProvider, tracker, logger);
 
             int exitCode = await signer.SignAsync(
                 files,
@@ -240,7 +250,9 @@ namespace Sign.Core.Test
                 _certificatesFixture.TimestampServiceUrl,
                 maxConcurrency: 4,
                 HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+                HashAlgorithmName.SHA256,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -420,7 +432,7 @@ namespace Sign.Core.Test
 
             using (Stream stream = entry!.Open())
             {
-                stream.Read(buffer.Span);
+                stream.ReadExactly(buffer.Span);
             }
 
             SignedCms signedCms = new();

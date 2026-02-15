@@ -61,6 +61,24 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty &apos;codebase&apos; attribute within the deployment manifest..
+        /// </summary>
+        internal static string ApplicationManifestNotFound {
+            get {
+                return ResourceManager.GetString("ApplicationManifestNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Application manifest not found at &apos;{0}&apos;. If you only need to re-sign the deployment manifest without resolving dependencies, use --use-new-clickonce-signing --no-update-clickonce-manifest..
+        /// </summary>
+        internal static string ApplicationManifestNotFoundWithSuggestion {
+            get {
+                return ResourceManager.GetString("ApplicationManifestNotFoundWithSuggestion", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The argument cannot be empty..
         /// </summary>
         internal static string ArgumentCannotBeEmpty {

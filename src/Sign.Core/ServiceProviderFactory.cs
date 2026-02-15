@@ -13,6 +13,7 @@ namespace Sign.Core
 
         public IServiceProvider Create(
             LogLevel logLevel = LogLevel.Information,
+            bool useNewClickOnceSigning = false,
             ILoggerProvider? loggerProvider = null,
             Action<IServiceCollection>? addServices = null)
         {
@@ -22,7 +23,11 @@ namespace Sign.Core
                 addServices += _addServices;
             }
 
-            return ServiceProvider.CreateDefault(logLevel, loggerProvider, addServices);
+            return ServiceProvider.CreateDefault(
+                logLevel,
+                useNewClickOnceSigning,
+                loggerProvider,
+                addServices);
         }
 
         public void AddServices(Action<IServiceCollection> addServices)

@@ -5,11 +5,17 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
     public class ServiceProviderTests
     {
+        public ServiceProviderTests()
+        {
+            MsBuildLocatorHelper.EnsureInitialized();
+        }
+
         [Fact]
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
@@ -41,6 +47,7 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<IContainerProvider>());
             Assert.NotNull(serviceProvider.GetRequiredService<IFileMetadataService>());
             Assert.NotNull(serviceProvider.GetRequiredService<IDirectoryService>());
+            Assert.NotNull(serviceProvider.GetRequiredService<ISignedFileTracker>());
             Assert.NotNull(serviceProvider.GetRequiredService<ISignatureAlgorithmProvider>());
             Assert.NotNull(serviceProvider.GetRequiredService<ICertificateProvider>());
 
@@ -53,6 +60,8 @@ namespace Sign.Core.Test
             Assert.NotNull(serviceProvider.GetRequiredService<IAggregatingDataFormatSigner>());
 
             Assert.NotNull(serviceProvider.GetRequiredService<IManifestSigner>());
+            Assert.NotNull(serviceProvider.GetRequiredService<IManifestReader>());
+            Assert.NotNull(serviceProvider.GetRequiredService<IClickOnceAppFactory>());
             Assert.NotNull(serviceProvider.GetRequiredService<IMageCli>());
             Assert.NotNull(serviceProvider.GetRequiredService<IMakeAppxCli>());
             Assert.NotNull(serviceProvider.GetRequiredService<INuGetSignTool>());
@@ -72,7 +81,7 @@ namespace Sign.Core.Test
         public void CreateDefault_Always_ConfiguresLoggingVerbosity(LogLevel logLevel)
         {
             TestLoggerProvider loggerProvider = new();
-            ServiceProvider serviceProvider = ServiceProvider.CreateDefault(logLevel, loggerProvider);
+            ServiceProvider serviceProvider = ServiceProvider.CreateDefault(logLevel, loggerProvider: loggerProvider);
 
             ILogger logger = serviceProvider.GetRequiredService<ILogger<ServiceProviderTests>>();
 

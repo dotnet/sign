@@ -259,7 +259,9 @@ namespace Sign.Cli
                 timestampUrl,
                 maxConcurrency,
                 fileHashAlgorithmName,
-                timestampHashAlgorithmName);
+                timestampHashAlgorithmName,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false);
 
             return exitCode;
         }

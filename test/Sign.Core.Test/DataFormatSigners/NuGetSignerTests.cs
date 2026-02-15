@@ -127,14 +127,17 @@ namespace Sign.Core.Test
             SignOptions options = new(
                 "ApplicationName",
                 "PublisherName",
-                "Description",
+                "AppDescription",
                 new Uri("https://description.test"),
                 HashAlgorithmName.SHA384,
                 HashAlgorithmName.SHA384,
                 new Uri("http://timestamp.test"),
                 matcher: null,
                 antiMatcher: null,
-                recurseContainers: true);
+                recurseContainers: true,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false,
+                signedFileTracker: new SignedFileTracker());
 
             using (DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>()))
             using (TemporaryDirectory temporaryDirectory = new(directoryService))

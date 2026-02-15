@@ -28,6 +28,7 @@ namespace Sign.Core
 
         internal static ServiceProvider CreateDefault(
             LogLevel logLevel = LogLevel.Information,
+            bool useNewClickOnceSigning = false,
             ILoggerProvider? loggerProvider = null,
             Action<IServiceCollection>? addServices = null)
         {
@@ -62,14 +63,26 @@ namespace Sign.Core
             services.AddSingleton<IContainerProvider, ContainerProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
+            services.AddSingleton<ISignedFileTracker, SignedFileTracker>();
             services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();
-            services.AddSingleton<IDataFormatSigner, ClickOnceSigner>();
+
+            if (useNewClickOnceSigning)
+            {
+                services.AddSingleton<IDataFormatSigner, ClickOnceSigner2>();
+            }
+            else
+            {
+                services.AddSingleton<IDataFormatSigner, ClickOnceSigner>();
+            }
+
             services.AddSingleton<IDataFormatSigner, VsixSigner>();
             services.AddSingleton<IDataFormatSigner, NuGetSigner>();
             services.AddSingleton<IDataFormatSigner, AppInstallerServiceSigner>();
             services.AddSingleton<IDefaultDataFormatSigner, DefaultSigner>();
             services.AddSingleton<IAggregatingDataFormatSigner, AggregatingSigner>();
             services.AddSingleton<IManifestSigner, ManifestSigner>();
+            services.AddSingleton<IManifestReader, ManifestReaderAdapter>();
+            services.AddSingleton<IClickOnceAppFactory, ClickOnceAppFactory>();
             services.AddSingleton<IMageCli, MageCli>();
             services.AddSingleton<IMakeAppxCli, MakeAppxCli>();
             services.AddSingleton<INuGetSignTool, NuGetSignTool>();

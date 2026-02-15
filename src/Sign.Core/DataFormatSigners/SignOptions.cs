@@ -19,6 +19,9 @@ namespace Sign.Core
         internal HashAlgorithmName TimestampHashAlgorithm { get; } = HashAlgorithmName.SHA256;
         internal Uri TimestampService { get; }
         internal bool RecurseContainers { get; }
+        internal bool NoSignClickOnceDeps { get; }
+        internal bool NoUpdateClickOnceManifest { get; }
+        internal ISignedFileTracker SignedFileTracker { get; }
 
         internal SignOptions(
             string? applicationName,
@@ -30,8 +33,13 @@ namespace Sign.Core
             Uri timestampService,
             Matcher? matcher,
             Matcher? antiMatcher,
-            bool recurseContainers)
+            bool recurseContainers,
+            bool noSignClickOnceDeps,
+            bool noUpdateClickOnceManifest,
+            ISignedFileTracker signedFileTracker)
         {
+            ArgumentNullException.ThrowIfNull(signedFileTracker, nameof(signedFileTracker));
+
             ApplicationName = applicationName;
             PublisherName = publisherName;
             Description = description;
@@ -42,12 +50,20 @@ namespace Sign.Core
             Matcher = matcher;
             AntiMatcher = antiMatcher;
             RecurseContainers = recurseContainers;
+            NoSignClickOnceDeps = noSignClickOnceDeps;
+            NoUpdateClickOnceManifest = noUpdateClickOnceManifest;
+            SignedFileTracker = signedFileTracker;
         }
 
-        internal SignOptions(HashAlgorithmName fileHashAlgorithm, Uri timestampService)
+        internal SignOptions(
+            HashAlgorithmName fileHashAlgorithm,
+            Uri timestampService,
+            ISignedFileTracker? signedFileTracker = null)
             : this(applicationName: null, publisherName: null, description: null, descriptionUrl: null,
                   fileHashAlgorithm, HashAlgorithmName.SHA256, timestampService, matcher: null,
-                  antiMatcher: null, recurseContainers: true)
+                  antiMatcher: null, recurseContainers: true,
+                  noSignClickOnceDeps: false, noUpdateClickOnceManifest: false,
+                  signedFileTracker: signedFileTracker ?? new SignedFileTracker())
         {
         }
     }

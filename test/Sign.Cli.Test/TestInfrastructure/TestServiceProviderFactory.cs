@@ -19,6 +19,7 @@ namespace Sign.Cli.Test
 
         public IServiceProvider Create(
             LogLevel logLevel = LogLevel.Information,
+            bool useNewClickOnceSigning = false,
             ILoggerProvider? loggerProvider = null,
             Action<IServiceCollection>? addServices = null)
         {

@@ -2,6 +2,16 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hans" original="../Resources.resx">
     <body>
+      <trans-unit id="ApplicationManifestNotFound">
+        <source>Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty 'codebase' attribute within the deployment manifest.</source>
+        <target state="new">Did not find exactly 1 &lt;dependentAssembly&gt; element with a non-empty 'codebase' attribute within the deployment manifest.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ApplicationManifestNotFoundWithSuggestion">
+        <source>Application manifest not found at '{0}'. If you only need to re-sign the deployment manifest without resolving dependencies, use --use-new-clickonce-signing --no-update-clickonce-manifest.</source>
+        <target state="new">Application manifest not found at '{0}'. If you only need to re-sign the deployment manifest without resolving dependencies, use --use-new-clickonce-signing --no-update-clickonce-manifest.</target>
+        <note>{Locked="--use-new-clickonce-signing,--no-update-clickonce-manifest"} are CLI options. {NumberedPlaceholder="{0}"} is the expected relative path to the application manifest.</note>
+      </trans-unit>
       <trans-unit id="ArgumentCannotBeEmpty">
         <source>The argument cannot be empty.</source>
         <target state="translated">参数不能为空。</target>

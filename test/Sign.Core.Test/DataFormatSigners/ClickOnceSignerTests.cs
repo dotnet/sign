@@ -226,7 +226,10 @@ namespace Sign.Core.Test
                     new Uri("http://timestamp.test"),
                     matcher: null,
                     antiMatcher: null,
-                    recurseContainers: true);
+                    recurseContainers: true,
+                    noSignClickOnceDeps: false,
+                    noUpdateClickOnceManifest: false,
+                    signedFileTracker: new SignedFileTracker());
 
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
@@ -335,7 +338,10 @@ namespace Sign.Core.Test
                     new Uri("http://timestamp.test"),
                     matcher: null,
                     antiMatcher: null,
-                    recurseContainers: true);
+                    recurseContainers: true,
+                    noSignClickOnceDeps: false,
+                    noUpdateClickOnceManifest: false,
+                    signedFileTracker: new SignedFileTracker());
 
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
@@ -461,7 +467,10 @@ namespace Sign.Core.Test
                     new Uri("http://timestamp.test"),
                     matcher: null,
                     antiMatcher: null,
-                    recurseContainers: true);
+                    recurseContainers: true,
+                    noSignClickOnceDeps: false,
+                    noUpdateClickOnceManifest: false,
+                    signedFileTracker: new SignedFileTracker());
 
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
@@ -594,7 +603,10 @@ namespace Sign.Core.Test
                         new Uri("http://timestamp.test"),
                         matcher: null,
                         antiMatcher: null,
-                        recurseContainers: true
+                        recurseContainers: true,
+                        noSignClickOnceDeps: false,
+                        noUpdateClickOnceManifest: false,
+                        signedFileTracker: new SignedFileTracker()
                     );
 
                     manifestSigner.Setup(

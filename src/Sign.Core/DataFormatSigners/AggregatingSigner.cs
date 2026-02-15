@@ -62,15 +62,25 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
+            // Filter out files that have already been signed (deduplication).
+            List<FileInfo> unsignedFiles = files
+                .Where(file => !options.SignedFileTracker.HasSigned(file))
+                .ToList();
+
+            if (unsignedFiles.Count == 0)
+            {
+                return;
+            }
+
             if (options.RecurseContainers)
             {
-                await SignContainerContentsAsync(files, options);
+                await SignContainerContentsAsync(unsignedFiles, options);
             }
 
             // split by code sign service and fallback to default
 
             var grouped = (from signer in _signers
-                           from file in files
+                           from file in unsignedFiles
                            where signer.CanSign(file)
                            group file by signer into groups
                            select groups).ToList();
@@ -78,7 +88,7 @@ namespace Sign.Core
             // get all files and exclude existing; 
 
             // This is to catch PE files that don't have the correct extension set
-            var defaultFiles = files.Except(grouped.SelectMany(g => g))
+            var defaultFiles = unsignedFiles.Except(grouped.SelectMany(g => g))
                                     .Where(_fileMetadataService.IsPortableExecutable)
                                     .Select(f => new { _defaultSigner.Signer, f })
                                     .GroupBy(a => a.Signer, k => k.f)
@@ -89,7 +99,16 @@ namespace Sign.Core
                 grouped.Add(defaultFiles);
             }
 
+            // Collect all files that will be dispatched to signers before signing.
+            List<FileInfo> allSignedFiles = grouped.SelectMany(g => g).ToList();
+
             await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
+
+            // Mark all signed files in the deduplication set.
+            foreach (FileInfo file in allSignedFiles)
+            {
+                options.SignedFileTracker.MarkAsSigned(file);
+            }
         }
 
         private async Task SignContainerContentsAsync(IEnumerable<FileInfo> files, SignOptions options)

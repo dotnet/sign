@@ -140,7 +140,10 @@ namespace Sign.Core.Test
                     timestampService: null!,
                     matcher: null,
                     antiMatcher: null,
-                    recurseContainers: true);
+                    recurseContainers: true,
+                    noSignClickOnceDeps: false,
+                    noUpdateClickOnceManifest: false,
+                    signedFileTracker: new SignedFileTracker());
 
                 X509Certificate2 certificate = _certificateFixture.TrustedCertificate;
 

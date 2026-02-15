@@ -77,7 +77,10 @@ namespace Sign.Core.Test
                 timestampService: new Uri("https://timestamp.test"),
                 matcher: null,
                 antiMatcher: null,
-                recurseContainers: false);
+                recurseContainers: false,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false,
+                signedFileTracker: new SignedFileTracker());
 
             await test.Signer.SignAsync(test.Files, options);
 
@@ -115,7 +118,10 @@ namespace Sign.Core.Test
                 new Uri("https://timestamp.test"),
                 matcher,
                 antiMatcher,
-                recurseContainers: true);
+                recurseContainers: true,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false,
+                signedFileTracker: new SignedFileTracker());
 
             AggregatingSignerTest test = new(
                 $"{AppxBundleContainerName}/a.dll",
@@ -256,7 +262,10 @@ namespace Sign.Core.Test
                 new Uri("https://timestamp.test"),
                 matcher,
                 antiMatcher,
-                recurseContainers: true);
+                recurseContainers: true,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false,
+                signedFileTracker: new SignedFileTracker());
 
             AggregatingSignerTest test = new(
                 $"{AppxContainerName}/a.dll",
@@ -399,7 +408,10 @@ namespace Sign.Core.Test
                 new Uri("https://timestamp.test"),
                 matcher,
                 antiMatcher,
-                recurseContainers: true);
+                recurseContainers: true,
+                noSignClickOnceDeps: false,
+                noUpdateClickOnceManifest: false,
+                signedFileTracker: new SignedFileTracker());
 
             AggregatingSignerTest test = new(
                 $"{ZipContainerName}/a.dll",

@@ -16,14 +16,17 @@ namespace Sign.Core
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ISigner> _logger;
+        private readonly ISignedFileTracker _signedFileTracker;
 
         // Dependency injection requires a public constructor.
-        public Signer(IServiceProvider serviceProvider, ILogger<ISigner> logger)
+        public Signer(IServiceProvider serviceProvider, ISignedFileTracker signedFileTracker, ILogger<ISigner> logger)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
+            ArgumentNullException.ThrowIfNull(signedFileTracker, nameof(signedFileTracker));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _serviceProvider = serviceProvider;
+            _signedFileTracker = signedFileTracker;
             _logger = logger;
         }
 
@@ -40,7 +43,9 @@ namespace Sign.Core
             Uri timestampUrl,
             int maxConcurrency,
             HashAlgorithmName fileHashAlgorithm,
-            HashAlgorithmName timestampHashAlgorithm)
+            HashAlgorithmName timestampHashAlgorithm,
+            bool noSignClickOnceDeps,
+            bool noUpdateClickOnceManifest)
         {
             IAggregatingDataFormatSigner signer = _serviceProvider.GetRequiredService<IAggregatingDataFormatSigner>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
@@ -72,7 +77,10 @@ namespace Sign.Core
                 timestampUrl,
                 matcher,
                 antiMatcher,
-                recurseContainers);
+                recurseContainers,
+                noSignClickOnceDeps,
+                noUpdateClickOnceManifest,
+                _signedFileTracker);
 
             try
             {
@@ -123,42 +131,33 @@ namespace Sign.Core
                         }
                     }
 
-                    //Ensure the output directory exists
+                    // Ensure the output directory exists
                     Directory.CreateDirectory(output.DirectoryName!);
 
-                    //Do action
-
-                    _logger.LogInformation(Resources.SubmittingFileForSigning, input.FullName);
-
-                    // this might have two files, one containing the file list
-                    // The first will be the package and the second is the filter
-                    using (TemporaryDirectory temporaryDirectory = new(directoryService))
+                    if (signer.CanSign(input) && input.Length > 0)
                     {
-                        string inputFileName = Path.Combine(temporaryDirectory.Directory.FullName, Path.GetRandomFileName());
-                        // However check its extension as it might be important (e.g. zip, bundle, etc)
-                        if (signer.CanSign(input))
-                        {
-                            // Keep the input extenstion as it has significance.
-                            inputFileName = Path.ChangeExtension(inputFileName, input.Extension);
-                        }
+                        _logger.LogInformation(Resources.SubmittingFileForSigning, input.FullName);
 
-                        _logger.LogInformation(Resources.SignAsyncCalled, input.FullName, inputFileName);
-
-                        if (input.Length > 0)
+                        // this might have two files, one containing the file list
+                        // The first will be the package and the second is the filter
+                        using (TemporaryDirectory temporaryDirectory = new(directoryService))
                         {
-                            input.CopyTo(inputFileName, overwrite: true);
-                            // for things like clickonce we will need additional files from the source location
-                            // in order to fully sign everything, so ask the signature provider to do it for us.
                             signer.CopySigningDependencies(input, temporaryDirectory.Directory, signOptions);
+
+                            FileInfo inputCopy = new(Path.Combine(temporaryDirectory.Directory.FullName, input.Name));
+
+                            // Copy unsigned files.
+                            input.CopyTo(inputCopy.FullName, overwrite: true);
+                            signer.CopySigningDependencies(input, temporaryDirectory.Directory!, signOptions);
+
+                            _logger.LogInformation(Resources.SignAsyncCalled, input.FullName, inputCopy.FullName);
+
+                            await signer.SignAsync(new[] { inputCopy }, signOptions);
+
+                            // Copy signed files.
+                            inputCopy.CopyTo(output.FullName, overwrite: true);
+                            signer.CopySigningDependencies(inputCopy, output.Directory!, signOptions);
                         }
-
-                        FileInfo fi = new(inputFileName);
-
-                        await signer.SignAsync(new[] { fi }, signOptions);
-
-                        // copy everything back
-                        fi.CopyTo(output.FullName, overwrite: true);
-                        signer.CopySigningDependencies(fi, output.Directory!, signOptions);
                     }
 
                     _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
@@ -169,9 +168,9 @@ namespace Sign.Core
                 _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
-            catch (SigningException)
+            catch (SigningException e)
             {
-                _logger.LogError(Resources.SigningFailedAfterAllAttempts);
+                _logger.LogError(e.Message);
                 return ExitCode.Failed;
             }
             catch (Exception e)
