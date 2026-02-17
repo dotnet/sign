@@ -84,6 +84,62 @@ When `--use-new-clickonce-signing` is omitted:
 
 In a future major release, the new algorithm may become the default and `--use-new-clickonce-signing` may be deprecated. That transition will be communicated through release notes and deprecation warnings in advance.
 
+### CLI examples
+
+The examples below elide certificate and timestamp options (`-cfp`, `-cf`, `-p`, `-t`) for clarity.
+
+#### Sign a ClickOnce application (full pipeline)
+
+```shell
+sign code certificate-store ... -co -b publish\ App.application
+```
+
+Signs the complete application: payload files, application manifest, deployment manifest, and bootstrapper, in the correct order. The algorithm follows the deployment manifest's references. Only the version it points to is signed.
+
+#### Sign a multi-version layout without over-signing
+
+Given a layout with multiple published versions:
+
+```
+publish\
+├── App.application                    ← points to v1.0.1.0
+└── Application Files\
+    ├── App_1_0_0_0\...                ← old version
+    └── App_1_0_1_0\...                ← current version
+```
+
+```shell
+# Current algorithm — crashes (SingleOrDefault with >1 .manifest file)
+sign code certificate-store ... -b publish\ App.application
+
+# New algorithm — signs only v1.0.1.0 (the referenced version)
+sign code certificate-store ... -co -b publish\ App.application
+```
+
+#### Sign multiple VSTO add-ins in one invocation
+
+```shell
+sign code certificate-store ... -co -b Output\ **/*.vsto
+```
+
+Each `.vsto` file is processed independently: its referenced application manifest and payload DLL are discovered, signed, and deduplicated so that shared files are only signed once.
+
+#### Re-sign only a deployment manifest (after payload changes)
+
+```shell
+sign code certificate-store ... -co --no-sign-clickonce-deps -b publish\ App.application
+```
+
+Updates the deployment manifest's metadata (sizes, hashes) to reflect the current state of its dependencies, then signs only the deployment manifest. Dependencies are not signed.
+
+#### Re-sign a manifest without updating metadata
+
+```shell
+sign code certificate-store ... -co --no-update-clickonce-manifest -b publish\ App.application
+```
+
+Signs the deployment manifest as-is, without calling `ResolveFiles()` or `UpdateFileInfo()`. Useful when re-signing with a different certificate and dependencies have not changed.
+
 ## Appendix A:  Current algorithm
 
 In a temporary directory:
