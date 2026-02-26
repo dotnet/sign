@@ -66,6 +66,12 @@ namespace Sign.Cli.Test
             Assert.True(_command.CertificateProfileOption.Required);
         }
 
+        [Fact]
+        public void Command_Description_IndicatesObsolete()
+        {
+            Assert.Contains("obsolete", _command.Description, StringComparison.OrdinalIgnoreCase);
+        }
+
         public class ParserTests
         {
             private readonly TrustedSigningCommand _command;
