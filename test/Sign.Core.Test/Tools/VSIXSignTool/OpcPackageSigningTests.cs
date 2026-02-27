@@ -89,33 +89,10 @@ namespace Sign.Core.Test
                             fileDigestAlgorithm: HashAlgorithmName.SHA256,
                             signingKey: rsaPrivateKey!));
                     OpcPackageTimestampBuilder timestampBuilder = signature.CreateTimestampBuilder();
-                    TimestampResult result;
-
-                    try
-                    {
-                        result = await timestampBuilder.SignAsync(_certificatesFixture.TimestampServiceUrl, timestampDigestAlgorithm);
-                    }
-                    finally
-                    {
-                        LogTimestampDetails();
-                    }
+                    TimestampResult result = await timestampBuilder.SignAsync(_certificatesFixture.TimestampServiceUrl, timestampDigestAlgorithm);
 
                     Assert.Equal(TimestampResult.Success, result);
                 }
-            }
-        }
-
-        private void LogTimestampDetails()
-        {
-            FileInfo? file = _certificatesFixture.TimestampServiceLogDirectory.GetFiles()
-                .OrderByDescending(file => file.Name)
-                .FirstOrDefault();
-
-            if (file is not null)
-            {
-                string content = File.ReadAllText(file.FullName);
-
-                _testOutputHelper.WriteLine(content);
             }
         }
 
