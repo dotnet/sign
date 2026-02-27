@@ -39,11 +39,6 @@ namespace Sign.Core.Test
         /// </summary>
         internal CertificateAuthority CertificateAuthority { get; }
 
-        internal DirectoryInfo LogDirectory
-        {
-            get => _temporaryDirectory.Directory;
-        }
-
         private TimestampService(
             CertificateAuthority certificateAuthority,
             X509Certificate2 certificate,
