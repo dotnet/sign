@@ -4,17 +4,17 @@
     <body>
       <trans-unit id="CertificateDetails">
         <source>Certificate details:</source>
-        <target state="translated">Podrobnosti certifikátu:</target>
+        <target state="new">Certificate details:</target>
         <note />
       </trans-unit>
       <trans-unit id="FetchedCertificate">
         <source>Fetched certificate. [{milliseconds} ms]</source>
-        <target state="translated">Načetl se certifikát. [{milliseconds} ms]</target>
+        <target state="new">Fetched certificate. [{milliseconds} ms]</target>
         <note>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</note>
       </trans-unit>
       <trans-unit id="FetchingCertificate">
         <source>Fetching certificate from Artifact Signing certificate profile.</source>
-        <target state="needs-review-translation">Načítá se certifikát z profilu důvěryhodného podpisového certifikátu.</target>
+        <target state="new">Fetching certificate from Artifact Signing certificate profile.</target>
         <note />
       </trans-unit>
     </body>
