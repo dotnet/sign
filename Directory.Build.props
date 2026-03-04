@@ -27,9 +27,7 @@
     <UpdateXlfOnBuild Condition="'$(CI)' != '1'">true</UpdateXlfOnBuild>
   </PropertyGroup>
 
-  <!-- See https://github.com/dotnet/sdk/pull/51281 -->
   <PropertyGroup>
-    <CreateRidSpecificToolPackages>false</CreateRidSpecificToolPackages>
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
