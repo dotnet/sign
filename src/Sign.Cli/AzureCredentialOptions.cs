@@ -123,16 +123,21 @@ namespace Sign.Cli
                     string? managedIdentityClientId = parseResult.GetValue(ManagedIdentityClientIdOption);
                     if (managedIdentityClientId is not null)
                     {
-                        return new ManagedIdentityCredential(managedIdentityClientId);
+                        ManagedIdentityId managedIdentityId = ManagedIdentityId.FromUserAssignedClientId(managedIdentityClientId);
+
+                        return new ManagedIdentityCredential(managedIdentityId);
                     }
 
                     string? managedIdentityResourceId = parseResult.GetValue(ManagedIdentityResourceIdOption);
                     if (managedIdentityResourceId is not null)
                     {
-                        return new ManagedIdentityCredential(new ResourceIdentifier(managedIdentityResourceId));
+                        ResourceIdentifier resourceIdentifier = new(managedIdentityResourceId);
+                        ManagedIdentityId managedIdentityId = ManagedIdentityId.FromUserAssignedResourceId(resourceIdentifier);
+
+                        return new ManagedIdentityCredential(managedIdentityId);
                     }
 
-                    return new ManagedIdentityCredential();
+                    return new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
 
                 case AzureCredentialType.WorkloadIdentity:
                     return new WorkloadIdentityCredential();
