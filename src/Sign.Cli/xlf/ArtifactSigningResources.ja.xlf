@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="AccountOptionDescription">
         <source>The Artifact Signing Account name.</source>
-        <target state="new">The Artifact Signing Account name.</target>
+        <target state="translated">Artifact Signing アカウント名です。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateProfileOptionDescription">
         <source>The Certificate Profile name.</source>
-        <target state="new">The Certificate Profile name.</target>
+        <target state="translated">証明書プロファイル名。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Artifact Signing.</source>
-        <target state="new">Use Artifact Signing.</target>
+        <target state="translated">Artifact Signing を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">
         <source>The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</source>
-        <target state="new">The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</target>
+        <target state="translated">Artifact Signing アカウントのエンドポイントです。この値は、Artifact Signing アカウントと証明書プロファイルが作成されたリージョンに合った URI である必要があります。</target>
         <note />
       </trans-unit>
     </body>
