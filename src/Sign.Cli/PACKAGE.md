@@ -15,7 +15,7 @@ The tool signs files inside-out, starting with the most nested files and then th
 
 - For help with...
     - Azure Key Vault:  `sign code azure-key-vault --help`
-    - Trusted Signing:  `sign code trusted-signing --help`
+    - Artifact Signing:  `sign code artifact-signing --help`
     - local signing:  `sign code certificate-store --help`
 - Version information:  `sign --version`
 
