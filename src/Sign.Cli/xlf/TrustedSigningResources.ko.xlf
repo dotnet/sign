@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Trusted Signing. (obsolete, use artifact-signing instead)</source>
-        <target state="new">Use Trusted Signing. (obsolete, use artifact-signing instead)</target>
+        <target state="translated">신뢰할 수 있는 서명을 사용합니다. (사용되지 않음, 대신 아티팩트 서명 사용)</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">

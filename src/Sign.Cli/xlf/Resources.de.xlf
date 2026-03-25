@@ -174,7 +174,7 @@
       </trans-unit>
       <trans-unit id="TrustedSigningCommandObsolete">
         <source>The trusted-signing command is obsolete. Use the artifact-signing command instead.</source>
-        <target state="new">The trusted-signing command is obsolete. Use the artifact-signing command instead.</target>
+        <target state="translated">Der vertrauenswürdige Signaturbefehl ist veraltet. Verwenden Sie stattdessen den Artefaktsignaturbefehl.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityOptionDescription">
