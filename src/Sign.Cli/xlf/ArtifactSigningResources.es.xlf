@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="AccountOptionDescription">
         <source>The Artifact Signing Account name.</source>
-        <target state="new">The Artifact Signing Account name.</target>
+        <target state="translated">Nombre de la cuenta de firma de artefactos.</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateProfileOptionDescription">
         <source>The Certificate Profile name.</source>
-        <target state="new">The Certificate Profile name.</target>
+        <target state="translated">Nombre del perfil de certificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Artifact Signing.</source>
-        <target state="new">Use Artifact Signing.</target>
+        <target state="translated">Use la firma de artefactos.</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">
         <source>The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</source>
-        <target state="new">The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</target>
+        <target state="translated">Punto de conexión de la cuenta de firma de artefactos. El valor debe ser un URI que se alinee con la región en la que se crearon la cuenta de firma de artefactos y el perfil de certificado.</target>
         <note />
       </trans-unit>
     </body>

@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Trusted Signing. (obsolete, use artifact-signing instead)</source>
-        <target state="new">Use Trusted Signing. (obsolete, use artifact-signing instead)</target>
+        <target state="translated">Use la firma de confianza. (obsoleto, use la firma de artefactos en su lugar)</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">

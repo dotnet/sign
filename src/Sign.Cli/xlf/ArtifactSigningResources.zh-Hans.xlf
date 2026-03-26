@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="AccountOptionDescription">
         <source>The Artifact Signing Account name.</source>
-        <target state="new">The Artifact Signing Account name.</target>
+        <target state="translated">工件签名帐户名。</target>
         <note />
       </trans-unit>
       <trans-unit id="CertificateProfileOptionDescription">
         <source>The Certificate Profile name.</source>
-        <target state="new">The Certificate Profile name.</target>
+        <target state="translated">证书配置文件名称。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Use Artifact Signing.</source>
-        <target state="new">Use Artifact Signing.</target>
+        <target state="translated">使用工件签名。</target>
         <note />
       </trans-unit>
       <trans-unit id="EndpointOptionDescription">
         <source>The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</source>
-        <target state="new">The Artifact Signing Account endpoint. The value must be a URI that aligns to the region that your Artifact Signing Account and Certificate Profile were created in.</target>
+        <target state="translated">工件签名帐户终结点。该值必须是与创建工件签名帐户和证书配置文件的区域相对应的 URI。</target>
         <note />
       </trans-unit>
     </body>
