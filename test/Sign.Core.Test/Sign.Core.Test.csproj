@@ -17,6 +17,9 @@
     <!-- Microsoft.AspNetCore.Server.Kestrel is old and requires an older version of Microsoft.Extensions.Primitives to function. -->
     <PackageReference Include="Microsoft.Extensions.Primitives" VersionOverride="2.2.0" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="AzureSign.Core">
+      <IncludeAssets>compile</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
