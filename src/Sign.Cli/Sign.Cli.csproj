@@ -13,6 +13,9 @@
     <RootNamespace>Sign.Cli</RootNamespace>
     <SelfContained>false</SelfContained>
     <ToolCommandName>sign</ToolCommandName>
+    <!-- Clear RID inherited from Directory.Build.props so dotnet pack produces
+         tools/net8.0/any/ layout for cross-platform tool restore (issue #984). -->
+    <RuntimeIdentifier />
   </PropertyGroup>
 
   <ItemGroup>
