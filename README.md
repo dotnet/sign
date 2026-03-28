@@ -4,6 +4,8 @@
 
 This project aims to make it easier to integrate secure code signing into a CI pipeline by using cloud-based hardware security module(HSM)-protected keys. This project is part of the [.NET Foundation](https://www.dotnetfoundation.org/) and operates under their [code of conduct](https://www.dotnetfoundation.org/code-of-conduct). It is licensed under [MIT](https://opensource.org/licenses/MIT) (an OSI approved license).
 
+You can find the latest version of Sign CLI on [NuGet.org](https://www.nuget.org/packages/sign).
+
 ## Prerequisites
 
 - An up-to-date x64-based version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
@@ -22,16 +24,16 @@ To run Sign CLI, execute `sign` from the same directory.
 
 ## Design
 
-Given an initial file path or glob pattern, this tool recursively searches directories and containers to find signable files and containers.  For each signable artifact, the tool uses an implementation of [`System.Security.Cryptography.RSA`](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa?view=net-7.0) that delegates the signing operation to Azure Key Vault.  The tool computes a digest (or hash) of the to-be-signed content and submits the digest --- not the original content --- to Azure Key Vault for digest signing.  The returned raw signature value is then incorporated in whatever signature format is appropriate for the file type.  Signable content is not sent to Azure Key Vault.
+Given an initial file path or glob pattern, this tool recursively searches directories and containers to find signable files and containers.  For each signable artifact, the tool uses an implementation of [`System.Security.Cryptography.RSA`](https://learn.microsoft.com/dotnet/api/system.security.cryptography.rsa?view=net-8.0) that delegates the signing operation to Azure Key Vault.  The tool computes a digest (or hash) of the to-be-signed content and submits the digest --- not the original content --- to Azure Key Vault for digest signing.  The returned raw signature value is then incorporated in whatever signature format is appropriate for the file type.  Signable content is not sent to Azure Key Vault.
 
 While the current version is limited to RSA and Azure Key Vault, it is desirable to support ECDSA and other cloud providers in the future.
 
 ## Supported File Types
 
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.appx`, `.appxbundle`, `.msix`, `.msixbundle`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and any portable executable (PE) file (via [AzureSignTool](https://github.com/vcsjones/AzureSignTool))
-- `.vsix` via [OpenOpcSignTool](https://github.com/vcsjones/OpenOpcSignTool)
+- `.vsix`
 - ClickOnce `.application` and `.vsto` (via `Mage`). Notes below.
-- `.nupkg` via [NuGetKeyVaultSignTool](https://github.com/novotnyllc/NuGetKeyVaultSignTool)
+- `.nupkg`
 
 ## ClickOnce
 There are a couple of possibilities for signing ClickOnce packages.
@@ -56,8 +58,8 @@ You should also use the `filter` parameter with the file list to sign, something
 
 ## Best Practices
 
-* Create a [ServicePrincipal with minimum permissions](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). Note that you do not need to assign any subscription-level roles to this identity. Only access to Key Vault is required.
-* Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/general/best-practices). The Premium SKU is required for code signing certificates to meet key storage requirements.
+* Create a [ServicePrincipal with minimum permissions](https://learn.microsoft.com/azure/active-directory/develop/howto-create-service-principal-portal). Note that you do not need to assign any subscription-level roles to this identity. Only access to Key Vault is required.
+* Follow [Best practices for using Azure Key Vault](https://learn.microsoft.com/azure/key-vault/general/best-practices). The Premium SKU is required for code signing certificates to meet key storage requirements.
    * If using Azure role-based access control (RBAC), [configure your signing account to have these roles](https://learn.microsoft.com/azure/key-vault/general/rbac-guide?tabs=azure-portal):
      - Key Vault Reader
      - Key Vault Crypto User
@@ -71,9 +73,9 @@ You should also use the `filter` parameter with the file list to sign, something
        - Certificate Management Operations
          - Get
 * Isolate signing operations in a separate leg of your build pipeline.
-* Ensure that this CLI and all files to be signed are in a directory under your control.
+* Ensure that this CLI and all input and output files are in a directory under your control.
 * Execute this CLI as a standard user.  Elevation is not required.
-* Use [OIDC authentication from your GitHub Action to Azure](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Cwindows#use-the-azure-login-action-with-openid-connect).
+* Use [OIDC authentication from your GitHub Action to Azure](https://learn.microsoft.com/azure/developer/github/connect-from-azure?tabs=azure-portal%2Cwindows#use-the-azure-login-action-with-openid-connect).
 
 ## Sample Workflows
 
@@ -97,7 +99,7 @@ The following information is needed for the signing build:
 
 ## Creating a code signing certificate in Azure Key Vault
 
-Code signing certificates must use the `RSA-HSM` key type to ensure the private keys are stored in a FIPS 140-2 compliant manner. While you can import a certificate from a PFX file, if available, the most secure option is to create a new Certificate Signing Request to provide to your certificate authority, and then merge in the public certificate they issue. Detailed steps are available [here](https://learn.microsoft.com/en-us/answers/questions/732422/ev-code-signing-with-azure-keyvault-and-azure-pipe).
+Code signing certificates must use the `RSA-HSM` key type to ensure the private keys are stored in a FIPS 140-2 compliant manner. While you can import a certificate from a PFX file, if available, the most secure option is to create a new Certificate Signing Request to provide to your certificate authority, and then merge in the public certificate they issue. Detailed steps are available [here](https://learn.microsoft.com/answers/questions/732422/ev-code-signing-with-azure-keyvault-and-azure-pipe).
 
 ## Migrating from the legacy code signing service
 
