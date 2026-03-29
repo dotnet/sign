@@ -32,7 +32,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void Verify_WhenCertificateIsNotYetTimeValid_LogsWarning()
+        public void Verify_WhenCertificateIsNotYetTimeValid_Throws()
         {
             Logger logger = new(Resources.CertificateIsNotYetTimeValid);
             CertificateVerifier verifier = new(logger);
@@ -42,14 +42,14 @@ namespace Sign.Core.Test
                 notBefore: now.AddDays(1),
                 notAfter: now.AddDays(2)))
             {
-                verifier.Verify(certificate);
+                Assert.Throws<SigningException>(() => verifier.Verify(certificate));
             }
 
             Assert.Equal(1, logger.Log_CallCount);
         }
 
         [Fact]
-        public void Verify_WhenCertificateIsExpired_LogsWarning()
+        public void Verify_WhenCertificateIsExpired_Throws()
         {
             Logger logger = new(Resources.CertificateIsExpired);
             CertificateVerifier verifier = new(logger);
@@ -59,7 +59,7 @@ namespace Sign.Core.Test
                 notBefore: now.AddDays(-2),
                 notAfter: now.AddDays(-1)))
             {
-                verifier.Verify(certificate);
+                Assert.Throws<SigningException>(() => verifier.Verify(certificate));
             }
 
             Assert.Equal(1, logger.Log_CallCount);
@@ -107,7 +107,7 @@ namespace Sign.Core.Test
             {
                 ++Log_CallCount;
 
-                Assert.Equal(LogLevel.Warning, logLevel);
+                Assert.Equal(LogLevel.Error, logLevel);
 
                 string actualMessage = formatter(state, exception);
 
