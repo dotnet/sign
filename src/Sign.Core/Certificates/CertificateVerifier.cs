@@ -29,11 +29,13 @@ namespace Sign.Core
             {
                 // See https://github.com/dotnet/roslyn-analyzers/issues/5626
 #pragma warning disable CA2254 // Template should be a static expression
-                _logger.LogWarning(Resources.CertificateIsNotYetTimeValid);
+                _logger.LogError(Resources.CertificateIsNotYetTimeValid);
+                throw new SigningException(Resources.CertificateIsNotYetTimeValid);
             }
             else if (certificate.NotAfter < now)
             {
-                _logger.LogWarning(Resources.CertificateIsExpired);
+                _logger.LogError(Resources.CertificateIsExpired);
+                throw new SigningException(Resources.CertificateIsExpired);
 #pragma warning restore CA2254 // Template should be a static expression
             }
         }
