@@ -60,7 +60,10 @@ namespace Sign.Core
             {
                 var extension = Path.GetExtension(_path)?.TrimStart('.');
 
-                return Package.ContentTypes.FirstOrDefault(ct => string.Equals(ct.Extension, extension, StringComparison.OrdinalIgnoreCase))?.ContentType ?? OpcKnownMimeTypes.OctetString;
+                var defaultContentType = Package.ContentTypes.FirstOrDefault(ct => string.Equals(ct.Extension, extension, StringComparison.OrdinalIgnoreCase));
+                var overrideContentType = Package.ContentTypes.FirstOrDefault(ct => string.Equals(ct.PartName?.Trim('/'), _path, StringComparison.OrdinalIgnoreCase));
+
+                return overrideContentType?.ContentType ?? defaultContentType?.ContentType ?? OpcKnownMimeTypes.OctetString;
             }
         }
 
