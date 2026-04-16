@@ -218,7 +218,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256,
                 timestampService: null!,
                 matcher: null,
-                antiMatcher: null);
+                antiMatcher: null,
+                recurseContainers: false);
 
             TestableAzureSignToolSigner signer = new(
                 Mock.Of<IToolConfigurationProvider>(),
@@ -260,7 +261,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256,
                 timestampService: null!,
                 matcher: null,
-                antiMatcher: null);
+                antiMatcher: null,
+                recurseContainers: false);
 
             TestableAzureSignToolSigner signer = new(
                 Mock.Of<IToolConfigurationProvider>(),
@@ -328,7 +330,8 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256,
                 timestampService: null!,
                 matcher: null,
-                antiMatcher: null);
+                antiMatcher: null,
+                recurseContainers: false);
 
             TestableAzureSignToolSigner signer = new(
                 Mock.Of<IToolConfigurationProvider>(),
