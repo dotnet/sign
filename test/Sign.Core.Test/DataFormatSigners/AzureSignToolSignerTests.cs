@@ -219,7 +219,7 @@ namespace Sign.Core.Test
                 timestampService: null!,
                 matcher: null,
                 antiMatcher: null,
-                recurseContainers: false);
+                recurseContainers: true);
 
             TestableAzureSignToolSigner signer = new(
                 Mock.Of<IToolConfigurationProvider>(),
@@ -262,7 +262,7 @@ namespace Sign.Core.Test
                 timestampService: null!,
                 matcher: null,
                 antiMatcher: null,
-                recurseContainers: false);
+                recurseContainers: true);
 
             TestableAzureSignToolSigner signer = new(
                 Mock.Of<IToolConfigurationProvider>(),
@@ -331,7 +331,7 @@ namespace Sign.Core.Test
                 timestampService: null!,
                 matcher: null,
                 antiMatcher: null,
-                recurseContainers: false);
+                recurseContainers: true);
 
             TestableAzureSignToolSigner signer = new(
                 Mock.Of<IToolConfigurationProvider>(),

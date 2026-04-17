@@ -33,6 +33,7 @@ namespace Sign.Core
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
                     Arguments = args
                 };
 
@@ -40,8 +41,19 @@ namespace Sign.Core
 
                 process.Start();
 
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
+                // Close stdin so the child process cannot block waiting for input.
+                process.StandardInput.Close();
+
+                // Read stdout and stderr concurrently to avoid a deadlock where the child
+                // process blocks writing to a full pipe buffer while this process blocks
+                // waiting for the other stream's ReadToEnd to complete.
+                Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+                Task<string> errorTask = process.StandardError.ReadToEndAsync();
+
+                await Task.WhenAll(outputTask, errorTask);
+
+                string output = outputTask.Result;
+                string error = errorTask.Result;
 
                 Logger.LogInformation(Resources.CliStandardOutput, Cli.Name, output);
 
@@ -54,13 +66,16 @@ namespace Sign.Core
                 {
                     cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(30));
 
-                    await process.WaitForExitAsync(cancellationTokenSource.Token);
-
-                    if (cancellationTokenSource.IsCancellationRequested)
+                    try
                     {
-                        Logger.LogError(Resources.ProcessDidNotExitInTime, Cli.Name, process.ExitCode);
+                        await process.WaitForExitAsync(cancellationTokenSource.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // The process has not exited, so process.ExitCode is unavailable.
+                        int exitCode = ExitCode.Failed;
 
-                        string message;
+                        Logger.LogError(Resources.ProcessDidNotExitInTime, Cli.Name, exitCode);
 
                         try
                         {
@@ -68,18 +83,16 @@ namespace Sign.Core
                         }
                         catch (Exception ex)
                         {
-                            message = string.Format(CultureInfo.CurrentCulture, Resources.ProcessCouldNotBeKilled, Cli.Name);
+                            string killMessage = string.Format(CultureInfo.CurrentCulture, Resources.ProcessCouldNotBeKilled, Cli.Name);
 
-                            throw new Exception(message, ex);
+                            throw new Exception(killMessage, ex);
                         }
 
-                        Logger.LogError(Resources.ProcessDidNotExitInTime, Cli.Name, process.ExitCode);
-
-                        message = string.Format(
+                        string message = string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.ProcessDidNotExitInTimeWithArguments,
                             Cli.Name,
-                            process.ExitCode,
+                            exitCode,
                             process.StartInfo.Arguments);
 
                         throw new Exception(message);
