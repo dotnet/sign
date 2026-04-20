@@ -3,6 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using AzureSign.Core;
@@ -10,8 +11,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class AzureSignToolSigner : IAzureSignToolDataFormatSigner
+    internal class AzureSignToolSigner : IAzureSignToolDataFormatSigner
     {
+        // COM-based signing of .js and .vbs files requires an STA thread.
+        // See https://github.com/dotnet/sign/issues/880
+        private static readonly HashSet<string> StaThreadExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".js",
+            ".vbs"
+        };
+
+        internal const int S_OK = 0;
+
         private readonly ICertificateProvider _certificateProvider;
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly ILogger<IDataFormatSigner> _logger;
@@ -51,6 +62,7 @@ namespace Sign.Core
                     ".emsix",
                     ".emsixbundle",
                     ".exe",
+                    ".js",
                     ".msi",
                     ".msix",
                     ".msixbundle",
@@ -113,9 +125,35 @@ namespace Sign.Core
                 options.FileHashAlgorithm,
                 timestampConfiguration))
             {
-                // loop through all of the files here, looking for appx/eappx
-                // mark each as being signed and strip appx
-                await Parallel.ForEachAsync(files, async (file, state) =>
+                // Partition files: STA-required files (.js, .vbs) are signed sequentially
+                // to avoid blocking ThreadPool threads (each STA call uses thread.Join()).
+                // Non-STA files are signed in parallel as before.
+                List<FileInfo> staFiles = new();
+                List<FileInfo> nonStaFiles = new();
+
+                foreach (FileInfo file in files)
+                {
+                    if (StaThreadExtensions.Contains(file.Extension))
+                    {
+                        staFiles.Add(file);
+                    }
+                    else
+                    {
+                        nonStaFiles.Add(file);
+                    }
+                }
+
+                foreach (FileInfo file in staFiles)
+                {
+                    if (!await SignAsync(signer, file, options))
+                    {
+                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+                        throw new SigningException(message);
+                    }
+                }
+
+                await Parallel.ForEachAsync(nonStaFiles, async (file, state) =>
                 {
                     if (!await SignAsync(signer, file, options))
                     {
@@ -135,7 +173,7 @@ namespace Sign.Core
         {
             TimeSpan retry = TimeSpan.FromSeconds(5);
             const int maxAttempts = 3;
-            var attempt = 1;
+            int attempt = 1;
 
             do
             {
@@ -166,22 +204,21 @@ namespace Sign.Core
 
             _logger.LogInformation(Resources.SigningFile, file.FullName);
 
-            var success = false;
-            var code = 0;
-            const int S_OK = 0;
+            bool success = false;
+            int code = 0;
 
             try
             {
-                using (var ctx = new Kernel32.ActivationContext(manifestFile))
+                if (StaThreadExtensions.Contains(file.Extension))
                 {
-                    code = signer.SignFile(
-                        file.FullName,
-                        options.Description ?? string.Empty,
-                        options.DescriptionUrl?.AbsoluteUri ?? string.Empty,
-                        pageHashing: null,
-                        _logger);
-                    success = code == S_OK;
+                    code = RunOnStaThread(() => SignFileCore(signer, file, options, manifestFile));
                 }
+                else
+                {
+                    code = SignFileCore(signer, file, options, manifestFile);
+                }
+
+                success = code == S_OK;
             }
             catch (Exception e)
             {
@@ -197,6 +234,57 @@ namespace Sign.Core
             _logger.LogError(Resources.SigningFailedWithError, code);
 
             return false;
+        }
+
+        internal virtual int SignFileCore(
+            AuthenticodeKeyVaultSigner signer,
+            FileInfo file,
+            SignOptions options,
+            FileInfo manifestFile)
+        {
+            using (Kernel32.ActivationContext ctx = new(manifestFile))
+            {
+                return signer.SignFile(
+                    file.FullName,
+                    options.Description ?? string.Empty,
+                    options.DescriptionUrl?.AbsoluteUri ?? string.Empty,
+                    pageHashing: null,
+                    _logger);
+            }
+        }
+
+        private static T RunOnStaThread<T>(Func<T> func)
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new PlatformNotSupportedException();
+            }
+
+            T result = default!;
+            Exception? exception = null;
+
+            Thread thread = new(() =>
+            {
+                try
+                {
+                    result = func();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (exception is not null)
+            {
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+
+            return result;
         }
     }
 }
