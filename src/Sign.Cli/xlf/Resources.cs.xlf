@@ -87,6 +87,11 @@
         <target state="translated">Cestu k souboru nelze při použití glob zakořenit. Použijte relativní cestu k pracovnímu adresáři (nebo základnímu adresáři, pokud se používá).</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidHttpsUrlValue">
+        <source>Invalid value for {0}. The value must be an absolute HTTPS URL.</source>
+        <target state="new">Invalid value for {0}. The value must be an absolute HTTPS URL.</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --artifact-signing-endpoint) and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">Neplatná hodnota pro {0}. Hodnota musí být číselná hodnota větší nebo rovna 1.</target>

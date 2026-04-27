@@ -87,6 +87,11 @@
         <target state="translated">glob을 사용할 때 파일 경로를 루팅할 수 없습니다. 작업 디렉터리(또는 사용되는 경우 기본 디렉터리)에 상대적인 경로를 사용하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidHttpsUrlValue">
+        <source>Invalid value for {0}. The value must be an absolute HTTPS URL.</source>
+        <target state="new">Invalid value for {0}. The value must be an absolute HTTPS URL.</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --artifact-signing-endpoint) and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">{0}에 대한 값이 잘못되었습니다. 값은 1보다 크거나 같은 숫자 값이어야 합니다.</target>

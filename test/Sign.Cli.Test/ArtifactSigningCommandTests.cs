@@ -110,6 +110,34 @@ namespace Sign.Cli.Test
 
                 Assert.Empty(result.Errors);
             }
+
+            [Theory]
+            [InlineData("code artifact-signing -ase \"\" -asa a -ascp b c")]
+            [InlineData("code artifact-signing -ase //artifactsigning.test -asa a -ascp b c")]
+            [InlineData("code artifact-signing -ase /path -asa a -ascp b c")]
+            [InlineData("code artifact-signing -ase file:///file.bin -asa a -ascp b c")]
+            [InlineData("code artifact-signing -ase http://artifactsigning.test -asa a -ascp b c")]
+            [InlineData("code artifact-signing -ase ftp://artifactsigning.test -asa a -ascp b c")]
+            public void Command_WhenEndpointUrlIsInvalid_HasError(string command)
+            {
+                ParseResult result = _rootCommand.Parse(command);
+
+                Assert.NotEmpty(result.Errors);
+                Assert.Contains(result.Errors, error => error.Message.Contains("URL"));
+            }
+
+            [Theory]
+            [InlineData("code artifact-signing -ase https://artifactsigning.test -asa a -ascp b c", "https://artifactsigning.test/")]
+            [InlineData("code artifact-signing -ase HTTPS://ARTIFACTSIGNING.TEST -asa a -ascp b c", "https://artifactsigning.test/")]
+            public void Command_WhenEndpointUrlIsValidHttps_ParsesCorrectly(string command, string expectedUrl)
+            {
+                ParseResult result = _rootCommand.Parse(command);
+
+                Assert.Empty(result.Errors);
+                Uri? actualUrl = result.GetValue(_command.EndpointOption);
+                Assert.NotNull(actualUrl);
+                Assert.Equal(expectedUrl, actualUrl.AbsoluteUri);
+            }
         }
     }
 }

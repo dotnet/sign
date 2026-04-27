@@ -87,6 +87,11 @@
         <target state="translated">Le chemin d’accès du fichier ne peut pas être rooté lors de l’utilisation d’un glob. Utilisez un chemin d’accès relatif au répertoire de travail (ou au répertoire de base, s’il est utilisé).</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidHttpsUrlValue">
+        <source>Invalid value for {0}. The value must be an absolute HTTPS URL.</source>
+        <target state="new">Invalid value for {0}. The value must be an absolute HTTPS URL.</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --artifact-signing-endpoint) and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">Valeur non valide pour {0}. La valeur doit être une valeur numérique supérieure ou égale à 1.</target>

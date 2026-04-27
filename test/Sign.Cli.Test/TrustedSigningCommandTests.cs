@@ -116,6 +116,34 @@ namespace Sign.Cli.Test
 
                 Assert.Empty(result.Errors);
             }
+
+            [Theory]
+            [InlineData("code trusted-signing -tse \"\" -tsa a -tscp b c")]
+            [InlineData("code trusted-signing -tse //trustedsigning.test -tsa a -tscp b c")]
+            [InlineData("code trusted-signing -tse /path -tsa a -tscp b c")]
+            [InlineData("code trusted-signing -tse file:///file.bin -tsa a -tscp b c")]
+            [InlineData("code trusted-signing -tse http://trustedsigning.test -tsa a -tscp b c")]
+            [InlineData("code trusted-signing -tse ftp://trustedsigning.test -tsa a -tscp b c")]
+            public void Command_WhenEndpointUrlIsInvalid_HasError(string command)
+            {
+                ParseResult result = _rootCommand.Parse(command);
+
+                Assert.NotEmpty(result.Errors);
+                Assert.Contains(result.Errors, error => error.Message.Contains("URL"));
+            }
+
+            [Theory]
+            [InlineData("code trusted-signing -tse https://trustedsigning.test -tsa a -tscp b c", "https://trustedsigning.test/")]
+            [InlineData("code trusted-signing -tse HTTPS://TRUSTEDSIGNING.TEST -tsa a -tscp b c", "https://trustedsigning.test/")]
+            public void Command_WhenEndpointUrlIsValidHttps_ParsesCorrectly(string command, string expectedUrl)
+            {
+                ParseResult result = _rootCommand.Parse(command);
+
+                Assert.Empty(result.Errors);
+                Uri? actualUrl = result.GetValue(_command.EndpointOption);
+                Assert.NotNull(actualUrl);
+                Assert.Equal(expectedUrl, actualUrl.AbsoluteUri);
+            }
         }
     }
 }

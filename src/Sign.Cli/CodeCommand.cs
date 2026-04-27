@@ -310,6 +310,20 @@ namespace Sign.Cli
             return value;
         }
 
+        internal static Uri? ParseHttpsUrl(ArgumentResult result)
+        {
+            if (result.Tokens.Count != 1 ||
+                !Uri.TryCreate(result.Tokens[0].Value, UriKind.Absolute, out Uri? uri) ||
+                !string.Equals(Uri.UriSchemeHttps, uri.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                result.AddError(FormatMessage(Resources.InvalidHttpsUrlValue, result.Argument));
+
+                return null;
+            }
+
+            return uri;
+        }
+
         internal static Uri? ParseUrl(ArgumentResult result)
         {
             if (result.Tokens.Count != 1 ||

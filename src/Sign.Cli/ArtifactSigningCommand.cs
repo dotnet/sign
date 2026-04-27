@@ -31,7 +31,7 @@ namespace Sign.Cli
 
             EndpointOption = new Option<Uri>("--artifact-signing-endpoint", "-ase")
             {
-                CustomParser = CodeCommand.ParseUrl,
+                CustomParser = CodeCommand.ParseHttpsUrl,
                 Description = ArtifactSigningResources.EndpointOptionDescription,
                 Required = true
             };
