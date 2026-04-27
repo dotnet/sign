@@ -87,6 +87,11 @@
         <target state="translated">O caminho do arquivo não pode estar desbloqueado por rooting ao usar um glob. Use um caminho relativo ao diretório de trabalho (ou diretório base, se usado).</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidHttpsUrlValue">
+        <source>Invalid value for {0}. The value must be an absolute HTTPS URL.</source>
+        <target state="new">Invalid value for {0}. The value must be an absolute HTTPS URL.</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --artifact-signing-endpoint) and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">Valor inválido para {0}. O valor deve ser um valor numérico maior ou igual a 1.</target>

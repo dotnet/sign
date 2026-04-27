@@ -223,6 +223,15 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for {0}. The value must be an absolute HTTPS URL..
+        /// </summary>
+        internal static string InvalidHttpsUrlValue {
+            get {
+                return ResourceManager.GetString("InvalidHttpsUrlValue", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for {0}. The value must be an absolute HTTP or HTTPS URL..
         /// </summary>
         internal static string InvalidUrlValue {
@@ -230,7 +239,7 @@ namespace Sign.Cli {
                 return ResourceManager.GetString("InvalidUrlValue", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The client id of a user assigned ManagedIdentity..
         /// </summary>

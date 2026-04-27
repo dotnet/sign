@@ -87,6 +87,11 @@
         <target state="translated">glob を使用している場合、ファイル パスをルート化できません。作業ディレクトリへの相対パス (または使用されている場合はベース ディレクトリ) を使用してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidHttpsUrlValue">
+        <source>Invalid value for {0}. The value must be an absolute HTTPS URL.</source>
+        <target state="new">Invalid value for {0}. The value must be an absolute HTTPS URL.</target>
+        <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --artifact-signing-endpoint) and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
         <source>Invalid value for {0}. The value must be a number value greater than or equal to 1.</source>
         <target state="translated">{0} の値が無効です。値は、1 以上の数値である必要があります。</target>
