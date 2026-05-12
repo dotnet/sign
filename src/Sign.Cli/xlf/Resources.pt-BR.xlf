@@ -89,7 +89,7 @@
       </trans-unit>
       <trans-unit id="InvalidHttpsUrlValue">
         <source>Invalid value for {0}. The value must be an absolute HTTPS URL.</source>
-        <target state="new">Invalid value for {0}. The value must be an absolute HTTPS URL.</target>
+        <target state="translated">Valor inválido para {0}. O valor deve ser uma URL HTTPS absoluta.</target>
         <note>{NumberedPlaceholder="{0}"} is an option name (e.g.:  --artifact-signing-endpoint) and should not be localized.</note>
       </trans-unit>
       <trans-unit id="InvalidMaxConcurrencyValue">
