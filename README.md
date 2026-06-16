@@ -117,4 +117,5 @@ ECDSA is not supported.  Not only do some signature providers not support ECDSA,
 
 ## Useful Links
 
+* [Sign CLI Primer](docs/primer.md) (for maintainers: cryptography vocabulary, signature-format details)
 * [Issue Triage Policy](triage-policy.md)

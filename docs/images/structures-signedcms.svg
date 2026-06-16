@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 860" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    :root { color-scheme: light dark; }
+
+    .title  { font-size: 16px; font-weight: 700; fill: #1f2937; }
+    .sub    { font-size: 11px; font-style: italic; fill: #4b5563; }
+    .h      { font-size: 14px; font-weight: 700; fill: #1f2937; }
+    .key    { font-size: 13px; font-weight: 600; fill: #111827; }
+    .ann    { font-size: 11px; font-style: italic; fill: #4b5563; }
+    .mono   { font-family: Consolas, "Courier New", monospace; font-size: 12px; fill: #111827; }
+    .desc   { font-size: 12px; fill: #4b5563; }
+
+    .outer  { fill: #eef2ff; stroke: #4f46e5; stroke-width: 1.5; }
+    .group  { fill: #ffffff; stroke: #6b7280; stroke-width: 1; }
+    .nested { fill: #fef3c7; stroke: #b45309; stroke-width: 1; }
+    .leaf   { fill: #ecfdf5; stroke: #047857; stroke-width: 1; }
+
+    @media (prefers-color-scheme: dark) {
+      .title, .h           { fill: #f3f4f6; }
+      .sub, .ann           { fill: #9ca3af; }
+      .key, .mono          { fill: #e5e7eb; }
+      .desc                { fill: #9ca3af; }
+
+      .outer  { fill: #1e1b4b; stroke: #818cf8; }
+      .group  { fill: #111827; stroke: #9ca3af; }
+      .nested { fill: #422006; stroke: #fbbf24; }
+      .leaf   { fill: #022c22; stroke: #34d399; }
+    }
+  </style>
+
+  <text class="title" x="12" y="22">SignedCms (CMS SignedData, RFC 5652)</text>
+  <text class="sub"   x="12" y="44">ASN.1 / DER. Carries the signature plus everything needed to verify it.</text>
+
+  <rect class="outer" x="12" y="60" width="576" height="786" rx="6"/>
+  <text class="h"    x="28" y="82">ContentInfo</text>
+  <text class="mono" x="28" y="106">contentType</text>
+  <text class="desc" x="170" y="106">= 1.2.840.113549.1.7.2 (signedData)</text>
+
+  <rect class="group" x="28" y="122" width="544" height="716" rx="4"/>
+  <text class="h"    x="44" y="144">SignedData</text>
+  <text class="mono" x="44" y="170">version</text>
+  <text class="mono" x="44" y="192">digestAlgorithms</text>
+  <text class="desc" x="168" y="192">set of algorithms used by signers (e.g. SHA-256)</text>
+
+  <rect class="nested" x="44" y="208" width="512" height="98" rx="4"/>
+  <text class="key"  x="58" y="228">encapContentInfo</text>
+  <text class="mono" x="58" y="254">eContentType</text>
+  <text class="desc" x="158" y="254">(e.g. SPC_INDIRECT_DATA for Authenticode, id-data for NuGet)</text>
+  <text class="mono" x="58" y="278">eContent</text>
+  <text class="desc" x="158" y="278">the thing whose digest is signed; may be detached</text>
+
+  <rect class="nested" x="44" y="322" width="512" height="72" rx="4"/>
+  <text class="key"  x="58" y="342">certificates [0..n]</text>
+  <text class="desc" x="58" y="368">X.509 chain: signer leaf → intermediates (root usually omitted)</text>
+
+  <rect class="nested" x="44" y="410" width="512" height="46" rx="4"/>
+  <text class="key" x="58" y="432">crls [0..n]</text>
+  <text class="ann" x="140" y="432">(rarely embedded; usually fetched live)</text>
+
+  <rect class="nested" x="44" y="472" width="512" height="360" rx="4"/>
+  <text class="key" x="58" y="492">signerInfos [0..n]   SignerInfo</text>
+
+  <rect class="leaf" x="60" y="506" width="480" height="316" rx="4"/>
+  <text class="mono" x="74" y="526">sid</text>
+  <text class="desc" x="220" y="526">issuerAndSerialNumber OR SubjectKeyIdentifier</text>
+  <text class="mono" x="74" y="548">digestAlgorithm</text>
+  <text class="desc" x="220" y="548">(e.g. SHA-256, SHA-384, SHA-512)</text>
+
+  <text class="key"  x="74" y="576">signedAttrs (authenticated)</text>
+  <text class="mono" x="88" y="598">content-type</text>
+  <text class="desc" x="220" y="598">1.2.840.113549.1.9.3</text>
+  <text class="mono" x="88" y="620">message-digest</text>
+  <text class="desc" x="220" y="620">1.2.840.113549.1.9.4 (hash of eContent)</text>
+  <text class="mono" x="88" y="642">signing-time</text>
+  <text class="desc" x="220" y="642">1.2.840.113549.1.9.5</text>
+  <text class="mono" x="88" y="664">signing-cert-v2 / commitment-type / ...</text>
+
+  <text class="mono" x="74" y="692">signatureAlgorithm</text>
+  <text class="desc" x="220" y="692">(e.g. RSA, RSASSA-PSS, ECDSA)</text>
+  <text class="mono" x="74" y="714">signature</text>
+  <text class="desc" x="220" y="714">Sign(privKey, hash(DER(signedAttrs)))</text>
+
+  <text class="key"  x="74" y="742">unsignedAttrs</text>
+  <text class="mono" x="88" y="764">countersignature</text>
+  <text class="desc" x="220" y="764">1.2.840.113549.1.9.6 — value: SignerInfo</text>
+  <text class="mono" x="88" y="786">timestamp (RFC 3161)</text>
+  <text class="desc" x="220" y="786">1.2.840.113549.1.9.16.2.14 — value: nested SignedData</text>
+  <text class="ann"  x="74" y="812">Anything in unsignedAttrs is NOT covered by the signature.</text>
+</svg>

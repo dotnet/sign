@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 778" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12">
+  <style>
+    :root { color-scheme: light dark; }
+
+    .title  { font-size: 16px; font-weight: 700; fill: #1f2937; }
+    .sub    { font-size: 11px; font-style: italic; fill: #4b5563; }
+    .h      { font-size: 14px; font-weight: 700; fill: #1f2937; }
+    .key    { font-size: 13px; font-weight: 600; fill: #111827; }
+    .ann    { font-size: 11px; font-style: italic; fill: #4b5563; }
+    .mono   { font-family: Consolas, "Courier New", monospace; font-size: 12px; fill: #111827; }
+    .desc   { font-size: 12px; fill: #4b5563; }
+
+    .outer  { fill: #eef2ff; stroke: #4f46e5; stroke-width: 1.5; }
+    .group  { fill: #ffffff; stroke: #6b7280; stroke-width: 1; }
+    .nested { fill: #fef3c7; stroke: #b45309; stroke-width: 1; }
+    .leaf   { fill: #ecfdf5; stroke: #047857; stroke-width: 1; }
+
+    @media (prefers-color-scheme: dark) {
+      .title, .h           { fill: #f3f4f6; }
+      .sub, .ann           { fill: #9ca3af; }
+      .key, .mono          { fill: #e5e7eb; }
+      .desc                { fill: #9ca3af; }
+
+      .outer  { fill: #1e1b4b; stroke: #818cf8; }
+      .group  { fill: #111827; stroke: #9ca3af; }
+      .nested { fill: #422006; stroke: #fbbf24; }
+      .leaf   { fill: #022c22; stroke: #34d399; }
+    }
+  </style>
+
+  <text class="title" x="12" y="22">X.509 Certificate (RFC 5280)</text>
+  <text class="sub"   x="12" y="44">One entry in SignedData.certificates. Binds a public key to an identity.</text>
+
+  <rect class="outer" x="12" y="60" width="576" height="700" rx="6"/>
+  <text class="h" x="28" y="82">Certificate</text>
+
+  <rect class="group" x="28" y="98" width="544" height="558" rx="4"/>
+  <text class="h"    x="44" y="120">tbsCertificate  (to be signed)</text>
+  <text class="mono" x="44" y="146">version</text>
+  <text class="desc" x="188" y="146">v3</text>
+  <text class="mono" x="44" y="168">serialNumber</text>
+  <text class="desc" x="188" y="168">unique per issuer</text>
+  <text class="mono" x="44" y="190">signature</text>
+  <text class="desc" x="188" y="190">algorithm identifier (must match outer signatureAlgorithm)</text>
+  <text class="mono" x="44" y="212">issuer</text>
+  <text class="desc" x="188" y="212">DN of issuing CA</text>
+
+  <rect class="nested" x="44" y="228" width="512" height="68" rx="4"/>
+  <text class="key"  x="58" y="248">validity</text>
+  <text class="mono" x="58" y="272">notBefore / notAfter</text>
+  <text class="desc" x="220" y="272">(timestamps extend signature validity)</text>
+
+  <text class="mono" x="44" y="316">subject</text>
+  <text class="desc" x="188" y="316">DN of the certificate holder (e.g. CN=Contoso)</text>
+
+  <rect class="nested" x="44" y="332" width="512" height="68" rx="4"/>
+  <text class="key"  x="58" y="352">subjectPublicKeyInfo</text>
+  <text class="desc" x="58" y="376">algorithm + the public key bits (e.g. RSA 3072)</text>
+
+  <rect class="nested" x="44" y="416" width="512" height="230" rx="4"/>
+  <text class="key" x="58" y="436">extensions</text>
+
+  <rect class="leaf" x="60" y="450" width="480" height="186" rx="4"/>
+  <text class="mono" x="74" y="470">BasicConstraints</text>
+  <text class="desc" x="248" y="470">cA=FALSE for end-entity</text>
+  <text class="mono" x="74" y="492">KeyUsage</text>
+  <text class="desc" x="248" y="492">digitalSignature</text>
+  <text class="mono" x="74" y="514">ExtendedKeyUsage</text>
+  <text class="desc" x="248" y="514">(e.g. 1.3.6.1.5.5.7.3.3, codeSigning)</text>
+  <text class="mono" x="74" y="536">SubjectKeyIdentifier</text>
+  <text class="desc" x="248" y="536">SHA-1 of subject public key (typical)</text>
+  <text class="mono" x="74" y="558">AuthorityKeyIdentifier</text>
+  <text class="desc" x="248" y="558">issuer's SKI (or issuer DN + serial)</text>
+  <text class="mono" x="74" y="580">CRLDistributionPoints</text>
+  <text class="desc" x="248" y="580">where to fetch revocation info</text>
+  <text class="mono" x="74" y="602">AuthorityInfoAccess</text>
+  <text class="desc" x="248" y="602">OCSP / CA Issuers URLs</text>
+  <text class="ann"  x="74" y="626">Unknown critical extensions MUST cause verification failure.</text>
+
+  <rect class="group" x="28" y="668" width="544" height="80" rx="4"/>
+  <text class="h"    x="44" y="690">CA signature over tbsCertificate</text>
+  <text class="mono" x="44" y="716">signatureAlgorithm</text>
+  <text class="desc" x="188" y="716">(e.g. 1.2.840.113549.1.1.11, sha256WithRSAEncryption)</text>
+  <text class="mono" x="44" y="738">signatureValue</text>
+  <text class="desc" x="188" y="738">issuer's signature (verifiable with issuer's public key)</text>
+</svg>
