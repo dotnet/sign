@@ -4,7 +4,7 @@
     "dotnet": "10.0.109",
     "runtimes": {
       "dotnet/x64": [
-        "8.0.27"
+        "8.0.28"
       ]
     },
     "xcopy-msbuild": "18.0.0"
