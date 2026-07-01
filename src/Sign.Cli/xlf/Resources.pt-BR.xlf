@@ -12,6 +12,11 @@
         <target state="translated">Diretório base para arquivos.  Substitui o diretório de trabalho atual.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateOutputOptionDescription">
+        <source>Write the public signing certificate as a DER-encoded CER file.</source>
+        <target state="new">Write the public signing certificate as a DER-encoded CER file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CertificateStoreCommandDescription">
         <source>Use Windows Certificate Store or a local certificate file.</source>
         <target state="translated">Use o Repositório de Certificados do Windows ou um arquivo de certificado local.</target>

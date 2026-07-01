@@ -3,6 +3,10 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using Moq;
+using Sign.Core;
 
 namespace Sign.Cli.Test
 {
@@ -20,6 +24,47 @@ namespace Sign.Cli.Test
         public void BaseDirectoryOption_Always_IsNotRequired()
         {
             Assert.False(_command.BaseDirectoryOption.Required);
+        }
+
+        [Fact]
+        public void CertificateOutputOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateOutputOption.Arity);
+        }
+
+        [Fact]
+        public void CertificateOutputOption_Always_IsNotRequired()
+        {
+            Assert.False(_command.CertificateOutputOption.Required);
+        }
+
+        [Fact]
+        public async Task ExportCertificateAsync_WritesThePublicCertificateAsCer()
+        {
+            using RSA key = RSA.Create(2048);
+            CertificateRequest request = new("CN=test", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using X509Certificate2 expectedCertificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(1));
+            Mock<ICertificateProvider> certificateProvider = new();
+            certificateProvider.Setup(provider => provider.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new X509Certificate2(expectedCertificate.Export(X509ContentType.Cert)));
+
+            string outputDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            FileInfo outputFile = new(Path.Combine(outputDirectory, "certificate.cer"));
+
+            try
+            {
+                await CodeCommand.ExportCertificateAsync(certificateProvider.Object, outputFile, CancellationToken.None);
+
+                using X509Certificate2 actualCertificate = new(outputFile.FullName);
+                Assert.Equal(expectedCertificate.Thumbprint, actualCertificate.Thumbprint);
+            }
+            finally
+            {
+                if (Directory.Exists(outputDirectory))
+                {
+                    Directory.Delete(outputDirectory, recursive: true);
+                }
+            }
         }
 
         [Fact]

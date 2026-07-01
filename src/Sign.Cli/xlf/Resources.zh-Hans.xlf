@@ -12,6 +12,11 @@
         <target state="translated">文件的基目录。替代当前工作目录。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateOutputOptionDescription">
+        <source>Write the public signing certificate as a DER-encoded CER file.</source>
+        <target state="new">Write the public signing certificate as a DER-encoded CER file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CertificateStoreCommandDescription">
         <source>Use Windows Certificate Store or a local certificate file.</source>
         <target state="translated">使用 Windows 证书存储或本地证书文件。</target>

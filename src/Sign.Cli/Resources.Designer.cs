@@ -77,6 +77,15 @@ namespace Sign.Cli {
                 return ResourceManager.GetString("BaseDirectoryOptionDescription", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Write the public signing certificate as a DER-encoded CER file..
+        /// </summary>
+        internal static string CertificateOutputOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateOutputOptionDescription", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Use Windows Certificate Store or a local certificate file..

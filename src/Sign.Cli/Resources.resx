@@ -123,6 +123,9 @@
   <data name="BaseDirectoryOptionDescription" xml:space="preserve">
     <value>Base directory for files.  Overrides the current working directory.</value>
   </data>
+  <data name="CertificateOutputOptionDescription" xml:space="preserve">
+    <value>Write the public signing certificate as a DER-encoded CER file.</value>
+  </data>
   <data name="CertificateStoreCommandDescription" xml:space="preserve">
     <value>Use Windows Certificate Store or a local certificate file.</value>
   </data>

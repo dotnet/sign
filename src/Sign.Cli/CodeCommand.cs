@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -19,6 +20,7 @@ namespace Sign.Cli
     {
         internal Option<string?> ApplicationNameOption { get; }
         internal Option<DirectoryInfo> BaseDirectoryOption { get; }
+        internal Option<string?> CertificateOutputOption { get; }
         internal Option<string> DescriptionOption { get; }
         internal Option<Uri?> DescriptionUrlOption { get; }
         internal Option<HashAlgorithmName> FileDigestOption { get; }
@@ -44,6 +46,11 @@ namespace Sign.Cli
                 CustomParser = ParseBaseDirectoryOption,
                 DefaultValueFactory = _ => new DirectoryInfo(Environment.CurrentDirectory),
                 Description = Resources.BaseDirectoryOptionDescription,
+                Recursive = true
+            };
+            CertificateOutputOption = new Option<string?>("--certificate-output", "-co")
+            {
+                Description = Resources.CertificateOutputOptionDescription,
                 Recursive = true
             };
             DescriptionOption = new Option<string>("--description", "-d")
@@ -120,6 +127,7 @@ namespace Sign.Cli
             Options.Add(DescriptionUrlOption);
             Options.Add(BaseDirectoryOption);
             Options.Add(OutputOption);
+            Options.Add(CertificateOutputOption);
             Options.Add(PublisherNameOption);
             Options.Add(FileListOption);
             Options.Add(RecurseContainersOption);
@@ -130,7 +138,12 @@ namespace Sign.Cli
             Options.Add(VerbosityOption);
         }
 
-        internal async Task<int> HandleAsync(ParseResult parseResult, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, IEnumerable<string> filesArgument)
+        internal async Task<int> HandleAsync(
+            ParseResult parseResult,
+            IServiceProviderFactory serviceProviderFactory,
+            ISignatureProvider signatureProvider,
+            IEnumerable<string> filesArgument,
+            CancellationToken cancellationToken)
         {
             // Some of the options have a default value and that is why we can safely use
             // the null-forgiving operator (!) to simplify the code.
@@ -146,6 +159,7 @@ namespace Sign.Cli
             Uri timestampUrl = parseResult.GetValue(TimestampUrlOption)!;
             LogLevel verbosity = parseResult.GetValue(VerbosityOption);
             string? output = parseResult.GetValue(OutputOption);
+            string? certificateOutput = parseResult.GetValue(CertificateOutputOption);
             int maxConcurrency = parseResult.GetValue(MaxConcurrencyOption);
 
             // Make sure this is rooted
@@ -246,6 +260,8 @@ namespace Sign.Cli
 
             ISigner signer = serviceProvider.GetRequiredService<ISigner>();
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             int exitCode = await signer.SignAsync(
                 inputFiles,
                 output,
@@ -261,7 +277,31 @@ namespace Sign.Cli
                 fileHashAlgorithmName,
                 timestampHashAlgorithmName);
 
+            if (exitCode == ExitCode.Success && !string.IsNullOrEmpty(certificateOutput))
+            {
+                FileInfo certificateOutputFile = new(ExpandFilePath(baseDirectory, certificateOutput));
+                ICertificateProvider certificateProvider = serviceProvider.GetRequiredService<ICertificateProvider>();
+
+                await ExportCertificateAsync(certificateProvider, certificateOutputFile, cancellationToken);
+            }
+
             return exitCode;
+        }
+
+        internal static async Task ExportCertificateAsync(
+            ICertificateProvider certificateProvider,
+            FileInfo certificateOutputFile,
+            CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(certificateProvider, nameof(certificateProvider));
+            ArgumentNullException.ThrowIfNull(certificateOutputFile, nameof(certificateOutputFile));
+
+            certificateOutputFile.Directory!.Create();
+
+            using X509Certificate2 certificate = await certificateProvider.GetCertificateAsync(cancellationToken);
+            byte[] certificateBytes = certificate.Export(X509ContentType.Cert);
+
+            await File.WriteAllBytesAsync(certificateOutputFile.FullName, certificateBytes, cancellationToken);
         }
 
         private static string ExpandFilePath(DirectoryInfo baseDirectory, string file)

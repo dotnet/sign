@@ -90,6 +90,7 @@ namespace Sign.Cli.Test
             Assert.Equal(DescriptionUrl, result.GetValue(_codeCommand.DescriptionUrlOption)!.OriginalString);
             Assert.Equal(KeyVaultUrl, result.GetValue(_azureKeyVaultCommand.UrlOption)!.OriginalString);
             Assert.Equal(CertificateName, result.GetValue(_azureKeyVaultCommand.CertificateOption));
+            Assert.Null(result.GetValue(_codeCommand.CertificateOutputOption));
             Assert.Equal(TimestampUrl, result.GetValue(_codeCommand.TimestampUrlOption)!.OriginalString);
             Assert.Equal([File], result.GetValue(_azureKeyVaultCommand.FilesArgument));
         }

@@ -88,6 +88,17 @@ jobs:
         --azure-credential-type "azure-cli"
         --azure-key-vault-url "${{ secrets.KEY_VAULT_URL }}" # This does not need to be a secret and is just a placeholder
         --azure-key-vault-certificate "${{ secrets.KEY_VAULT_CERTIFICATE_ID }}" # This does not need to be a secret and is just a placeholder
+        --certificate-output "${{ runner.temp }}\signing-certificate.cer"
+
+    # Make the public certificate path available to later steps in this job.
+    - name: Publish signing certificate path
+      id: signing-certificate
+      shell: pwsh
+      run: '"certificate_file=${{ runner.temp }}\signing-certificate.cer" >> $env:GITHUB_OUTPUT'
+
+    - name: Use signing certificate
+      shell: pwsh
+      run: Get-PfxCertificate -FilePath "${{ steps.signing-certificate.outputs.certificate_file }}"
     
     # Publish the signed packages
     - name: Upload build artifacts

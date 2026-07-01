@@ -103,7 +103,7 @@ namespace Sign.Cli
 
                 ArtifactSigningServiceProvider trustedSigningServiceProvider = new();
 
-                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, trustedSigningServiceProvider, filesArgument);
+                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, trustedSigningServiceProvider, filesArgument, cancellationToken);
             });
         }
     }
