@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Sign.Core;
 
@@ -46,7 +47,7 @@ namespace Sign.Cli.Test
             using X509Certificate2 expectedCertificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(1));
             Mock<ICertificateProvider> certificateProvider = new();
             certificateProvider.Setup(provider => provider.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new X509Certificate2(expectedCertificate.Export(X509ContentType.Cert)));
+                .ReturnsAsync(new X509Certificate2(expectedCertificate.Export(X509ContentType.Pfx)));
 
             string outputDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
             FileInfo outputFile = new(Path.Combine(outputDirectory, "certificate.cer"));
@@ -57,6 +58,7 @@ namespace Sign.Cli.Test
 
                 using X509Certificate2 actualCertificate = new(outputFile.FullName);
                 Assert.Equal(expectedCertificate.Thumbprint, actualCertificate.Thumbprint);
+                Assert.False(actualCertificate.HasPrivateKey);
             }
             finally
             {
@@ -65,6 +67,84 @@ namespace Sign.Cli.Test
                     Directory.Delete(outputDirectory, recursive: true);
                 }
             }
+        }
+
+        [Fact]
+        public async Task HandleAsync_WhenSigningSucceeds_WritesCertificateToRelativeOutputPath()
+        {
+            using RSA key = RSA.Create(2048);
+            CertificateRequest request = new("CN=test", key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using X509Certificate2 expectedCertificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(1));
+            Mock<ICertificateProvider> certificateProvider = new();
+            certificateProvider.Setup(provider => provider.GetCertificateAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new X509Certificate2(expectedCertificate.Export(X509ContentType.Pfx)));
+            SignerSpy signer = new();
+            string outputRelativePath = Path.Combine("certificates", "signing.cer");
+
+            await WithTemporaryInputAsync(async (baseDirectory, inputFile) =>
+            {
+                int exitCode = await HandleAsync(baseDirectory, inputFile, outputRelativePath, signer, certificateProvider.Object);
+                FileInfo outputFile = new(Path.Combine(baseDirectory.FullName, outputRelativePath));
+
+                Assert.Equal(ExitCode.Success, exitCode);
+                Assert.NotNull(signer.InputFiles);
+                Assert.True(outputFile.Exists);
+
+                using X509Certificate2 actualCertificate = new(outputFile.FullName);
+                Assert.Equal(expectedCertificate.Thumbprint, actualCertificate.Thumbprint);
+                Assert.False(actualCertificate.HasPrivateKey);
+            });
+        }
+
+        [Fact]
+        public async Task HandleAsync_WhenSigningFails_DoesNotWriteCertificate()
+        {
+            Mock<ICertificateProvider> certificateProvider = new();
+            SignerSpy signer = new(ExitCode.Failed);
+            string outputRelativePath = Path.Combine("certificates", "signing.cer");
+
+            await WithTemporaryInputAsync(async (baseDirectory, inputFile) =>
+            {
+                int exitCode = await HandleAsync(baseDirectory, inputFile, outputRelativePath, signer, certificateProvider.Object);
+                FileInfo outputFile = new(Path.Combine(baseDirectory.FullName, outputRelativePath));
+
+                Assert.Equal(ExitCode.Failed, exitCode);
+                Assert.NotNull(signer.InputFiles);
+                Assert.False(outputFile.Exists);
+                certificateProvider.Verify(
+                    provider => provider.GetCertificateAsync(It.IsAny<CancellationToken>()),
+                    Times.Never);
+            });
+        }
+
+        [Fact]
+        public async Task HandleAsync_WhenCancelled_DoesNotSignOrWriteCertificate()
+        {
+            Mock<ICertificateProvider> certificateProvider = new();
+            SignerSpy signer = new();
+            string outputRelativePath = Path.Combine("certificates", "signing.cer");
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            await WithTemporaryInputAsync(async (baseDirectory, inputFile) =>
+            {
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => HandleAsync(
+                        baseDirectory,
+                        inputFile,
+                        outputRelativePath,
+                        signer,
+                        certificateProvider.Object,
+                        cancellationTokenSource.Token));
+
+                FileInfo outputFile = new(Path.Combine(baseDirectory.FullName, outputRelativePath));
+
+                Assert.Null(signer.InputFiles);
+                Assert.False(outputFile.Exists);
+                certificateProvider.Verify(
+                    provider => provider.GetCertificateAsync(It.IsAny<CancellationToken>()),
+                    Times.Never);
+            });
         }
 
         [Fact]
@@ -185,6 +265,52 @@ namespace Sign.Cli.Test
         public void VerbosityOption_Always_IsNotRequired()
         {
             Assert.False(_command.VerbosityOption.Required);
+        }
+
+        private async Task<int> HandleAsync(
+            DirectoryInfo baseDirectory,
+            FileInfo inputFile,
+            string certificateOutput,
+            SignerSpy signer,
+            ICertificateProvider certificateProvider,
+            CancellationToken cancellationToken = default)
+        {
+            ServiceCollection services = new();
+            services.AddSingleton<ISigner>(signer);
+            services.AddSingleton(certificateProvider);
+
+            using var serviceProvider = services.BuildServiceProvider();
+            TestServiceProviderFactory serviceProviderFactory = new(serviceProvider);
+            RootCommand rootCommand = new();
+            rootCommand.Subcommands.Add(_command);
+            var parseResult = rootCommand.Parse(
+                $"code --base-directory \"{baseDirectory.FullName}\" --certificate-output \"{certificateOutput}\"");
+
+            Assert.Empty(parseResult.Errors);
+
+            return await _command.HandleAsync(
+                parseResult,
+                serviceProviderFactory,
+                Mock.Of<ISignatureProvider>(),
+                [inputFile.FullName],
+                cancellationToken);
+        }
+
+        private static async Task WithTemporaryInputAsync(Func<DirectoryInfo, FileInfo, Task> test)
+        {
+            DirectoryInfo baseDirectory = Directory.CreateDirectory(
+                Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+            FileInfo inputFile = new(Path.Combine(baseDirectory.FullName, "input.bin"));
+
+            try
+            {
+                await File.WriteAllTextAsync(inputFile.FullName, "content");
+                await test(baseDirectory, inputFile);
+            }
+            finally
+            {
+                baseDirectory.Delete(recursive: true);
+            }
         }
     }
 }
