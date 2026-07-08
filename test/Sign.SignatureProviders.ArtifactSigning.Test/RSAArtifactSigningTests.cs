@@ -2,16 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.Security.Cryptography;
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
 using NSubstitute;
 using Sign.SignatureProviders.ArtifactSigning;
+using System.Security.Cryptography;
 
 namespace Sign.SignatureProviders.KeyVault.Test
 {
-    public class RSATrustedSigningTests
+    public class RSAArtifactSigningTests
     {
         private static readonly string AccountName = "testAccount";
         private static readonly string CertificateProfileName = "testProfile";
@@ -160,7 +160,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 .StartSign(AccountName, CertificateProfileName, Arg.Any<SignRequest>(), null, null, null, default)
                 .Returns(operation);
 
-            _rsaPublicKey.Setup(_ => _.VerifyHash(hash, signature, hashAlgorithmName, padding)).Returns(true);
+            _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithmName, padding).Returns(true);
 
             var result = rsa.SignHash(hash, hashAlgorithmName, padding);
 
