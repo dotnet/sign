@@ -16,5 +16,12 @@ namespace Sign.Core
         /// </summary>
         /// <returns>An <see cref="X509Certificate2"/> certificate acquired from the initialized certificate service.</returns>
         Task<X509Certificate2> GetCertificateAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Acquires additional certificates (e.g. intermediates) used to build the chain for the signing certificate.
+        /// Providers that do not have a chain to expose return an empty collection.
+        /// </summary>
+        Task<X509Certificate2Collection> GetAdditionalCertificatesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new X509Certificate2Collection());
     }
 }
