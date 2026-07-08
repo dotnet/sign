@@ -160,6 +160,8 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 .StartSign(AccountName, CertificateProfileName, Arg.Any<SignRequest>(), null, null, null, default)
                 .Returns(operation);
 
+            _rsaPublicKey.Setup(_ => _.VerifyHash(hash, signature, hashAlgorithmName, padding)).Returns(true);
+
             var result = rsa.SignHash(hash, hashAlgorithmName, padding);
 
             Assert.Same(signature, result);
