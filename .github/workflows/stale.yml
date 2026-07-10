@@ -11,7 +11,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
         with:
           stale-issue-message: 'This issue is stale because it has been open 10 days with no activity after asking for more info. Comment or this will be closed in 4 days.'
           close-issue-message: 'This issue was closed because it has been stalled for 14 days with no activity. This can be reopened if additional information is provided.'
