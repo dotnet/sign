@@ -3,9 +3,11 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Globalization;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
+using Microsoft.Extensions.Logging;
 using Sign.Core.Timestamp;
 using Xunit.Abstractions;
 
@@ -67,6 +69,38 @@ namespace Sign.Core.Test
                 yield return new object[] { 2048, HashAlgorithmName.SHA256, HashAlgorithmName.SHA512, OpcKnownUris.SignatureAlgorithms.RsaSHA512.AbsoluteUri };
                 yield return new object[] { 2048, HashAlgorithmName.SHA256, HashAlgorithmName.SHA384, OpcKnownUris.SignatureAlgorithms.RsaSHA384.AbsoluteUri };
                 yield return new object[] { 2048, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, OpcKnownUris.SignatureAlgorithms.RsaSHA256.AbsoluteUri };
+            }
+        }
+
+        [Fact]
+        public async Task ShouldRejectPartNameContainingFragmentDelimiter()
+        {
+            string path = CreatePackageWithEntry("ab#c.txt");
+            VsixSignTool signTool = new(Moq.Mock.Of<ILogger<IVsixSignTool>>());
+
+            using (X509Certificate2 certificate = _pfxFilesFixture.GetPfx(
+                keySizeInBits: 2048,
+                HashAlgorithmName.SHA256))
+            using (RSA? rsaPrivateKey = certificate.GetRSAPrivateKey())
+            {
+                SignConfigurationSet configuration = new(
+                    publicCertificate: certificate,
+                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                    signingKey: rsaPrivateKey!);
+                SignOptions options = new(
+                    fileHashAlgorithm: HashAlgorithmName.SHA256,
+                    timestampService: null!);
+
+                InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(
+                    () => signTool.SignAsync(new FileInfo(path), configuration, options));
+
+                Assert.Contains("ab#c.txt", exception.Message, StringComparison.Ordinal);
+            }
+
+            using (OpcPackage package = OpcPackage.Open(path))
+            {
+                Assert.Empty(package.GetSignatures());
             }
         }
 
@@ -281,6 +315,21 @@ namespace Sign.Core.Test
             File.Copy(packagePath, temp, overwrite: true);
             path = temp;
             return OpcPackage.Open(temp, mode);
+        }
+
+        private string CreatePackageWithEntry(string entryName)
+        {
+            string path = Path.GetTempFileName();
+            _shadowFiles.Add(path);
+            File.Copy(SamplePackage, path, overwrite: true);
+
+            using (ZipArchive archive = ZipFile.Open(path, ZipArchiveMode.Update))
+            using (StreamWriter writer = new(archive.CreateEntry(entryName).Open()))
+            {
+                writer.Write("test");
+            }
+
+            return path;
         }
 
         public void Dispose()
