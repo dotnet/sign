@@ -18,6 +18,11 @@ namespace Sign.Core
 
         internal OpcPart(OpcPackage package, string path, ZipArchiveEntry entry, OpcPackageFileMode mode)
         {
+            if (path.Contains('#'))
+            {
+                throw new InvalidDataException($"Package part name '{path}' contains the unsupported '#' character.");
+            }
+
             Uri = new Uri(OpcPackage.BasePackageUri, path);
             Package = package;
             _path = path;
