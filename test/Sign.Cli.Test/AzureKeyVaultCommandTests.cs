@@ -43,6 +43,18 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void CertificateVersionOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateVersionOption.Arity);
+        }
+
+        [Fact]
+        public void CertificateVersionOption_Always_IsOptional()
+        {
+            Assert.False(_command.CertificateVersionOption.Required);
+        }
+
+        [Fact]
         public void UrlOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.UrlOption.Arity);
@@ -92,11 +104,24 @@ namespace Sign.Cli.Test
             [Theory]
             [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a b")]
             [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvt b -kvi c -kvs d e")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a -kvcv b c")]
+            [InlineData("code azure-key-vault -kvu https://keyvault.test -kvc a --azure-key-vault-certificate-version b c")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _rootCommand.Parse(command);
 
                 Assert.Empty(result.Errors);
+            }
+
+            [Theory]
+            [InlineData("-kvcv")]
+            [InlineData("--azure-key-vault-certificate-version")]
+            public void Command_WhenCertificateVersionIsSpecified_ParsesCorrectly(string option)
+            {
+                ParseResult result = _rootCommand.Parse($"code azure-key-vault -kvu https://keyvault.test -kvc a {option} b c");
+
+                Assert.Empty(result.Errors);
+                Assert.Equal("b", result.GetValue(_command.CertificateVersionOption));
             }
 
             [Theory]

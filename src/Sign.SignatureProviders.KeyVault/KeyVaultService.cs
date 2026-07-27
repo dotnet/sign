@@ -17,6 +17,7 @@ namespace Sign.SignatureProviders.KeyVault
     {
         private readonly CertificateClient _certificateClient;
         private readonly CryptographyClient _cryptographyClient;
+        private readonly string? _certificateVersion;
         private readonly string _certificateName;
         private readonly ILogger<KeyVaultService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
@@ -26,6 +27,7 @@ namespace Sign.SignatureProviders.KeyVault
             CertificateClient certificateClient,
             CryptographyClient cryptographyClient,
             string certificateName,
+            string? certificateVersion,
             ILogger<KeyVaultService> logger)
         {
             ArgumentNullException.ThrowIfNull(certificateClient, nameof(certificateClient));
@@ -34,6 +36,7 @@ namespace Sign.SignatureProviders.KeyVault
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _certificateName = certificateName;
+            _certificateVersion = certificateVersion;
             _certificateClient = certificateClient;
             _cryptographyClient = cryptographyClient;
             _logger = logger;
@@ -63,11 +66,22 @@ namespace Sign.SignatureProviders.KeyVault
 
                     _logger.LogTrace(Resources.FetchingCertificate);
 
-                    Response<KeyVaultCertificateWithPolicy> response = await _certificateClient.GetCertificateAsync(_certificateName, cancellationToken);
+                    byte[] certificateBytes;
+                    if (string.IsNullOrEmpty(_certificateVersion))
+                    {
+                        Response<KeyVaultCertificateWithPolicy> response = await _certificateClient.GetCertificateAsync(_certificateName, cancellationToken);
+                        certificateBytes = response.Value.Cer;
+                    }
+                    else
+                    {
+                        Response<KeyVaultCertificate> response =
+                            await _certificateClient.GetCertificateVersionAsync(_certificateName, _certificateVersion, cancellationToken);
+                        certificateBytes = response.Value.Cer;
+                    }
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
 
-                    _certificate = new X509Certificate2(response.Value.Cer);
+                    _certificate = new X509Certificate2(certificateBytes);
 
                     //print the certificate info
                     _logger.LogTrace($"{Resources.CertificateDetails}{Environment.NewLine}{_certificate.ToString(verbose: true)}");

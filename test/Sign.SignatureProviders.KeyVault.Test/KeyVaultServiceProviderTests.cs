@@ -25,7 +25,9 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 return new KeyVaultService(
                     Substitute.For<CertificateClient>(),
                     Substitute.For<CryptographyClient>(),
-                    "a", sp.GetRequiredService<ILogger<KeyVaultService>>());
+                    "a",
+                    null,
+                    sp.GetRequiredService<ILogger<KeyVaultService>>());
             });
             serviceProvider = services.BuildServiceProvider();
         }
