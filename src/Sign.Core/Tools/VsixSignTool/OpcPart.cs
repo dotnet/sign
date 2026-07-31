@@ -20,7 +20,7 @@ namespace Sign.Core
         {
             if (path.Contains('#'))
             {
-                throw new InvalidDataException($"Package part name '{path}' contains the unsupported '#' character.");
+                throw new InvalidDataException(string.Format(Resources.VSIXSignToolOpcPartNameContainsFragmentDelimiter, path));
             }
 
             Uri = new Uri(OpcPackage.BasePackageUri, path);

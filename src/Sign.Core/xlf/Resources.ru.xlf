@@ -162,6 +162,11 @@
         <target state="translated">Указанный параметр ({0}) недопустим.</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
+      <trans-unit id="VSIXSignToolOpcPartNameContainsFragmentDelimiter">
+        <source>Package part name '{0}' contains the unsupported '#' character.</source>
+        <target state="new">Package part name '{0}' contains the unsupported '#' character.</target>
+        <note>{NumberedPlaceholder="{0}"} is the package part name.</note>
+      </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
         <target state="translated">Неизвестный алгоритм подписывания.</target>
