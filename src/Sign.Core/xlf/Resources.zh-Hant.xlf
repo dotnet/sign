@@ -162,6 +162,11 @@
         <target state="translated">指定的 {0} 無效。</target>
         <note>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</note>
       </trans-unit>
+      <trans-unit id="VSIXSignToolOpcPartNameContainsFragmentDelimiter">
+        <source>Package part name '{0}' contains the unsupported '#' character.</source>
+        <target state="new">Package part name '{0}' contains the unsupported '#' character.</target>
+        <note>{NumberedPlaceholder="{0}"} is the package part name.</note>
+      </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
         <source>Unknown signing algorithm.</source>
         <target state="translated">未知的簽署演算法。</target>
