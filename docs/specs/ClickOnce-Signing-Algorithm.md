@@ -71,7 +71,7 @@ Implicit ClickOnce dependency traversal and user file matching remain separate. 
 For re-signing scenarios, two new options will be introduced (both require ClickOnce signing algorithm version 2):
 
 * `--no-sign-clickonce-deps`: When specified, Sign CLI will update and sign only the explicitly specified manifest files without signing their dependencies (referenced manifests or payload files). Manifests are still updated before signing to refresh metadata. This allows users to re-sign only a deployment manifest, or only an application manifest, while ensuring the manifest's metadata remains consistent with its dependencies.
-* `--no-update-clickonce-manifest`: When specified, Sign CLI will sign manifest files without calling `ResolveFiles()` and `UpdateFileInfo()`. This is useful when re-signing a manifest whose dependencies have not changed.
+* `--no-update-clickonce-manifest`: When specified, Sign CLI will sign manifest files without resolving files or updating file information. This is useful when re-signing a manifest whose dependencies have not changed.
 
 These options are mutually exclusive (see [Option interactions](#option-interactions)). Without these options, Sign CLI will discover, update, and sign the complete ClickOnce application (deployment manifest, application manifest, all referenced payload files, and applicable adjacent executables).
 
@@ -94,7 +94,7 @@ The three new CLI options introduced by this spec are:
 |---|---|---|
 | `--clickonce-signing-version <version>` | No | Selects ClickOnce signing algorithm version 1 or 2. Initially defaults to 1. |
 | `--no-sign-clickonce-deps` | Yes | Updates and signs only the specified manifests; does not sign referenced payload files or dependent manifests. |
-| `--no-update-clickonce-manifest` | Yes | Signs manifests without calling `ResolveFiles()` / `UpdateFileInfo()`. |
+| `--no-update-clickonce-manifest` | Yes | Signs manifests without resolving files or updating file information. |
 
 No short alias is defined for `--clickonce-signing-version`.
 
@@ -159,7 +159,7 @@ Updates the deployment manifest's metadata (sizes, hashes) to reflect the curren
 sign code certificate-store ... --clickonce-signing-version 2 --no-update-clickonce-manifest -b publish\ App.application
 ```
 
-Signs the deployment manifest as-is, without calling `ResolveFiles()` or `UpdateFileInfo()`. Useful when re-signing with a different certificate and dependencies have not changed.
+Signs the deployment manifest as-is, without resolving files or updating file information. Useful when re-signing with a different certificate and dependencies have not changed.
 
 ## Appendix A:  Signing algorithm version 1
 
@@ -217,6 +217,8 @@ Here are two examples of how the current algorithm overcopies and oversigns.
 
 ## Appendix B:  Signing algorithm version 2
 
+`Manifest` provides a parameterless `UpdateFileInfo()` overload and an `UpdateFileInfo(string targetFrameworkVersion)` overload. Version 2 does not call the parameterless overload, which computes SHA-1 hashes for referenced files. Whenever version 2 updates file information, it calls `UpdateFileInfo("v4.5")`. MSBuild's manifest utility implementation selects SHA-256 when the supplied target framework version is greater than `"v4.0"`; `"v4.5"` selects the hashing behavior and does not represent the application's target framework. This preserves Sign CLI's current SHA-256 behavior and does not add support for ClickOnce runtimes that require SHA-1 manifest hashes.
+
 ### Default behavior (no dependency options)
 
 1. Before staging or signing any file, obtain the coordinated signing operation for its canonical source path (via `Path.GetFullPath()`). The first caller owns the operation; duplicate callers wait for its result before staging or consuming the file.
@@ -238,8 +240,8 @@ Here are two examples of how the current algorithm overcopies and oversigns.
 1. Before signing begins, temporarily rename staged files whose names end with `.deploy` to their base names (for example, `MyApp.dll.deploy` → `MyApp.dll`).
 1. Discover applicable adjacent executables by checking if `setup.exe` or `Launcher.exe` exists in the same directory as the deployment manifest. `setup.exe` is an optional prerequisite bootstrapper; `Launcher.exe` launches the .NET application but does not participate in ClickOnce activation. A launcher or bootstrapper in a different directory or with a different name is not implicitly discovered as a dependency, but it will still be signed through standard Authenticode signing if matched by the user's file patterns.
 1. Sign payload files.
-1. Call `ApplicationManifest.UpdateFileInfo()` to refresh payload hashes, sizes, and identities, then restore the `.deploy` suffixes. (`UpdateFileInfo()` hashes files at their `ResolvedPath`, which does not include `.deploy`; the suffixes must be absent when hashes are computed.) Make the signed payload results available to waiting callers and complete their coordinated signing operations. Then sign the application manifest, make its signed result available, and complete its operation.
-1. Signing the application manifest changes its signed bytes and can change its assembly identity, including its public key token. Call `DeployManifest.ResolveFiles()` to re-resolve file references, then call `DeployManifest.UpdateFileInfo()` to refresh the deployment manifest's hash, size, and entry-point identity before signing the deployment manifest. When signing the deployment manifest with `mage.exe -update`, the `-appm` parameter updates the entry point reference to the application manifest. Make the signed deployment manifest available and complete its operation.
+1. Call `ApplicationManifest.UpdateFileInfo("v4.5")` to refresh payload SHA-256 hashes, sizes, and identities, then restore the `.deploy` suffixes. (`UpdateFileInfo(string)` hashes files at their `ResolvedPath`, which does not include `.deploy`; the suffixes must be absent when hashes are computed.) Make the signed payload results available to waiting callers and complete their coordinated signing operations. Then sign the application manifest, make its signed result available, and complete its operation.
+1. Signing the application manifest changes its signed bytes and can change its assembly identity, including its public key token. Call `DeployManifest.ResolveFiles()` to re-resolve file references, then call `DeployManifest.UpdateFileInfo("v4.5")` to refresh the SHA-256 hash and size of the entry-point application-manifest reference. Ensure that the entry-point identity matches the signed application manifest before signing the deployment manifest. When signing the deployment manifest with `mage.exe -update`, the `-appm` parameter performs this entry-point update. Make the signed deployment manifest available and complete its operation.
 1. Sign applicable adjacent executables, make their signed results available, and complete their operations.
 1. Copy any remaining signed files back to their original locations and clean up the staging directory.
 
@@ -251,7 +253,7 @@ Here are two examples of how the current algorithm overcopies and oversigns.
 1. Copy files referenced by `AssemblyReferences` and `FileReferences` to a temporary directory, preserving their relative layout.
 1. Temporarily rename staged files whose names end with `.deploy` to their base names.
 1. Sign payload files.
-1. Call `ApplicationManifest.UpdateFileInfo()`, restore the `.deploy` suffixes, make the signed payload results available, and complete their coordinated signing operations.
+1. Call `ApplicationManifest.UpdateFileInfo("v4.5")`, restore the `.deploy` suffixes, make the signed payload results available, and complete their coordinated signing operations.
 1. Sign the application manifest, make its signed result available, and complete its operation.
 1. Copy any remaining signed files back to their original locations and clean up the staging directory.
 
@@ -261,8 +263,8 @@ When `--no-sign-clickonce-deps` is specified, Sign CLI will update and sign only
 
 1. Before processing any file, obtain or wait for its coordinated signing operation.
 1. For each file provided by the user:
-   - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest, call `DeployManifest.ResolveFiles()` and `DeployManifest.UpdateFileInfo()` to update its metadata based on the current state of the referenced application manifest, then sign only the deployment manifest.
-   - If the file has a `.manifest` file extension, read it as an application manifest and call `ApplicationManifest.ResolveFiles()`. Temporarily remove `.deploy` suffixes from referenced payloads, call `ApplicationManifest.UpdateFileInfo()`, restore the suffixes, then sign only the application manifest.
+   - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest, call `DeployManifest.ResolveFiles()` and `DeployManifest.UpdateFileInfo("v4.5")` to update its metadata based on the current state of the referenced application manifest, then sign only the deployment manifest.
+   - If the file has a `.manifest` file extension, read it as an application manifest and call `ApplicationManifest.ResolveFiles()`. Temporarily remove `.deploy` suffixes from referenced payloads, call `ApplicationManifest.UpdateFileInfo("v4.5")`, restore the suffixes, then sign only the application manifest.
    - For other file types, apply the standard signing logic.
 1. Complete each coordinated signing operation after its file is signed.
 1. Referenced manifests and payload files are discovered during the update process but are not signed.
@@ -274,8 +276,8 @@ When `--no-update-clickonce-manifest` is specified, Sign CLI will sign manifest 
 
 1. Before processing any file, obtain or wait for its coordinated signing operation.
 1. For each file provided by the user:
-   - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest and sign it without calling `DeployManifest.ResolveFiles()` or `DeployManifest.UpdateFileInfo()`.
-   - If the file has a `.manifest` file extension, read it as an application manifest and sign it without calling `ApplicationManifest.ResolveFiles()` or `ApplicationManifest.UpdateFileInfo()`.
+   - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest and sign it without resolving files or updating file information.
+   - If the file has a `.manifest` file extension, read it as an application manifest and sign it without resolving files or updating file information.
    - For other file types, apply the standard signing logic.
 1. Complete each coordinated signing operation after its file is signed.
 1. No ClickOnce dependency discovery or manifest metadata updates occur.
