@@ -264,6 +264,7 @@ Here are two examples of how the current algorithm overcopies and oversigns.
 When `--no-sign-clickonce-deps` is specified, Sign CLI will update and sign only the explicitly provided manifest files without signing their dependencies:
 
 1. Before processing any file, obtain or wait for its coordinated signing operation.
+1. If both a deployment manifest and its referenced application manifest are explicitly provided in the same invocation, update and sign the application manifest first, regardless of input order or parallel scheduling. The deployment-manifest operation must wait for the application-manifest operation to complete successfully before refreshing its entry-point metadata and signing. If the application-manifest operation fails, do not sign the deployment manifest.
 1. For each file provided by the user:
    - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest, call `DeployManifest.ResolveFiles()` and `DeployManifest.UpdateFileInfo("v4.5")` to update its metadata based on the current state of the referenced application manifest, then sign only the deployment manifest.
    - If the file has a `.manifest` file extension, read it as an application manifest and call `ApplicationManifest.ResolveFiles()`. Temporarily remove `.deploy` suffixes from referenced payloads, call `ApplicationManifest.UpdateFileInfo("v4.5")`, restore the suffixes, then sign only the application manifest.
