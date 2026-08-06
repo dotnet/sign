@@ -161,6 +161,8 @@ sign code certificate-store ... --clickonce-signing-version 2 --no-update-clicko
 
 Signs the deployment manifest as-is, without resolving files or updating file information. Useful when re-signing with a different certificate and dependencies have not changed.
 
+When using this option to sign an application manifest, the caller is responsible for updating and re-signing any deployment manifest whose reference is invalidated by the application manifest's changed contents.
+
 ## Appendix A:  Signing algorithm version 1
 
 In a temporary directory:
@@ -288,12 +290,12 @@ When `--no-update-clickonce-manifest` is specified, Sign CLI will sign manifest 
    - For other file types, apply the standard signing logic.
 1. Complete each coordinated signing operation after its file is signed.
 1. No ClickOnce dependency discovery or manifest metadata updates occur.
-1. This option is useful when re-signing manifests whose dependencies have not changed.
+1. This option is useful when re-signing manifests whose dependencies have not changed. Re-signing an application manifest changes its contents and may invalidate deployment manifests that reference it; the caller is responsible for updating and re-signing related manifests as needed.
 
 ### Option interactions
 
 The `--no-sign-clickonce-deps` and `--no-update-clickonce-manifest` options are mutually exclusive:
 
 * `--no-sign-clickonce-deps` alone: Update and sign only specified manifests (dependencies discovered but not signed).
-* `--no-update-clickonce-manifest` alone: Sign only specified manifests without updating them (no discovery of dependencies). This is the fastest option, but the user must ensure manifests are already consistent with their dependencies.
+* `--no-update-clickonce-manifest` alone: Sign only specified manifests without updating them (no discovery of dependencies). This is the fastest option, but the caller is responsible for maintaining consistency among manifests and their dependencies.
 * Both options together: Not allowed. `--no-update-clickonce-manifest` skips all discovery and metadata updates, which fully subsumes the dependency-skipping behavior of `--no-sign-clickonce-deps`. Sign CLI will emit an error: `The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options cannot be combined.`
