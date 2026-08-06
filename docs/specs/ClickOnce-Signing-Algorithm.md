@@ -225,12 +225,14 @@ Current MSBuild derives an assembly-reference identity during `UpdateFileInfo(..
 
 When `DeployManifest.MapFileExtensions` is `true`, ClickOnce file-extension mapping leaves manifest target paths unchanged and appends one additional `.deploy` suffix to physical published payload files. Whenever version 2 stages a mapped payload, it preserves the physical filename, records that the additional suffix was mapped, and copies the source without renaming it. Before resolving staged references or calling `UpdateFileInfo(...)`, temporarily remove only the recorded suffix from the staged copy, then restore it afterward. Do not remove a `.deploy` suffix that is part of the manifest target path.
 
+Apply the application-manifest flows below only to files identified as ClickOnce application manifests. A different manifest format using the `.manifest` extension must not be treated as ClickOnce or fail merely because signing algorithm version 2 is enabled; handle it through the standard signing behavior for its format.
+
 ### Default behavior (no dependency options)
 
 1. Before staging or signing any file, obtain the coordinated signing operation for its canonical source path (via `Path.GetFullPath()`). The first caller owns the operation; duplicate callers wait for its result before staging or consuming the file.
 1. Determine the file type and read the manifest:
    - For a `.vsto` or `.application` file, follow [Deployment-manifest input](#deployment-manifest-input).
-   - For a `.manifest` file, follow [Standalone application-manifest input](#standalone-application-manifest-input).
+   - For an explicitly provided ClickOnce application manifest, follow [Explicit application-manifest input](#explicit-application-manifest-input).
    - For any other file type, apply the standard signing logic.
 
 #### Deployment-manifest input
@@ -252,7 +254,7 @@ When `DeployManifest.MapFileExtensions` is `true`, ClickOnce file-extension mapp
 1. Sign applicable adjacent executables, make their signed results available, and complete their operations.
 1. Copy any remaining signed files back to their original locations and clean up the staging directory.
 
-#### Standalone application-manifest input
+#### Explicit application-manifest input
 
 1. Read the file using `ManifestReader.ReadManifest(...)`. If reading fails or the returned manifest is not an `ApplicationManifest`, fail the operation without signing the file.
 1. Ensure `Manifest.ReadOnly` is `false`.
@@ -273,7 +275,7 @@ When `--no-sign-clickonce-deps` is specified, Sign CLI will update and sign only
 1. If both a deployment manifest and its referenced application manifest are explicitly provided in the same invocation, update and sign the application manifest first, regardless of input order or parallel scheduling. The deployment-manifest operation must wait for the application-manifest operation to complete successfully before refreshing its entry-point metadata and signing. If the application-manifest operation fails, do not sign the deployment manifest.
 1. For each file provided by the user:
    - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest and call `DeployManifest.ResolveFiles(string[])` with the deployment manifest's directory. Call `DeployManifest.UpdateFileInfo("v4.5")` to refresh the entry-point reference's SHA-256 hash and size, ensure that the entry-point identity matches the referenced application manifest's current identity, then sign only the deployment manifest.
-   - If the file has a `.manifest` file extension, follow the standalone application-manifest discovery, staging, resolution, and update steps above, but skip payload signing and do not copy staged payloads back. Sign and copy back only the application manifest.
+   - If the file is a ClickOnce application manifest, follow the explicit application-manifest discovery, staging, resolution, and update steps above, but skip payload signing and do not copy staged payloads back. Sign and copy back only the application manifest.
    - For other file types, apply the standard signing logic.
 1. Complete each coordinated signing operation after its file is signed.
 1. Referenced manifests and payload files are discovered during the update process but are not signed.
@@ -286,7 +288,7 @@ When `--no-update-clickonce-manifest` is specified, Sign CLI will sign manifest 
 1. Before processing any file, obtain or wait for its coordinated signing operation.
 1. For each file provided by the user:
    - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest and sign it without resolving files or updating file information.
-   - If the file has a `.manifest` file extension, read it as an application manifest and sign it without resolving files or updating file information.
+   - If the file is a ClickOnce application manifest, sign it without resolving files or updating file information.
    - For other file types, apply the standard signing logic.
 1. Complete each coordinated signing operation after its file is signed.
 1. No ClickOnce dependency discovery or manifest metadata updates occur.
