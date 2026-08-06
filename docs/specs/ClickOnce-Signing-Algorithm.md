@@ -46,7 +46,7 @@ Given a deployment manifest file as a starting point, the algorithm will be upda
 
 1. Load the deployment manifest, locate the referenced application manifest, and, by default, refuse to continue if it is missing.
 1. Stage only the files referenced by the manifests and any applicable adjacent executables. A `Launcher.exe` referenced by the application manifest is a payload file; a separate root-level `Launcher.exe` may be treated as an adjacent executable.
-1. Sign the payloads, refresh the application manifest's metadata, and sign the application manifest. Then refresh the deployment manifest's entry-point metadata, sign the deployment manifest, and finally sign the adjacent executables so hashes, sizes, identities, and entry-point information are consistent with the newly signed files.
+1. Sign supported payloads selected by the user's file-matching patterns, refresh the application manifest's metadata, and sign the application manifest. Then refresh the deployment manifest's entry-point metadata, sign the deployment manifest, and finally sign supported adjacent executables selected by the user's file-matching patterns so hashes, sizes, identities, and entry-point information are consistent with the newly signed files.
 
 Implementation specifics, including path resolution, `.deploy` renaming, and `ManifestUtilities` API calls, are detailed in Appendix B.
 
@@ -60,7 +60,7 @@ This proposal does not make a signing invocation transactional. Sign CLI may cop
 
 ### Signing operation coordination
 
-To prevent signing the same file multiple times when users specify overlapping inputs (e.g., both a deployment manifest and its dependencies via glob patterns), Sign CLI will coordinate signing operations by canonical file path. The first caller to encounter a path owns its signing operation. Other callers that encounter the same path wait for that operation to complete and observe the same success or failure before continuing. A successful operation is complete only when its signed result is available for reuse by waiting callers, including callers that need the file in another staging layout.
+To prevent signing the same file multiple times when users specify overlapping inputs (e.g., both a deployment manifest and its dependencies via glob patterns), Sign CLI will coordinate all references to the same underlying file through one signing operation. One caller performs the operation; all other callers wait for it to complete and observe the same success or failure before continuing. A successful operation is complete only when its signed result is available for reuse by waiting callers, including callers that need the file in another staging layout.
 
 This coordination is scoped to a single CLI invocation and is not persisted to disk. Running the same command twice will re-sign all files on the second invocation.
 
@@ -73,7 +73,7 @@ For re-signing scenarios, two new options will be introduced (both require Click
 * `--no-sign-clickonce-deps`: When specified, Sign CLI will update and sign only the explicitly specified manifest files without signing their dependencies (referenced manifests or payload files). Manifests are still updated before signing to refresh metadata. This allows users to re-sign only a deployment manifest, or only an application manifest, while ensuring the manifest's metadata remains consistent with its dependencies.
 * `--no-update-clickonce-manifest`: When specified, Sign CLI will sign manifest files without resolving files or updating file information. This is useful when re-signing a manifest whose dependencies have not changed.
 
-These options are mutually exclusive (see [Option interactions](#option-interactions)). Without these options, Sign CLI will discover, update, and sign the complete ClickOnce application (deployment manifest, application manifest, all referenced payload files, and applicable adjacent executables).
+These options are mutually exclusive (see [Option interactions](#option-interactions)). Without these options, Sign CLI will discover all referenced payloads, update and sign the deployment and application manifests, and sign supported referenced payloads and applicable adjacent executables selected by the user's file-matching patterns.
 
 **Note**: Both `--no-sign-clickonce-deps` and `--no-update-clickonce-manifest` are only valid when the effective ClickOnce signing algorithm version is 2. Attempting to use these options with version 1 will result in an error.
 
@@ -115,7 +115,7 @@ The examples below elide certificate and timestamp options (`-cfp`, `-cf`, `-p`,
 sign code certificate-store ... --clickonce-signing-version 2 -b publish\ App.application
 ```
 
-Signs the complete application: payload files, application manifest, deployment manifest, and applicable adjacent executables, in the correct order. The algorithm follows the deployment manifest's references. Only the version it points to is implicitly discovered; other signable files matched by the user are still signed normally.
+Signs supported payload files and applicable adjacent executables selected by the user's file-matching patterns, plus the application and deployment manifests, in the correct order. Every referenced payload is discovered and included when refreshing manifest metadata, even when it is excluded from signing. The algorithm follows the deployment manifest's references. Only the version it points to is implicitly discovered; other signable files matched by the user are still signed normally.
 
 #### Sign a multi-version layout without over-signing
 
@@ -143,7 +143,7 @@ sign code certificate-store ... --clickonce-signing-version 2 -b publish\ App.ap
 sign code certificate-store ... --clickonce-signing-version 2 -b Output\ **/*.vsto
 ```
 
-Each `.vsto` file is processed independently: its referenced application manifest and payload files are discovered and signed. Signing operations for shared files are coordinated so each file is signed only once and all dependents wait for signing to complete.
+Each `.vsto` file is processed independently: its referenced application manifest and payload files are discovered, and supported payloads selected by the user's file-matching patterns are signed. Signing operations for shared files are coordinated so each file is signed only once and all dependents wait for signing to complete.
 
 #### Re-sign only a deployment manifest when the application manifest is already current
 
@@ -248,11 +248,11 @@ Apply the application-manifest flows below only to files identified as ClickOnce
 1. Copy the deployment manifest, application manifest, and located payload files to a temporary directory. Stage each payload at its manifest target path relative to the staged application manifest while preserving any mapping-added suffix.
 1. Temporarily remove mapping-added suffixes from the staged payloads.
 1. Before signing or updating manifest metadata, ensure that the application manifest's references resolve to the corresponding staged files. No `ResolvedPath` used by `UpdateFileInfo(...)` may identify a source file outside the staging directory. How the implementation establishes the staged paths is an implementation detail. Fail if any required staged file cannot be resolved.
-1. Treat any `Launcher.exe` referenced by the application manifest, including as its entry point, as a payload file. It must be staged and signed with the other signable payloads before application-manifest metadata is refreshed. Separately discover applicable adjacent executables by checking if `setup.exe` or an unreferenced `Launcher.exe` exists in the same directory as the deployment manifest. A launcher or bootstrapper in a different directory or with a different name is not implicitly discovered as an adjacent executable, but it will still be signed through standard Authenticode signing if matched by the user's file patterns.
-1. Apply the standard signing behavior to each staged payload file. Sign supported file formats and leave unsupported files unchanged. Include every referenced payload when refreshing application-manifest metadata.
-1. Call `ApplicationManifest.UpdateFileInfo("v4.5")` to refresh payload SHA-256 hashes and sizes, then restore the mapping-added suffixes. (`UpdateFileInfo(string)` hashes each reference's current `ResolvedPath`; ensure those paths identify the staged, suffix-stripped payloads before calling it.) Make the signed payload results available to waiting callers and complete their coordinated signing operations. Then sign the application manifest, make its signed result available, and complete its operation.
+1. Treat any `Launcher.exe` referenced by the application manifest, including as its entry point, as a payload file. It must be staged and, when selected by the user's file-matching patterns, signed with the other selected payloads before application-manifest metadata is refreshed. Separately discover applicable adjacent executables by checking if `setup.exe` or an unreferenced `Launcher.exe` exists in the same directory as the deployment manifest. A launcher or bootstrapper in a different directory or with a different name is not implicitly discovered as an adjacent executable, but it will still be signed through standard Authenticode signing if matched by the user's file patterns.
+1. Apply the standard signing behavior only to payloads selected by the user's file-matching patterns; leave excluded or unsupported payloads unchanged. Include every referenced payload when refreshing application-manifest metadata.
+1. Call `ApplicationManifest.UpdateFileInfo("v4.5")` to refresh payload SHA-256 hashes and sizes, then restore the mapping-added suffixes. (`UpdateFileInfo(string)` hashes each reference's current `ResolvedPath`; ensure those paths identify the staged, suffix-stripped payloads before calling it.) For each payload that was signed, make its result available and complete its coordinated signing operation. Then sign the application manifest, make its signed result available, and complete its operation.
 1. Signing the application manifest changes its signed bytes and can change its assembly identity, including its public key token. Ensure that the deployment manifest's entry-point `ResolvedPath` identifies the signed staged application manifest, then call `DeployManifest.UpdateFileInfo("v4.5")` to refresh the entry-point reference's SHA-256 hash and size. Ensure that the entry-point identity matches the signed application manifest before signing the deployment manifest. When signing the deployment manifest with `mage.exe -update`, the `-appm` parameter performs this entry-point update. Make the signed deployment manifest available and complete its operation.
-1. Sign applicable adjacent executables, make their signed results available, and complete their operations.
+1. Apply the standard signing behavior to applicable adjacent executables selected by the user's file-matching patterns, make their signed results available, and complete their operations.
 1. Copy any remaining signed files back to their original locations and clean up the staging directory.
 
 #### Explicit application-manifest input
@@ -264,8 +264,8 @@ Apply the application-manifest flows below only to files identified as ClickOnce
 1. Copy the application manifest and located payload files to a temporary directory. Stage each payload at its manifest target path relative to the staged application manifest while preserving any mapping-added suffix.
 1. Temporarily remove mapping-added suffixes from the staged payloads.
 1. Before signing or updating manifest metadata, ensure that the application manifest's references resolve to the corresponding staged files. No `ResolvedPath` used by `UpdateFileInfo(...)` may identify a source file outside the staging directory. How the implementation establishes the staged paths is an implementation detail. Fail if any required staged file cannot be resolved.
-1. Apply the standard signing behavior to each staged payload file. Sign supported file formats and leave unsupported files unchanged. Include every referenced payload when refreshing application-manifest metadata.
-1. Call `ApplicationManifest.UpdateFileInfo("v4.5")`, restore the mapping-added suffixes, make the signed payload results available, and complete their coordinated signing operations.
+1. Apply the standard signing behavior only to payloads selected by the user's file-matching patterns; leave excluded or unsupported payloads unchanged. Include every referenced payload when refreshing application-manifest metadata.
+1. Call `ApplicationManifest.UpdateFileInfo("v4.5")` and restore the mapping-added suffixes. For each payload that was signed, make its result available and complete its coordinated signing operation.
 1. Sign the application manifest, make its signed result available, and complete its operation.
 1. Copy any remaining signed files back to their original locations and clean up the staging directory.
 
