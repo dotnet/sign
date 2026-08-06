@@ -145,13 +145,13 @@ sign code certificate-store ... --clickonce-signing-version 2 -b Output\ **/*.vs
 
 Each `.vsto` file is processed independently: its referenced application manifest and payload files are discovered and signed. Signing operations for shared files are coordinated so each file is signed only once and all dependents wait for signing to complete.
 
-#### Re-sign only a deployment manifest (after payload changes)
+#### Re-sign only a deployment manifest when the application manifest is already current
 
 ```shell
 sign code certificate-store ... --clickonce-signing-version 2 --no-sign-clickonce-deps -b publish\ App.application
 ```
 
-Updates the deployment manifest's metadata (sizes, hashes) to reflect the current state of its dependencies, then signs only the deployment manifest. Dependencies are not signed.
+Refreshes the deployment manifest's hash, size, and identity for the current referenced application manifest, then signs only the deployment manifest. It does not update payload metadata in the application manifest or sign any dependencies. If payloads changed, update and sign the application manifest first, then update and sign the deployment manifest.
 
 #### Re-sign a manifest without updating metadata
 
