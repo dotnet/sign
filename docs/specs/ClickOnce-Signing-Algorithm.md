@@ -229,7 +229,7 @@ Apply the application-manifest flows below only to files identified as ClickOnce
 
 ### Default behavior (no dependency options)
 
-1. Before staging or signing any file, obtain the coordinated signing operation for its canonical source path (via `Path.GetFullPath()`). The first caller owns the operation; duplicate callers wait for its result before staging or consuming the file.
+1. Before staging or signing, coordinate all references to the same underlying source file through one signing operation. One caller performs the operation; all other callers wait for and consume its result.
 1. Determine the file type and read the manifest:
    - For a `.vsto` or `.application` file, follow [Deployment-manifest input](#deployment-manifest-input).
    - For an explicitly provided ClickOnce application manifest, follow [Explicit application-manifest input](#explicit-application-manifest-input).
