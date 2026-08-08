@@ -62,6 +62,10 @@ If ($packageFilePaths.Count -ne 1)
 
 [string[]] $expectedEntryFullNames =
     'tools/net8.0/any/sign.dll',
+    'tools/net8.0/any/Microsoft.Build.Framework.dll',
+    'tools/net8.0/any/Microsoft.Build.Tasks.Core.dll',
+    'tools/net8.0/any/Microsoft.Build.Utilities.Core.dll',
+    'tools/net8.0/any/Microsoft.NET.StringTools.dll',
     'tools/net8.0/any/tools/SDK/x64/appxpackaging.dll',
     'tools/net8.0/any/tools/SDK/x64/appxsip.dll',
     'tools/net8.0/any/tools/SDK/x64/makeappx.exe',

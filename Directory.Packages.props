@@ -13,6 +13,9 @@
     <PackageVersion Include="AzureSign.Core" Version="7.0.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.11" />
+    <!-- 17.8.43 is the latest serviced line with net8.0 runtime assets. Newer MSBuild lines
+         provide only a netstandard reference assembly for net8.0 consumers. -->
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="17.8.43" />
     <PackageVersion Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" Version="24.0.15760" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.14.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
