@@ -18,6 +18,7 @@ namespace Sign.Cli
     internal sealed class AzureKeyVaultCommand : Command
     {
         internal Option<Uri> UrlOption { get; }
+        internal Option<string> CertificateVersionOption { get; }
         internal Option<string> CertificateOption { get; }
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
@@ -40,6 +41,10 @@ namespace Sign.Cli
                 Description = AzureKeyVaultResources.CertificateOptionDescription,
                 Required = true
             };
+            CertificateVersionOption = new Option<string>("--azure-key-vault-certificate-version", "-kvcv")
+            {
+                Description = AzureKeyVaultResources.CertificateVersionOptionDescription
+            };
             FilesArgument = new Argument<List<string>?>("file(s)")
             {
                 Description = Resources.FilesArgumentDescription,
@@ -48,6 +53,7 @@ namespace Sign.Cli
 
             Options.Add(UrlOption);
             Options.Add(CertificateOption);
+            Options.Add(CertificateVersionOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
             Arguments.Add(FilesArgument);
@@ -82,9 +88,11 @@ namespace Sign.Cli
                 // the null-forgiving operator (!) to simplify the code.
                 Uri url = parseResult.GetValue(UrlOption)!;
                 string certificateId = parseResult.GetValue(CertificateOption)!;
+                string? certificateVersion = parseResult.GetValue(CertificateVersionOption);
+                string certificateVersionPath = string.IsNullOrEmpty(certificateVersion) ? string.Empty : $"/{certificateVersion}";
 
                 // Construct the URI for the certificate and the key from user parameters. We'll validate those with the SDK
-                var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}");
+                var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}{certificateVersionPath}");
 
                 if (!KeyVaultCertificateIdentifier.TryCreate(certUri, out var certId))
                 {
@@ -94,7 +102,7 @@ namespace Sign.Cli
                 }
 
                 // The key uri is similar and the key name matches the certificate name
-                var keyUri = new Uri($"{url.Scheme}://{url.Authority}/keys/{certificateId}");
+                var keyUri = new Uri($"{url.Scheme}://{url.Authority}/keys/{certificateId}{certificateVersionPath}");
 
                 serviceProviderFactory.AddServices(services =>
                 {
@@ -112,6 +120,7 @@ namespace Sign.Cli
                             serviceProvider.GetRequiredService<CertificateClient>(),
                             serviceProvider.GetRequiredService<CryptographyClient>(),
                             certId.Name,
+                            certId.Version,
                             serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());
                     });
                 });
