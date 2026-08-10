@@ -86,9 +86,9 @@ jobs:
         --description "One Sign CLI demo"
         --description-url "https://github.com/dotnet/sign"
         --azure-credential-type "azure-cli"
-        --artifact-signing-endpoint "${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}" # This does not need to be a secret and is just a placeholder
-        --artifact-signing-account "${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}" # This does not need to be a secret and is just a placeholder
-        --artifact-signing-certificate-profile "${{ secrets.ARTIFACT_SIGNING_CERTIFICATE_PROFILE }}" # This does not need to be a secret and is just a placeholder
+        --artifact-signing-endpoint "${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}"
+        --artifact-signing-account "${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}"
+        --artifact-signing-certificate-profile "${{ secrets.ARTIFACT_SIGNING_CERTIFICATE_PROFILE }}"
         --certificate-output "${{ runner.temp }}\signing-certificate.cer"
 
     # Make the public certificate path available to later steps in this job.
