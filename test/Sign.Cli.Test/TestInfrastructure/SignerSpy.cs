@@ -24,9 +24,9 @@ namespace Sign.Cli.Test
         internal HashAlgorithmName? TimestampHashAlgorithm { get; private set; }
         internal int ExitCode { get; }
 
-        internal SignerSpy(int exitCode = Core.ExitCode.Success)
+        internal SignerSpy()
         {
-            ExitCode = exitCode;
+            ExitCode = Core.ExitCode.Success;
         }
 
         public Task<int> SignAsync(

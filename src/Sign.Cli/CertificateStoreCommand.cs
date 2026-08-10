@@ -143,7 +143,7 @@ namespace Sign.Cli
                     useMachineKeyContainer,
                     isInteractive);
 
-                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, certificateStoreServiceProvider, filesArgument, cancellationToken);
+                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, certificateStoreServiceProvider, filesArgument);
             });
         }
 

@@ -118,7 +118,7 @@ namespace Sign.Cli
 
                 KeyVaultServiceProvider keyVaultServiceProvider = new();
 
-                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, keyVaultServiceProvider, filesArgument, cancellationToken);
+                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, keyVaultServiceProvider, filesArgument);
             });
         }
 

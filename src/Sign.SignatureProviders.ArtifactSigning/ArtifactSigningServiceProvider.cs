@@ -9,6 +9,11 @@ namespace Sign.SignatureProviders.ArtifactSigning
 {
     internal sealed class ArtifactSigningServiceProvider : ISignatureProvider
     {
+        private ICertificateProvider? _certificateProvider;
+
+        internal ICertificateProvider CertificateProvider =>
+            _certificateProvider ?? throw new InvalidOperationException("The certificate provider has not been created.");
+
         public ISignatureAlgorithmProvider GetSignatureAlgorithmProvider(IServiceProvider serviceProvider)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
@@ -20,7 +25,9 @@ namespace Sign.SignatureProviders.ArtifactSigning
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
 
-            return serviceProvider.GetRequiredService<ArtifactSigningService>();
+            _certificateProvider = serviceProvider.GetRequiredService<ArtifactSigningService>();
+
+            return _certificateProvider;
         }
     }
 }

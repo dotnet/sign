@@ -18,6 +18,7 @@ namespace Sign.Cli
     {
         internal Option<Uri> EndpointOption { get; }
         internal Option<string> AccountOption { get; }
+        internal Option<string?> CertificateOutputOption { get; }
         internal Option<string> CertificateProfileOption { get; }
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
@@ -40,6 +41,10 @@ namespace Sign.Cli
                 Description = ArtifactSigningResources.AccountOptionDescription,
                 Required = true
             };
+            CertificateOutputOption = new Option<string?>("--certificate-output", "-co")
+            {
+                Description = Resources.CertificateOutputOptionDescription
+            };
             CertificateProfileOption = new Option<string>("--artifact-signing-certificate-profile", "-ascp")
             {
                 Description = ArtifactSigningResources.CertificateProfileOptionDescription,
@@ -53,12 +58,13 @@ namespace Sign.Cli
 
             Options.Add(EndpointOption);
             Options.Add(AccountOption);
+            Options.Add(CertificateOutputOption);
             Options.Add(CertificateProfileOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
             Arguments.Add(FilesArgument);
 
-            SetAction((ParseResult parseResult, CancellationToken cancellationToken) =>
+            SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
             {
                 List<string>? filesArgument = parseResult.GetValue(FilesArgument);
 
@@ -66,14 +72,14 @@ namespace Sign.Cli
                 {
                     Console.Error.WriteLine(Resources.MissingFileValue);
 
-                    return Task.FromResult(ExitCode.InvalidOptions);
+                    return ExitCode.InvalidOptions;
                 }
 
                 TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(parseResult);
 
                 if (credential is null)
                 {
-                    return Task.FromResult(ExitCode.Failed);
+                    return ExitCode.Failed;
                 }
 
                 // Some of the options are required and that is why we can safely use
@@ -103,7 +109,27 @@ namespace Sign.Cli
 
                 ArtifactSigningServiceProvider trustedSigningServiceProvider = new();
 
-                return codeCommand.HandleAsync(parseResult, serviceProviderFactory, trustedSigningServiceProvider, filesArgument, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                int exitCode = await codeCommand.HandleAsync(
+                    parseResult,
+                    serviceProviderFactory,
+                    trustedSigningServiceProvider,
+                    filesArgument);
+
+                string? certificateOutput = parseResult.GetValue(CertificateOutputOption);
+
+                if (exitCode == ExitCode.Success && !string.IsNullOrEmpty(certificateOutput))
+                {
+                    DirectoryInfo baseDirectory = parseResult.GetValue(codeCommand.BaseDirectoryOption)!;
+                    FileInfo certificateOutputFile = new(CodeCommand.ExpandFilePath(baseDirectory, certificateOutput));
+
+                    await CodeCommand.ExportCertificateAsync(
+                        trustedSigningServiceProvider.CertificateProvider,
+                        certificateOutputFile);
+                }
+
+                return exitCode;
             });
         }
     }

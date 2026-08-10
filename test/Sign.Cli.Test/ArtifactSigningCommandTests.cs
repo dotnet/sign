@@ -55,6 +55,18 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void CertificateOutputOption_Always_HasArityOfExactlyOne()
+        {
+            Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateOutputOption.Arity);
+        }
+
+        [Fact]
+        public void CertificateOutputOption_Always_IsNotRequired()
+        {
+            Assert.False(_command.CertificateOutputOption.Required);
+        }
+
+        [Fact]
         public void CertificateProfileOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.CertificateProfileOption.Arity);
@@ -103,6 +115,7 @@ namespace Sign.Cli.Test
 
             [Theory]
             [InlineData("code artifact-signing -ase https://artifactsigning.test -asa a -ascp b c")]
+            [InlineData("code artifact-signing -ase https://artifactsigning.test -asa a -ascp b --certificate-output certificate.cer c")]
             [InlineData("code artifact-signing -ase https://artifactsigning.test -asa a -ascp b -kvt c -kvi d -kvs e f")]
             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
