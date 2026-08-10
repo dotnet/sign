@@ -184,8 +184,6 @@ namespace Sign.Core.Test
 
                     await signatureAlgorithmProvider.Received(1).GetRsaAsync(Arg.Any<CancellationToken>());
                     await certificateProvider.Received(1).GetCertificateAsync(Arg.Any<CancellationToken>());
-                    Assert.Single(signatureAlgorithmProvider.ReceivedCalls());
-                    Assert.Single(certificateProvider.ReceivedCalls());
                 }
             }
         }

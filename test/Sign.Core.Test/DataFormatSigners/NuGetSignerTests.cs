@@ -108,10 +108,10 @@ namespace Sign.Core.Test
         {
             INuGetSignTool nuGetSignTool = Substitute.For<INuGetSignTool>();
             nuGetSignTool.SignAsync(
-            Arg.Is<FileInfo>(value => value != null),
-            Arg.Is<RSA>(value => value != null),
-            Arg.Is<X509Certificate2>(value => value != null),
-            Arg.Is<SignOptions>(value => value != null))
+                    Arg.Is<FileInfo>(value => value != null),
+                    Arg.Is<RSA>(value => value != null),
+                    Arg.Is<X509Certificate2>(value => value != null),
+                    Arg.Is<SignOptions>(value => value != null))
                 .Returns(false);
 
             NuGetSigner signer = new(
