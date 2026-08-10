@@ -137,9 +137,9 @@ namespace Sign.Core.Test
                         certificate);
 
                     vsixSignTool.SignAsync(
-                            Arg.Any<FileInfo>(),
-                            Arg.Any<SignConfigurationSet>(),
-                            Arg.Any<SignOptions>())
+                            Arg.Is<FileInfo>(value => value != null),
+                            Arg.Is<SignConfigurationSet>(value => value != null),
+                            Arg.Is<SignOptions>(value => value != null))
                         .Returns(false);
 
                     VsixSigner signer = new(
