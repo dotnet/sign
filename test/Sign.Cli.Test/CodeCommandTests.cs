@@ -128,6 +128,45 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
+        public void GetCertificateOutputFile_WhenOutputPathIsExistingDirectory_Throws()
+        {
+            string outputDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            DirectoryInfo baseDirectory = Directory.CreateDirectory(outputDirectory);
+
+            try
+            {
+                IOException exception = Assert.Throws<IOException>(
+                    () => CodeCommand.GetCertificateOutputFile(
+                        baseDirectory,
+                        outputDirectory,
+                        signingOutput: null,
+                        filesArgument: ["input.exe"]));
+
+                Assert.Contains("already exists", exception.Message, StringComparison.Ordinal);
+            }
+            finally
+            {
+                baseDirectory.Delete();
+            }
+        }
+
+        [Fact]
+        public void GetCertificateOutputFile_WhenPathMatchesSingleFileSigningOutput_Throws()
+        {
+            DirectoryInfo baseDirectory = new(Path.GetTempPath());
+            string outputFileName = $"{Guid.NewGuid():N}.exe";
+
+            IOException exception = Assert.Throws<IOException>(
+                () => CodeCommand.GetCertificateOutputFile(
+                    baseDirectory,
+                    outputFileName,
+                    outputFileName,
+                    filesArgument: ["input.exe"]));
+
+            Assert.Contains("matches the signing output", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void DescriptionOption_Always_HasArityOfExactlyOne()
         {
             Assert.Equal(ArgumentArity.ExactlyOne, _command.DescriptionOption.Arity);

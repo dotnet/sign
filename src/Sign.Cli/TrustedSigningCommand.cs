@@ -114,18 +114,13 @@ namespace Sign.Cli
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string? certificateOutput = parseResult.GetValue(CertificateOutputOption);
-                FileInfo? certificateOutputFile = null;
-
-                if (!string.IsNullOrEmpty(certificateOutput))
-                {
-                    DirectoryInfo baseDirectory = parseResult.GetValue(codeCommand.BaseDirectoryOption)!;
-                    certificateOutputFile = new FileInfo(CodeCommand.ExpandFilePath(baseDirectory, certificateOutput));
-
-                    if (certificateOutputFile.Exists)
-                    {
-                        throw new IOException($"The certificate output file already exists: '{certificateOutputFile.FullName}'.");
-                    }
-                }
+                DirectoryInfo baseDirectory = parseResult.GetValue(codeCommand.BaseDirectoryOption)!;
+                string? signingOutput = parseResult.GetValue(codeCommand.OutputOption);
+                FileInfo? certificateOutputFile = CodeCommand.GetCertificateOutputFile(
+                    baseDirectory,
+                    certificateOutput,
+                    signingOutput,
+                    filesArgument);
 
                 int exitCode = await codeCommand.HandleAsync(
                     parseResult,

@@ -297,6 +297,43 @@ namespace Sign.Cli
             await output.WriteAsync(certificateBytes);
         }
 
+        internal static FileInfo? GetCertificateOutputFile(
+            DirectoryInfo baseDirectory,
+            string? certificateOutput,
+            string? signingOutput,
+            IReadOnlyCollection<string> filesArgument)
+        {
+            if (string.IsNullOrEmpty(certificateOutput))
+            {
+                return null;
+            }
+
+            FileInfo certificateOutputFile = new(ExpandFilePath(baseDirectory, certificateOutput));
+
+            if (certificateOutputFile.Exists || Directory.Exists(certificateOutputFile.FullName))
+            {
+                throw new IOException($"The certificate output path already exists: '{certificateOutputFile.FullName}'.");
+            }
+
+            if (filesArgument.Count == 1 &&
+                !filesArgument.Single().Contains('*') &&
+                !string.IsNullOrWhiteSpace(signingOutput) &&
+                Path.HasExtension(signingOutput))
+            {
+                FileInfo signingOutputFile = new(ExpandFilePath(baseDirectory, signingOutput));
+
+                if (string.Equals(
+                    certificateOutputFile.FullName,
+                    signingOutputFile.FullName,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new IOException($"The certificate output path matches the signing output: '{certificateOutputFile.FullName}'.");
+                }
+            }
+
+            return certificateOutputFile;
+        }
+
         internal static string ExpandFilePath(DirectoryInfo baseDirectory, string file)
         {
             if (Path.IsPathRooted(file))
