@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
@@ -8,7 +8,7 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using AzureSign.Core;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
@@ -25,12 +25,12 @@ namespace Sign.Core.Test
             ArgumentNullException.ThrowIfNull(certificateFixture, nameof(certificateFixture));
 
             _certificateFixture = certificateFixture;
-            _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
+            _directoryService = new(Substitute.For<ILogger<IDirectoryService>>());
             _signer = new AzureSignToolSigner(
-                Mock.Of<IToolConfigurationProvider>(),
-                Mock.Of<ISignatureAlgorithmProvider>(),
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<IToolConfigurationProvider>(),
+                Substitute.For<ISignatureAlgorithmProvider>(),
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<ILogger<IDataFormatSigner>>());
         }
 
         public void Dispose()
@@ -150,21 +150,19 @@ namespace Sign.Core.Test
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
                     ToolConfigurationProvider toolConfigurationProvider = new(new AppRootDirectoryLocator());
-                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-                    Mock<ICertificateProvider> certificateProvider = new();
+                    ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+                    ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+                    certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
+                    signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
+                    certificateProvider.ClearReceivedCalls();
+                    signatureAlgorithmProvider.ClearReceivedCalls();
 
-                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(new X509Certificate2(certificate));
-
-                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(privateKey);
-
-                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
 
                     AzureSignToolSigner signer = new(
                         toolConfigurationProvider,
-                        signatureAlgorithmProvider.Object,
-                        certificateProvider.Object,
+                        signatureAlgorithmProvider,
+                        certificateProvider,
                         logger);
 
                     await signer.SignAsync(new[] { file }, options);
@@ -184,8 +182,10 @@ namespace Sign.Core.Test
 
                     signedCms.CheckSignature(verifySignatureOnly: true);
 
-                    signatureAlgorithmProvider.VerifyAll();
-                    certificateProvider.VerifyAll();
+                    await signatureAlgorithmProvider.Received(1).GetRsaAsync(Arg.Any<CancellationToken>());
+                    await certificateProvider.Received(1).GetCertificateAsync(Arg.Any<CancellationToken>());
+                    Assert.Single(signatureAlgorithmProvider.ReceivedCalls());
+                    Assert.Single(certificateProvider.ReceivedCalls());
                 }
             }
         }
@@ -200,14 +200,10 @@ namespace Sign.Core.Test
             CertificateRequest req = new("CN=Test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             using X509Certificate2 certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(1));
 
-            Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-            Mock<ICertificateProvider> certificateProvider = new();
-
-            certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
-
-            signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
+            ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+            ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
                 applicationName: null,
@@ -222,10 +218,10 @@ namespace Sign.Core.Test
                 recurseContainers: true);
 
             TestableAzureSignToolSigner signer = new(
-                Mock.Of<IToolConfigurationProvider>(),
-                signatureAlgorithmProvider.Object,
-                certificateProvider.Object,
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<IToolConfigurationProvider>(),
+                signatureAlgorithmProvider,
+                certificateProvider,
+                Substitute.For<ILogger<IDataFormatSigner>>());
 
             FileInfo file = new($"test{extension}");
 
@@ -243,14 +239,10 @@ namespace Sign.Core.Test
             CertificateRequest req = new("CN=Test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             using X509Certificate2 certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(1));
 
-            Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-            Mock<ICertificateProvider> certificateProvider = new();
-
-            certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
-
-            signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
+            ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+            ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
                 applicationName: null,
@@ -265,10 +257,10 @@ namespace Sign.Core.Test
                 recurseContainers: true);
 
             TestableAzureSignToolSigner signer = new(
-                Mock.Of<IToolConfigurationProvider>(),
-                signatureAlgorithmProvider.Object,
-                certificateProvider.Object,
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<IToolConfigurationProvider>(),
+                signatureAlgorithmProvider,
+                certificateProvider,
+                Substitute.For<ILogger<IDataFormatSigner>>());
 
             FileInfo[] files = new[]
             {
@@ -312,14 +304,10 @@ namespace Sign.Core.Test
             CertificateRequest req = new("CN=Test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             using X509Certificate2 certificate = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddDays(1));
 
-            Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-            Mock<ICertificateProvider> certificateProvider = new();
-
-            certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
-
-            signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
+            ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+            ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
                 applicationName: null,
@@ -334,10 +322,10 @@ namespace Sign.Core.Test
                 recurseContainers: true);
 
             TestableAzureSignToolSigner signer = new(
-                Mock.Of<IToolConfigurationProvider>(),
-                signatureAlgorithmProvider.Object,
-                certificateProvider.Object,
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<IToolConfigurationProvider>(),
+                signatureAlgorithmProvider,
+                certificateProvider,
+                Substitute.For<ILogger<IDataFormatSigner>>());
 
             FileInfo file = new("test.dll");
 

@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
@@ -13,7 +13,7 @@ using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
-using Moq;
+using NSubstitute;
 using NuGet.Packaging;
 using Sign.TestInfrastructure;
 
@@ -33,7 +33,7 @@ namespace Sign.Core.Test
 
             _certificatesFixture = certificatesFixture;
             _keyVaultServiceStub = new KeyVaultServiceStub();
-            _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+            _directoryService = new DirectoryService(Substitute.For<ILogger<IDirectoryService>>());
             _temporaryDirectory = new TemporaryDirectory(_directoryService);
         }
 
@@ -48,7 +48,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new Signer(serviceProvider: null!, Mock.Of<ILogger<ISigner>>()));
+                () => new Signer(serviceProvider: null!, Substitute.For<ILogger<ISigner>>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
@@ -57,7 +57,7 @@ namespace Sign.Core.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new Signer(Mock.Of<IServiceProvider>(), logger: null!));
+                () => new Signer(Substitute.For<IServiceProvider>(), logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }

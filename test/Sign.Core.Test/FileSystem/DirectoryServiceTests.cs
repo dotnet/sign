@@ -1,19 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
     public class DirectoryServiceTests
     {
-        private readonly Mock<ILogger<IDirectoryService>> _loggerMock;
+        private readonly ILogger<IDirectoryService> _logger;
 
         public DirectoryServiceTests()
         {
-            _loggerMock = new Mock<ILogger<IDirectoryService>>();
+            _logger = Substitute.For<ILogger<IDirectoryService>>();
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace Sign.Core.Test
         [Fact]
         public void CreateTemporaryDirectory_Always_CreatesDirectory()
         {
-            using (DirectoryService service = new(_loggerMock.Object))
+            using (DirectoryService service = new(_logger))
             {
                 DirectoryInfo directory = service.CreateTemporaryDirectory();
 
@@ -43,7 +43,7 @@ namespace Sign.Core.Test
         [Fact]
         public void Delete_WhenDirectoryIsNull_Throws()
         {
-            using (DirectoryService service = new(_loggerMock.Object))
+            using (DirectoryService service = new(_logger))
             {
                 ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                     () => service.Delete(directory: null!));
@@ -55,7 +55,7 @@ namespace Sign.Core.Test
         [Fact]
         public void Delete_Always_DeletesDirectory()
         {
-            using (DirectoryService service = new(_loggerMock.Object))
+            using (DirectoryService service = new(_logger))
             {
                 DirectoryInfo directory = service.CreateTemporaryDirectory();
 
@@ -73,7 +73,7 @@ namespace Sign.Core.Test
         {
             DirectoryInfo directory;
 
-            using (DirectoryService service = new(_loggerMock.Object))
+            using (DirectoryService service = new(_logger))
             {
                 directory = service.CreateTemporaryDirectory();
 

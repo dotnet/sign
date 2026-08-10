@@ -1,9 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -21,16 +21,16 @@ namespace Sign.Core.Test
 
         internal SignerSpy()
         {
-            ISignatureAlgorithmProvider signatureAlgorithmProvider = Mock.Of<ISignatureAlgorithmProvider>();
-            ICertificateProvider certificateProvider = Mock.Of<ICertificateProvider>();
-            ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
-            IMageCli mageCli = Mock.Of<IMageCli>();
-            IManifestSigner manifestSigner = Mock.Of<IManifestSigner>();
-            INuGetSignTool nuGetSignTool = Mock.Of<INuGetSignTool>();
-            IVsixSignTool openVsixSignTool = Mock.Of<IVsixSignTool>();
-            IServiceProvider serviceProvider = Mock.Of<IServiceProvider>();
-            IToolConfigurationProvider toolConfigurationProvider = Mock.Of<IToolConfigurationProvider>();
-            IFileMatcher fileMatcher = Mock.Of<IFileMatcher>();
+            ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+            ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+            ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
+            IMageCli mageCli = Substitute.For<IMageCli>();
+            IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
+            INuGetSignTool nuGetSignTool = Substitute.For<INuGetSignTool>();
+            IVsixSignTool openVsixSignTool = Substitute.For<IVsixSignTool>();
+            IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+            IToolConfigurationProvider toolConfigurationProvider = Substitute.For<IToolConfigurationProvider>();
+            IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
 
             Signer = new AzureSignToolSigner(
                 toolConfigurationProvider,

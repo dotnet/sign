@@ -1,22 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using Moq;
+using NSubstitute;
 using Sign.Core;
 
 namespace Sign.Cli.Test
 {
     public class ArtifactSigningCommandTests
     {
-        private readonly ArtifactSigningCommand _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
+        private readonly ArtifactSigningCommand _command = new(new CodeCommand(), Substitute.For<IServiceProviderFactory>());
 
         [Fact]
         public void Constructor_WhenCodeCommandIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new ArtifactSigningCommand(codeCommand: null!, Mock.Of<IServiceProviderFactory>()));
+                () => new ArtifactSigningCommand(codeCommand: null!, Substitute.For<IServiceProviderFactory>()));
 
             Assert.Equal("codeCommand", exception.ParamName);
         }
@@ -74,7 +74,7 @@ namespace Sign.Cli.Test
             public ParserTests()
             {
                 CodeCommand codeCommand = new();
-                _command = new(codeCommand, Mock.Of<IServiceProviderFactory>());
+                _command = new(codeCommand, Substitute.For<IServiceProviderFactory>());
                 _rootCommand = new RootCommand();
                 _rootCommand.Subcommands.Add(codeCommand);
                 codeCommand.Subcommands.Add(_command);

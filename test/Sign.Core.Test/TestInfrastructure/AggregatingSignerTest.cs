@@ -1,10 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -85,10 +85,10 @@ namespace Sign.Core.Test
 
             HashSet<FileInfo> looseFiles = new(FileInfoComparer.Instance);
             AzureSignToolSigner azureSignToolSigner = new(
-                Mock.Of<IToolConfigurationProvider>(),
-                Mock.Of<ISignatureAlgorithmProvider>(),
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<IToolConfigurationProvider>(),
+                Substitute.For<ISignatureAlgorithmProvider>(),
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<ILogger<IDataFormatSigner>>());
             FileMetadataServiceStub fileMetadataService = new();
 
             // This directory doesn't actually exist or even need to exist.

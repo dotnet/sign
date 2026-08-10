@@ -1,10 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -27,8 +27,8 @@ namespace Sign.Core.Test
                 {
                     // Dependency injection of some services require these services.
                     // Normally, these services are added at runtime in the CLI.
-                    services.AddSingleton<ISignatureAlgorithmProvider>(Mock.Of<ISignatureAlgorithmProvider>());
-                    services.AddSingleton<ICertificateProvider>(Mock.Of<ICertificateProvider>());
+                    services.AddSingleton<ISignatureAlgorithmProvider>(Substitute.For<ISignatureAlgorithmProvider>());
+                    services.AddSingleton<ICertificateProvider>(Substitute.For<ICertificateProvider>());
                 });
 
             // Start of tests

@@ -1,11 +1,11 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
@@ -17,10 +17,10 @@ namespace Sign.Core.Test
         public NuGetSignerTests()
         {
             _signer = new NuGetSigner(
-                Mock.Of<ISignatureAlgorithmProvider>(),
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<INuGetSignTool>(),
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<ISignatureAlgorithmProvider>(),
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<INuGetSignTool>(),
+                Substitute.For<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
@@ -29,9 +29,9 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSigner(
                     signatureAlgorithmProvider: null!,
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<INuGetSignTool>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<INuGetSignTool>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -41,10 +41,10 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
-                    Mock.Of<INuGetSignTool>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<INuGetSignTool>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -54,10 +54,10 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
                     nuGetSignTool: null!,
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("nuGetSignTool", exception.ParamName);
         }
@@ -67,9 +67,9 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new NuGetSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<INuGetSignTool>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<INuGetSignTool>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
@@ -106,21 +106,19 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenSigningFails_Throws()
         {
-            Mock<INuGetSignTool> nuGetSignTool = new();
-
-            nuGetSignTool.Setup(
-                x => x.SignAsync(
-                    It.IsNotNull<FileInfo>(),
-                    It.IsNotNull<RSA>(),
-                    It.IsNotNull<X509Certificate2>(),
-                    It.IsNotNull<SignOptions>()))
-                .Returns(Task.FromResult(false));
+            INuGetSignTool nuGetSignTool = Substitute.For<INuGetSignTool>();
+            nuGetSignTool.SignAsync(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<RSA>(),
+                    Arg.Any<X509Certificate2>(),
+                    Arg.Any<SignOptions>())
+                .Returns(false);
 
             NuGetSigner signer = new(
-                Mock.Of<ISignatureAlgorithmProvider>(),
-                Mock.Of<ICertificateProvider>(),
-                nuGetSignTool.Object,
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<ISignatureAlgorithmProvider>(),
+                Substitute.For<ICertificateProvider>(),
+                nuGetSignTool,
+                Substitute.For<ILogger<IDataFormatSigner>>());
 
             signer.Retry = TimeSpan.FromMicroseconds(1);
 
@@ -136,7 +134,7 @@ namespace Sign.Core.Test
                 antiMatcher: null,
                 recurseContainers: true);
 
-            using (DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>()))
+            using (DirectoryService directoryService = new(Substitute.For<ILogger<IDirectoryService>>()))
             using (TemporaryDirectory temporaryDirectory = new(directoryService))
             {
                 FileInfo nupkgFile = TestFileCreator.CreateEmptyZipFile(temporaryDirectory, fileExtension: ".nupkg");

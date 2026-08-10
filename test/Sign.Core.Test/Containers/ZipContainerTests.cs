@@ -1,11 +1,11 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
 using System.IO.Compression;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -17,9 +17,9 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ZipContainer(
                     zipFile: null!,
-                    Mock.Of<IDirectoryService>(),
-                    Mock.Of<IFileMatcher>(),
-                    Mock.Of<ILogger>()));
+                    Substitute.For<IDirectoryService>(),
+                    Substitute.For<IFileMatcher>(),
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("zipFile", exception.ParamName);
         }
@@ -31,8 +31,8 @@ namespace Sign.Core.Test
                 () => new ZipContainer(
                     new FileInfo("a"),
                     directoryService: null!,
-                    Mock.Of<IFileMatcher>(),
-                    Mock.Of<ILogger>()));
+                    Substitute.For<IFileMatcher>(),
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("directoryService", exception.ParamName);
         }
@@ -43,9 +43,9 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ZipContainer(
                     new FileInfo("a"),
-                    Mock.Of<IDirectoryService>(),
+                    Substitute.For<IDirectoryService>(),
                     fileMatcher: null!,
-                    Mock.Of<ILogger>()));
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("fileMatcher", exception.ParamName);
         }
@@ -56,8 +56,8 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ZipContainer(
                     new FileInfo("a"),
-                    Mock.Of<IDirectoryService>(),
-                    Mock.Of<IFileMatcher>(),
+                    Substitute.For<IDirectoryService>(),
+                    Substitute.For<IFileMatcher>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
@@ -73,7 +73,7 @@ namespace Sign.Core.Test
             {
                 DirectoryInfo? directory;
 
-                using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+                using (ZipContainer container = new(zipFile, directoryService, Substitute.For<IFileMatcher>(), Substitute.For<ILogger>()))
                 {
                     await container.OpenAsync();
 
@@ -95,7 +95,7 @@ namespace Sign.Core.Test
             FileInfo zipFile = CreateZipFile(expectedFileNames);
 
             using (DirectoryServiceStub directoryService = new())
-            using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+            using (ZipContainer container = new(zipFile, directoryService, Substitute.For<IFileMatcher>(), Substitute.For<ILogger>()))
             {
                 await container.OpenAsync();
 
@@ -115,7 +115,7 @@ namespace Sign.Core.Test
             FileInfo zipFile = CreateZipFile(fileNames);
 
             using (DirectoryServiceStub directoryService = new())
-            using (ZipContainer container = new(zipFile, directoryService, Mock.Of<IFileMatcher>(), Mock.Of<ILogger>()))
+            using (ZipContainer container = new(zipFile, directoryService, Substitute.For<IFileMatcher>(), Substitute.For<ILogger>()))
             {
                 await container.OpenAsync();
 

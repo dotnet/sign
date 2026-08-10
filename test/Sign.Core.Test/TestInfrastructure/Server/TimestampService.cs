@@ -1,4 +1,4 @@
-#pragma warning disable IDE0073
+﻿#pragma warning disable IDE0073
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -9,7 +9,7 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -48,7 +48,7 @@ namespace Sign.Core.Test
             Certificate = certificate;
             Url = uri;
             _nextSerialNumber = BigInteger.One;
-            _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+            _directoryService = new DirectoryService(Substitute.For<ILogger<IDirectoryService>>());
             _temporaryDirectory = new TemporaryDirectory(_directoryService);
         }
 
