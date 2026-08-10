@@ -14,7 +14,11 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <PackageReference Include="Moq" />
+    <PackageReference Include="NSubstitute" PrivateAssets="all" />
+    <PackageReference Include="NSubstitute.Analyzers.CSharp">
+      <IncludeAssets>analyzers</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="AzureSign.Core">
       <IncludeAssets>compile;runtime</IncludeAssets>
     </PackageReference>
