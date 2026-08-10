@@ -5,7 +5,7 @@
 using Azure.CodeSigning;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.SignatureProviders.ArtifactSigning.Test
@@ -22,7 +22,7 @@ namespace Sign.SignatureProviders.ArtifactSigning.Test
             services.AddSingleton<ArtifactSigningService>(sp =>
             {
                 return new ArtifactSigningService(
-                     Mock.Of<CertificateProfileClient>(),
+                     Substitute.For<CertificateProfileClient>(),
                      "account",
                      "profile",
                      sp.GetRequiredService<ILogger<ArtifactSigningService>>());

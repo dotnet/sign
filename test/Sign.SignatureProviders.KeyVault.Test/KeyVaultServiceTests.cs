@@ -8,7 +8,7 @@ using Azure;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.SignatureProviders.KeyVault.Test
@@ -16,16 +16,16 @@ namespace Sign.SignatureProviders.KeyVault.Test
     public class KeyVaultServiceTests
     {
         private const string CertificateName = "a";
-        private static readonly ILogger<KeyVaultService> Logger = Mock.Of<ILogger<KeyVaultService>>();
+        private static readonly ILogger<KeyVaultService> Logger = Substitute.For<ILogger<KeyVaultService>>();
 
-        private readonly Mock<CertificateClient> _certificateClient = new();
-        private readonly Mock<CryptographyClient> _cryptographyClient = new();
+        private readonly CertificateClient _certificateClient = Substitute.For<CertificateClient>();
+        private readonly CryptographyClient _cryptographyClient = Substitute.For<CryptographyClient>();
 
         [Fact]
         public void Constructor_WhenCertificateClientIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(certificateClient: null!, _cryptographyClient.Object, CertificateName, Logger));
+                () => new KeyVaultService(certificateClient: null!, _cryptographyClient, CertificateName, Logger));
 
             Assert.Equal("certificateClient", exception.ParamName);
         }
@@ -34,7 +34,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCryptographyClientIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(_certificateClient.Object, cryptographyClient: null!, CertificateName, Logger));
+                () => new KeyVaultService(_certificateClient, cryptographyClient: null!, CertificateName, Logger));
 
             Assert.Equal("cryptographyClient", exception.ParamName);
         }
@@ -43,7 +43,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(_certificateClient.Object, _cryptographyClient.Object, certificateName: null!, Logger));
+                () => new KeyVaultService(_certificateClient, _cryptographyClient, certificateName: null!, Logger));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
@@ -52,7 +52,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new KeyVaultService(_certificateClient.Object, _cryptographyClient.Object, certificateName: string.Empty, Logger));
+                () => new KeyVaultService(_certificateClient, _cryptographyClient, certificateName: string.Empty, Logger));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
@@ -61,7 +61,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(_certificateClient.Object, _cryptographyClient.Object, CertificateName, logger: null!));
+                () => new KeyVaultService(_certificateClient, _cryptographyClient, CertificateName, logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -70,65 +70,60 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public async Task GetCertificateAsync_CalledTwice_CertificateRetrievedOnce()
         {
             CancellationToken cancellationToken = CancellationToken.None;
-            Mock<KeyVaultCertificateWithPolicy> certificate = CreateMockKeyVaultCertificateWithPolicy();
-            Mock<Response<KeyVaultCertificateWithPolicy>> response = new();
-
-            response
-                .Setup(_ => _.Value)
-                .Returns(certificate.Object);
+            KeyVaultCertificateWithPolicy certificate = CreateKeyVaultCertificateWithPolicy();
+            Response<KeyVaultCertificateWithPolicy> response = Response.FromValue(certificate, Substitute.For<Response>());
 
             _certificateClient
-                .Setup(_ => _.GetCertificateAsync(CertificateName, cancellationToken))
-                .ReturnsAsync(response.Object);
+                .GetCertificateAsync(CertificateName, cancellationToken)
+                .Returns(response);
 
-            using KeyVaultService service = new(_certificateClient.Object, _cryptographyClient.Object, CertificateName, Logger);
+            using KeyVaultService service = new(_certificateClient, _cryptographyClient, CertificateName, Logger);
 
             using X509Certificate2 certificate1 = await service.GetCertificateAsync(cancellationToken);
             using X509Certificate2 certificate2 = await service.GetCertificateAsync(cancellationToken);
 
-            _certificateClient.Verify(_ => _.GetCertificateAsync(CertificateName, cancellationToken), Times.Once);
+            await _certificateClient.Received(1).GetCertificateAsync(CertificateName, cancellationToken);
         }
 
         [Fact]
         public async Task GetRsaAsync_ReturnsRSAKeyVaultWrapper()
         {
             CancellationToken cancellationToken = CancellationToken.None;
-            Mock<KeyVaultCertificateWithPolicy> certificate = CreateMockKeyVaultCertificateWithPolicy();
-            Mock<RSAKeyVault> rsaKeyVault = new(Mock.Of<CryptographyClient>(), "testId", null);
-            Mock<Response<KeyVaultCertificateWithPolicy>> response = new();
-
-            response
-                .Setup(_ => _.Value)
-                .Returns(certificate.Object);
+            KeyVaultCertificateWithPolicy certificate = CreateKeyVaultCertificateWithPolicy();
+            RSAKeyVault rsaKeyVault = CreateRSAKeyVault();
+            Response<KeyVaultCertificateWithPolicy> response = Response.FromValue(certificate, Substitute.For<Response>());
 
             _certificateClient
-                .Setup(_ => _.GetCertificateAsync(CertificateName, cancellationToken))
-                .ReturnsAsync(response.Object);
+                .GetCertificateAsync(CertificateName, cancellationToken)
+                .Returns(response);
 
             _cryptographyClient
-                .Setup(_ => _.CreateRSAAsync(cancellationToken))
-                .ReturnsAsync(rsaKeyVault.Object);
+                .CreateRSAAsync(cancellationToken)
+                .Returns(rsaKeyVault);
 
-            using KeyVaultService service = new(_certificateClient.Object, _cryptographyClient.Object, CertificateName, Logger);
+            using KeyVaultService service = new(_certificateClient, _cryptographyClient, CertificateName, Logger);
 
             using RSA rsa = await service.GetRsaAsync(cancellationToken);
 
             Assert.IsType<RSAKeyVaultWrapper>(rsa);
         }
 
-        private static Mock<KeyVaultCertificateWithPolicy> CreateMockKeyVaultCertificateWithPolicy()
+        private static KeyVaultCertificateWithPolicy CreateKeyVaultCertificateWithPolicy()
         {
-            CertificateProperties certificateProperties = new("test");
             byte[] publicKey = SelfIssuedCertificateCreator.CreateCertificate().Export(X509ContentType.Cert);
-            Mock<KeyVaultCertificateWithPolicy> certificate = new(certificateProperties);
+            return CertificateModelFactory.KeyVaultCertificateWithPolicy(
+                new CertificateProperties("test"),
+                cer: publicKey);
+        }
 
-            // We need to do this because the property has an internal setter
-            typeof(KeyVaultCertificateWithPolicy)
-                .GetProperty(nameof(KeyVaultCertificateWithPolicy.Cer))
-                ?.GetSetMethod(nonPublic: true)
-                ?.Invoke(certificate.Object, [publicKey]);
-
-            return certificate;
+        private static RSAKeyVault CreateRSAKeyVault()
+        {
+#pragma warning disable NS2001 // The Azure SDK grants DynamicProxyGenAssembly2 access to this internal constructor.
+            return Substitute.For<RSAKeyVault>(
+                Substitute.For<CryptographyClient>(),
+                "testId",
+                null);
+#pragma warning restore NS2001
         }
     }
 }
