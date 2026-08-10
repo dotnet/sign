@@ -135,7 +135,8 @@ namespace Sign.Cli
             ParseResult parseResult,
             IServiceProviderFactory serviceProviderFactory,
             ISignatureProvider signatureProvider,
-            IEnumerable<string> filesArgument)
+            IEnumerable<string> filesArgument,
+            CancellationToken cancellationToken = default)
         {
             // Some of the options have a default value and that is why we can safely use
             // the null-forgiving operator (!) to simplify the code.
@@ -250,6 +251,8 @@ namespace Sign.Cli
             }
 
             ISigner signer = serviceProvider.GetRequiredService<ISigner>();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             int exitCode = await signer.SignAsync(
                 inputFiles,

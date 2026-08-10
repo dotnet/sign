@@ -5,6 +5,7 @@
 using System.CommandLine;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Sign.Core;
 
@@ -81,6 +82,47 @@ namespace Sign.Cli.Test
                 if (Directory.Exists(outputDirectory))
                 {
                     Directory.Delete(outputDirectory, recursive: true);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HandleAsync_WhenCancelledBeforeSigning_DoesNotSign()
+        {
+            SignerSpy signer = new();
+            ServiceCollection services = new();
+            services.AddSingleton<ISigner>(signer);
+
+            using var serviceProvider = services.BuildServiceProvider();
+            TestServiceProviderFactory serviceProviderFactory = new(serviceProvider);
+            string inputDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            FileInfo inputFile = new(Path.Combine(inputDirectory, "input.bin"));
+
+            try
+            {
+                inputFile.Directory!.Create();
+                await File.WriteAllTextAsync(inputFile.FullName, "content");
+
+                RootCommand rootCommand = new() { _command };
+                ParseResult parseResult = rootCommand.Parse($"code --base-directory \"{inputDirectory}\"");
+                using CancellationTokenSource cancellationTokenSource = new();
+                cancellationTokenSource.Cancel();
+
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                    () => _command.HandleAsync(
+                        parseResult,
+                        serviceProviderFactory,
+                        Mock.Of<ISignatureProvider>(),
+                        [inputFile.FullName],
+                        cancellationTokenSource.Token));
+
+                Assert.Null(signer.InputFiles);
+            }
+            finally
+            {
+                if (Directory.Exists(inputDirectory))
+                {
+                    Directory.Delete(inputDirectory, recursive: true);
                 }
             }
         }

@@ -113,19 +113,29 @@ namespace Sign.Cli
 
                 cancellationToken.ThrowIfCancellationRequested();
 
+                string? certificateOutput = parseResult.GetValue(CertificateOutputOption);
+                FileInfo? certificateOutputFile = null;
+
+                if (!string.IsNullOrEmpty(certificateOutput))
+                {
+                    DirectoryInfo baseDirectory = parseResult.GetValue(codeCommand.BaseDirectoryOption)!;
+                    certificateOutputFile = new FileInfo(CodeCommand.ExpandFilePath(baseDirectory, certificateOutput));
+
+                    if (certificateOutputFile.Exists)
+                    {
+                        throw new IOException($"The certificate output file already exists: '{certificateOutputFile.FullName}'.");
+                    }
+                }
+
                 int exitCode = await codeCommand.HandleAsync(
                     parseResult,
                     serviceProviderFactory,
                     trustedSigningServiceProvider,
-                    filesArgument);
+                    filesArgument,
+                    cancellationToken);
 
-                string? certificateOutput = parseResult.GetValue(CertificateOutputOption);
-
-                if (exitCode == ExitCode.Success && !string.IsNullOrEmpty(certificateOutput))
+                if (exitCode == ExitCode.Success && certificateOutputFile is not null)
                 {
-                    DirectoryInfo baseDirectory = parseResult.GetValue(codeCommand.BaseDirectoryOption)!;
-                    FileInfo certificateOutputFile = new(CodeCommand.ExpandFilePath(baseDirectory, certificateOutput));
-
                     await CodeCommand.ExportCertificateAsync(
                         trustedSigningServiceProvider.CertificateProvider,
                         certificateOutputFile);
