@@ -112,7 +112,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
             return Substitute.For<RSAKeyVault>(
                 Substitute.For<CryptographyClient>(),
                 "testId",
-                null);
+                null!);
 #pragma warning restore NS2001
         }
 

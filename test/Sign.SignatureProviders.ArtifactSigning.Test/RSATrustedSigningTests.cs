@@ -167,7 +167,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
             _client.Received(1).StartSign(
                 AccountName,
                 CertificateProfileName,
-                Arg.Is<SignRequest>(request => request.SignatureAlgorithm == expectedSignatureAlgorithm && ReferenceEquals(request.Digest, hash)),
+                Arg.Is<SignRequest>(request => request != null && request.SignatureAlgorithm == expectedSignatureAlgorithm && ReferenceEquals(request.Digest, hash)),
                 null,
                 null,
                 null,

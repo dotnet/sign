@@ -22,7 +22,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
     <!-- Only use release versions.  Pre-release versions are signed with an untrusted certificate. -->
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2270" />
-    <PackageVersion Include="NSubstitute" Version="6.1.0" />
+    <PackageVersion Include="NSubstitute" Version="6.0.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
     <PackageVersion Include="NuGet.Packaging" Version="7.6.0" />
     <PackageVersion Include="NuGet.Protocol" Version="7.6.0" />

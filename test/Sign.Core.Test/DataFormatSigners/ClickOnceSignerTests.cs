@@ -396,12 +396,12 @@ namespace Sign.Core.Test
                         args,
                         StringComparison.Ordinal)));
                     manifestSigner.Received(1).Sign(
-                        Arg.Is<FileInfo>(fi => fi.Name == manifestFile.Name),
+                        Arg.Is<FileInfo>(fi => fi != null && fi.Name == manifestFile.Name),
                         Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                         Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                         Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
                     manifestSigner.Received(1).Sign(
-                        Arg.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                        Arg.Is<FileInfo>(fi => fi != null && fi.Name == applicationFile.Name),
                         Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                         Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                         Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
@@ -495,7 +495,7 @@ namespace Sign.Core.Test
                     Assert.Empty(aggregatingSignerSpy.FilesSubmittedForSigning);
                     await mageCli.Received(1).RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal)));
                     manifestSigner.Received(1).Sign(
-                        Arg.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
+                        Arg.Is<FileInfo>(fi => fi != null && fi.Name == applicationFile.Name),
                         Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
                         Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
                         Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
