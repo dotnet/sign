@@ -71,7 +71,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
             RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, rsaPublicKey);
             rsa.Dispose();
 
-            Assert.True(rsaPublicKey.Disposed);
+            Assert.Equal(1, rsaPublicKey.DisposeTrueCallCount);
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
             CertificateProfileSignOperation operation = Substitute.For<CertificateProfileSignOperation>();
 
             operation
-                .WaitForCompletion(Arg.Any<CancellationToken>())
+                .WaitForCompletion(default)
                 .Returns(response);
 
             _client
@@ -191,11 +191,15 @@ namespace Sign.SignatureProviders.KeyVault.Test
 
         private sealed class RecordingRSA : RSA
         {
-            internal bool Disposed { get; private set; }
+            internal int DisposeTrueCallCount { get; private set; }
 
             protected override void Dispose(bool disposing)
             {
-                Disposed = disposing;
+                if (disposing)
+                {
+                    DisposeTrueCallCount++;
+                }
+
                 base.Dispose(disposing);
             }
 

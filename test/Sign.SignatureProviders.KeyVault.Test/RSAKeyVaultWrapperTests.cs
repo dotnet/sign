@@ -39,12 +39,14 @@ namespace Sign.SignatureProviders.KeyVault.Test
             RSAKeyVaultWrapper wrapper = new(rsaKeyVault, rsaPublicKey);
             wrapper.Dispose();
 
-            Assert.Contains(
+            Assert.Single(
                 rsaKeyVault.ReceivedCalls(),
                 call =>
                     call.GetMethodInfo().Name == nameof(RSA.Dispose) &&
+                    call.GetMethodInfo().GetParameters().Length == 1 &&
+                    call.GetMethodInfo().GetParameters()[0].ParameterType == typeof(bool) &&
                     call.GetArguments() is [true]);
-            Assert.True(rsaPublicKey.Disposed);
+            Assert.Equal(1, rsaPublicKey.DisposeTrueCallCount);
         }
 
         [Fact]
@@ -116,11 +118,15 @@ namespace Sign.SignatureProviders.KeyVault.Test
 
         private sealed class RecordingRSA : RSA
         {
-            internal bool Disposed { get; private set; }
+            internal int DisposeTrueCallCount { get; private set; }
 
             protected override void Dispose(bool disposing)
             {
-                Disposed = disposing;
+                if (disposing)
+                {
+                    DisposeTrueCallCount++;
+                }
+
                 base.Dispose(disposing);
             }
 
