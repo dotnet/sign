@@ -94,6 +94,9 @@ The following information is needed for the signing build:
 * `Client Id` / `Application Id` ServicePrincipal identifier
 * `Key Vault Url` Url to Key Vault. Must be a Premium Sku for EV code signing certificates and all certificates issued after June 2023
 * `Certificate Id` Id of the certificate in Key Vault.
+* `Artifact Signing Endpoint` Artifact Signing service endpoint.
+* `Artifact Signing Account` Artifact Signing account name.
+* `Artifact Signing Certificate Profile` Artifact Signing certificate profile name.
 * `Client Secret` for Azure DevOps Pipelines
 * `Subscription Id` for GitHub Actions
 

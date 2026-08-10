@@ -78,7 +78,7 @@ jobs:
     - name: Sign artifacts
       shell: pwsh
       run: >
-        ./sign code azure-key-vault
+        ./sign code artifact-signing
         **/*.nupkg
         --base-directory "${{ github.workspace }}/BuildArtifacts"
         --file-list "${{ github.workspace }}/config/filelist.txt"
@@ -86,8 +86,9 @@ jobs:
         --description "One Sign CLI demo"
         --description-url "https://github.com/dotnet/sign"
         --azure-credential-type "azure-cli"
-        --azure-key-vault-url "${{ secrets.KEY_VAULT_URL }}" # This does not need to be a secret and is just a placeholder
-        --azure-key-vault-certificate "${{ secrets.KEY_VAULT_CERTIFICATE_ID }}" # This does not need to be a secret and is just a placeholder
+        --artifact-signing-endpoint "${{ secrets.ARTIFACT_SIGNING_ENDPOINT }}" # This does not need to be a secret and is just a placeholder
+        --artifact-signing-account "${{ secrets.ARTIFACT_SIGNING_ACCOUNT }}" # This does not need to be a secret and is just a placeholder
+        --artifact-signing-certificate-profile "${{ secrets.ARTIFACT_SIGNING_CERTIFICATE_PROFILE }}" # This does not need to be a secret and is just a placeholder
         --certificate-output "${{ runner.temp }}\signing-certificate.cer"
 
     # Make the public certificate path available to later steps in this job.
