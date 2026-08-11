@@ -242,7 +242,6 @@ namespace Sign.Core.Test
 
                     IMageCli mageCli = Substitute.For<IMageCli>();
                     mageCli.RunAsync(Arg.Any<string>()).Returns(1);
-                    mageCli.ClearReceivedCalls();
 
                     IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
                     IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
@@ -351,7 +350,6 @@ namespace Sign.Core.Test
 
                     expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -appm \"{manifestFile.FullName}\" -SupportURL https://description.test/";
                     mageCli.RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))).Returns(0);
-                    mageCli.ClearReceivedCalls();
 
                     IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
                     IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
@@ -468,7 +466,6 @@ namespace Sign.Core.Test
 
                     string expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -SupportURL https://description.test/";
                     mageCli.RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))).Returns(0);
-                    mageCli.ClearReceivedCalls();
 
                     IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
                     IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();

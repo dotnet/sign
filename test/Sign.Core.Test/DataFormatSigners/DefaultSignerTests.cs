@@ -62,7 +62,6 @@ namespace Sign.Core.Test
             FileInfo file = new("file.dll");
             IAzureSignToolDataFormatSigner mock = Substitute.For<IAzureSignToolDataFormatSigner>();
             mock.CanSign(Arg.Any<FileInfo>()).Returns(expectedValue);
-            mock.ClearReceivedCalls();
 
             IServiceCollection services = new ServiceCollection();
 
@@ -109,7 +108,6 @@ namespace Sign.Core.Test
             IEnumerable<FileInfo> files = [];
             IAzureSignToolDataFormatSigner mock = Substitute.For<IAzureSignToolDataFormatSigner>();
             mock.SignAsync(Arg.Any<IEnumerable<FileInfo>>(), Arg.Any<SignOptions>()).Returns(Task.CompletedTask);
-            mock.ClearReceivedCalls();
 
             IServiceCollection services = new ServiceCollection();
 

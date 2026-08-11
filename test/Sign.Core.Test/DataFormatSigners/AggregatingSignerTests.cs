@@ -101,7 +101,6 @@ namespace Sign.Core.Test
             IDataFormatSigner signer = Substitute.For<IDataFormatSigner>();
 
             signer.CanSign(Arg.Any<FileInfo>()).Returns(true);
-            signer.ClearReceivedCalls();
             AggregatingSigner aggregatingSigner = CreateSigner(signer);
 
             Assert.True(aggregatingSigner.CanSign(file));
@@ -117,7 +116,6 @@ namespace Sign.Core.Test
             IDataFormatSigner signer = Substitute.For<IDataFormatSigner>();
 
             signer.CanSign(Arg.Any<FileInfo>()).Returns(false);
-            signer.ClearReceivedCalls();
             AggregatingSigner aggregatingSigner = CreateSigner(signer);
 
             Assert.False(aggregatingSigner.CanSign(file));

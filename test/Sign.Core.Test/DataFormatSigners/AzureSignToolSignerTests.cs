@@ -154,8 +154,6 @@ namespace Sign.Core.Test
                     ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
                     certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
                     signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
-                    certificateProvider.ClearReceivedCalls();
-                    signatureAlgorithmProvider.ClearReceivedCalls();
 
                     ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
 
