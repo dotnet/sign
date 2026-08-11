@@ -12,8 +12,8 @@ namespace Sign.Core
         OutputMessageCollection OutputMessages { get; }
         bool ReadOnly { get; set; }
 
-        void ResolveFiles(string[] searchPaths);
-        void UpdateFileInfo(string targetFrameworkVersion);
-        void Write(Stream stream);
+        void ResolveFiles(IReadOnlyList<DirectoryInfo> searchDirectories);
+        void UpdateFileInfo();
+        void Write(FileInfo file);
     }
 }

@@ -6,48 +6,15 @@ using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Sign.Core
 {
-    internal sealed class ApplicationManifestAdapter : IApplicationManifest
+    internal sealed class ApplicationManifestAdapter :
+        ClickOnceManifestAdapter<ApplicationManifest>,
+        IApplicationManifest
     {
-        private readonly ApplicationManifest _manifest;
-
         internal ApplicationManifestAdapter(ApplicationManifest manifest)
+            : base(manifest)
         {
-            ArgumentNullException.ThrowIfNull(manifest, nameof(manifest));
-
-            _manifest = manifest;
         }
 
-        public AssemblyIdentity AssemblyIdentity => _manifest.AssemblyIdentity;
-        public AssemblyReferenceCollection AssemblyReferences => _manifest.AssemblyReferences;
-        public AssemblyReference? EntryPoint => _manifest.EntryPoint;
-        public FileReferenceCollection FileReferences => _manifest.FileReferences;
-        public OutputMessageCollection OutputMessages => _manifest.OutputMessages;
-
-        public bool ReadOnly
-        {
-            get => _manifest.ReadOnly;
-            set => _manifest.ReadOnly = value;
-        }
-
-        public void ResolveFiles(string[] searchPaths)
-        {
-            ArgumentNullException.ThrowIfNull(searchPaths, nameof(searchPaths));
-
-            _manifest.ResolveFiles(searchPaths);
-        }
-
-        public void UpdateFileInfo(string targetFrameworkVersion)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(targetFrameworkVersion, nameof(targetFrameworkVersion));
-
-            _manifest.UpdateFileInfo(targetFrameworkVersion);
-        }
-
-        public void Write(Stream stream)
-        {
-            ArgumentNullException.ThrowIfNull(stream, nameof(stream));
-
-            ManifestWriter.WriteManifest(_manifest, stream);
-        }
+        public FileReferenceCollection FileReferences => Manifest.FileReferences;
     }
 }
