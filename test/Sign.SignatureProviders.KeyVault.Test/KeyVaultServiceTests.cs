@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -118,11 +119,12 @@ namespace Sign.SignatureProviders.KeyVault.Test
 
         private static RSAKeyVault CreateRSAKeyVault()
         {
+            CryptographyClient client = Substitute.For<CryptographyClient>();
+            const string keyId = "testId";
+            JsonWebKey keyMaterial = null!;
+
 #pragma warning disable NS2001 // The Azure SDK grants DynamicProxyGenAssembly2 access to this internal constructor.
-            return Substitute.For<RSAKeyVault>(
-                Substitute.For<CryptographyClient>(),
-                "testId",
-                null!);
+            return Substitute.For<RSAKeyVault>(client, keyId, keyMaterial);
 #pragma warning restore NS2001
         }
     }
