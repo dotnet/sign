@@ -5,7 +5,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
@@ -17,10 +17,10 @@ namespace Sign.Core.Test
         public VsixSignerTests()
         {
             _signer = new VsixSigner(
-                Mock.Of<ISignatureAlgorithmProvider>(),
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<IVsixSignTool>(),
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<ISignatureAlgorithmProvider>(),
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<IVsixSignTool>(),
+                Substitute.For<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
@@ -29,9 +29,9 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSigner(
                     signatureAlgorithmProvider: null!,
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IVsixSignTool>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IVsixSignTool>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -41,10 +41,10 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
-                    Mock.Of<IVsixSignTool>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<IVsixSignTool>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -54,10 +54,10 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
                     vsixSignTool: null!,
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("vsixSignTool", exception.ParamName);
         }
@@ -67,9 +67,9 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new VsixSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IVsixSignTool>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IVsixSignTool>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
@@ -120,7 +120,7 @@ namespace Sign.Core.Test
                 antiMatcher: null,
                 recurseContainers: true);
 
-            using (DirectoryService directoryService = new(Mock.Of<ILogger<IDirectoryService>>()))
+            using (DirectoryService directoryService = new(Substitute.For<ILogger<IDirectoryService>>()))
             using (TemporaryDirectory temporaryDirectory = new(directoryService))
             {
                 FileInfo vsixFile = TestFileCreator.CreateEmptyZipFile(temporaryDirectory, fileExtension: ".vsix");
@@ -128,7 +128,7 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<IVsixSignTool> vsixSignTool = new();
+                    IVsixSignTool vsixSignTool = Substitute.For<IVsixSignTool>();
 
                     SignConfigurationSet configuration = new(
                         options.FileHashAlgorithm,
@@ -136,18 +136,17 @@ namespace Sign.Core.Test
                         privateKey,
                         certificate);
 
-                    vsixSignTool.Setup(
-                        x => x.SignAsync(
-                            It.IsNotNull<FileInfo>(),
-                            It.IsNotNull<SignConfigurationSet>(),
-                            It.IsNotNull<SignOptions>()))
-                        .Returns(Task.FromResult(false));
+                    vsixSignTool.SignAsync(
+                            Arg.Is<FileInfo>(value => value != null),
+                            Arg.Is<SignConfigurationSet>(value => value != null),
+                            Arg.Is<SignOptions>(value => value != null))
+                        .Returns(false);
 
                     VsixSigner signer = new(
-                        Mock.Of<ISignatureAlgorithmProvider>(),
-                        Mock.Of<ICertificateProvider>(),
-                        vsixSignTool.Object,
-                        Mock.Of<ILogger<IDataFormatSigner>>());
+                        Substitute.For<ISignatureAlgorithmProvider>(),
+                        Substitute.For<ICertificateProvider>(),
+                        vsixSignTool,
+                        Substitute.For<ILogger<IDataFormatSigner>>());
 
                     signer.Retry = TimeSpan.FromMicroseconds(1);
 

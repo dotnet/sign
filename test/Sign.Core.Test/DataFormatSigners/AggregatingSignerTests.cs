@@ -4,7 +4,7 @@
 
 using System.Security.Cryptography;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -18,10 +18,10 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AggregatingSigner(
                     signers: null!,
-                    Mock.Of<IDefaultDataFormatSigner>(),
-                    Mock.Of<IContainerProvider>(),
-                    Mock.Of<IFileMetadataService>(),
-                    Mock.Of<IMatcherFactory>()));
+                    Substitute.For<IDefaultDataFormatSigner>(),
+                    Substitute.For<IContainerProvider>(),
+                    Substitute.For<IFileMetadataService>(),
+                    Substitute.For<IMatcherFactory>()));
 
             Assert.Equal("signers", exception.ParamName);
         }
@@ -33,9 +33,9 @@ namespace Sign.Core.Test
                 () => new AggregatingSigner(
                     Enumerable.Empty<IDataFormatSigner>(),
                     defaultSigner: null!,
-                    Mock.Of<IContainerProvider>(),
-                    Mock.Of<IFileMetadataService>(),
-                    Mock.Of<IMatcherFactory>()));
+                    Substitute.For<IContainerProvider>(),
+                    Substitute.For<IFileMetadataService>(),
+                    Substitute.For<IMatcherFactory>()));
 
             Assert.Equal("defaultSigner", exception.ParamName);
         }
@@ -46,10 +46,10 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AggregatingSigner(
                     Enumerable.Empty<IDataFormatSigner>(),
-                    Mock.Of<IDefaultDataFormatSigner>(),
+                    Substitute.For<IDefaultDataFormatSigner>(),
                     containerProvider: null!,
-                    Mock.Of<IFileMetadataService>(),
-                    Mock.Of<IMatcherFactory>()));
+                    Substitute.For<IFileMetadataService>(),
+                    Substitute.For<IMatcherFactory>()));
 
             Assert.Equal("containerProvider", exception.ParamName);
         }
@@ -60,10 +60,10 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AggregatingSigner(
                     Enumerable.Empty<IDataFormatSigner>(),
-                    Mock.Of<IDefaultDataFormatSigner>(),
-                    Mock.Of<IContainerProvider>(),
+                    Substitute.For<IDefaultDataFormatSigner>(),
+                    Substitute.For<IContainerProvider>(),
                     fileMetadataService: null!,
-                    Mock.Of<IMatcherFactory>()));
+                    Substitute.For<IMatcherFactory>()));
 
             Assert.Equal("fileMetadataService", exception.ParamName);
         }
@@ -74,9 +74,9 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AggregatingSigner(
                     Enumerable.Empty<IDataFormatSigner>(),
-                    Mock.Of<IDefaultDataFormatSigner>(),
-                    Mock.Of<IContainerProvider>(),
-                    Mock.Of<IFileMetadataService>(),
+                    Substitute.For<IDefaultDataFormatSigner>(),
+                    Substitute.For<IContainerProvider>(),
+                    Substitute.For<IFileMetadataService>(),
                     matcherFactory: null!));
 
             Assert.Equal("matcherFactory", exception.ParamName);
@@ -97,34 +97,30 @@ namespace Sign.Core.Test
         public void CanSign_WhenSignerReturnsTrue_ReturnsTrue()
         {
             const string extension = ".xyz";
+            FileInfo file = new($"file{extension}");
+            IDataFormatSigner signer = Substitute.For<IDataFormatSigner>();
 
-            Mock<IDataFormatSigner> signer = new(MockBehavior.Strict);
+            signer.CanSign(Arg.Any<FileInfo>()).Returns(true);
+            AggregatingSigner aggregatingSigner = CreateSigner(signer);
 
-            signer.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
-                .Returns(true);
-
-            AggregatingSigner aggregatingSigner = CreateSigner(signer.Object);
-
-            Assert.True(aggregatingSigner.CanSign(new FileInfo($"file{extension}")));
-
-            signer.VerifyAll();
+            Assert.True(aggregatingSigner.CanSign(file));
+            signer.Received(1).CanSign(Arg.Is<FileInfo>(f => ReferenceEquals(f, file)));
+            Assert.Single(signer.ReceivedCalls());
         }
 
         [Fact]
         public void CanSign_WhenSignerReturnsFalse_ReturnsFalse()
         {
             const string extension = ".xyz";
+            FileInfo file = new($"file{extension}");
+            IDataFormatSigner signer = Substitute.For<IDataFormatSigner>();
 
-            Mock<IDataFormatSigner> signer = new(MockBehavior.Strict);
+            signer.CanSign(Arg.Any<FileInfo>()).Returns(false);
+            AggregatingSigner aggregatingSigner = CreateSigner(signer);
 
-            signer.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
-                .Returns(false);
-
-            AggregatingSigner aggregatingSigner = CreateSigner(signer.Object);
-
-            Assert.False(aggregatingSigner.CanSign(new FileInfo($"file{extension}")));
-
-            signer.VerifyAll();
+            Assert.False(aggregatingSigner.CanSign(file));
+            signer.Received(1).CanSign(Arg.Is<FileInfo>(f => ReferenceEquals(f, file)));
+            Assert.Single(signer.ReceivedCalls());
         }
 
         [Theory]
@@ -182,17 +178,15 @@ namespace Sign.Core.Test
                 signers = [signer];
             }
 
-            Mock<IMatcherFactory> matcherFactory = new();
-
-            matcherFactory.Setup(x => x.Create())
-                .Returns(new Matcher(StringComparison.OrdinalIgnoreCase));
+            IMatcherFactory matcherFactory = Substitute.For<IMatcherFactory>();
+            matcherFactory.Create().Returns(new Matcher(StringComparison.OrdinalIgnoreCase));
 
             return new AggregatingSigner(
                 signers,
-                Mock.Of<IDefaultDataFormatSigner>(),
-                Mock.Of<IContainerProvider>(),
-                Mock.Of<IFileMetadataService>(),
-                matcherFactory.Object);
+                Substitute.For<IDefaultDataFormatSigner>(),
+                Substitute.For<IContainerProvider>(),
+                Substitute.For<IFileMetadataService>(),
+                matcherFactory);
         }
     }
 }

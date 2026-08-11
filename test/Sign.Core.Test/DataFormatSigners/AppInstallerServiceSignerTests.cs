@@ -5,7 +5,7 @@
 using System.Text;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -16,8 +16,8 @@ namespace Sign.Core.Test
         public AppInstallerServiceSignerTests()
         {
             _signer = new AppInstallerServiceSigner(
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<ILogger<IDataFormatSigner>>());
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<ILogger<IDataFormatSigner>>());
         }
 
         [Fact]
@@ -26,7 +26,7 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppInstallerServiceSigner(
                     certificateProvider: null!,
-                    Mock.Of<ILogger<IDataFormatSigner>>()));
+                    Substitute.For<ILogger<IDataFormatSigner>>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -36,7 +36,7 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppInstallerServiceSigner(
-                    Mock.Of<ICertificateProvider>(),
+                    Substitute.For<ICertificateProvider>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);

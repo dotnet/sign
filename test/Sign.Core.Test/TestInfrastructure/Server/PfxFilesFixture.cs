@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -18,7 +18,7 @@ namespace Sign.Core.Test
 
         public PfxFilesFixture()
         {
-            _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+            _directoryService = new DirectoryService(Substitute.For<ILogger<IDirectoryService>>());
             _directory = new TemporaryDirectory(_directoryService);
             _pfxFiles = new ConcurrentDictionary<Tuple<int, HashAlgorithmName>, FileInfo>();
         }

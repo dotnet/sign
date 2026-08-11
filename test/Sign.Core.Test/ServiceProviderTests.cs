@@ -4,7 +4,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -27,8 +27,8 @@ namespace Sign.Core.Test
                 {
                     // Dependency injection of some services require these services.
                     // Normally, these services are added at runtime in the CLI.
-                    services.AddSingleton<ISignatureAlgorithmProvider>(Mock.Of<ISignatureAlgorithmProvider>());
-                    services.AddSingleton<ICertificateProvider>(Mock.Of<ICertificateProvider>());
+                    services.AddSingleton<ISignatureAlgorithmProvider>(Substitute.For<ISignatureAlgorithmProvider>());
+                    services.AddSingleton<ICertificateProvider>(Substitute.For<ICertificateProvider>());
                 });
 
             // Start of tests

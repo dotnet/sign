@@ -6,7 +6,7 @@ using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.SignatureProviders.KeyVault.Test
@@ -23,8 +23,8 @@ namespace Sign.SignatureProviders.KeyVault.Test
             services.AddSingleton<KeyVaultService>(sp =>
             {
                 return new KeyVaultService(
-                    Mock.Of<CertificateClient>(),
-                    Mock.Of<CryptographyClient>(),
+                    Substitute.For<CertificateClient>(),
+                    Substitute.For<CryptographyClient>(),
                     "a", sp.GetRequiredService<ILogger<KeyVaultService>>());
             });
             serviceProvider = services.BuildServiceProvider();

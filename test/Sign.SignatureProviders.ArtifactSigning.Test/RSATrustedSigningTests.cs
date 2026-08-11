@@ -6,8 +6,7 @@ using System.Security.Cryptography;
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
-using Moq;
-using Moq.Protected;
+using NSubstitute;
 using Sign.SignatureProviders.ArtifactSigning;
 
 namespace Sign.SignatureProviders.KeyVault.Test
@@ -17,14 +16,14 @@ namespace Sign.SignatureProviders.KeyVault.Test
         private static readonly string AccountName = "testAccount";
         private static readonly string CertificateProfileName = "testProfile";
 
-        private readonly Mock<CertificateProfileClient> _client = new();
-        private readonly Mock<RSA> _rsaPublicKey = new();
+        private readonly CertificateProfileClient _client = Substitute.For<CertificateProfileClient>();
+        private readonly RSA _rsaPublicKey = Substitute.For<RSA>();
 
         [Fact]
         public void Constructor_WhenClientIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new RSAArtifactSigning(client: null!, AccountName, CertificateProfileName, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(client: null!, AccountName, CertificateProfileName, _rsaPublicKey));
 
             Assert.Equal("client", exception.ParamName);
         }
@@ -33,7 +32,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenAccountNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new RSAArtifactSigning(_client.Object, accountName: null!, CertificateProfileName, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client, accountName: null!, CertificateProfileName, _rsaPublicKey));
 
             Assert.Equal("accountName", exception.ParamName);
         }
@@ -42,7 +41,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenAccountNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new RSAArtifactSigning(_client.Object, accountName: string.Empty, CertificateProfileName, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client, accountName: string.Empty, CertificateProfileName, _rsaPublicKey));
 
             Assert.Equal("accountName", exception.ParamName);
         }
@@ -51,7 +50,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateProfileNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new RSAArtifactSigning(_client.Object, AccountName, certificateProfileName: null!, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client, AccountName, certificateProfileName: null!, _rsaPublicKey));
 
             Assert.Equal("certificateProfileName", exception.ParamName);
         }
@@ -60,7 +59,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateProfileNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new RSAArtifactSigning(_client.Object, AccountName, certificateProfileName: string.Empty, _rsaPublicKey.Object));
+                () => new RSAArtifactSigning(_client, AccountName, certificateProfileName: string.Empty, _rsaPublicKey));
 
             Assert.Equal("certificateProfileName", exception.ParamName);
         }
@@ -68,16 +67,17 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void Dispose_DisposesRSAKeyVaultAndRSAPublicKey()
         {
-            RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            RecordingRSA rsaPublicKey = new();
+            RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, rsaPublicKey);
             rsa.Dispose();
 
-            _rsaPublicKey.Protected().Verify(nameof(RSA.Dispose), Times.Once(), [true]);
+            Assert.Equal(1, rsaPublicKey.DisposeTrueCallCount);
         }
 
         [Fact]
         public void ExportParameters_IncludePrivateParametersIsTrue_Throws()
         {
-            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
 
             Assert.Throws<NotSupportedException>(
                 () => rsa.ExportParameters(true));
@@ -86,17 +86,17 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void ExportParameters_IncludePrivateParametersIsFalse_UsesExportParametersOfPublicKey()
         {
-            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
 
             rsa.ExportParameters(false);
 
-            _rsaPublicKey.Verify(_ => _.ExportParameters(false), Times.Once());
+            _rsaPublicKey.Received(1).ExportParameters(false);
         }
 
         [Fact]
         public void ImportParameters_Throws()
         {
-            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
 
             Assert.Throws<NotImplementedException>(
                 () => rsa.ImportParameters(default));
@@ -105,7 +105,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [Fact]
         public void SignHash_InvalidHashLength_Throws()
         {
-            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
 
             byte[] hash = [];
             HashAlgorithmName hashAlgorithmName = HashAlgorithmName.SHA256;
@@ -124,7 +124,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         [InlineData(64, nameof(RSASignaturePadding.Pss), nameof(SignatureAlgorithm.PS512))]
         public void SignHash_UsesClient(int hashLength, string paddingName, string expectedSignatureAlgorithmName)
         {
-            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
 
             RSASignaturePadding padding = paddingName switch
             {
@@ -147,38 +147,37 @@ namespace Sign.SignatureProviders.KeyVault.Test
             byte[] signature = [];
             byte[] hash = new byte[hashLength];
             HashAlgorithmName hashAlgorithmName = HashAlgorithmName.SHA256;
-            Mock<Response<SignStatus>> response = new();
-            Mock<CertificateProfileSignOperation> operation = new();
-
-            response
-                .SetupGet(_ => _.Value)
-                    .Returns(new SignStatus(Guid.NewGuid(), Status.Succeeded, signature, []));
+            Response<SignStatus> response = Response.FromValue(
+                new SignStatus(Guid.NewGuid(), Status.Succeeded, signature, []),
+                Substitute.For<Response>());
+            CertificateProfileSignOperation operation = Substitute.For<CertificateProfileSignOperation>();
 
             operation
-                .Setup(_ => _.WaitForCompletion(default))
-                .Returns(response.Object);
+                .WaitForCompletion(default)
+                .Returns(response);
 
-            _client.Setup(_ => _.StartSign(AccountName, CertificateProfileName, It.IsAny<SignRequest>(), null, null, null, default))
-                    .Returns(operation.Object);
+            _client
+                .StartSign(AccountName, CertificateProfileName, Arg.Any<SignRequest>(), null, null, null, default)
+                .Returns(operation);
 
             var result = rsa.SignHash(hash, hashAlgorithmName, padding);
 
             Assert.Same(signature, result);
 
-            _client.Verify(_ => _.StartSign(
+            _client.Received(1).StartSign(
                 AccountName,
                 CertificateProfileName,
-                It.Is<SignRequest>(request => request.SignatureAlgorithm == expectedSignatureAlgorithm && ReferenceEquals(request.Digest, hash)),
+                Arg.Is<SignRequest>(request => request != null && request.SignatureAlgorithm == expectedSignatureAlgorithm && ReferenceEquals(request.Digest, hash)),
                 null,
                 null,
                 null,
-                default), Times.Once());
+                default);
         }
 
         [Fact]
         public void VerifyHash_UsesPublicKey()
         {
-            using RSAArtifactSigning rsa = new(_client.Object, AccountName, CertificateProfileName, _rsaPublicKey.Object);
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
 
             byte[] hash = [];
             byte[] signature = [];
@@ -187,7 +186,28 @@ namespace Sign.SignatureProviders.KeyVault.Test
 
             rsa.VerifyHash(hash, signature, hashAlgorithmName, padding);
 
-            _rsaPublicKey.Verify(_ => _.VerifyHash(hash, signature, hashAlgorithmName, padding), Times.Once());
+            _rsaPublicKey.Received(1).VerifyHash(hash, signature, hashAlgorithmName, padding);
+        }
+
+        private sealed class RecordingRSA : RSA
+        {
+            internal int DisposeTrueCallCount { get; private set; }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    DisposeTrueCallCount++;
+                }
+
+                base.Dispose(disposing);
+            }
+
+            public override RSAParameters ExportParameters(bool includePrivateParameters) => default;
+
+            public override void ImportParameters(RSAParameters parameters)
+            {
+            }
         }
     }
 }

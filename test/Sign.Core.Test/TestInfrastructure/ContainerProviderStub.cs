@@ -3,7 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -16,11 +16,11 @@ namespace Sign.Core.Test
         internal ContainerProviderStub()
         {
             _containerProvider = new ContainerProvider(
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<IDirectoryService>(),
-                Mock.Of<IFileMatcher>(),
-                Mock.Of<IMakeAppxCli>(),
-                Mock.Of<ILogger<IContainerProvider>>());
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<IDirectoryService>(),
+                Substitute.For<IFileMatcher>(),
+                Substitute.For<IMakeAppxCli>(),
+                Substitute.For<ILogger<IContainerProvider>>());
         }
 
         public bool IsAppxBundleContainer(FileInfo file)

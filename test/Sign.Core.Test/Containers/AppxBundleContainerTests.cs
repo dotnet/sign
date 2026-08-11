@@ -3,7 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -15,10 +15,10 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxBundleContainer(
                     appxBundle: null!,
-                    Mock.Of<IDirectoryService>(),
-                    Mock.Of<IFileMatcher>(),
-                    Mock.Of<IMakeAppxCli>(),
-                    Mock.Of<ILogger>()));
+                    Substitute.For<IDirectoryService>(),
+                    Substitute.For<IFileMatcher>(),
+                    Substitute.For<IMakeAppxCli>(),
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("appxBundle", exception.ParamName);
         }
@@ -30,9 +30,9 @@ namespace Sign.Core.Test
                 () => new AppxBundleContainer(
                     new FileInfo("a"),
                     directoryService: null!,
-                    Mock.Of<IFileMatcher>(),
-                    Mock.Of<IMakeAppxCli>(),
-                    Mock.Of<ILogger>()));
+                    Substitute.For<IFileMatcher>(),
+                    Substitute.For<IMakeAppxCli>(),
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("directoryService", exception.ParamName);
         }
@@ -43,10 +43,10 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxBundleContainer(
                     new FileInfo("a"),
-                    Mock.Of<IDirectoryService>(),
+                    Substitute.For<IDirectoryService>(),
                     fileMatcher: null!,
-                    Mock.Of<IMakeAppxCli>(),
-                    Mock.Of<ILogger>()));
+                    Substitute.For<IMakeAppxCli>(),
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("fileMatcher", exception.ParamName);
         }
@@ -57,10 +57,10 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxBundleContainer(
                     new FileInfo("a"),
-                    Mock.Of<IDirectoryService>(),
-                    Mock.Of<IFileMatcher>(),
+                    Substitute.For<IDirectoryService>(),
+                    Substitute.For<IFileMatcher>(),
                     makeAppxCli: null!,
-                    Mock.Of<ILogger>()));
+                    Substitute.For<ILogger>()));
 
             Assert.Equal("makeAppxCli", exception.ParamName);
         }
@@ -71,9 +71,9 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new AppxBundleContainer(
                     new FileInfo("a"),
-                    Mock.Of<IDirectoryService>(),
-                    Mock.Of<IFileMatcher>(),
-                    Mock.Of<IMakeAppxCli>(),
+                    Substitute.For<IDirectoryService>(),
+                    Substitute.For<IFileMatcher>(),
+                    Substitute.For<IMakeAppxCli>(),
                     logger: null!));
 
             Assert.Equal("logger", exception.ParamName);

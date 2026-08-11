@@ -4,17 +4,17 @@
 
 using Azure.CodeSigning;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.SignatureProviders.ArtifactSigning;
 
 namespace Sign.SignatureProviders.TrustedSigning.Test
 {
     public class TrustedSigningServiceTests
     {
-        private static readonly CertificateProfileClient CertificateProfileClient = Mock.Of<CertificateProfileClient>();
+        private static readonly CertificateProfileClient CertificateProfileClient = Substitute.For<CertificateProfileClient>();
         private const string AccountName = "a";
         private const string CertificateProfileName = "b";
-        private static readonly ILogger<ArtifactSigningService> Logger = Mock.Of<ILogger<ArtifactSigningService>>();
+        private static readonly ILogger<ArtifactSigningService> Logger = Substitute.For<ILogger<ArtifactSigningService>>();
 
         [Fact]
         public void Constructor_WhenCertificateProfileClientIsNull_Throws()

@@ -4,7 +4,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.Core;
 
 namespace Sign.Cli.Test
@@ -33,7 +33,7 @@ namespace Sign.Cli.Test
 
                 _signCommand = Program.CreateCommand(serviceProviderFactory);
 
-                _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+                _directoryService = new DirectoryService(Substitute.For<ILogger<IDirectoryService>>());
                 _temporaryDirectory = new TemporaryDirectory(_directoryService);
 
                 CreateFileSystemInfos(

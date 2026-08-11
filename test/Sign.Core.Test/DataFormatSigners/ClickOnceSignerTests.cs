@@ -5,7 +5,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
@@ -17,15 +17,15 @@ namespace Sign.Core.Test
 
         public ClickOnceSignerTests()
         {
-            _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
+            _directoryService = new(Substitute.For<ILogger<IDirectoryService>>());
             _signer = new ClickOnceSigner(
-                Mock.Of<ISignatureAlgorithmProvider>(),
-                Mock.Of<ICertificateProvider>(),
-                Mock.Of<IServiceProvider>(),
-                Mock.Of<IMageCli>(),
-                Mock.Of<IManifestSigner>(),
-                Mock.Of<ILogger<IDataFormatSigner>>(),
-                Mock.Of<IFileMatcher>());
+                Substitute.For<ISignatureAlgorithmProvider>(),
+                Substitute.For<ICertificateProvider>(),
+                Substitute.For<IServiceProvider>(),
+                Substitute.For<IMageCli>(),
+                Substitute.For<IManifestSigner>(),
+                Substitute.For<ILogger<IDataFormatSigner>>(),
+                Substitute.For<IFileMatcher>());
         }
 
         public void Dispose()
@@ -39,12 +39,12 @@ namespace Sign.Core.Test
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
                     signatureAlgorithmProvider: null!,
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IServiceProvider>(),
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IServiceProvider>(),
+                    Substitute.For<IMageCli>(),
+                    Substitute.For<IManifestSigner>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>(),
+                    Substitute.For<IFileMatcher>()));
 
             Assert.Equal("signatureAlgorithmProvider", exception.ParamName);
         }
@@ -54,13 +54,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
                     certificateProvider: null!,
-                    Mock.Of<IServiceProvider>(),
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Substitute.For<IServiceProvider>(),
+                    Substitute.For<IMageCli>(),
+                    Substitute.For<IManifestSigner>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>(),
+                    Substitute.For<IFileMatcher>()));
 
             Assert.Equal("certificateProvider", exception.ParamName);
         }
@@ -70,13 +70,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
                     serviceProvider: null!,
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Substitute.For<IMageCli>(),
+                    Substitute.For<IManifestSigner>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>(),
+                    Substitute.For<IFileMatcher>()));
 
             Assert.Equal("serviceProvider", exception.ParamName);
         }
@@ -86,13 +86,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IServiceProvider>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IServiceProvider>(),
                     mageCli: null!,
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Substitute.For<IManifestSigner>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>(),
+                    Substitute.For<IFileMatcher>()));
 
             Assert.Equal("mageCli", exception.ParamName);
         }
@@ -102,13 +102,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IServiceProvider>(),
-                    Mock.Of<IMageCli>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IServiceProvider>(),
+                    Substitute.For<IMageCli>(),
                     manifestSigner: null!,
-                    Mock.Of<ILogger<IDataFormatSigner>>(),
-                    Mock.Of<IFileMatcher>()));
+                    Substitute.For<ILogger<IDataFormatSigner>>(),
+                    Substitute.For<IFileMatcher>()));
 
             Assert.Equal("manifestSigner", exception.ParamName);
         }
@@ -118,13 +118,13 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IServiceProvider>(),
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IServiceProvider>(),
+                    Substitute.For<IMageCli>(),
+                    Substitute.For<IManifestSigner>(),
                     logger: null!,
-                    Mock.Of<IFileMatcher>()));
+                    Substitute.For<IFileMatcher>()));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -134,12 +134,12 @@ namespace Sign.Core.Test
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => new ClickOnceSigner(
-                    Mock.Of<ISignatureAlgorithmProvider>(),
-                    Mock.Of<ICertificateProvider>(),
-                    Mock.Of<IServiceProvider>(),
-                    Mock.Of<IMageCli>(),
-                    Mock.Of<IManifestSigner>(),
-                    Mock.Of<ILogger<IDataFormatSigner>>(),
+                    Substitute.For<ISignatureAlgorithmProvider>(),
+                    Substitute.For<ICertificateProvider>(),
+                    Substitute.For<IServiceProvider>(),
+                    Substitute.For<IMageCli>(),
+                    Substitute.For<IManifestSigner>(),
+                    Substitute.For<ILogger<IDataFormatSigner>>(),
                     fileMatcher: null!));
 
             Assert.Equal("fileMatcher", exception.ParamName);
@@ -231,46 +231,30 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-                    Mock<ICertificateProvider> certificateProvider = new();
+                    ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+                    ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+                    certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(certificate);
+                    signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
 
-                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(certificate);
-
-                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(privateKey);
-
-                    Mock<IServiceProvider> serviceProvider = new();
+                    IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
                     AggregatingSignerSpy aggregatingSignerSpy = new();
+                    serviceProvider.GetService(Arg.Any<Type>()).Returns(aggregatingSignerSpy);
 
-                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignerSpy);
+                    IMageCli mageCli = Substitute.For<IMageCli>();
+                    mageCli.RunAsync(Arg.Any<string>()).Returns(1);
 
-                    Mock<IMageCli> mageCli = new();
-
-                    mageCli.Setup(x => x.RunAsync(
-                            It.IsAny<string>()))
-                        .ReturnsAsync(1);
-
-                    Mock<IManifestSigner> manifestSigner = new();
-                    Mock<IFileMatcher> fileMatcher = new();
-                    Mock<ILogger<IDataFormatSigner>> logger = new();
-
-                    manifestSigner.Setup(
-                        x => x.Sign(
-                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
-                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
-                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
-                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
+                    IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
+                    IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
+                    ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
 
                     ClickOnceSigner signer = new(
-                        signatureAlgorithmProvider.Object,
-                        certificateProvider.Object,
-                        serviceProvider.Object,
-                        mageCli.Object,
-                        manifestSigner.Object,
-                        logger.Object,
-                        fileMatcher.Object);
+                        signatureAlgorithmProvider,
+                        certificateProvider,
+                        serviceProvider,
+                        mageCli,
+                        manifestSigner,
+                        logger,
+                        fileMatcher);
 
                     signer.Retry = TimeSpan.FromMicroseconds(1);
 
@@ -340,26 +324,18 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-                    Mock<ICertificateProvider> certificateProvider = new();
+                    ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+                    ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+                    certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(certificate);
+                    signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
 
-                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(certificate);
-
-                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(privateKey);
-
-                    Mock<IServiceProvider> serviceProvider = new();
+                    IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
                     AggregatingSignerSpy aggregatingSignerSpy = new();
+                    serviceProvider.GetService(Arg.Any<Type>()).Returns(aggregatingSignerSpy);
 
-                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignerSpy);
-
-                    Mock<IMageCli> mageCli = new();
+                    IMageCli mageCli = Substitute.For<IMageCli>();
                     string expectedArgs = $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
-                    mageCli.Setup(x => x.RunAsync(
-                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
-                        .ReturnsAsync(0);
+                    mageCli.RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))).Returns(0);
 
                     string publisher;
 
@@ -373,36 +349,19 @@ namespace Sign.Core.Test
                     }
 
                     expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -appm \"{manifestFile.FullName}\" -SupportURL https://description.test/";
-                    mageCli.Setup(x => x.RunAsync(
-                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
-                        .ReturnsAsync(0);
+                    mageCli.RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))).Returns(0);
 
-                    Mock<IManifestSigner> manifestSigner = new();
-                    Mock<IFileMatcher> fileMatcher = new();
-
-                    manifestSigner.Setup(
-                        x => x.Sign(
-                            It.Is<FileInfo>(fi => fi.Name == manifestFile.Name),
-                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
-                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
-                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
-
-                    manifestSigner.Setup(
-                        x => x.Sign(
-                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
-                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
-                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
-                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
-
-                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
+                    IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
+                    ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
                     ClickOnceSigner signer = new(
-                        signatureAlgorithmProvider.Object,
-                        certificateProvider.Object,
-                        serviceProvider.Object,
-                        mageCli.Object,
-                        manifestSigner.Object,
+                        signatureAlgorithmProvider,
+                        certificateProvider,
+                        serviceProvider,
+                        mageCli,
+                        manifestSigner,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher);
 
                     await signer.SignAsync(new[] { applicationFile }, options);
 
@@ -426,9 +385,26 @@ namespace Sign.Core.Test
                         file => Assert.Equal(
                             Path.Combine(jsonDeployFile.DirectoryName!, Path.GetFileNameWithoutExtension(jsonDeployFile.Name)),
                             file.FullName));
-
-                    mageCli.VerifyAll();
-                    manifestSigner.VerifyAll();
+                    await mageCli.Received(1).RunAsync(Arg.Is<string>(args => string.Equals(
+                        $"-update \"{manifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"",
+                        args,
+                        StringComparison.Ordinal)));
+                    await mageCli.Received(1).RunAsync(Arg.Is<string>(args => string.Equals(
+                        $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -appm \"{manifestFile.FullName}\" -SupportURL https://description.test/",
+                        args,
+                        StringComparison.Ordinal)));
+                    manifestSigner.Received(1).Sign(
+                        Arg.Is<FileInfo>(fi => fi != null && fi.Name == manifestFile.Name),
+                        Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                        Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                        Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
+                    manifestSigner.Received(1).Sign(
+                        Arg.Is<FileInfo>(fi => fi != null && fi.Name == applicationFile.Name),
+                        Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                        Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                        Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
+                    Assert.Equal(2, mageCli.ReceivedCalls().Count());
+                    Assert.Equal(2, manifestSigner.ReceivedCalls().Count());
                 }
             }
         }
@@ -466,22 +442,16 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-                    Mock<ICertificateProvider> certificateProvider = new();
+                    ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+                    ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+                    certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(certificate);
+                    signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
 
-                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(certificate);
-
-                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(privateKey);
-
-                    Mock<IServiceProvider> serviceProvider = new();
+                    IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
                     AggregatingSignerSpy aggregatingSignerSpy = new();
+                    serviceProvider.GetService(Arg.Any<Type>()).Returns(aggregatingSignerSpy);
 
-                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignerSpy);
-
-                    Mock<IMageCli> mageCli = new();
+                    IMageCli mageCli = Substitute.For<IMageCli>();
 
                     string publisher;
 
@@ -495,29 +465,19 @@ namespace Sign.Core.Test
                     }
 
                     string expectedArgs = $"-update \"{applicationFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{publisher}\" -SupportURL https://description.test/";
-                    mageCli.Setup(x => x.RunAsync(
-                            It.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))))
-                        .ReturnsAsync(0);
+                    mageCli.RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal))).Returns(0);
 
-                    Mock<IManifestSigner> manifestSigner = new();
-                    Mock<IFileMatcher> fileMatcher = new();
-
-                    manifestSigner.Setup(
-                        x => x.Sign(
-                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
-                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
-                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
-                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
-
-                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
+                    IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
+                    ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
                     ClickOnceSigner signer = new(
-                        signatureAlgorithmProvider.Object,
-                        certificateProvider.Object,
-                        serviceProvider.Object,
-                        mageCli.Object,
-                        manifestSigner.Object,
+                        signatureAlgorithmProvider,
+                        certificateProvider,
+                        serviceProvider,
+                        mageCli,
+                        manifestSigner,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher);
 
                     await signer.SignAsync(new[] { applicationFile }, options);
 
@@ -530,9 +490,14 @@ namespace Sign.Core.Test
                     }
 
                     Assert.Empty(aggregatingSignerSpy.FilesSubmittedForSigning);
-
-                    mageCli.VerifyAll();
-                    manifestSigner.VerifyAll();
+                    await mageCli.Received(1).RunAsync(Arg.Is<string>(args => string.Equals(expectedArgs, args, StringComparison.Ordinal)));
+                    manifestSigner.Received(1).Sign(
+                        Arg.Is<FileInfo>(fi => fi != null && fi.Name == applicationFile.Name),
+                        Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                        Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                        Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
+                    Assert.Single(mageCli.ReceivedCalls());
+                    Assert.Single(manifestSigner.ReceivedCalls());
                 }
             }
         }
@@ -563,26 +528,20 @@ namespace Sign.Core.Test
                 using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
                 using (RSA privateKey = certificate.GetRSAPrivateKey()!)
                 {
-                    Mock<ISignatureAlgorithmProvider> signatureAlgorithmProvider = new();
-                    Mock<ICertificateProvider> certificateProvider = new();
+                    ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+                    ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+                    certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(certificate);
+                    signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
 
-                    certificateProvider.Setup(x => x.GetCertificateAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(certificate);
-
-                    signatureAlgorithmProvider.Setup(x => x.GetRsaAsync(It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(privateKey);
-
-                    Mock<IServiceProvider> serviceProvider = new();
+                    IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
                     AggregatingSignerSpy aggregatingSignerSpy = new();
+                    serviceProvider.GetService(Arg.Any<Type>()).Returns(aggregatingSignerSpy);
 
-                    serviceProvider.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns(aggregatingSignerSpy);
-
-                    Mock<IMageCli> mageCli = new();
+                    IMageCli mageCli = Substitute.For<IMageCli>();
                     string publisher = certificate.SubjectName.Name;
 
-                    Mock<IManifestSigner> manifestSigner = new();
-                    Mock<IFileMatcher> fileMatcher = new();
+                    IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
+                    IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
 
                     SignOptions options = new(
                         "ApplicationName",
@@ -597,22 +556,15 @@ namespace Sign.Core.Test
                         recurseContainers: true
                     );
 
-                    manifestSigner.Setup(
-                        x => x.Sign(
-                            It.Is<FileInfo>(fi => fi.Name == applicationFile.Name),
-                            It.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
-                            It.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
-                            It.Is<SignOptions>(o => ReferenceEquals(options, o))));
-
-                    ILogger<IDataFormatSigner> logger = Mock.Of<ILogger<IDataFormatSigner>>();
+                    ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
                     ClickOnceSigner signer = new(
-                        signatureAlgorithmProvider.Object,
-                        certificateProvider.Object,
-                        serviceProvider.Object,
-                        mageCli.Object,
-                        manifestSigner.Object,
+                        signatureAlgorithmProvider,
+                        certificateProvider,
+                        serviceProvider,
+                        mageCli,
+                        manifestSigner,
                         logger,
-                        fileMatcher.Object);
+                        fileMatcher);
 
                     using (TemporaryDirectory signingDirectory = new(_directoryService))
                     {

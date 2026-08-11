@@ -3,7 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -15,7 +15,7 @@ namespace Sign.Core.Test
 
         public DynamicsBusinessCentralAppFileTypeTests()
         {
-            _directoryService = new DirectoryService(Mock.Of<ILogger<IDirectoryService>>());
+            _directoryService = new DirectoryService(Substitute.For<ILogger<IDirectoryService>>());
             _fileType = new DynamicsBusinessCentralAppFileType();
             _temporaryDirectory = new TemporaryDirectory(_directoryService);
         }

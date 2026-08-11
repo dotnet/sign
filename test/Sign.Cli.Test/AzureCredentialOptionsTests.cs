@@ -5,7 +5,7 @@
 using System.CommandLine;
 using Azure.Core;
 using Azure.Identity;
-using Moq;
+using NSubstitute;
 using Sign.Core;
 
 namespace Sign.Cli.Test
@@ -19,7 +19,7 @@ namespace Sign.Cli.Test
         public AzureCredentialOptionsTests()
         {
             CodeCommand codeCommand = new();
-            _command = new(codeCommand, Mock.Of<IServiceProviderFactory>());
+            _command = new(codeCommand, Substitute.For<IServiceProviderFactory>());
             _rootCommand = new RootCommand();
             _rootCommand.Subcommands.Add(codeCommand);
             codeCommand.Subcommands.Add(_command);

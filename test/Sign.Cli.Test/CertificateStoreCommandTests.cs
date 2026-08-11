@@ -3,14 +3,14 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.CommandLine;
-using Moq;
+using NSubstitute;
 using Sign.Core;
 
 namespace Sign.Cli.Test
 {
     public class CertificateStoreCommandTests
     {
-        private readonly CertificateStoreCommand _command = new(new CodeCommand(), Mock.Of<IServiceProviderFactory>());
+        private readonly CertificateStoreCommand _command = new(new CodeCommand(), Substitute.For<IServiceProviderFactory>());
 
         private const string Sha1Fingerprint = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
         private const string Sha256Fingerprint = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
@@ -21,7 +21,7 @@ namespace Sign.Cli.Test
         public void Constructor_WhenCodeCommandIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertificateStoreCommand(codeCommand: null!, Mock.Of<IServiceProviderFactory>()));
+                () => new CertificateStoreCommand(codeCommand: null!, Substitute.For<IServiceProviderFactory>()));
 
             Assert.Equal("codeCommand", exception.ParamName);
         }
@@ -79,7 +79,7 @@ namespace Sign.Cli.Test
             public ParserTests()
             {
                 CodeCommand codeCommand = new();
-                _command = new CertificateStoreCommand(codeCommand, Mock.Of<IServiceProviderFactory>());
+                _command = new CertificateStoreCommand(codeCommand, Substitute.For<IServiceProviderFactory>());
                 _rootCommand = new RootCommand();
                 _rootCommand.Subcommands.Add(codeCommand);
                 codeCommand.Subcommands.Add(_command);

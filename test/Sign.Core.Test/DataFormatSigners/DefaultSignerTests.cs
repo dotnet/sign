@@ -4,7 +4,7 @@
 
 using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using NSubstitute;
 
 namespace Sign.Core.Test
 {
@@ -59,26 +59,25 @@ namespace Sign.Core.Test
         [InlineData(false)]
         public void CanSign_WhenIAzureSignToolSignerIsAvailable_ReturnsTrue(bool expectedValue)
         {
-            Mock<IAzureSignToolDataFormatSigner> mock = new(MockBehavior.Strict);
-
-            mock.Setup(x => x.CanSign(It.IsAny<FileInfo>()))
-                .Returns(expectedValue);
+            FileInfo file = new("file.dll");
+            IAzureSignToolDataFormatSigner mock = Substitute.For<IAzureSignToolDataFormatSigner>();
+            mock.CanSign(Arg.Any<FileInfo>()).Returns(expectedValue);
 
             IServiceCollection services = new ServiceCollection();
 
             services.AddLogging();
-            services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
-            services.AddSingleton(Mock.Of<ICertificateProvider>());
-            services.AddSingleton<IDataFormatSigner>(mock.Object);
+            services.AddSingleton(Substitute.For<IToolConfigurationProvider>());
+            services.AddSingleton(Substitute.For<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Substitute.For<ICertificateProvider>());
+            services.AddSingleton<IDataFormatSigner>(mock);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
             DefaultSigner signer = new(serviceProvider);
 
-            Assert.Equal(expectedValue, signer.CanSign(new FileInfo("file.dll")));
-
-            mock.VerifyAll();
+            Assert.Equal(expectedValue, signer.CanSign(file));
+            mock.Received(1).CanSign(Arg.Is<FileInfo>(f => ReferenceEquals(f, file)));
+            Assert.Single(mock.ReceivedCalls());
         }
 
         [Fact]
@@ -106,26 +105,27 @@ namespace Sign.Core.Test
         [Fact]
         public async Task SignAsync_WhenIAzureSignToolSignerIsAvailable_InvokesInnerProvider()
         {
-            Mock<IAzureSignToolDataFormatSigner> mock = new(MockBehavior.Strict);
-
-            mock.Setup(x => x.SignAsync(It.IsAny<IEnumerable<FileInfo>>(), It.IsAny<SignOptions>()))
-                .Returns(Task.CompletedTask);
+            IEnumerable<FileInfo> files = [];
+            IAzureSignToolDataFormatSigner mock = Substitute.For<IAzureSignToolDataFormatSigner>();
+            mock.SignAsync(Arg.Any<IEnumerable<FileInfo>>(), Arg.Any<SignOptions>()).Returns(Task.CompletedTask);
 
             IServiceCollection services = new ServiceCollection();
 
             services.AddLogging();
-            services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
-            services.AddSingleton(Mock.Of<ICertificateProvider>());
-            services.AddSingleton<IDataFormatSigner>(mock.Object);
+            services.AddSingleton(Substitute.For<IToolConfigurationProvider>());
+            services.AddSingleton(Substitute.For<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Substitute.For<ICertificateProvider>());
+            services.AddSingleton<IDataFormatSigner>(mock);
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
             DefaultSigner signer = new(serviceProvider);
 
-            await signer.SignAsync(Enumerable.Empty<FileInfo>(), _options);
-
-            mock.VerifyAll();
+            await signer.SignAsync(files, _options);
+            await mock.Received(1).SignAsync(
+                Arg.Is<IEnumerable<FileInfo>>(value => ReferenceEquals(value, files)),
+                Arg.Is<SignOptions>(value => ReferenceEquals(value, _options)));
+            Assert.Single(mock.ReceivedCalls());
         }
 
         private static DefaultSigner CreateWithoutAzureSignTool()
@@ -141,9 +141,9 @@ namespace Sign.Core.Test
             IServiceCollection services = new ServiceCollection();
 
             services.AddLogging();
-            services.AddSingleton(Mock.Of<IToolConfigurationProvider>());
-            services.AddSingleton(Mock.Of<ISignatureAlgorithmProvider>());
-            services.AddSingleton(Mock.Of<ICertificateProvider>());
+            services.AddSingleton(Substitute.For<IToolConfigurationProvider>());
+            services.AddSingleton(Substitute.For<ISignatureAlgorithmProvider>());
+            services.AddSingleton(Substitute.For<ICertificateProvider>());
             services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();

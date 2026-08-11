@@ -4,7 +4,7 @@
 
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
@@ -23,7 +23,7 @@ namespace Sign.Core.Test
         [Fact]
         public void Verify_WhenCertificateIsNull_Throws()
         {
-            CertificateVerifier verifier = new(Mock.Of<ILogger<ICertificateVerifier>>());
+            CertificateVerifier verifier = new(Substitute.For<ILogger<ICertificateVerifier>>());
 
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
                 () => verifier.Verify(certificate: null!));
