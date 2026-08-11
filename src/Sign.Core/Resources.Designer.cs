@@ -331,6 +331,15 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipping {filePath}. It is an ASP.NET Core static web asset, and signing it would invalidate the integrity hash recorded in {propsFileName}. To sign it anyway, list it explicitly using the --file-list option..
+        /// </summary>
+        internal static string SkippingStaticWebAsset {
+            get {
+                return ResourceManager.GetString("SkippingStaticWebAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Submitting {filePath} for signing..
         /// </summary>
         internal static string SubmittingFileForSigning {
