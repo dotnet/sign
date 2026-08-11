@@ -203,6 +203,26 @@
     <value>File '{0}' is not a deployment manifest.</value>
     <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
   </data>
+  <data name="ClickOnceStagingCopyFailed" xml:space="preserve">
+    <value>Failed to prepare file '{0}' for the signing operation.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a source file path.</comment>
+  </data>
+  <data name="ClickOnceStagingDestinationCollision" xml:space="preserve">
+    <value>Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} and {NumberedPlaceholder="{1}"} are source file paths. {NumberedPlaceholder="{2}"} and {NumberedPlaceholder="{3}"} are manifest target paths.</comment>
+  </data>
+  <data name="ClickOnceStagingMappedSuffixFailed" xml:space="preserve">
+    <value>Failed to rename file '{0}' while updating manifest file information.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a manifest target path.</comment>
+  </data>
+  <data name="ClickOnceStagingReferenceDestinationConflict" xml:space="preserve">
+    <value>Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a source file path. {NumberedPlaceholder="{1}"} and {NumberedPlaceholder="{2}"} are manifest target paths.</comment>
+  </data>
+  <data name="ClickOnceStagingUnsafeTargetPath" xml:space="preserve">
+    <value>Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a manifest target path. {NumberedPlaceholder="{1}"} is a source file path.</comment>
+  </data>
   <data name="CliStandardError" xml:space="preserve">
     <value>{fileName} returned the error {error}</value>
     <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</comment>
