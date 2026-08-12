@@ -31,8 +31,7 @@ namespace Sign.Core
                 return false;
             }
 
-            applicationManifest.InputStream = SanitizePreservedInput(
-                applicationManifest.InputStream);
+            ReplaceManifestInputStream(applicationManifest);
             manifest = new ApplicationManifestAdapter(applicationManifest);
 
             return true;
@@ -53,8 +52,7 @@ namespace Sign.Core
                 return false;
             }
 
-            deployManifest.InputStream = SanitizePreservedInput(
-                deployManifest.InputStream);
+            ReplaceManifestInputStream(deployManifest);
             manifest = new DeployManifestAdapter(deployManifest);
 
             return true;
@@ -88,7 +86,25 @@ namespace Sign.Core
             return ManifestReader.ReadManifest(stream, preserveStream: true);
         }
 
-        private static Stream SanitizePreservedInput(Stream input)
+        private static void ReplaceManifestInputStream(Manifest manifest)
+        {
+            Stream input = manifest.InputStream;
+            Stream? output = null;
+
+            try
+            {
+                output = CreateSanitizedManifestInputStream(input);
+                manifest.InputStream = output;
+                output = null;
+            }
+            finally
+            {
+                output?.Dispose();
+                input.Dispose();
+            }
+        }
+
+        private static Stream CreateSanitizedManifestInputStream(Stream input)
         {
             input.Position = 0;
             MemoryStream output = new();
@@ -109,108 +125,58 @@ namespace Sign.Core
             {
                 using XmlReader reader =
                     XmlReader.Create(input, readerSettings);
-                using XmlWriter writer =
-                    XmlWriter.Create(output, writerSettings);
-
-                bool advanceReader = true;
-
-                while (!reader.EOF)
+                XmlDocument document = new()
                 {
-                    if (advanceReader && !reader.Read())
+                    PreserveWhitespace = true,
+                    XmlResolver = null
+                };
+                document.Load(reader);
+
+                XmlElement root = document.DocumentElement ??
+                    throw new XmlException(
+                        "The manifest XML does not have a document element.");
+
+                for (XmlNode? node = root.FirstChild;
+                    node is not null;)
+                {
+                    XmlNode? nextNode = node.NextSibling;
+
+                    if (node is XmlElement element &&
+                        IsStaleSigningElement(element))
                     {
-                        break;
+                        root.RemoveChild(node);
                     }
 
-                    advanceReader = true;
-
-                    if (reader.NodeType == XmlNodeType.Element)
-                    {
-                        if (reader.Depth == 1 &&
-                            IsStaleSigningElement(reader))
-                        {
-                            reader.Skip();
-                            advanceReader = false;
-                            continue;
-                        }
-
-                        writer.WriteStartElement(
-                            reader.Prefix,
-                            reader.LocalName,
-                            reader.NamespaceURI);
-
-                        if (reader.HasAttributes)
-                        {
-                            writer.WriteAttributes(reader, defattr: true);
-                        }
-
-                        if (reader.IsEmptyElement)
-                        {
-                            writer.WriteEndElement();
-                        }
-                    }
-                    else
-                    {
-                        WriteNode(reader, writer);
-                    }
+                    node = nextNode;
                 }
 
-                writer.Flush();
+                using (XmlWriter writer =
+                    XmlWriter.Create(output, writerSettings))
+                {
+                    document.Save(writer);
+                }
+
                 output.Position = 0;
-                input.Dispose();
 
                 return output;
             }
             catch
             {
-                input.Dispose();
                 output.Dispose();
                 throw;
             }
         }
 
-        private static bool IsStaleSigningElement(XmlReader reader)
+        private static bool IsStaleSigningElement(XmlElement element)
         {
             bool isPublisherIdentity =
-                reader.LocalName == "publisherIdentity" &&
-                reader.NamespaceURI == AssemblyV2Namespace;
+                element.LocalName == "publisherIdentity" &&
+                element.NamespaceURI == AssemblyV2Namespace;
             bool isSignature =
-                reader.LocalName == "Signature" &&
-                reader.NamespaceURI == SignatureNamespace;
+                element.LocalName == "Signature" &&
+                element.NamespaceURI == SignatureNamespace;
 
             return isPublisherIdentity || isSignature;
-        }
-
-        private static void WriteNode(XmlReader reader, XmlWriter writer)
-        {
-            switch (reader.NodeType)
-            {
-                case XmlNodeType.EndElement:
-                    writer.WriteFullEndElement();
-                    break;
-
-                case XmlNodeType.Text:
-                    writer.WriteString(reader.Value);
-                    break;
-
-                case XmlNodeType.CDATA:
-                    writer.WriteCData(reader.Value);
-                    break;
-
-                case XmlNodeType.Comment:
-                    writer.WriteComment(reader.Value);
-                    break;
-
-                case XmlNodeType.Whitespace:
-                case XmlNodeType.SignificantWhitespace:
-                    writer.WriteWhitespace(reader.Value);
-                    break;
-
-                case XmlNodeType.ProcessingInstruction:
-                    writer.WriteProcessingInstruction(
-                        reader.Name,
-                        reader.Value);
-                    break;
-            }
         }
     }
 }
