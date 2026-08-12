@@ -5,9 +5,10 @@
 namespace Sign.Core.Test
 {
     public class OpcPackageTests : IDisposable
-    {
+    {   
         private static readonly string SamplePackage = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest.vsix");
         private static readonly string SamplePackageWithOverrides = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest-Overrides.vsix");
+        private static readonly string SamplePackageWithInvalidOverrides = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest-InvalidOverrides.vsix");
         private static readonly string SamplePackageSigned = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest-Signed.vsix");
         private readonly List<string> _shadowFiles = new List<string>();
 
@@ -189,20 +190,40 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ShouldHonorContentTypeIfOverrideIsListedInContentTypesFile()
+        public void ShouldHonorNewContentTypeIfOverrideIsListedInContentTypesFile()
         {
-            string path;
-            using (var package = ShadowCopyPackage(SamplePackageWithOverrides, out path, OpcPackageFileMode.ReadWrite))
+            using (var package = OpcPackage.Open(SamplePackageWithOverrides, OpcPackageFileMode.ReadWrite))
             {
                 var partToCheck = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToCheck);
-                Assert.True(part != null && part.ContentType == "text/xml");
+                Assert.True(part != null);
+                Assert.False(part.ContentType == "text/plain");
+                Assert.True(part.ContentType == "text/xml");
+
+                partToCheck = new Uri("/extensionless", UriKind.Relative);
+                part = package.GetPart(partToCheck);
+                Assert.True(part != null);
+                Assert.False(part.ContentType == "application/octet-stream");
+                Assert.True(part.ContentType == "text/plain");
             }
-            using (var package = OpcPackage.Open(path, OpcPackageFileMode.ReadWrite))
+        }
+
+        [Fact]
+        public void ShouldNotHonorNewContentTypeIfInvalidOverrideIsListedInContentTypesFile()
+        {
+            using (var package = OpcPackage.Open(SamplePackageWithInvalidOverrides, OpcPackageFileMode.ReadWrite))
             {
                 var partToCheck = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToCheck);
-                Assert.True(part != null && part.ContentType == "text/xml");
+                Assert.True(part != null);
+                Assert.False(part.ContentType == "text/xml");
+                Assert.True(part.ContentType == "text/plain");
+
+                partToCheck = new Uri("/extensionless", UriKind.Relative);
+                part = package.GetPart(partToCheck);
+                Assert.True(part != null);
+                Assert.False(part.ContentType == "text/plain");
+                Assert.True(part.ContentType == "application/octet-stream");
             }
         }
 
