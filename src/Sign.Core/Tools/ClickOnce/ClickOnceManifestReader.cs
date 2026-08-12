@@ -15,6 +15,7 @@ namespace Sign.Core
             "urn:schemas-microsoft-com:asm.v2";
         private const string SignatureNamespace =
             "http://www.w3.org/2000/09/xmldsig#";
+
         public bool TryReadApplicationManifest(
             Stream stream,
             [NotNullWhen(true)] out IApplicationManifest? manifest)
