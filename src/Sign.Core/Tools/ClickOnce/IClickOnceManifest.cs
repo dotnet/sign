@@ -9,6 +9,8 @@ namespace Sign.Core
     internal interface IClickOnceManifest
     {
         AssemblyIdentity AssemblyIdentity { get; }
+        AssemblyReferenceCollection AssemblyReferences { get; }
+        AssemblyReference? EntryPoint { get; }
         OutputMessageCollection OutputMessages { get; }
         bool ReadOnly { get; set; }
 

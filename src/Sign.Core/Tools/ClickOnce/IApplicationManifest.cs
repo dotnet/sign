@@ -8,8 +8,6 @@ namespace Sign.Core
 {
     internal interface IApplicationManifest : IClickOnceManifest
     {
-        AssemblyReferenceCollection AssemblyReferences { get; }
-        AssemblyReference? EntryPoint { get; }
         FileReferenceCollection FileReferences { get; }
     }
 }
