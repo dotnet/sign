@@ -10,12 +10,10 @@ namespace Sign.Core
     {
         bool TryReadApplicationManifest(
             Stream stream,
-            bool preserveStream,
             [NotNullWhen(true)] out IApplicationManifest? manifest);
 
         bool TryReadDeployManifest(
             Stream stream,
-            bool preserveStream,
             [NotNullWhen(true)] out IDeployManifest? manifest);
     }
 }

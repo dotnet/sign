@@ -65,6 +65,11 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
 
+            if (Manifest.InputStream is { CanSeek: true } inputStream)
+            {
+                inputStream.Position = 0;
+            }
+
             ManifestWriter.WriteManifest(
                 Manifest,
                 file.FullName,
