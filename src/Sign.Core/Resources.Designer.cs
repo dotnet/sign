@@ -97,6 +97,159 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Application manifest &apos;{0}&apos; contains invalid target path &apos;{1}&apos;..
+        /// </summary>
+        internal static string ClickOnceApplicationManifestInvalidTargetPath {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestInvalidTargetPath", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Application manifest &apos;{0}&apos; contains a required file reference without a target path..
+        /// </summary>
+        internal static string ClickOnceApplicationManifestMissingTargetPath {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestMissingTargetPath", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to access source candidate &apos;{2}&apos; for target path &apos;{1}&apos; in application manifest &apos;{0}&apos;..
+        /// </summary>
+        internal static string ClickOnceApplicationManifestPayloadProbeFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestPayloadProbeFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to read application manifest &apos;{0}&apos;..
+        /// </summary>
+        internal static string ClickOnceApplicationManifestReadFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestReadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Application manifest &apos;{0}&apos; references required file &apos;{1}&apos;, but it could not be found..
+        /// </summary>
+        internal static string ClickOnceApplicationManifestRequiredFileNotFound {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestRequiredFileNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to resolve files referenced by application manifest &apos;{0}&apos;..
+        /// </summary>
+        internal static string ClickOnceApplicationManifestResolveFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestResolveFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; references application manifest &apos;{1}&apos;, but the file does not exist..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestApplicationManifestNotFound {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestApplicationManifestNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to access launcher candidate &apos;{0}&apos; associated with deployment manifest &apos;{1}&apos;..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestLauncherProbeFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestLauncherProbeFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; does not identify an application manifest..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestMissingEntryPoint {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestMissingEntryPoint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to read deployment manifest &apos;{0}&apos;..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestReadFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestReadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to read application manifest &apos;{0}&apos; referenced by deployment manifest &apos;{1}&apos;..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestReferencedApplicationReadFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestReferencedApplicationReadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; referenced by deployment manifest &apos;{1}&apos; is not an application manifest..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestReferencedApplicationWrongType {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestReferencedApplicationWrongType", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to resolve files referenced by deployment manifest &apos;{0}&apos;..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestResolveFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestResolveFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to access setup bootstrapper candidate &apos;{0}&apos; associated with deployment manifest &apos;{1}&apos;..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestSetupProbeFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestSetupProbeFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; did not resolve its referenced application manifest &apos;{1}&apos;..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestUnresolvedApplicationManifest {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestUnresolvedApplicationManifest", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; must contain exactly one non-prerequisite application manifest reference and no file references..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestUnsupportedReferences {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestUnsupportedReferences", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to File &apos;{0}&apos; is not a deployment manifest..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestWrongType {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestWrongType", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Signing Mage job with {count} files..
         /// </summary>
         internal static string ClickOnceSignatureProviderSigning {

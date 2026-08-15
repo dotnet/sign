@@ -135,6 +135,74 @@
     <value>Signing Mage job with {count} files.</value>
     <comment>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</comment>
   </data>
+  <data name="ClickOnceApplicationManifestInvalidTargetPath" xml:space="preserve">
+    <value>Application manifest '{0}' contains invalid target path '{1}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is an invalid target path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestMissingTargetPath" xml:space="preserve">
+    <value>Application manifest '{0}' contains a required file reference without a target path.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestPayloadProbeFailed" xml:space="preserve">
+    <value>Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is the exact target path from the manifest. {NumberedPlaceholder="{2}"} is the absolute source candidate path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestReadFailed" xml:space="preserve">
+    <value>Failed to read application manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestRequiredFileNotFound" xml:space="preserve">
+    <value>Application manifest '{0}' references required file '{1}', but it could not be found.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestResolveFailed" xml:space="preserve">
+    <value>Failed to resolve files referenced by application manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestApplicationManifestNotFound" xml:space="preserve">
+    <value>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestLauncherProbeFailed" xml:space="preserve">
+    <value>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestMissingEntryPoint" xml:space="preserve">
+    <value>Deployment manifest '{0}' does not identify an application manifest.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestReadFailed" xml:space="preserve">
+    <value>Failed to read deployment manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestReferencedApplicationReadFailed" xml:space="preserve">
+    <value>Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestReferencedApplicationWrongType" xml:space="preserve">
+    <value>File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a referenced file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestResolveFailed" xml:space="preserve">
+    <value>Failed to resolve files referenced by deployment manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestSetupProbeFailed" xml:space="preserve">
+    <value>Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the absolute setup bootstrapper candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestUnresolvedApplicationManifest" xml:space="preserve">
+    <value>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestUnsupportedReferences" xml:space="preserve">
+    <value>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one non-prerequisite application manifest dependency and no file references.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestWrongType" xml:space="preserve">
+    <value>File '{0}' is not a deployment manifest.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
+  </data>
   <data name="CliStandardError" xml:space="preserve">
     <value>{fileName} returned the error {error}</value>
     <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{error}"} is verbose output from a tool.</comment>

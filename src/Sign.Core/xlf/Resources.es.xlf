@@ -32,6 +32,91 @@
         <target state="translated">{fileName} devolvió la salida {output}</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestInvalidTargetPath">
+        <source>Application manifest '{0}' contains invalid target path '{1}'.</source>
+        <target state="new">Application manifest '{0}' contains invalid target path '{1}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is an invalid target path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestMissingTargetPath">
+        <source>Application manifest '{0}' contains a required file reference without a target path.</source>
+        <target state="new">Application manifest '{0}' contains a required file reference without a target path.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestPayloadProbeFailed">
+        <source>Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</source>
+        <target state="new">Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is the exact target path from the manifest. {NumberedPlaceholder="{2}"} is the absolute source candidate path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestReadFailed">
+        <source>Failed to read application manifest '{0}'.</source>
+        <target state="new">Failed to read application manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestRequiredFileNotFound">
+        <source>Application manifest '{0}' references required file '{1}', but it could not be found.</source>
+        <target state="new">Application manifest '{0}' references required file '{1}', but it could not be found.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestResolveFailed">
+        <source>Failed to resolve files referenced by application manifest '{0}'.</source>
+        <target state="new">Failed to resolve files referenced by application manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
+        <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist.</source>
+        <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestLauncherProbeFailed">
+        <source>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</source>
+        <target state="new">Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestMissingEntryPoint">
+        <source>Deployment manifest '{0}' does not identify an application manifest.</source>
+        <target state="new">Deployment manifest '{0}' does not identify an application manifest.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestReadFailed">
+        <source>Failed to read deployment manifest '{0}'.</source>
+        <target state="new">Failed to read deployment manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationReadFailed">
+        <source>Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</source>
+        <target state="new">Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationWrongType">
+        <source>File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</source>
+        <target state="new">File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</target>
+        <note>{NumberedPlaceholder="{0}"} is a referenced file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestResolveFailed">
+        <source>Failed to resolve files referenced by deployment manifest '{0}'.</source>
+        <target state="new">Failed to resolve files referenced by deployment manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestSetupProbeFailed">
+        <source>Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</source>
+        <target state="new">Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is the absolute setup bootstrapper candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestUnresolvedApplicationManifest">
+        <source>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'.</source>
+        <target state="new">Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestUnsupportedReferences">
+        <source>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one non-prerequisite application manifest dependency and no file references.</source>
+        <target state="new">Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one non-prerequisite application manifest dependency and no file references.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestWrongType">
+        <source>File '{0}' is not a deployment manifest.</source>
+        <target state="new">File '{0}' is not a deployment manifest.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
         <target state="translated">Firmando el trabajo de Mage con {count} archivos.</target>
