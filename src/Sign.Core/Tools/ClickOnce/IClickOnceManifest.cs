@@ -10,8 +10,9 @@ namespace Sign.Core
     {
         AssemblyIdentity AssemblyIdentity { get; }
         AssemblyReferenceCollection AssemblyReferences { get; }
+        IReadOnlyList<ClickOnceManifestDiagnostic> Diagnostics { get; }
         AssemblyReference? EntryPoint { get; }
-        OutputMessageCollection OutputMessages { get; }
+        FileReferenceCollection FileReferences { get; }
         bool ReadOnly { get; set; }
 
         void ResolveFiles(IReadOnlyList<DirectoryInfo> searchDirectories);
