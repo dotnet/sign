@@ -192,38 +192,34 @@ namespace Sign.Core.Test
         [Fact]
         public void ShouldHonorNewContentTypeIfOverrideIsListedInContentTypesFile()
         {
-            using (var package = OpcPackage.Open(SamplePackageWithOverrides, OpcPackageFileMode.ReadWrite))
+            using (var package = OpcPackage.Open(SamplePackageWithOverrides))
             {
                 var partToCheck = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToCheck);
-                Assert.True(part != null);
-                Assert.False(part.ContentType == "text/plain");
-                Assert.True(part.ContentType == "text/xml");
+                Assert.NotNull(part);
+                Assert.Equal("text/xml", part.ContentType);
 
                 partToCheck = new Uri("/extensionless", UriKind.Relative);
                 part = package.GetPart(partToCheck);
-                Assert.True(part != null);
-                Assert.False(part.ContentType == "application/octet-stream");
-                Assert.True(part.ContentType == "text/plain");
+                Assert.NotNull(part);
+                Assert.Equal("text/plain", part.ContentType);
             }
         }
 
         [Fact]
         public void ShouldNotHonorNewContentTypeIfInvalidOverrideIsListedInContentTypesFile()
         {
-            using (var package = OpcPackage.Open(SamplePackageWithInvalidOverrides, OpcPackageFileMode.ReadWrite))
+            using (var package = OpcPackage.Open(SamplePackageWithInvalidOverrides))
             {
                 var partToCheck = new Uri("/extension.vsixmanifest", UriKind.Relative);
                 var part = package.GetPart(partToCheck);
-                Assert.True(part != null);
-                Assert.False(part.ContentType == "text/xml");
-                Assert.True(part.ContentType == "text/plain");
+                Assert.NotNull(part);
+                Assert.Equal("text/plain", part.ContentType);
 
                 partToCheck = new Uri("/extensionless", UriKind.Relative);
                 part = package.GetPart(partToCheck);
-                Assert.True(part != null);
-                Assert.False(part.ContentType == "text/plain");
-                Assert.True(part.ContentType == "application/octet-stream");
+                Assert.NotNull(part);
+                Assert.Equal("application/octet-stream", part.ContentType);
             }
         }
 
