@@ -4,7 +4,12 @@
 
 namespace Sign.Core
 {
-    internal interface IApplicationManifest : IClickOnceManifest
+    internal enum ClickOnceFileGraphEntryKind
     {
+        DeploymentManifest,
+        ApplicationManifest,
+        Payload,
+        Setup,
+        Launcher
     }
 }

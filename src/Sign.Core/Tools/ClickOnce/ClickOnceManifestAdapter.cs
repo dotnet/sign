@@ -22,8 +22,12 @@ namespace Sign.Core
 
         public AssemblyIdentity AssemblyIdentity => Manifest.AssemblyIdentity;
         public AssemblyReferenceCollection AssemblyReferences => Manifest.AssemblyReferences;
+        public IReadOnlyList<ClickOnceManifestDiagnostic> Diagnostics => Manifest.OutputMessages
+            .Cast<OutputMessage>()
+            .Select(message => new ClickOnceManifestDiagnostic(message))
+            .ToArray();
         public AssemblyReference? EntryPoint => Manifest.EntryPoint;
-        public OutputMessageCollection OutputMessages => Manifest.OutputMessages;
+        public FileReferenceCollection FileReferences => Manifest.FileReferences;
 
         public bool ReadOnly
         {
