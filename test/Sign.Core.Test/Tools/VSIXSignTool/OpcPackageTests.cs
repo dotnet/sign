@@ -5,8 +5,10 @@
 namespace Sign.Core.Test
 {
     public class OpcPackageTests : IDisposable
-    {
+    {   
         private static readonly string SamplePackage = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest.vsix");
+        private static readonly string SamplePackageWithOverrides = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest-Overrides.vsix");
+        private static readonly string SamplePackageWithInvalidOverrides = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest-InvalidOverrides.vsix");
         private static readonly string SamplePackageSigned = Path.Combine(".", "TestAssets", "VSIXSamples", "OpenVsixSignToolTest-Signed.vsix");
         private readonly List<string> _shadowFiles = new List<string>();
 
@@ -184,6 +186,40 @@ namespace Sign.Core.Test
             using (var package = OpcPackage.Open(SamplePackageSigned))
             {
                 Assert.NotEmpty(package.GetSignatures());
+            }
+        }
+
+        [Fact]
+        public void ShouldHonorNewContentTypeIfOverrideIsListedInContentTypesFile()
+        {
+            using (var package = OpcPackage.Open(SamplePackageWithOverrides))
+            {
+                var partToCheck = new Uri("/extension.vsixmanifest", UriKind.Relative);
+                var part = package.GetPart(partToCheck);
+                Assert.NotNull(part);
+                Assert.Equal("text/xml", part.ContentType);
+
+                partToCheck = new Uri("/extensionless", UriKind.Relative);
+                part = package.GetPart(partToCheck);
+                Assert.NotNull(part);
+                Assert.Equal("text/plain", part.ContentType);
+            }
+        }
+
+        [Fact]
+        public void ShouldNotHonorNewContentTypeIfInvalidOverrideIsListedInContentTypesFile()
+        {
+            using (var package = OpcPackage.Open(SamplePackageWithInvalidOverrides))
+            {
+                var partToCheck = new Uri("/extension.vsixmanifest", UriKind.Relative);
+                var part = package.GetPart(partToCheck);
+                Assert.NotNull(part);
+                Assert.Equal("text/plain", part.ContentType);
+
+                partToCheck = new Uri("/extensionless", UriKind.Relative);
+                part = package.GetPart(partToCheck);
+                Assert.NotNull(part);
+                Assert.Equal("application/octet-stream", part.ContentType);
             }
         }
 
