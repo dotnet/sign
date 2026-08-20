@@ -62,7 +62,14 @@ namespace Sign.SignatureProviders.ArtifactSigning
             SignRequest request = new(signatureAlgorithm, hash);
             CertificateProfileSignOperation operation = _client.StartSign(_accountName, _certificateProfileName, request);
             Response<SignStatus> response = operation.WaitForCompletion();
-            return response.Value.Signature;
+            byte[] signature = response.Value.Signature;
+
+            if (!_rsaPublicKey.VerifyHash(hash, signature, hashAlgorithm, padding))
+            {
+                throw new CryptographicException("Invalid signature");
+            }
+
+            return signature;
         }
 
         public override bool VerifyHash(byte[] hash, byte[] signature, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)
