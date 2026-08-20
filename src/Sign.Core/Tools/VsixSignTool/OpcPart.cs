@@ -18,6 +18,11 @@ namespace Sign.Core
 
         internal OpcPart(OpcPackage package, string path, ZipArchiveEntry entry, OpcPackageFileMode mode)
         {
+            if (path.Contains('#'))
+            {
+                throw new InvalidDataException(string.Format(Resources.VSIXSignToolOpcPartNameContainsFragmentDelimiter, path));
+            }
+
             Uri = new Uri(OpcPackage.BasePackageUri, path);
             Package = package;
             _path = path;
