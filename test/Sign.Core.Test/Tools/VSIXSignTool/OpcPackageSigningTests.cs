@@ -3,8 +3,10 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Globalization;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Xml;
 using Sign.Core.Timestamp;
 using Xunit.Abstractions;
@@ -94,6 +96,78 @@ namespace Sign.Core.Test
                     Assert.Equal(TimestampResult.Success, result);
                 }
             }
+        }
+
+        [Fact]
+        public void ShouldSignPartWithOctothorpeInName()
+        {
+            // Regression test for https://github.com/dotnet/sign/issues/998: a part whose
+            // name contains '#' must not have its manifest Reference URI silently truncated
+            // at the '#' (which System.Uri parses as a fragment delimiter unless escaped).
+            const string specialPartName = "ab#c.txt";
+            const string specialPartContents = "content with an octothorpe in the part name";
+
+            string temp = Path.GetTempFileName();
+            _shadowFiles.Add(temp);
+            File.Copy(SamplePackage, temp, overwrite: true);
+
+            using (ZipArchive archive = ZipFile.Open(temp, ZipArchiveMode.Update))
+            {
+                ZipArchiveEntry entry = archive.CreateEntry(specialPartName);
+                using StreamWriter writer = new(entry.Open(), Encoding.UTF8);
+                writer.Write(specialPartContents);
+            }
+
+            byte[] expectedDigest;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                expectedDigest = sha256.ComputeHash(Encoding.UTF8.GetBytes(specialPartContents));
+            }
+
+            string? referenceUri = null;
+            string? digestValueBase64 = null;
+
+            using (OpcPackage package = OpcPackage.Open(temp, OpcPackageFileMode.ReadWrite))
+            {
+                OpcPart? specialPart = package.GetParts().FirstOrDefault(p => p.Uri.ToPackagePath() == specialPartName);
+
+                Assert.NotNull(specialPart);
+                Assert.Equal(string.Empty, specialPart!.Uri.Fragment);
+
+                OpcPackageSignatureBuilder signerBuilder = package.CreateSignatureBuilder();
+                signerBuilder.EnqueueNamedPreset<VSIXSignatureBuilderPreset>();
+
+                using (X509Certificate2 certificate = _pfxFilesFixture.GetPfx(keySizeInBits: 2048, HashAlgorithmName.SHA256))
+                using (RSA? rsaPrivateKey = certificate.GetRSAPrivateKey())
+                {
+                    OpcSignature signature = signerBuilder.Sign(
+                        new SignConfigurationSet(
+                            publicCertificate: certificate,
+                            signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                            fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                            signingKey: rsaPrivateKey!));
+
+                    using Stream sigStream = signature.Part!.Open();
+                    var document = new XmlDocument();
+                    document.Load(sigStream);
+
+                    var nsmgr = new XmlNamespaceManager(document.NameTable);
+                    nsmgr.AddNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
+
+                    XmlNode? reference = document.SelectSingleNode("//ds:Reference[contains(@URI, 'ab')]", nsmgr);
+
+                    Assert.NotNull(reference);
+                    referenceUri = reference!.Attributes?["URI"]?.Value;
+                    digestValueBase64 = reference.SelectSingleNode("ds:DigestValue", nsmgr)?.InnerText;
+                }
+            }
+
+            Assert.NotNull(referenceUri);
+            Assert.DoesNotContain('#', referenceUri);
+            Assert.Contains("%23", referenceUri, StringComparison.OrdinalIgnoreCase);
+
+            byte[] actualDigest = Convert.FromBase64String(digestValueBase64 ?? string.Empty);
+            Assert.Equal(expectedDigest, actualDigest);
         }
 
         [Fact]
