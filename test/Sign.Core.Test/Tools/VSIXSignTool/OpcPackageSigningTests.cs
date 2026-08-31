@@ -111,17 +111,19 @@ namespace Sign.Core.Test
             _shadowFiles.Add(temp);
             File.Copy(SamplePackage, temp, overwrite: true);
 
+            byte[] contentBytes = Encoding.UTF8.GetBytes(specialPartContents);
+
             using (ZipArchive archive = ZipFile.Open(temp, ZipArchiveMode.Update))
             {
                 ZipArchiveEntry entry = archive.CreateEntry(specialPartName);
-                using StreamWriter writer = new(entry.Open(), Encoding.UTF8);
-                writer.Write(specialPartContents);
+                using Stream entryStream = entry.Open();
+                entryStream.Write(contentBytes, 0, contentBytes.Length);
             }
 
             byte[] expectedDigest;
             using (SHA256 sha256 = SHA256.Create())
             {
-                expectedDigest = sha256.ComputeHash(Encoding.UTF8.GetBytes(specialPartContents));
+                expectedDigest = sha256.ComputeHash(contentBytes);
             }
 
             string? referenceUri = null;
