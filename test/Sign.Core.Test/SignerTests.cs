@@ -563,6 +563,7 @@ namespace Sign.Core.Test
             services.AddSingleton<IContainerProvider, ContainerProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
+            services.AddSingleton<IStaticWebAssetFilter, StaticWebAssetFilter>();
             services.AddSingleton<ISignatureAlgorithmProvider>(_keyVaultServiceStub);
             services.AddSingleton<ICertificateProvider>(_keyVaultServiceStub);
             services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();

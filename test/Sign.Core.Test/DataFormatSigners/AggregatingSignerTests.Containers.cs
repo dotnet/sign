@@ -12,6 +12,7 @@ namespace Sign.Core.Test
     {
         private const string AppxBundleContainerName = "container.appxbundle";
         private const string AppxContainerName = "container.appx";
+        private const string NuGetContainerName = "container.nupkg";
         private const string ZipContainerName = "container.zip";
 
         [Fact]
@@ -433,6 +434,64 @@ namespace Sign.Core.Test
                 signedFile => Assert.Equal("e.EXE", signedFile.Name),
                 signedFile => Assert.Equal("g.dll", signedFile.Name),
                 signedFile => Assert.Equal("i.exe", signedFile.Name));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenNuGetContainerHasStaticWebAssets_DoesNotSignStaticWebAssets()
+        {
+            AggregatingSignerTest test = new(
+                $"{NuGetContainerName}/build/Microsoft.AspNetCore.StaticWebAssets.props",
+                $"{NuGetContainerName}/staticwebassets/app.js",
+                $"{NuGetContainerName}/lib/net8.0/a.dll",
+                $"{NuGetContainerName}/tools/script.js");
+
+            await test.Signer.SignAsync(test.Files, _options);
+
+            ContainerSpy container = test.Containers[NuGetContainerName];
+
+            Assert.Equal(1, container.OpenAsync_CallCount);
+            Assert.Equal(1, container.GetFiles_CallCount);
+            Assert.Equal(0, container.GetFilesWithMatcher_CallCount);
+            Assert.Equal(1, container.SaveAsync_CallCount);
+            Assert.Equal(1, container.Dispose_CallCount);
+
+            // The static web asset is skipped; the Windows Script Host script in tools is not.
+            Assert.Collection(
+                test.SignerSpy.SignedFiles,
+                signedFile => Assert.Equal("a.dll", signedFile.Name),
+                signedFile => Assert.Equal("script.js", signedFile.Name),
+                signedFile => Assert.Equal(NuGetContainerName, signedFile.Name));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenNuGetContainerHasStaticWebAssetsAndGlobPatternIsUsed_SignsMatchingFiles()
+        {
+            const string fileListContents = "**/*.js";
+            ReadFileList(fileListContents, out Matcher matcher, out Matcher antiMatcher);
+
+            SignOptions options = new(
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: new Uri("https://description.test"),
+                fileHashAlgorithm: HashAlgorithmName.SHA256,
+                timestampHashAlgorithm: HashAlgorithmName.SHA256,
+                timestampService: new Uri("https://timestamp.test"),
+                matcher,
+                antiMatcher,
+                recurseContainers: true);
+
+            AggregatingSignerTest test = new(
+                $"{NuGetContainerName}/build/Microsoft.AspNetCore.StaticWebAssets.props",
+                $"{NuGetContainerName}/staticwebassets/app.js");
+
+            await test.Signer.SignAsync(test.Files, options);
+
+            // An explicit file list is an explicit intent, so static web assets are not filtered out.
+            Assert.Collection(
+                test.SignerSpy.SignedFiles,
+                signedFile => Assert.Equal("app.js", signedFile.Name),
+                signedFile => Assert.Equal(NuGetContainerName, signedFile.Name));
         }
 
         private static void ReadFileList(string contents, out Matcher matcher, out Matcher antiMatcher)

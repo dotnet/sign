@@ -13,6 +13,7 @@ namespace Sign.Core
         private readonly IFileMetadataService _fileMetadataService;
         private readonly IMatcherFactory _matcherFactory;
         private readonly IEnumerable<IDataFormatSigner> _signers;
+        private readonly IStaticWebAssetFilter _staticWebAssetFilter;
 
         // Dependency injection requires a public constructor.
         public AggregatingSigner(
@@ -20,19 +21,22 @@ namespace Sign.Core
             IDefaultDataFormatSigner defaultSigner,
             IContainerProvider containerProvider,
             IFileMetadataService fileMetadataService,
-            IMatcherFactory matcherFactory)
+            IMatcherFactory matcherFactory,
+            IStaticWebAssetFilter staticWebAssetFilter)
         {
             ArgumentNullException.ThrowIfNull(signers, nameof(signers));
             ArgumentNullException.ThrowIfNull(defaultSigner, nameof(defaultSigner));
             ArgumentNullException.ThrowIfNull(containerProvider, nameof(containerProvider));
             ArgumentNullException.ThrowIfNull(fileMetadataService, nameof(fileMetadataService));
             ArgumentNullException.ThrowIfNull(matcherFactory, nameof(matcherFactory));
+            ArgumentNullException.ThrowIfNull(staticWebAssetFilter, nameof(staticWebAssetFilter));
 
             _signers = signers;
             _defaultSigner = defaultSigner;
             _containerProvider = containerProvider;
             _fileMetadataService = fileMetadataService;
             _matcherFactory = matcherFactory;
+            _staticWebAssetFilter = staticWebAssetFilter;
         }
 
         public bool CanSign(FileInfo file)
@@ -225,7 +229,7 @@ namespace Sign.Core
             }
         }
 
-        private static IEnumerable<FileInfo> GetFiles(IContainer container, SignOptions options)
+        private IEnumerable<FileInfo> GetFiles(IContainer container, SignOptions options)
         {
             IEnumerable<FileInfo> files;
 
@@ -233,6 +237,11 @@ namespace Sign.Core
             {
                 // If not filtered, default to all
                 files = container.GetFiles();
+
+                // ASP.NET Core static web assets have integrity hashes recorded at pack time, and signing
+                // them would invalidate those hashes.  A caller who explicitly listed files to sign has
+                // already stated an intent, so only filter when no file list was provided.
+                files = _staticWebAssetFilter.Filter(files);
             }
             else
             {
