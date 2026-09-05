@@ -10,6 +10,8 @@ namespace Sign.Core
         bool IsAppxContainer(FileInfo file);
         bool IsNuGetContainer(FileInfo file);
         bool IsZipContainer(FileInfo file);
+        bool IsMsiContainer(FileInfo file);
+        bool IsCabContainer(FileInfo file);
         IContainer? GetContainer(FileInfo file);
     }
 }

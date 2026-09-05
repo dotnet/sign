@@ -21,7 +21,8 @@ namespace Sign.Core.Test
                     Substitute.For<IDefaultDataFormatSigner>(),
                     Substitute.For<IContainerProvider>(),
                     Substitute.For<IFileMetadataService>(),
-                    Substitute.For<IMatcherFactory>()));
+                    Substitute.For<IMatcherFactory>(),
+                    Substitute.For<ISigningDependencyProvider>()));
 
             Assert.Equal("signers", exception.ParamName);
         }
@@ -35,7 +36,8 @@ namespace Sign.Core.Test
                     defaultSigner: null!,
                     Substitute.For<IContainerProvider>(),
                     Substitute.For<IFileMetadataService>(),
-                    Substitute.For<IMatcherFactory>()));
+                    Substitute.For<IMatcherFactory>(),
+                    Substitute.For<ISigningDependencyProvider>()));
 
             Assert.Equal("defaultSigner", exception.ParamName);
         }
@@ -49,7 +51,8 @@ namespace Sign.Core.Test
                     Substitute.For<IDefaultDataFormatSigner>(),
                     containerProvider: null!,
                     Substitute.For<IFileMetadataService>(),
-                    Substitute.For<IMatcherFactory>()));
+                    Substitute.For<IMatcherFactory>(),
+                    Substitute.For<ISigningDependencyProvider>()));
 
             Assert.Equal("containerProvider", exception.ParamName);
         }
@@ -63,7 +66,8 @@ namespace Sign.Core.Test
                     Substitute.For<IDefaultDataFormatSigner>(),
                     Substitute.For<IContainerProvider>(),
                     fileMetadataService: null!,
-                    Substitute.For<IMatcherFactory>()));
+                    Substitute.For<IMatcherFactory>(),
+                    Substitute.For<ISigningDependencyProvider>()));
 
             Assert.Equal("fileMetadataService", exception.ParamName);
         }
@@ -77,9 +81,25 @@ namespace Sign.Core.Test
                     Substitute.For<IDefaultDataFormatSigner>(),
                     Substitute.For<IContainerProvider>(),
                     Substitute.For<IFileMetadataService>(),
-                    matcherFactory: null!));
+                    matcherFactory: null!,
+                    Substitute.For<ISigningDependencyProvider>()));
 
             Assert.Equal("matcherFactory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_WhenSigningDependencyProviderIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new AggregatingSigner(
+                    Enumerable.Empty<IDataFormatSigner>(),
+                    Substitute.For<IDefaultDataFormatSigner>(),
+                    Substitute.For<IContainerProvider>(),
+                    Substitute.For<IFileMetadataService>(),
+                    Substitute.For<IMatcherFactory>(),
+                    signingDependencyProvider: null!));
+
+            Assert.Equal("signingDependencyProvider", exception.ParamName);
         }
 
         [Fact]
@@ -186,7 +206,8 @@ namespace Sign.Core.Test
                 Substitute.For<IDefaultDataFormatSigner>(),
                 Substitute.For<IContainerProvider>(),
                 Substitute.For<IFileMetadataService>(),
-                matcherFactory);
+                matcherFactory,
+                new SigningDependencyProvider(Enumerable.Empty<ISigningDependencyReader>()));
         }
     }
 }
