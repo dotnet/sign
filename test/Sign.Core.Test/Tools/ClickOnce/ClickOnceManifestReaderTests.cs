@@ -136,6 +136,76 @@ namespace Sign.Core.Test
             Assert.Null(manifest);
         }
 
+        [Theory]
+        [InlineData(
+            "<configuration><startup /></configuration>",
+            typeof(ArgumentException))]
+        [InlineData(
+            """
+            <wrapper xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+              <asmv1:assemblyIdentity name="Test" version="1.0.0.0" />
+            </wrapper>
+            """,
+            typeof(InvalidCastException))]
+        public void TryReadApplicationManifest_WhenManifestUtilitiesThrowsContentException_ThrowsInvalidOperationException(
+            string xml,
+            Type expectedInnerExceptionType)
+        {
+            using MemoryStream stream = CreateStream(xml);
+            ClickOnceManifestReader reader = new();
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(
+                    () => reader.TryReadApplicationManifest(
+                        stream,
+                        out _));
+
+            Assert.IsType(
+                expectedInnerExceptionType,
+                exception.InnerException);
+        }
+
+        [Theory]
+        [InlineData(
+            "<configuration><startup /></configuration>",
+            typeof(ArgumentException))]
+        [InlineData(
+            """
+            <wrapper xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+              <asmv1:assemblyIdentity name="Test" version="1.0.0.0" />
+            </wrapper>
+            """,
+            typeof(InvalidCastException))]
+        public void TryReadDeployManifest_WhenManifestUtilitiesThrowsContentException_ThrowsInvalidOperationException(
+            string xml,
+            Type expectedInnerExceptionType)
+        {
+            using MemoryStream stream = CreateStream(xml);
+            ClickOnceManifestReader reader = new();
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(
+                    () => reader.TryReadDeployManifest(
+                        stream,
+                        out _));
+
+            Assert.IsType(
+                expectedInnerExceptionType,
+                exception.InnerException);
+        }
+
+        [Fact]
+        public void ManifestReader_WhenXmlRootIsUnrecognized_ThrowsArgumentException()
+        {
+            using MemoryStream stream = CreateStream(
+                "<configuration><startup /></configuration>");
+
+            Assert.Throws<ArgumentException>(
+                () => ManifestReader.ReadManifest(
+                    stream,
+                    preserveStream: true));
+        }
+
         [Fact]
         public void TryReadApplicationManifest_WhenManifestIsVsto_PreservesVstoXml()
         {

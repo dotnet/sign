@@ -10,7 +10,7 @@ using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
-    public sealed class ClickOnceVstoFileGraphTests : IDisposable
+    public sealed class ClickOnceVstoManifestResolutionTests : IDisposable
     {
         private const string ApplicationDirectory =
             @"Application Files\VstoTestAddIn_1_0_0_0";
@@ -26,7 +26,7 @@ namespace Sign.Core.Test
 
         private readonly DirectoryService _directoryService;
 
-        public ClickOnceVstoFileGraphTests()
+        public ClickOnceVstoManifestResolutionTests()
         {
             _directoryService = new(
                 Substitute.For<ILogger<IDirectoryService>>());
@@ -38,7 +38,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenApplicationIsRealVstoFixture_ResolvesGraphAndPreservesModelState()
+        public void DeploymentPublishLayoutResolver_WhenApplicationIsRealVstoFixture_ResolvesPublishLayoutAndPreservesModelState()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -49,17 +49,17 @@ namespace Sign.Core.Test
                     ApplicationManifestFileName));
             applicationManifestFile.Directory!.Create();
             File.Copy(
-                ClickOnceFileGraphTestUtilities.GetVstoManifestPath(),
+                ClickOnceResolutionTestUtilities.GetVstoManifestPath(),
                 applicationManifestFile.FullName);
             FileInfo payload = new(
                 Path.Combine(
                     applicationManifestFile.DirectoryName!,
                     PayloadFileName));
             File.Copy(
-                typeof(ClickOnceVstoFileGraphTests).Assembly.Location,
+                typeof(ClickOnceVstoManifestResolutionTests).Assembly.Location,
                 payload.FullName);
             FileInfo deploymentManifestFile =
-                ClickOnceFileGraphTestUtilities.WriteDeploymentManifest(
+                ClickOnceResolutionTestUtilities.WriteDeploymentManifest(
                     root,
                     DeploymentManifestFileName,
                     Path.GetRelativePath(
@@ -68,32 +68,31 @@ namespace Sign.Core.Test
             applicationManifestFile.Refresh();
             payload.Refresh();
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 new ClickOnceManifestReader(),
-                new ClickOncePayloadFileResolver());
+                new ClickOncePayloadResolver());
 
-            ClickOnceFileGraph graph =
+            ResolvedClickOncePublishLayout layout =
                 resolver.Resolve(deploymentManifestFile);
 
-            Assert.NotNull(graph.DeploymentManifest);
             Assert.Equal(
                 deploymentManifestFile.FullName,
-                graph.DeploymentManifest.Source.FullName);
-            Assert.NotNull(graph.DeployManifest);
+                layout.Deployment!.Source.FullName);
+            Assert.NotNull(layout.Deployment!.Manifest);
             Assert.Equal(
                 applicationManifestFile.FullName,
-                graph.ApplicationManifest.Source.FullName);
+                layout.Application.Source.FullName);
             Assert.Equal(
                 "VstoTestAddIn.dll",
-                graph.ApplicationManifestModel.AssemblyIdentity.Name);
-            Assert.False(graph.ApplicationManifestModel.ReadOnly);
-            Assert.Empty(graph.Diagnostics);
+                layout.Application.Manifest.AssemblyIdentity.Name);
+            Assert.False(layout.Application.Manifest.ReadOnly);
+            Assert.Empty(layout.Diagnostics);
 
-            ClickOnceFileGraphEntry payloadEntry =
-                Assert.Single(graph.Payloads);
+            ResolvedClickOncePayload payloadEntry =
+                Assert.Single(layout.Application.Payloads);
             AssemblyReference manifestReference =
                 Assert.IsType<AssemblyReference>(
-                    payloadEntry.ManifestReference);
+                    payloadEntry.Reference);
 
             Assert.Equal(payload.FullName, payloadEntry.Source.FullName);
             Assert.Equal(PayloadFileName, payloadEntry.TargetPath);
@@ -106,7 +105,7 @@ namespace Sign.Core.Test
             Assert.Same(
                 manifestReference,
                 Assert.Single(
-                    graph.ApplicationManifestModel
+                    layout.Application.Manifest
                         .AssemblyReferences
                         .Cast<AssemblyReference>()));
 
@@ -115,7 +114,7 @@ namespace Sign.Core.Test
                     root.FullName,
                     "roundtrip.manifest"));
 
-            graph.ApplicationManifestModel.Write(output);
+            layout.Application.Manifest.Write(output);
 
             XDocument document = XDocument.Load(output.FullName);
             XElement addIn = Assert.Single(

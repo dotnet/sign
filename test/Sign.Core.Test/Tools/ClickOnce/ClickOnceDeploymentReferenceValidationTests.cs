@@ -13,6 +13,8 @@ namespace Sign.Core.Test
 {
     public sealed class ClickOnceDeploymentReferenceValidationTests : IDisposable
     {
+        private const string AssemblyV2Namespace =
+            "urn:schemas-microsoft-com:asm.v2";
         private const string ApplicationManifestFileName =
             "App.exe.manifest";
         private const string DeploymentManifestFileName =
@@ -37,45 +39,45 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(DeploymentManifestFileName)]
         [InlineData(VstoManifestFileName)]
-        public void DeploymentResolver_WhenSerializedManifestHasOneApplicationDependencyAndNoFiles_Succeeds(
+        public void DeploymentPublishLayoutResolver_WhenSerializedManifestHasOneApplicationDependencyAndNoFiles_Succeeds(
             string deploymentManifestFileName)
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             FileInfo applicationManifest =
-                ClickOnceFileGraphTestUtilities.WriteApplicationManifest(
+                ClickOnceResolutionTestUtilities.WriteApplicationManifest(
                     root,
                     ApplicationManifestFileName);
             FileInfo deploymentManifest =
-                ClickOnceFileGraphTestUtilities.WriteDeploymentManifest(
+                ClickOnceResolutionTestUtilities.WriteDeploymentManifest(
                     root,
                     deploymentManifestFileName,
                     applicationManifest.Name);
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 new ClickOnceManifestReader(),
-                new ClickOncePayloadFileResolver());
+                new ClickOncePayloadResolver());
 
-            ClickOnceFileGraph graph = resolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = resolver.Resolve(deploymentManifest);
 
             IDeployManifest deployManifest =
                 Assert.IsAssignableFrom<IDeployManifest>(
-                    graph.DeployManifest);
-            ClickOnceFileGraphEntry deploymentManifestEntry =
-                Assert.IsType<ClickOnceFileGraphEntry>(
-                    graph.DeploymentManifest);
+                    layout.Deployment!.Manifest);
             Assert.Equal(
                 deploymentManifest.FullName,
-                deploymentManifestEntry.Source.FullName);
+                layout.Deployment!.Source.FullName);
             Assert.Equal(
                 applicationManifest.FullName,
-                graph.ApplicationManifest.Source.FullName);
+                layout.Application.Source.FullName);
             Assert.Single(deployManifest.AssemblyReferences);
+            Assert.Same(
+                deployManifest.EntryPoint,
+                layout.Deployment.ApplicationManifestReference);
             Assert.Empty(deployManifest.FileReferences);
-            Assert.Empty(graph.Payloads);
+            Assert.Empty(layout.Application.Payloads);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSerializedManifestHasExtraInstallDependency_RejectsBeforeResolution()
+        public void DeploymentPublishLayoutResolver_WhenSerializedManifestHasExtraInstallDependency_RejectsBeforeResolution()
         {
             AssertSerializedManifestRejected(
                 manifest =>
@@ -88,7 +90,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSerializedManifestHasFileReference_RejectsBeforeResolution()
+        public void DeploymentPublishLayoutResolver_WhenSerializedManifestHasFileReference_RejectsBeforeResolution()
         {
             AssertSerializedManifestRejected(
                 manifest =>
@@ -99,7 +101,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSerializedManifestHasExtraPrerequisite_RejectsBeforeResolution()
+        public void DeploymentPublishLayoutResolver_WhenSerializedManifestHasExtraPrerequisite_RejectsBeforeResolution()
         {
             AssertSerializedManifestRejected(
                 manifest =>
@@ -113,7 +115,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSerializedManifestHasDuplicateDependency_RejectsBeforeResolution()
+        public void DeploymentPublishLayoutResolver_WhenSerializedManifestHasDuplicateDependency_RejectsBeforeResolution()
         {
             AssertSerializedManifestRejected(
                 _ =>
@@ -127,7 +129,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSerializedManifestHasSolePrerequisite_RejectsBeforeResolution()
+        public void DeploymentPublishLayoutResolver_WhenSerializedManifestHasSolePrerequisite_RejectsBeforeResolution()
         {
             AssertSerializedManifestRejected(
                 _ =>
@@ -143,11 +145,128 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenEntryPointIsNotTheSoleCollectionReference_RejectsBeforeResolution()
+        public void DeploymentPublishLayoutResolver_WhenEntryPointIsOptional_RejectsBeforeResolution()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             FileInfo deploymentManifestFile =
-                ClickOnceFileGraphTestUtilities.CreateFile(
+                ClickOnceResolutionTestUtilities.CreateFile(
+                    temporaryDirectory.Directory,
+                    DeploymentManifestFileName);
+            DeployManifest model = CreateDeploymentManifest();
+            AssemblyReference entryPoint = model.EntryPoint!;
+
+            entryPoint.IsOptional = true;
+
+            IDeployManifest deploymentManifest =
+                Substitute.For<IDeployManifest>();
+
+            deploymentManifest.AssemblyReferences.Returns(
+                model.AssemblyReferences);
+            deploymentManifest.EntryPoint.Returns(entryPoint);
+            deploymentManifest.FileReferences.Returns(model.FileReferences);
+            deploymentManifest.Diagnostics.Returns(
+                Array.Empty<ClickOnceManifestDiagnostic>());
+
+            IClickOnceManifestReader manifestReader =
+                Substitute.For<IClickOnceManifestReader>();
+
+            manifestReader.TryReadDeployManifest(
+                    Arg.Any<Stream>(),
+                    out Arg.Any<IDeployManifest?>())
+                .Returns(callInfo =>
+                {
+                    callInfo[1] = deploymentManifest;
+                    return true;
+                });
+
+            AssertUnsupportedReferences(
+                deploymentManifestFile,
+                () => new ClickOnceDeploymentPublishLayoutResolver(
+                    manifestReader,
+                    new ClickOncePayloadResolver())
+                    .Resolve(deploymentManifestFile));
+            deploymentManifest.DidNotReceive().ResolveFiles(
+                Arg.Any<IReadOnlyList<DirectoryInfo>>());
+        }
+
+        [Fact]
+        public void DeploymentPublishLayoutResolver_WhenReferencesAndEntryPointTargetAreUnsupported_ReportsReferencesFirst()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            FileInfo deploymentManifestFile =
+                ClickOnceResolutionTestUtilities.CreateFile(
+                    temporaryDirectory.Directory,
+                    DeploymentManifestFileName);
+            DeployManifest model = CreateDeploymentManifest();
+            AssemblyReference entryPoint = model.EntryPoint!;
+
+            entryPoint.TargetPath = Path.Combine(
+                temporaryDirectory.Directory.FullName,
+                ApplicationManifestFileName);
+            model.AssemblyReferences.Add(
+                new AssemblyReference("extra.dll"));
+
+            IDeployManifest deploymentManifest =
+                Substitute.For<IDeployManifest>();
+
+            deploymentManifest.AssemblyReferences.Returns(
+                model.AssemblyReferences);
+            deploymentManifest.EntryPoint.Returns(entryPoint);
+            deploymentManifest.FileReferences.Returns(model.FileReferences);
+            deploymentManifest.Diagnostics.Returns(
+                Array.Empty<ClickOnceManifestDiagnostic>());
+
+            IClickOnceManifestReader manifestReader =
+                Substitute.For<IClickOnceManifestReader>();
+
+            manifestReader.TryReadDeployManifest(
+                    Arg.Any<Stream>(),
+                    out Arg.Any<IDeployManifest?>())
+                .Returns(callInfo =>
+                {
+                    callInfo[1] = deploymentManifest;
+                    return true;
+                });
+
+            AssertUnsupportedReferences(
+                deploymentManifestFile,
+                () => new ClickOnceDeploymentPublishLayoutResolver(
+                    manifestReader,
+                    new ClickOncePayloadResolver())
+                    .Resolve(deploymentManifestFile));
+            deploymentManifest.DidNotReceive().ResolveFiles(
+                Arg.Any<IReadOnlyList<DirectoryInfo>>());
+        }
+
+        [Theory]
+        [InlineData("resourceFallbackCulture", false)]
+        [InlineData("resourceFallbackCultureInternal", false)]
+        [InlineData("resourceFallbackCulture", true)]
+        [InlineData("resourceFallbackCultureInternal", true)]
+        public void DeploymentPublishLayoutResolver_WhenEntryPointHasResourceFallbackCulture_RejectsBeforeResolution(
+            string attributeName,
+            bool useQualifiedAttribute)
+        {
+            AssertSerializedManifestRejected(
+                _ =>
+                {
+                },
+                deploymentManifest =>
+                    SetSoleDependentAssemblyResourceFallback(
+                        deploymentManifest,
+                        attributeName,
+                        useQualifiedAttribute),
+                manifest =>
+                    Assert.True(
+                        manifest.HasUnsupportedResourceFallback));
+        }
+
+        [Fact]
+        public void DeploymentPublishLayoutResolver_WhenEntryPointIsNotTheSoleCollectionReference_RejectsBeforeResolution()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            FileInfo deploymentManifestFile =
+                ClickOnceResolutionTestUtilities.CreateFile(
                     temporaryDirectory.Directory,
                     DeploymentManifestFileName);
             AssemblyReference collectionReference = new()
@@ -192,9 +311,9 @@ namespace Sign.Core.Test
                 });
 
             int fileProbeCount = 0;
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
-                new ClickOncePayloadFileResolver(),
+                new ClickOncePayloadResolver(),
                 _ =>
                 {
                     ++fileProbeCount;
@@ -216,7 +335,7 @@ namespace Sign.Core.Test
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             FileInfo applicationManifest =
-                ClickOnceFileGraphTestUtilities.WriteApplicationManifest(
+                ClickOnceResolutionTestUtilities.WriteApplicationManifest(
                     root,
                     ApplicationManifestFileName);
             DeployManifest model = CreateDeploymentManifest();
@@ -225,7 +344,7 @@ namespace Sign.Core.Test
             mutateManifest(model);
 
             FileInfo deploymentManifestFile =
-                ClickOnceFileGraphTestUtilities.WriteManifest(
+                ClickOnceResolutionTestUtilities.WriteManifest(
                     root,
                     DeploymentManifestFileName,
                     model);
@@ -257,6 +376,8 @@ namespace Sign.Core.Test
                 parsedManifest.EntryPoint);
             recordingManifest.FileReferences.Returns(
                 parsedManifest.FileReferences);
+            recordingManifest.HasUnsupportedResourceFallback.Returns(
+                parsedManifest.HasUnsupportedResourceFallback);
             recordingManifest.Diagnostics.Returns(
                 parsedManifest.Diagnostics);
             recordingManifest
@@ -287,9 +408,9 @@ namespace Sign.Core.Test
                 });
 
             int fileProbeCount = 0;
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
-                new ClickOncePayloadFileResolver(),
+                new ClickOncePayloadResolver(),
                 _ =>
                 {
                     ++fileProbeCount;
@@ -310,9 +431,9 @@ namespace Sign.Core.Test
 
             manifest.AssemblyIdentity.Name = "TestDeployment";
             manifest.AssemblyIdentity.Version =
-                ClickOnceFileGraphTestUtilities.ManifestVersion;
+                ClickOnceResolutionTestUtilities.ManifestVersion;
             manifest.AssemblyIdentity.ProcessorArchitecture =
-                ClickOnceFileGraphTestUtilities.ProcessorArchitecture;
+                ClickOnceResolutionTestUtilities.ProcessorArchitecture;
 
             AssemblyReference entryPoint = new(
                 ApplicationManifestFileName);
@@ -329,7 +450,7 @@ namespace Sign.Core.Test
             {
                 AssemblyIdentity = new AssemblyIdentity(
                     "Prerequisite",
-                    ClickOnceFileGraphTestUtilities.ManifestVersion),
+                    ClickOnceResolutionTestUtilities.ManifestVersion),
                 IsPrerequisite = true,
                 TargetPath = PrerequisiteFileName
             };
@@ -353,6 +474,17 @@ namespace Sign.Core.Test
         private static void MakeSoleDependencyPrerequisite(
             FileInfo deploymentManifest)
         {
+            SetSoleDependentAssemblyAttribute(
+                deploymentManifest,
+                "dependencyType",
+                "preRequisite");
+        }
+
+        private static void SetSoleDependentAssemblyAttribute(
+            FileInfo deploymentManifest,
+            string attributeName,
+            string attributeValue)
+        {
             XDocument document = XDocument.Load(
                 deploymentManifest.FullName);
             XElement dependentAssembly = Assert.Single(
@@ -361,8 +493,36 @@ namespace Sign.Core.Test
                     element.Name.LocalName == "dependentAssembly");
 
             dependentAssembly.SetAttributeValue(
-                "dependencyType",
-                "preRequisite");
+                attributeName,
+                attributeValue);
+            document.Save(
+                deploymentManifest.FullName,
+                SaveOptions.DisableFormatting);
+            deploymentManifest.Refresh();
+        }
+
+        private static void SetSoleDependentAssemblyResourceFallback(
+            FileInfo deploymentManifest,
+            string attributeName,
+            bool useQualifiedAttribute)
+        {
+            XDocument document = XDocument.Load(
+                deploymentManifest.FullName);
+            XElement dependentAssembly = Assert.Single(
+                document.Descendants(),
+                element =>
+                    element.Name.LocalName == "dependentAssembly");
+
+            XName resourceFallbackAttribute = useQualifiedAttribute
+                ? XName.Get(
+                    attributeName,
+                    AssemblyV2Namespace)
+                : attributeName;
+
+            dependentAssembly.SetAttributeValue(
+                resourceFallbackAttribute,
+                "en-US");
+
             document.Save(
                 deploymentManifest.FullName,
                 SaveOptions.DisableFormatting);
@@ -396,8 +556,8 @@ namespace Sign.Core.Test
             FileInfo deploymentManifestFile,
             Action resolve)
         {
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     resolve);
 
             Assert.Equal(

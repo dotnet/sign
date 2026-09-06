@@ -17,6 +17,8 @@ namespace Sign.Core.Test
             "App.exe.manifest";
         private const string DeploymentManifestFileName =
             "App.application";
+        private const string NonManifestXml =
+            "<configuration><startup /></configuration>";
         private const string PayloadFileName = "payload.dll";
         private const string SourcePath = "source-path.dll";
         private const string WarningMessageName =
@@ -42,14 +44,14 @@ namespace Sign.Core.Test
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             FileInfo applicationManifestFile =
-                ClickOnceFileGraphTestUtilities.CreateFile(
+                ClickOnceResolutionTestUtilities.CreateFile(
                     root,
                     ApplicationManifestFileName);
             ApplicationManifest applicationModel =
-                ClickOnceFileGraphTestUtilities.CreateApplicationManifest();
+                ClickOnceResolutionTestUtilities.CreateApplicationManifest();
             AssemblyIdentity identity = new(
                 "Payload",
-                ClickOnceFileGraphTestUtilities.ManifestVersion);
+                ClickOnceResolutionTestUtilities.ManifestVersion);
             AssemblyReference reference = new()
             {
                 AssemblyIdentity = identity,
@@ -87,11 +89,11 @@ namespace Sign.Core.Test
                     throw expectedException;
                 });
 
-            ClickOncePayloadFileResolver payloadResolver = new();
+            ClickOncePayloadResolver payloadResolver = new();
             List<ClickOnceManifestDiagnostic> diagnostics = new();
 
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     () => payloadResolver.ResolveForExplicitApplication(
                         applicationManifestFile,
                         applicationManifest,
@@ -116,17 +118,17 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenResolveFilesThrows_RestoresHintsPreservesResolvedPathAndDiagnostics()
+        public void DeploymentPublishLayoutResolver_WhenResolveFilesThrows_RestoresHintsPreservesResolvedPathAndDiagnostics()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             FileInfo deploymentManifestFile =
-                ClickOnceFileGraphTestUtilities.CreateFile(
+                ClickOnceResolutionTestUtilities.CreateFile(
                     root,
                     DeploymentManifestFileName);
             AssemblyIdentity identity = new(
                 "Application",
-                ClickOnceFileGraphTestUtilities.ManifestVersion);
+                ClickOnceResolutionTestUtilities.ManifestVersion);
             AssemblyReference entryPoint = new()
             {
                 AssemblyIdentity = identity,
@@ -177,12 +179,12 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
-                new ClickOncePayloadFileResolver());
+                new ClickOncePayloadResolver());
 
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     () => resolver.Resolve(deploymentManifestFile));
 
             Assert.Equal(SourcePath, entryPoint.SourcePath);
@@ -203,19 +205,19 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ExplicitApplicationResolver_WhenManifestIsMalformed_ThrowsReadFailureWithXmlException()
+        public void ExplicitApplicationPublishLayoutResolver_WhenManifestIsMalformed_ThrowsReadFailureWithXmlException()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             FileInfo applicationManifestFile =
-                ClickOnceFileGraphTestUtilities.WriteMalformedManifest(
+                ClickOnceResolutionTestUtilities.WriteMalformedManifest(
                     temporaryDirectory.Directory,
                     ApplicationManifestFileName);
-            ClickOnceApplicationManifestFileGraphResolver resolver = new(
+            ClickOnceApplicationPublishLayoutResolver resolver = new(
                 new ClickOnceManifestReader(),
-                new ClickOncePayloadFileResolver());
+                new ClickOncePayloadResolver());
 
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     () => resolver.TryResolve(
                         applicationManifestFile,
                         out _));
@@ -231,19 +233,121 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ExplicitApplicationResolver_WhenManifestIsMissing_ThrowsReadFailureWithFileNotFoundException()
+        public void ExplicitApplicationPublishLayoutResolver_WhenXmlRootIsUnrecognized_ThrowsReadFailure()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            FileInfo applicationManifestFile =
+                ClickOnceResolutionTestUtilities.CreateFile(
+                    temporaryDirectory.Directory,
+                    ApplicationManifestFileName,
+                    NonManifestXml);
+            ClickOnceApplicationPublishLayoutResolver resolver = new(
+                new ClickOnceManifestReader(),
+                new ClickOncePayloadResolver());
+
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                    () => resolver.TryResolve(
+                        applicationManifestFile,
+                        out _));
+
+            Assert.Equal(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.ClickOnceApplicationManifestReadFailed,
+                    applicationManifestFile.FullName),
+                exception.Message);
+            InvalidOperationException readException =
+                Assert.IsType<InvalidOperationException>(
+                    exception.InnerException);
+            Assert.IsType<ArgumentException>(
+                readException.InnerException);
+            Assert.Empty(exception.Diagnostics);
+        }
+
+        [Fact]
+        public void DeploymentPublishLayoutResolver_WhenXmlRootIsUnrecognized_ThrowsReadFailure()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            FileInfo deploymentManifestFile =
+                ClickOnceResolutionTestUtilities.CreateFile(
+                    temporaryDirectory.Directory,
+                    DeploymentManifestFileName,
+                    NonManifestXml);
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
+                new ClickOnceManifestReader(),
+                new ClickOncePayloadResolver());
+
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                    () => resolver.Resolve(deploymentManifestFile));
+
+            Assert.Equal(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.ClickOnceDeploymentManifestReadFailed,
+                    deploymentManifestFile.FullName),
+                exception.Message);
+            InvalidOperationException readException =
+                Assert.IsType<InvalidOperationException>(
+                    exception.InnerException);
+            Assert.IsType<ArgumentException>(
+                readException.InnerException);
+            Assert.Empty(exception.Diagnostics);
+        }
+
+        [Fact]
+        public void DeploymentPublishLayoutResolver_WhenReferencedApplicationXmlRootIsUnrecognized_ThrowsReadFailure()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            DirectoryInfo root = temporaryDirectory.Directory;
+            FileInfo applicationManifestFile =
+                ClickOnceResolutionTestUtilities.CreateFile(
+                    root,
+                    ApplicationManifestFileName,
+                    NonManifestXml);
+            FileInfo deploymentManifestFile =
+                ClickOnceResolutionTestUtilities.WriteDeploymentManifest(
+                    root,
+                    DeploymentManifestFileName,
+                    applicationManifestFile.Name);
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
+                new ClickOnceManifestReader(),
+                new ClickOncePayloadResolver());
+
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                    () => resolver.Resolve(deploymentManifestFile));
+
+            Assert.Equal(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.ClickOnceDeploymentManifestReferencedApplicationReadFailed,
+                    applicationManifestFile.FullName,
+                    deploymentManifestFile.FullName),
+                exception.Message);
+            InvalidOperationException readException =
+                Assert.IsType<InvalidOperationException>(
+                    exception.InnerException);
+            Assert.IsType<ArgumentException>(
+                readException.InnerException);
+            Assert.Empty(exception.Diagnostics);
+        }
+
+        [Fact]
+        public void ExplicitApplicationPublishLayoutResolver_WhenManifestIsMissing_ThrowsReadFailureWithFileNotFoundException()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             FileInfo applicationManifestFile = new(
                 Path.Combine(
                     temporaryDirectory.Directory.FullName,
                     ApplicationManifestFileName));
-            ClickOnceApplicationManifestFileGraphResolver resolver = new(
+            ClickOnceApplicationPublishLayoutResolver resolver = new(
                 new ClickOnceManifestReader(),
-                new ClickOncePayloadFileResolver());
+                new ClickOncePayloadResolver());
 
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     () => resolver.TryResolve(
                         applicationManifestFile,
                         out _));

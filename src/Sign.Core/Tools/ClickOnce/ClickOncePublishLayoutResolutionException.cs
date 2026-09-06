@@ -4,9 +4,9 @@
 
 namespace Sign.Core
 {
-    internal sealed class ClickOnceFileGraphResolutionException : Exception
+    internal sealed class ClickOncePublishLayoutResolutionException : Exception
     {
-        internal ClickOnceFileGraphResolutionException(
+        internal ClickOncePublishLayoutResolutionException(
             string message,
             IEnumerable<ClickOnceManifestDiagnostic>? diagnostics = null,
             Exception? innerException = null)

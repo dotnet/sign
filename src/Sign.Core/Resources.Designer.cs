@@ -160,6 +160,15 @@ namespace Sign.Core {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; references application manifest target path &apos;{1}&apos;, which cannot be represented beneath the staging directory..
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestInvalidTargetPath {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestInvalidTargetPath", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Failed to access launcher candidate &apos;{0}&apos; associated with deployment manifest &apos;{1}&apos;..
         /// </summary>
         internal static string ClickOnceDeploymentManifestLauncherProbeFailed {
