@@ -339,6 +339,7 @@ namespace Sign.Core.Test
         [InlineData(@"C:payload.dll")]
         [InlineData(@"\\server\share\payload.dll")]
         [InlineData(@"\\?\C:\payload.dll")]
+        [InlineData(@"NUL.tar.gz\payload.dll")]
         public void Stage_UnsafeTargetPath_FailsBeforeCopying(string targetPath)
         {
             DirectoryInfo sourceDirectory =
