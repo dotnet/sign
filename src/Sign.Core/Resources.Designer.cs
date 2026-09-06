@@ -358,11 +358,11 @@ namespace Sign.Core {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Package part name &apos;{0}&apos; contains the unsupported &apos;#&apos; character..
+        ///   Looks up a localized string similar to Package part name &apos;{0}&apos; contains the unsupported URI delimiter &apos;{1}&apos;..
         /// </summary>
-        internal static string VSIXSignToolOpcPartNameContainsFragmentDelimiter {
+        internal static string VSIXSignToolOpcPartNameContainsUnsupportedUriDelimiter {
             get {
-                return ResourceManager.GetString("VSIXSignToolOpcPartNameContainsFragmentDelimiter", resourceCulture);
+                return ResourceManager.GetString("VSIXSignToolOpcPartNameContainsUnsupportedUriDelimiter", resourceCulture);
             }
         }
         

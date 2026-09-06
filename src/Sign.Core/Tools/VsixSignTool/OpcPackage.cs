@@ -89,7 +89,7 @@ namespace Sign.Core
 
                 if (!_partTracker.TryGetValue(entry.FullName, out OpcPart? part))
                 {
-                    part = new OpcPart(this, entry.FullName, entry, _mode);
+                    part = new OpcPart(this, entry, _mode);
                     _partTracker.Add(entry.FullName, part);
                 }
 
@@ -115,7 +115,7 @@ namespace Sign.Core
                     return null;
                 }
 
-                part = new OpcPart(this, entry.FullName, entry, _mode);
+                part = new OpcPart(this, entry, _mode);
                 _partTracker.Add(path ?? string.Empty, part);
             }
 
@@ -144,7 +144,7 @@ namespace Sign.Core
             }
 
             var zipEntry = Archive.CreateEntry(path, CompressionLevel.NoCompression);
-            var part = new OpcPart(this, zipEntry.FullName, zipEntry, _mode);
+            var part = new OpcPart(this, zipEntry, _mode);
             _partTracker.Add(zipEntry.FullName, part);
 
             return part;

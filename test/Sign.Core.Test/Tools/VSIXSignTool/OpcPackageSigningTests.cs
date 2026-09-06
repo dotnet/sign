@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Sign.Core.Timestamp;
 using Xunit.Abstractions;
 
@@ -75,10 +76,13 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData("ab#c.txt")]
         [InlineData("folder/ab#c.txt")]
-        public async Task ShouldRejectPartNameContainingFragmentDelimiter(string entryName)
+        [InlineData("ab?c.txt")]
+        [InlineData("folder/ab?c.txt")]
+        public async Task SignAsync_WithRawUriDelimiterInZipEntryName_Throws(string entryName)
         {
             string path = CreatePackageWithEntry(entryName);
-            VsixSignTool signTool = new(Moq.Mock.Of<ILogger<IVsixSignTool>>());
+            IReadOnlyDictionary<string, byte[]> originalEntries = ReadArchiveEntries(path);
+            VsixSignTool signTool = new(Substitute.For<ILogger<IVsixSignTool>>());
 
             using (X509Certificate2 certificate = _pfxFilesFixture.GetPfx(
                 keySizeInBits: 2048,
@@ -98,11 +102,59 @@ namespace Sign.Core.Test
                     () => signTool.SignAsync(new FileInfo(path), configuration, options));
 
                 Assert.Contains(entryName, exception.Message, StringComparison.Ordinal);
+                Assert.Contains(entryName.Contains('#') ? "#" : "?", exception.Message, StringComparison.Ordinal);
             }
 
             using (OpcPackage package = OpcPackage.Open(path))
             {
                 Assert.Empty(package.GetSignatures());
+            }
+
+            AssertArchiveEntriesEqual(originalEntries, ReadArchiveEntries(path));
+        }
+
+        [Theory]
+        [InlineData("abc.txt")]
+        [InlineData("folder/abc.txt")]
+        [InlineData("ab%23c.txt")]
+        [InlineData("folder/ab%23c.txt")]
+        [InlineData("ab%3Fc.txt")]
+        [InlineData("folder/ab%3fc.txt")]
+        public async Task SignAsync_WithValidOrPercentEncodedZipEntryName_Succeeds(string entryName)
+        {
+            string path = CreatePackageWithEntry(entryName);
+            VsixSignTool signTool = new(Substitute.For<ILogger<IVsixSignTool>>());
+
+            using (X509Certificate2 certificate = _pfxFilesFixture.GetPfx(
+                keySizeInBits: 2048,
+                HashAlgorithmName.SHA256))
+            using (RSA? rsaPrivateKey = certificate.GetRSAPrivateKey())
+            {
+                SignConfigurationSet configuration = new(
+                    publicCertificate: certificate,
+                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                    signingKey: rsaPrivateKey!);
+                SignOptions options = new(
+                    fileHashAlgorithm: HashAlgorithmName.SHA256,
+                    timestampService: null!);
+
+                Assert.True(await signTool.SignAsync(new FileInfo(path), configuration, options));
+            }
+
+            using (OpcPackage package = OpcPackage.Open(path))
+            {
+                OpcSignature signature = Assert.Single(package.GetSignatures());
+
+                using Stream signatureStream = signature.Part!.Open();
+                XmlDocument signatureDocument = new();
+                signatureDocument.Load(signatureStream);
+
+                Assert.Contains(
+                    signatureDocument.GetElementsByTagName("Reference").Cast<XmlElement>(),
+                    reference => reference.GetAttribute("URI").StartsWith(
+                        $"/{entryName}?ContentType=",
+                        StringComparison.Ordinal));
             }
         }
 
@@ -314,15 +366,57 @@ namespace Sign.Core.Test
         {
             string path = Path.GetTempFileName();
             _shadowFiles.Add(path);
-            File.Copy(SamplePackage, path, overwrite: true);
 
-            using (ZipArchive archive = ZipFile.Open(path, ZipArchiveMode.Update))
-            using (StreamWriter writer = new(archive.CreateEntry(entryName).Open()))
+            using (FileStream stream = new(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            using (ZipArchive archive = new(stream, ZipArchiveMode.Create))
             {
-                writer.Write("test");
+                WriteEntry(
+                    archive,
+                    "[Content_Types].xml",
+                    """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+                      <Default Extension="txt" ContentType="text/plain" />
+                    </Types>
+                    """);
+                WriteEntry(archive, entryName, "test");
             }
 
             return path;
+        }
+
+        private static void WriteEntry(ZipArchive archive, string entryName, string content)
+        {
+            using StreamWriter writer = new(archive.CreateEntry(entryName).Open());
+            writer.Write(content);
+        }
+
+        private static IReadOnlyDictionary<string, byte[]> ReadArchiveEntries(string path)
+        {
+            using ZipArchive archive = ZipFile.OpenRead(path);
+            Dictionary<string, byte[]> entries = new(StringComparer.Ordinal);
+
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                using Stream stream = entry.Open();
+                using MemoryStream content = new();
+                stream.CopyTo(content);
+                entries.Add(entry.FullName, content.ToArray());
+            }
+
+            return entries;
+        }
+
+        private static void AssertArchiveEntriesEqual(
+            IReadOnlyDictionary<string, byte[]> expected,
+            IReadOnlyDictionary<string, byte[]> actual)
+        {
+            Assert.Equal(expected.Keys.Order(), actual.Keys.Order());
+
+            foreach ((string entryName, byte[] content) in expected)
+            {
+                Assert.Equal(content, actual[entryName]);
+            }
         }
 
         private OpcPackage ShadowCopyPackage(string packagePath, out string path, OpcPackageFileMode mode = OpcPackageFileMode.Read)
