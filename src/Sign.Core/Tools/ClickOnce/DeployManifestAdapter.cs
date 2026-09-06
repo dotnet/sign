@@ -11,10 +11,22 @@ namespace Sign.Core
         IDeployManifest
     {
         internal DeployManifestAdapter(DeployManifest manifest)
-            : base(manifest)
+            : this(
+                manifest,
+                hasUnsupportedResourceFallback: false)
         {
         }
 
+        internal DeployManifestAdapter(
+            DeployManifest manifest,
+            bool hasUnsupportedResourceFallback)
+            : base(manifest)
+        {
+            HasUnsupportedResourceFallback =
+                hasUnsupportedResourceFallback;
+        }
+
+        public bool HasUnsupportedResourceFallback { get; }
         public bool MapFileExtensions => Manifest.MapFileExtensions;
     }
 }

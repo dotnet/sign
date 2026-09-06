@@ -6,14 +6,14 @@ using System.Globalization;
 
 namespace Sign.Core
 {
-    internal sealed class ClickOnceApplicationManifestFileGraphResolver
+    internal sealed class ClickOnceApplicationPublishLayoutResolver
     {
         private readonly IClickOnceManifestReader _manifestReader;
-        private readonly ClickOncePayloadFileResolver _payloadResolver;
+        private readonly ClickOncePayloadResolver _payloadResolver;
 
-        internal ClickOnceApplicationManifestFileGraphResolver(
+        internal ClickOnceApplicationPublishLayoutResolver(
             IClickOnceManifestReader manifestReader,
-            ClickOncePayloadFileResolver payloadResolver)
+            ClickOncePayloadResolver payloadResolver)
         {
             ArgumentNullException.ThrowIfNull(manifestReader, nameof(manifestReader));
             ArgumentNullException.ThrowIfNull(payloadResolver, nameof(payloadResolver));
@@ -22,7 +22,7 @@ namespace Sign.Core
             _payloadResolver = payloadResolver;
         }
 
-        internal bool TryResolve(FileInfo applicationManifestFile, out ClickOnceFileGraph? graph)
+        internal bool TryResolve(FileInfo applicationManifestFile, out ResolvedClickOncePublishLayout? layout)
         {
             ArgumentNullException.ThrowIfNull(applicationManifestFile, nameof(applicationManifestFile));
 
@@ -36,7 +36,7 @@ namespace Sign.Core
                     stream,
                     out applicationManifest))
                 {
-                    graph = null;
+                    layout = null;
 
                     return false;
                 }
@@ -47,7 +47,7 @@ namespace Sign.Core
                 InvalidOperationException or
                 System.Xml.XmlException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceApplicationManifestReadFailed,
@@ -58,21 +58,18 @@ namespace Sign.Core
             applicationManifest.ReadOnly = false;
 
             List<ClickOnceManifestDiagnostic> diagnostics = new();
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForExplicitApplication(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
                 applicationManifest,
                 diagnostics);
 
-            graph = new ClickOnceFileGraph(
-                deploymentManifest: null,
-                deployManifest: null,
-                new ClickOnceFileGraphEntry(
+            layout = new ResolvedClickOncePublishLayout(
+                deployment: null,
+                new ResolvedClickOnceApplication(
                     applicationManifestFile,
-                    applicationManifestFile.Name,
-                    ClickOnceFileGraphEntryKind.ApplicationManifest),
-                applicationManifest,
-                payloads,
-                adjacentExecutables: Array.Empty<ClickOnceFileGraphEntry>(),
+                    applicationManifest,
+                    payloads),
+                adjacentExecutables: Array.Empty<ResolvedClickOnceAdjacentExecutable>(),
                 diagnostics);
 
             return true;

@@ -63,9 +63,14 @@
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
-        <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist.</target>
+        <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
+        <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
+        <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
+        <target state="new">Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is an invalid application manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestLauncherProbeFailed">
         <source>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</source>
@@ -73,8 +78,8 @@
         <note>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestMissingEntryPoint">
-        <source>Deployment manifest '{0}' does not identify an application manifest.</source>
-        <target state="new">Deployment manifest '{0}' does not identify an application manifest.</target>
+        <source>Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
+        <target state="new">Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReadFailed">
@@ -103,13 +108,13 @@
         <note>{NumberedPlaceholder="{0}"} is the absolute setup bootstrapper candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnresolvedApplicationManifest">
-        <source>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'.</source>
-        <target state="new">Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'.</target>
+        <source>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
+        <target state="new">Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnsupportedReferences">
-        <source>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one non-prerequisite application manifest dependency and no file references.</source>
-        <target state="new">Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one non-prerequisite application manifest dependency and no file references.</target>
+        <source>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
+        <target state="new">Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestWrongType">

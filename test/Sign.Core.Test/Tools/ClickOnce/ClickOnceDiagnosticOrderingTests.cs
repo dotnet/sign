@@ -41,7 +41,7 @@ namespace Sign.Core.Test
         public void ApplicationManifestAdapter_AdaptsMultipleRealOutputMessagesInOrder()
         {
             ApplicationManifest manifest =
-                ClickOnceFileGraphTestUtilities.CreateApplicationManifest();
+                ClickOnceResolutionTestUtilities.CreateApplicationManifest();
 
             manifest.FileReferences.Add(
                 new FileReference()
@@ -71,38 +71,38 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenFallbackSucceeds_PreservesRealDeploymentThenApplicationDiagnosticOrder()
+        public void DeploymentPublishLayoutResolver_WhenFallbackSucceeds_PreservesRealDeploymentThenApplicationDiagnosticOrder()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             FileInfo payload =
-                ClickOnceFileGraphTestUtilities.CreateFile(
+                ClickOnceResolutionTestUtilities.CreateFile(
                     root,
                     FallbackPayloadTargetPath);
             FileInfo applicationManifest =
-                ClickOnceFileGraphTestUtilities.WriteApplicationManifest(
+                ClickOnceResolutionTestUtilities.WriteApplicationManifest(
                     root,
                     $@"{ApplicationDirectory}\{ApplicationManifestFileName}",
                     FallbackPayloadTargetPath);
             FileInfo deploymentManifest =
-                ClickOnceFileGraphTestUtilities.WriteDeploymentManifest(
+                ClickOnceResolutionTestUtilities.WriteDeploymentManifest(
                     root,
                     DeploymentManifestFileName,
                     Path.GetRelativePath(
                         root.FullName,
                         applicationManifest.FullName));
-            ClickOnceDeployManifestFileGraphResolver resolver =
-                CreateResolverWithDeploymentDiagnostic(
+            ClickOnceDeploymentPublishLayoutResolver resolver =
+                CreateDeploymentPublishLayoutResolverWithDiagnostic(
                     applicationManifest,
                     DeploymentWarningTargetPath);
 
-            ClickOnceFileGraph graph = resolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = resolver.Resolve(deploymentManifest);
 
             Assert.Equal(
                 payload.FullName,
-                Assert.Single(graph.Payloads).Source.FullName);
+                Assert.Single(layout.Application.Payloads).Source.FullName);
             Assert.Collection(
-                graph.Diagnostics,
+                layout.Diagnostics,
                 diagnostic =>
                     AssertDiagnostic(
                         diagnostic,
@@ -114,34 +114,34 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenFallbackCannotResolveEveryPayload_PreservesRealCrossManifestDiagnosticOrder()
+        public void DeploymentPublishLayoutResolver_WhenFallbackCannotResolveEveryPayload_PreservesRealCrossManifestDiagnosticOrder()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
 
-            ClickOnceFileGraphTestUtilities.CreateFile(
+            ClickOnceResolutionTestUtilities.CreateFile(
                 root,
                 FallbackPayloadTargetPath);
             FileInfo applicationManifest =
-                ClickOnceFileGraphTestUtilities.WriteApplicationManifest(
+                ClickOnceResolutionTestUtilities.WriteApplicationManifest(
                     root,
                     $@"{ApplicationDirectory}\{ApplicationManifestFileName}",
                     FallbackPayloadTargetPath,
                     MissingPayloadTargetPath);
             FileInfo deploymentManifest =
-                ClickOnceFileGraphTestUtilities.WriteDeploymentManifest(
+                ClickOnceResolutionTestUtilities.WriteDeploymentManifest(
                     root,
                     DeploymentManifestFileName,
                     Path.GetRelativePath(
                         root.FullName,
                         applicationManifest.FullName));
-            ClickOnceDeployManifestFileGraphResolver resolver =
-                CreateResolverWithDeploymentDiagnostic(
+            ClickOnceDeploymentPublishLayoutResolver resolver =
+                CreateDeploymentPublishLayoutResolverWithDiagnostic(
                     applicationManifest,
                     DeploymentWarningTargetPath);
 
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     () => resolver.Resolve(deploymentManifest));
 
             Assert.Contains(
@@ -182,7 +182,7 @@ namespace Sign.Core.Test
                 StringComparison.Ordinal);
         }
 
-        private static ClickOnceDeployManifestFileGraphResolver CreateResolverWithDeploymentDiagnostic(
+        private static ClickOnceDeploymentPublishLayoutResolver CreateDeploymentPublishLayoutResolverWithDiagnostic(
             FileInfo applicationManifestFile,
             string deploymentDiagnosticTargetPath)
         {
@@ -246,9 +246,9 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            return new ClickOnceDeployManifestFileGraphResolver(
+            return new ClickOnceDeploymentPublishLayoutResolver(
                 manifestReader,
-                new ClickOncePayloadFileResolver());
+                new ClickOncePayloadResolver());
         }
     }
 }

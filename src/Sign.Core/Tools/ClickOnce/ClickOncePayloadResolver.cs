@@ -7,26 +7,26 @@ using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Sign.Core
 {
-    internal sealed class ClickOncePayloadFileResolver
+    internal sealed class ClickOncePayloadResolver
     {
         private const string ClrPlatformAssemblyName = "Microsoft.Windows.CommonLanguageRuntime";
         private const string DeploySuffix = ".deploy";
 
         private readonly Func<FileInfo, bool> _fileExists;
 
-        internal ClickOncePayloadFileResolver()
+        internal ClickOncePayloadResolver()
             : this(ClickOnceFileSystem.IsFile)
         {
         }
 
-        internal ClickOncePayloadFileResolver(Func<FileInfo, bool> fileExists)
+        internal ClickOncePayloadResolver(Func<FileInfo, bool> fileExists)
         {
             ArgumentNullException.ThrowIfNull(fileExists, nameof(fileExists));
 
             _fileExists = fileExists;
         }
 
-        internal IReadOnlyList<ClickOnceFileGraphEntry> ResolveForDeployment(
+        internal IReadOnlyList<ResolvedClickOncePayload> ResolveForDeployment(
             FileInfo applicationManifestFile,
             IApplicationManifest applicationManifest,
             DirectoryInfo deploymentDirectory,
@@ -56,7 +56,7 @@ namespace Sign.Core
                 diagnostics);
         }
 
-        internal IReadOnlyList<ClickOnceFileGraphEntry> ResolveForExplicitApplication(
+        internal IReadOnlyList<ResolvedClickOncePayload> ResolveForExplicitApplication(
             FileInfo applicationManifestFile,
             IApplicationManifest applicationManifest,
             ICollection<ClickOnceManifestDiagnostic> diagnostics)
@@ -74,7 +74,7 @@ namespace Sign.Core
                 diagnostics);
         }
 
-        private IReadOnlyList<ClickOnceFileGraphEntry> Resolve(
+        private IReadOnlyList<ResolvedClickOncePayload> Resolve(
             FileInfo applicationManifestFile,
             IApplicationManifest applicationManifest,
             DirectoryInfo[] searchDirectories,
@@ -83,6 +83,9 @@ namespace Sign.Core
             ICollection<ClickOnceManifestDiagnostic> diagnostics)
         {
             List<BaseReference> references = GetPhysicalReferences(applicationManifest);
+            int diagnosticCount = 0;
+
+            AddDiagnostics(applicationManifest, diagnostics, ref diagnosticCount);
 
             foreach (BaseReference reference in references)
             {
@@ -92,8 +95,6 @@ namespace Sign.Core
                     searchDirectories,
                     diagnostics);
             }
-
-            int diagnosticCount = 0;
 
             try
             {
@@ -112,7 +113,7 @@ namespace Sign.Core
                     {
                         AddDiagnostics(applicationManifest, diagnostics, ref diagnosticCount);
 
-                        throw new ClickOnceFileGraphResolutionException(
+                        throw new ClickOncePublishLayoutResolutionException(
                             string.Format(
                                 CultureInfo.CurrentCulture,
                                 Resources.ClickOnceApplicationManifestResolveFailed,
@@ -129,7 +130,7 @@ namespace Sign.Core
                 ClearResolvedPaths(applicationManifest);
             }
 
-            List<ClickOnceFileGraphEntry> payloads = new(references.Count);
+            List<ResolvedClickOncePayload> payloads = new(references.Count);
 
             foreach (BaseReference reference in references)
             {
@@ -137,7 +138,7 @@ namespace Sign.Core
 
                 if (string.IsNullOrWhiteSpace(targetPath))
                 {
-                    throw new ClickOnceFileGraphResolutionException(
+                    throw new ClickOncePublishLayoutResolutionException(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.ClickOnceApplicationManifestMissingTargetPath,
@@ -146,7 +147,6 @@ namespace Sign.Core
                 }
 
                 FileInfo source;
-                string? mappingAddedSuffix;
 
                 try
                 {
@@ -156,18 +156,14 @@ namespace Sign.Core
                         searchDirectories,
                         lookupKind,
                         diagnostics,
-                        out source,
-                        out mappingAddedSuffix))
+                        out source))
                     {
                         reference.ResolvedPath = source.FullName;
 
                         payloads.Add(
-                            new ClickOnceFileGraphEntry(
+                            new ResolvedClickOncePayload(
                                 source,
-                                targetPath,
-                                ClickOnceFileGraphEntryKind.Payload,
-                                reference,
-                                mappingAddedSuffix));
+                                reference));
 
                         continue;
                     }
@@ -177,7 +173,7 @@ namespace Sign.Core
                     NotSupportedException or
                     PathTooLongException)
                 {
-                    throw new ClickOnceFileGraphResolutionException(
+                    throw new ClickOncePublishLayoutResolutionException(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.ClickOnceApplicationManifestInvalidTargetPath,
@@ -186,7 +182,7 @@ namespace Sign.Core
                         diagnostics,
                         exception);
                 }
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceApplicationManifestRequiredFileNotFound,
@@ -256,6 +252,17 @@ namespace Sign.Core
                 return;
             }
 
+            if (Path.IsPathRooted(targetPath))
+            {
+                throw new ClickOncePublishLayoutResolutionException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.ClickOnceApplicationManifestInvalidTargetPath,
+                        applicationManifestFile.FullName,
+                        targetPath),
+                    diagnostics);
+            }
+
             try
             {
                 foreach (DirectoryInfo directory in searchDirectories)
@@ -267,7 +274,7 @@ namespace Sign.Core
                 exception is ArgumentException or
                 PathTooLongException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceApplicationManifestInvalidTargetPath,
@@ -284,8 +291,7 @@ namespace Sign.Core
             IEnumerable<DirectoryInfo> searchDirectories,
             PayloadLookupKind lookupKind,
             ICollection<ClickOnceManifestDiagnostic> diagnostics,
-            out FileInfo source,
-            out string? mappingAddedSuffix)
+            out FileInfo source)
         {
             foreach (DirectoryInfo directory in searchDirectories)
             {
@@ -300,7 +306,6 @@ namespace Sign.Core
                         diagnostics))
                     {
                         source = unmappedSource;
-                        mappingAddedSuffix = null;
 
                         return true;
                     }
@@ -317,15 +322,12 @@ namespace Sign.Core
                         diagnostics))
                     {
                         source = mappedSource;
-                        mappingAddedSuffix = DeploySuffix;
 
                         return true;
                     }
                 }
             }
-
             source = null!;
-            mappingAddedSuffix = null;
 
             return false;
         }
@@ -348,7 +350,7 @@ namespace Sign.Core
                 exception is IOException or
                 UnauthorizedAccessException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceApplicationManifestPayloadProbeFailed,

@@ -6,7 +6,7 @@ using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Sign.Core.Test
 {
-    internal static class ClickOnceFileGraphTestUtilities
+    internal static class ClickOnceResolutionTestUtilities
     {
         internal const string ManifestVersion = "1.0.0.0";
         internal const string ProcessorArchitecture = "msil";

@@ -7,25 +7,22 @@ using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Sign.Core
 {
-    internal sealed class ClickOnceDeployManifestFileGraphResolver
+    internal sealed class ClickOnceDeploymentPublishLayoutResolver
     {
-        private const string LauncherFileName = "Launcher.exe";
-        private const string SetupFileName = "setup.exe";
-
         private readonly IClickOnceManifestReader _manifestReader;
-        private readonly ClickOncePayloadFileResolver _payloadResolver;
+        private readonly ClickOncePayloadResolver _payloadResolver;
         private readonly Func<FileInfo, bool> _fileExists;
 
-        internal ClickOnceDeployManifestFileGraphResolver(
+        internal ClickOnceDeploymentPublishLayoutResolver(
             IClickOnceManifestReader manifestReader,
-            ClickOncePayloadFileResolver payloadResolver)
+            ClickOncePayloadResolver payloadResolver)
             : this(manifestReader, payloadResolver, ClickOnceFileSystem.IsFile)
         {
         }
 
-        internal ClickOnceDeployManifestFileGraphResolver(
+        internal ClickOnceDeploymentPublishLayoutResolver(
             IClickOnceManifestReader manifestReader,
-            ClickOncePayloadFileResolver payloadResolver,
+            ClickOncePayloadResolver payloadResolver,
             Func<FileInfo, bool> fileExists)
         {
             ArgumentNullException.ThrowIfNull(manifestReader, nameof(manifestReader));
@@ -37,7 +34,7 @@ namespace Sign.Core
             _fileExists = fileExists;
         }
 
-        internal ClickOnceFileGraph Resolve(FileInfo deploymentManifestFile)
+        internal ResolvedClickOncePublishLayout Resolve(FileInfo deploymentManifestFile)
         {
             ArgumentNullException.ThrowIfNull(deploymentManifestFile, nameof(deploymentManifestFile));
 
@@ -51,7 +48,7 @@ namespace Sign.Core
                 (entryPoint is not null &&
                     string.IsNullOrWhiteSpace(entryPoint.TargetPath)))
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceDeploymentManifestMissingEntryPoint,
@@ -63,6 +60,10 @@ namespace Sign.Core
                 deploymentManifestFile,
                 deploymentManifest,
                 entryPoint);
+            ValidateTargetPath(
+                deploymentManifestFile,
+                entryPoint,
+                diagnostics);
             deploymentManifest.ReadOnly = false;
 
             try
@@ -97,33 +98,29 @@ namespace Sign.Core
                 diagnostics);
             applicationManifest.ReadOnly = false;
 
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForDeployment(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForDeployment(
                 applicationManifestFile,
                 applicationManifest,
                 deploymentManifestFile.Directory!,
                 deploymentManifest.MapFileExtensions,
                 diagnostics);
 
-            IReadOnlyList<ClickOnceFileGraphEntry> adjacentExecutables =
+            IReadOnlyList<ResolvedClickOnceAdjacentExecutable> adjacentExecutables =
                 ResolveAdjacentExecutables(
                     deploymentManifestFile,
                     deploymentManifestFile.Directory!,
                     payloads,
                     diagnostics);
 
-            return new ClickOnceFileGraph(
-                new ClickOnceFileGraphEntry(
+            return new ResolvedClickOncePublishLayout(
+                new ResolvedClickOnceDeployment(
                     deploymentManifestFile,
-                    deploymentManifestFile.Name,
-                    ClickOnceFileGraphEntryKind.DeploymentManifest),
-                deploymentManifest,
-                new ClickOnceFileGraphEntry(
-                    applicationManifestFile,
-                    entryPoint.TargetPath,
-                    ClickOnceFileGraphEntryKind.ApplicationManifest,
+                    deploymentManifest,
                     entryPoint),
-                applicationManifest,
-                payloads,
+                new ResolvedClickOnceApplication(
+                    applicationManifestFile,
+                    applicationManifest,
+                    payloads),
                 adjacentExecutables,
                 diagnostics);
         }
@@ -147,7 +144,7 @@ namespace Sign.Core
                 InvalidOperationException or
                 System.Xml.XmlException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceDeploymentManifestReadFailed,
@@ -155,7 +152,7 @@ namespace Sign.Core
                     innerException: exception);
             }
 
-            throw new ClickOnceFileGraphResolutionException(
+            throw new ClickOncePublishLayoutResolutionException(
                 string.Format(
                     CultureInfo.CurrentCulture,
                     Resources.ClickOnceDeploymentManifestWrongType,
@@ -167,15 +164,21 @@ namespace Sign.Core
             IDeployManifest deploymentManifest,
             AssemblyReference? entryPoint)
         {
+            // Mirrors System.Deployment's deployment-role checks:
+            // Ex_DepApplicationDependencyRequired, Ex_DepFileNotAllowed, and
+            // Ex_DepAppRefPrereqOrOptionalOrResourceFallback. Fail before
+            // ManifestUtilities or mage can reorder or rewrite invalid references.
             if (deploymentManifest.AssemblyReferences.Count != 1 ||
                 deploymentManifest.FileReferences.Count != 0 ||
                 entryPoint is null ||
                 entryPoint.IsPrerequisite ||
+                entryPoint.IsOptional ||
+                deploymentManifest.HasUnsupportedResourceFallback ||
                 !ReferenceEquals(
                     entryPoint,
                     deploymentManifest.AssemblyReferences[0]))
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceDeploymentManifestUnsupportedReferences,
@@ -184,6 +187,23 @@ namespace Sign.Core
             }
 
             return entryPoint;
+        }
+
+        private static void ValidateTargetPath(
+            FileInfo deploymentManifestFile,
+            AssemblyReference entryPoint,
+            IReadOnlyCollection<ClickOnceManifestDiagnostic> diagnostics)
+        {
+            if (Path.IsPathRooted(entryPoint.TargetPath))
+            {
+                throw new ClickOncePublishLayoutResolutionException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.ClickOnceDeploymentManifestInvalidTargetPath,
+                        deploymentManifestFile.FullName,
+                        entryPoint.TargetPath),
+                    diagnostics);
+            }
         }
 
         private IApplicationManifest ReadApplicationManifest(
@@ -208,7 +228,7 @@ namespace Sign.Core
                 InvalidOperationException or
                 System.Xml.XmlException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceDeploymentManifestReferencedApplicationReadFailed,
@@ -218,7 +238,7 @@ namespace Sign.Core
                     exception);
             }
 
-            throw new ClickOnceFileGraphResolutionException(
+            throw new ClickOncePublishLayoutResolutionException(
                 string.Format(
                     CultureInfo.CurrentCulture,
                     Resources.ClickOnceDeploymentManifestReferencedApplicationWrongType,
@@ -240,7 +260,7 @@ namespace Sign.Core
                     deploymentManifestFile.DirectoryName!,
                     entryPoint.TargetPath);
 
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceDeploymentManifestUnresolvedApplicationManifest,
@@ -255,7 +275,7 @@ namespace Sign.Core
             {
                 if (!_fileExists(applicationManifestFile))
                 {
-                    throw new ClickOnceFileGraphResolutionException(
+                    throw new ClickOncePublishLayoutResolutionException(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.ClickOnceDeploymentManifestApplicationManifestNotFound,
@@ -270,7 +290,7 @@ namespace Sign.Core
                 ArgumentException or
                 NotSupportedException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.ClickOnceDeploymentManifestReferencedApplicationReadFailed,
@@ -312,17 +332,20 @@ namespace Sign.Core
             }
         }
 
-        private IReadOnlyList<ClickOnceFileGraphEntry> ResolveAdjacentExecutables(
+        private IReadOnlyList<ResolvedClickOnceAdjacentExecutable> ResolveAdjacentExecutables(
             FileInfo deploymentManifestFile,
             DirectoryInfo deploymentDirectory,
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads,
+            IReadOnlyList<ResolvedClickOncePayload> payloads,
             IReadOnlyCollection<ClickOnceManifestDiagnostic> diagnostics)
         {
             HashSet<string> payloadPaths = payloads
                 .Select(payload => Path.GetFullPath(payload.Source.FullName))
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            List<ClickOnceFileGraphEntry> adjacentExecutables = new();
-            FileInfo setup = new(Path.Combine(deploymentDirectory.FullName, SetupFileName));
+            List<ResolvedClickOnceAdjacentExecutable> adjacentExecutables = new();
+            FileInfo setup = new(
+                Path.Combine(
+                    deploymentDirectory.FullName,
+                    ResolvedClickOnceAdjacentExecutable.SetupFileName));
 
             if (IsAdjacentFile(
                 setup,
@@ -331,13 +354,15 @@ namespace Sign.Core
                 diagnostics))
             {
                 adjacentExecutables.Add(
-                    new ClickOnceFileGraphEntry(
+                    new ResolvedClickOnceAdjacentExecutable(
                         setup,
-                        setup.Name,
-                        ClickOnceFileGraphEntryKind.Setup));
+                        ClickOnceAdjacentExecutableKind.Setup));
             }
 
-            FileInfo launcher = new(Path.Combine(deploymentDirectory.FullName, LauncherFileName));
+            FileInfo launcher = new(
+                Path.Combine(
+                    deploymentDirectory.FullName,
+                    ResolvedClickOnceAdjacentExecutable.LauncherFileName));
 
             if (!payloadPaths.Contains(Path.GetFullPath(launcher.FullName)) &&
                 IsAdjacentFile(
@@ -347,10 +372,9 @@ namespace Sign.Core
                     diagnostics))
             {
                 adjacentExecutables.Add(
-                    new ClickOnceFileGraphEntry(
+                    new ResolvedClickOnceAdjacentExecutable(
                         launcher,
-                        launcher.Name,
-                        ClickOnceFileGraphEntryKind.Launcher));
+                        ClickOnceAdjacentExecutableKind.Launcher));
             }
 
             return adjacentExecutables;
@@ -370,7 +394,7 @@ namespace Sign.Core
                 exception is IOException or
                 UnauthorizedAccessException)
             {
-                throw new ClickOnceFileGraphResolutionException(
+                throw new ClickOncePublishLayoutResolutionException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         failureMessageFormat,
@@ -381,12 +405,12 @@ namespace Sign.Core
             }
         }
 
-        private static ClickOnceFileGraphResolutionException CreateResolutionException(
+        private static ClickOncePublishLayoutResolutionException CreateResolutionException(
             FileInfo deploymentManifestFile,
             IEnumerable<ClickOnceManifestDiagnostic> diagnostics,
             Exception innerException)
         {
-            return new ClickOnceFileGraphResolutionException(
+            return new ClickOncePublishLayoutResolutionException(
                 string.Format(
                     CultureInfo.CurrentCulture,
                     Resources.ClickOnceDeploymentManifestResolveFailed,

@@ -4,11 +4,8 @@
 
 namespace Sign.Core
 {
-    internal enum ClickOnceFileGraphEntryKind
+    internal enum ClickOnceAdjacentExecutableKind
     {
-        DeploymentManifest,
-        ApplicationManifest,
-        Payload,
         Setup,
         Launcher
     }

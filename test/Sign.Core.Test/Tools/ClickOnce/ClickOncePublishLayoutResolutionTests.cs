@@ -12,7 +12,7 @@ using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
-    public sealed class ClickOnceFileGraphResolverTests : IDisposable
+    public sealed class ClickOncePublishLayoutResolutionTests : IDisposable
     {
         private const string ApplicationDirectory = @"Application Files\App_1_0_0_0";
         private const string ApplicationManifestFileName = "App.exe.manifest";
@@ -24,6 +24,7 @@ namespace Sign.Core.Test
         private const string LauncherFileName = "Launcher.exe";
         private const string ManifestVersion = "1.0.0.0";
         private const string MissingTargetPathMessage = "without a target path";
+        private const string NoUpdateManifestOption = "--clickonce-signing-version 2 --no-update-clickonce-manifest";
         private const string OptionalPayloadFileName = "optional.txt";
         private const string PayloadFileName = "payload.dll";
         private const string ProcessorArchitecture = "msil";
@@ -35,22 +36,22 @@ namespace Sign.Core.Test
         private const string WarningTwoTargetPath = "warning-two.txt";
 
         private readonly DirectoryService _directoryService;
-        private readonly ClickOnceApplicationManifestFileGraphResolver _applicationResolver;
-        private readonly ClickOnceDeployManifestFileGraphResolver _deploymentResolver;
-        private readonly ClickOncePayloadFileResolver _payloadResolver;
+        private readonly ClickOnceApplicationPublishLayoutResolver _applicationPublishLayoutResolver;
+        private readonly ClickOnceDeploymentPublishLayoutResolver _deploymentPublishLayoutResolver;
+        private readonly ClickOncePayloadResolver _payloadResolver;
 
-        public ClickOnceFileGraphResolverTests()
+        public ClickOncePublishLayoutResolutionTests()
         {
             _directoryService = new(
                 Substitute.For<ILogger<IDirectoryService>>());
 
             ClickOnceManifestReader manifestReader = new();
-            _payloadResolver = new ClickOncePayloadFileResolver();
+            _payloadResolver = new ClickOncePayloadResolver();
 
-            _applicationResolver = new ClickOnceApplicationManifestFileGraphResolver(
+            _applicationPublishLayoutResolver = new ClickOnceApplicationPublishLayoutResolver(
                 manifestReader,
                 _payloadResolver);
-            _deploymentResolver = new ClickOnceDeployManifestFileGraphResolver(
+            _deploymentPublishLayoutResolver = new ClickOnceDeploymentPublishLayoutResolver(
                 manifestReader,
                 _payloadResolver);
         }
@@ -61,7 +62,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenMultipleVersionsAndManifestsExist_UsesReferencedApplicationManifest()
+        public void DeploymentPublishLayoutResolver_WhenMultipleVersionsAndManifestsExist_UsesReferencedApplicationManifest()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -95,21 +96,21 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, currentManifest.FullName));
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(currentManifest.FullName, graph.ApplicationManifest.Source.FullName);
-            Assert.False(graph.DeployManifest!.ReadOnly);
-            Assert.False(graph.ApplicationManifestModel.ReadOnly);
+            Assert.Equal(currentManifest.FullName, layout.Application.Source.FullName);
+            Assert.False(layout.Deployment!.Manifest.ReadOnly);
+            Assert.False(layout.Application.Manifest.ReadOnly);
             Assert.Equal(
                 currentManifest.FullName,
-                graph.DeployManifest.EntryPoint!.ResolvedPath);
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+                layout.Deployment!.Manifest.EntryPoint!.ResolvedPath);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(currentPayload.FullName, payload.Source.FullName);
             Assert.Equal(CurrentPayloadFileName, payload.TargetPath);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSameIdentityApplicationManifestExistsAtRoot_UsesTargetPath()
+        public void DeploymentPublishLayoutResolver_WhenSameIdentityApplicationManifestExistsAtRoot_UsesTargetPath()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -137,19 +138,19 @@ namespace Sign.Core.Test
                 applicationManifestPath,
                 applicationManifestIdentity: application.AssemblyIdentity);
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(expectedApplicationManifest.FullName, graph.ApplicationManifest.Source.FullName);
-            Assert.Equal(expectedPayload.FullName, Assert.Single(graph.Payloads).Source.FullName);
-            Assert.Equal(application.AssemblyIdentity.Name, graph.DeployManifest!.EntryPoint!.AssemblyIdentity.Name);
-            Assert.Equal(application.AssemblyIdentity.Version, graph.DeployManifest.EntryPoint.AssemblyIdentity.Version);
+            Assert.Equal(expectedApplicationManifest.FullName, layout.Application.Source.FullName);
+            Assert.Equal(expectedPayload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
+            Assert.Equal(application.AssemblyIdentity.Name, layout.Deployment!.Manifest.EntryPoint!.AssemblyIdentity.Name);
+            Assert.Equal(application.AssemblyIdentity.Version, layout.Deployment!.Manifest.EntryPoint.AssemblyIdentity.Version);
             Assert.Equal(
                 application.AssemblyIdentity.ProcessorArchitecture,
-                graph.DeployManifest.EntryPoint.AssemblyIdentity.ProcessorArchitecture);
+                layout.Deployment!.Manifest.EntryPoint.AssemblyIdentity.ProcessorArchitecture);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenSameIdentityFusionManifestExistsAtRoot_UsesTargetPath()
+        public void DeploymentPublishLayoutResolver_WhenSameIdentityFusionManifestExistsAtRoot_UsesTargetPath()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -174,19 +175,19 @@ namespace Sign.Core.Test
                 applicationManifestPath,
                 applicationManifestIdentity: application.AssemblyIdentity);
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(expectedApplicationManifest.FullName, graph.ApplicationManifest.Source.FullName);
-            Assert.Equal(expectedPayload.FullName, Assert.Single(graph.Payloads).Source.FullName);
-            Assert.Equal(application.AssemblyIdentity.Name, graph.DeployManifest!.EntryPoint!.AssemblyIdentity.Name);
-            Assert.Equal(application.AssemblyIdentity.Version, graph.DeployManifest.EntryPoint.AssemblyIdentity.Version);
+            Assert.Equal(expectedApplicationManifest.FullName, layout.Application.Source.FullName);
+            Assert.Equal(expectedPayload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
+            Assert.Equal(application.AssemblyIdentity.Name, layout.Deployment!.Manifest.EntryPoint!.AssemblyIdentity.Name);
+            Assert.Equal(application.AssemblyIdentity.Version, layout.Deployment!.Manifest.EntryPoint.AssemblyIdentity.Version);
             Assert.Equal(
                 application.AssemblyIdentity.ProcessorArchitecture,
-                graph.DeployManifest.EntryPoint.AssemblyIdentity.ProcessorArchitecture);
+                layout.Deployment!.Manifest.EntryPoint.AssemblyIdentity.ProcessorArchitecture);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenVstoDeploymentManifestIsValid_ResolvesFileGraph()
+        public void DeploymentPublishLayoutResolver_WhenVstoDeploymentManifestIsValid_ResolvesPublishLayout()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -203,16 +204,15 @@ namespace Sign.Core.Test
                 VstoManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.NotNull(graph.DeploymentManifest);
-            Assert.Equal(deploymentManifest.FullName, graph.DeploymentManifest.Source.FullName);
-            Assert.Equal(applicationManifest.FullName, graph.ApplicationManifest.Source.FullName);
-            Assert.Equal(payload.FullName, Assert.Single(graph.Payloads).Source.FullName);
+            Assert.Equal(deploymentManifest.FullName, layout.Deployment!.Source.FullName);
+            Assert.Equal(applicationManifest.FullName, layout.Application.Source.FullName);
+            Assert.Equal(payload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenFileExtensionsAreMapped_ResolvesApplicationManifestSeparately()
+        public void DeploymentPublishLayoutResolver_WhenFileExtensionsAreMapped_ResolvesApplicationManifestSeparately()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -237,17 +237,17 @@ namespace Sign.Core.Test
                 applicationManifestPath,
                 mapFileExtensions: true);
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(applicationManifest.FullName, graph.ApplicationManifest.Source.FullName);
-            Assert.NotEqual(mappedApplicationManifest.FullName, graph.ApplicationManifest.Source.FullName);
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            Assert.Equal(applicationManifest.FullName, layout.Application.Source.FullName);
+            Assert.NotEqual(mappedApplicationManifest.FullName, layout.Application.Source.FullName);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(mappedPayload.FullName, payload.Source.FullName);
-            Assert.Equal(DeploySuffix, payload.MappingAddedSuffix);
+            Assert.True(payload.IsFileExtensionMapped);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenOnlyMappedApplicationManifestExists_DoesNotUseIt()
+        public void DeploymentPublishLayoutResolver_WhenOnlyMappedApplicationManifestExists_DoesNotUseIt()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -263,8 +263,8 @@ namespace Sign.Core.Test
                 applicationManifestPath,
                 mapFileExtensions: true);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(
                 Path.Combine(root.FullName, applicationManifestPath),
@@ -274,7 +274,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenPayloadExistsInBothDirectories_PrefersApplicationDirectory()
+        public void DeploymentPublishLayoutResolver_WhenPayloadExistsInBothDirectories_PrefersApplicationDirectory()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -294,13 +294,13 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(expectedPayload.FullName, Assert.Single(graph.Payloads).Source.FullName);
+            Assert.Equal(expectedPayload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenPayloadIsMissingFromApplicationDirectory_UsesDeploymentDirectory()
+        public void DeploymentPublishLayoutResolver_WhenPayloadIsMissingFromApplicationDirectory_UsesDeploymentDirectory()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -318,16 +318,19 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(expectedPayload.FullName, Assert.Single(graph.Payloads).Source.FullName);
-            ClickOnceManifestDiagnostic diagnostic = Assert.Single(graph.Diagnostics);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
+            Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
+            Assert.Equal(PayloadTargetPath, payload.TargetPath);
+            Assert.False(payload.IsFileExtensionMapped);
+            ClickOnceManifestDiagnostic diagnostic = Assert.Single(layout.Diagnostics);
             Assert.Equal(OutputMessageType.Error, diagnostic.Type);
             Assert.Contains(PayloadTargetPath, diagnostic.Text, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenApplicationDirectoryPayloadProbeFails_DoesNotUseDeploymentDirectory()
+        public void DeploymentPublishLayoutResolver_WhenApplicationDirectoryPayloadProbeFails_DoesNotUseDeploymentDirectory()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -348,16 +351,16 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
             UnauthorizedAccessException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(
+            ClickOncePayloadResolver payloadResolver = new(
                 file => file.FullName.Equals(inaccessiblePayloadPath, StringComparison.OrdinalIgnoreCase)
                     ? throw expectedException
                     : file.Exists);
-            ClickOnceDeployManifestFileGraphResolver deploymentResolver = new(
+            ClickOnceDeploymentPublishLayoutResolver deploymentPublishLayoutResolver = new(
                 new ClickOnceManifestReader(),
                 payloadResolver);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Same(expectedException, exception.InnerException);
             Assert.Equal(
@@ -374,7 +377,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenApplicationDirectoryPayloadProbeHasIoFailure_DoesNotUseDeploymentDirectory()
+        public void DeploymentPublishLayoutResolver_WhenApplicationDirectoryPayloadProbeHasIoFailure_DoesNotUseDeploymentDirectory()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -395,16 +398,16 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
             IOException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(
+            ClickOncePayloadResolver payloadResolver = new(
                 file => file.FullName.Equals(failedPayloadPath, StringComparison.OrdinalIgnoreCase)
                     ? throw expectedException
                     : file.Exists);
-            ClickOnceDeployManifestFileGraphResolver deploymentResolver = new(
+            ClickOnceDeploymentPublishLayoutResolver deploymentPublishLayoutResolver = new(
                 new ClickOnceManifestReader(),
                 payloadResolver);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Same(expectedException, exception.InnerException);
             Assert.Equal(
@@ -421,7 +424,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenMappedApplicationDirectoryPayloadProbeFails_DoesNotUseDeploymentDirectory()
+        public void DeploymentPublishLayoutResolver_WhenMappedApplicationDirectoryPayloadProbeFails_DoesNotUseDeploymentDirectory()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -443,16 +446,16 @@ namespace Sign.Core.Test
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName),
                 mapFileExtensions: true);
             UnauthorizedAccessException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(
+            ClickOncePayloadResolver payloadResolver = new(
                 file => file.FullName.Equals(failedPayloadPath, StringComparison.OrdinalIgnoreCase)
                     ? throw expectedException
                     : file.Exists);
-            ClickOnceDeployManifestFileGraphResolver deploymentResolver = new(
+            ClickOnceDeploymentPublishLayoutResolver deploymentPublishLayoutResolver = new(
                 new ClickOnceManifestReader(),
                 payloadResolver);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Same(expectedException, exception.InnerException);
             Assert.Equal(
@@ -469,7 +472,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenFileExtensionsAreMapped_RecordsMappingAddedSuffix()
+        public void DeploymentPublishLayoutResolver_WhenFileExtensionsAreMapped_SetsIsFileExtensionMapped()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -488,18 +491,18 @@ namespace Sign.Core.Test
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName),
                 mapFileExtensions: true);
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
             Assert.Equal(PayloadTargetPath, payload.TargetPath);
-            Assert.Equal(DeploySuffix, payload.MappingAddedSuffix);
+            Assert.True(payload.IsFileExtensionMapped);
             Assert.Equal($"{PayloadTargetPath}{DeploySuffix}", payload.Source.Name);
             Assert.Equal(FileContents, File.ReadAllText(expectedPayload.FullName));
         }
 
         [Fact]
-        public void DeploymentResolver_WhenMappedPayloadExistsInBothDirectories_PrefersApplicationDirectory()
+        public void DeploymentPublishLayoutResolver_WhenMappedPayloadExistsInBothDirectories_PrefersApplicationDirectory()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -521,13 +524,13 @@ namespace Sign.Core.Test
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName),
                 mapFileExtensions: true);
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            Assert.Equal(expectedPayload.FullName, Assert.Single(graph.Payloads).Source.FullName);
+            Assert.Equal(expectedPayload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenFileExtensionsAreMapped_DoesNotUseExactTarget()
+        public void DeploymentPublishLayoutResolver_WhenFileExtensionsAreMapped_DoesNotUseExactTarget()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -546,14 +549,14 @@ namespace Sign.Core.Test
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName),
                 mapFileExtensions: true);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenFileExtensionsAreNotMapped_DoesNotUseMappedTarget()
+        public void DeploymentPublishLayoutResolver_WhenFileExtensionsAreNotMapped_DoesNotUseMappedTarget()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -571,14 +574,14 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenMappedTargetAlreadyEndsInDeploy_AddsExactlyOneSuffix()
+        public void DeploymentPublishLayoutResolver_WhenMappedTargetAlreadyEndsInDeploy_AddsExactlyOneSuffix()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -599,15 +602,15 @@ namespace Sign.Core.Test
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName),
                 mapFileExtensions: true);
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
-            Assert.Equal(DeploySuffix, payload.MappingAddedSuffix);
+            Assert.True(payload.IsFileExtensionMapped);
         }
 
         [Fact]
-        public void DeploymentResolver_ClassifiesReferencedAndAdjacentExecutables()
+        public void DeploymentPublishLayoutResolver_ClassifiesReferencedAndAdjacentExecutables()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -631,27 +634,51 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 Path.GetRelativePath(root.FullName, applicationManifest.FullName));
 
-            ClickOnceFileGraph graph = _deploymentResolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
 
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(referencedLauncher.FullName, payload.Source.FullName);
-            Assert.Equal(ClickOnceFileGraphEntryKind.Payload, payload.Kind);
 
             Assert.Contains(
-                graph.AdjacentExecutables,
+                layout.AdjacentExecutables,
                 entry =>
                     entry.Source.FullName == setup.FullName &&
-                    entry.Kind == ClickOnceFileGraphEntryKind.Setup);
+                    entry.Kind == ClickOnceAdjacentExecutableKind.Setup);
             Assert.Contains(
-                graph.AdjacentExecutables,
+                layout.AdjacentExecutables,
                 entry =>
                     entry.Source.FullName == adjacentLauncher.FullName &&
-                    entry.Kind == ClickOnceFileGraphEntryKind.Launcher);
-            Assert.Equal(expected: 2, actual: graph.AdjacentExecutables.Count);
+                    entry.Kind == ClickOnceAdjacentExecutableKind.Launcher);
+            Assert.Equal(expected: 2, actual: layout.AdjacentExecutables.Count);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenRootLauncherIsReferenced_DoesNotClassifyItAsAdjacent()
+        public void DeploymentPublishLayoutResolver_WhenRootSetupIsReferenced_ClassifiesItAsPayloadAndAdjacent()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            DirectoryInfo root = temporaryDirectory.Directory;
+            FileInfo setup = CreateFile(root, SetupFileName);
+            ApplicationManifest application = CreateApplicationManifest();
+            AddAssemblyReference(application, SetupFileName, isEntryPoint: true);
+            FileInfo applicationManifest = WriteManifest(
+                root,
+                ApplicationManifestFileName,
+                application);
+            FileInfo deploymentManifest = WriteDeploymentManifest(
+                root,
+                DeploymentManifestFileName,
+                applicationManifest.Name);
+
+            ResolvedClickOncePublishLayout layout = _deploymentPublishLayoutResolver.Resolve(deploymentManifest);
+
+            Assert.Equal(setup.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
+            ResolvedClickOnceAdjacentExecutable adjacent = Assert.Single(layout.AdjacentExecutables);
+            Assert.Equal(setup.FullName, adjacent.Source.FullName);
+            Assert.Equal(ClickOnceAdjacentExecutableKind.Setup, adjacent.Kind);
+        }
+
+        [Fact]
+        public void DeploymentPublishLayoutResolver_WhenRootLauncherIsReferenced_DoesNotClassifyItAsAdjacent()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -667,7 +694,7 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 applicationManifest.Name);
             List<string> adjacentProbeCandidates = new();
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 new ClickOnceManifestReader(),
                 _payloadResolver,
                 file =>
@@ -677,10 +704,10 @@ namespace Sign.Core.Test
                     return ClickOnceFileSystem.IsFile(file);
                 });
 
-            ClickOnceFileGraph graph = resolver.Resolve(deploymentManifest);
+            ResolvedClickOncePublishLayout layout = resolver.Resolve(deploymentManifest);
 
-            Assert.Equal(launcher.FullName, Assert.Single(graph.Payloads).Source.FullName);
-            Assert.Empty(graph.AdjacentExecutables);
+            Assert.Equal(launcher.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
+            Assert.Empty(layout.AdjacentExecutables);
             Assert.DoesNotContain(
                 launcher.FullName,
                 adjacentProbeCandidates,
@@ -690,7 +717,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void DeploymentResolver_WhenSetupProbeFails_PreservesDiagnosticsAndThrows(
+        public void DeploymentPublishLayoutResolver_WhenSetupProbeFails_PreservesDiagnosticsAndThrows(
             bool isUnauthorizedAccess)
         {
             AssertAdjacentExecutableProbeFailure(
@@ -702,7 +729,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void DeploymentResolver_WhenLauncherProbeFails_PreservesDiagnosticsAndThrows(
+        public void DeploymentPublishLayoutResolver_WhenLauncherProbeFails_PreservesDiagnosticsAndThrows(
             bool isUnauthorizedAccess)
         {
             AssertAdjacentExecutableProbeFailure(
@@ -767,7 +794,7 @@ namespace Sign.Core.Test
             Exception expectedException = isUnauthorizedAccess
                 ? new UnauthorizedAccessException()
                 : new IOException();
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
                 _payloadResolver,
                 file =>
@@ -780,8 +807,8 @@ namespace Sign.Core.Test
                     return ClickOnceFileSystem.IsFile(file);
                 });
 
-            ClickOnceFileGraphResolutionException exception =
-                Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
                     () => resolver.Resolve(deploymentManifestFile));
 
             Assert.Same(expectedException, exception.InnerException);
@@ -798,7 +825,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(DeploymentManifestFileName)]
         [InlineData(VstoManifestFileName)]
-        public void DeploymentResolver_WhenDeploymentManifestIsWrongType_Throws(string fileName)
+        public void DeploymentPublishLayoutResolver_WhenDeploymentManifestIsWrongType_Throws(string fileName)
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -807,8 +834,8 @@ namespace Sign.Core.Test
                 fileName,
                 CreateApplicationManifest());
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(deploymentManifest.FullName, exception.Message, StringComparison.Ordinal);
             const string ExpectedMessage = "not a deployment manifest";
@@ -819,14 +846,14 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(DeploymentManifestFileName)]
         [InlineData(VstoManifestFileName)]
-        public void DeploymentResolver_WhenDeploymentManifestIsMalformed_Throws(string fileName)
+        public void DeploymentPublishLayoutResolver_WhenDeploymentManifestIsMalformed_Throws(string fileName)
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             FileInfo deploymentManifest = CreateFile(root, fileName);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Equal(
                 string.Format(
@@ -838,7 +865,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenReferencedApplicationManifestIsWrongType_Throws()
+        public void DeploymentPublishLayoutResolver_WhenReferencedApplicationManifestIsWrongType_Throws()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -849,8 +876,8 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 wrongTypeManifest.Name);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(wrongTypeManifest.FullName, exception.Message, StringComparison.Ordinal);
             const string ExpectedMessage = "not an application manifest";
@@ -859,7 +886,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenReferencedApplicationManifestIsMalformed_Throws()
+        public void DeploymentPublishLayoutResolver_WhenReferencedApplicationManifestIsMalformed_Throws()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -870,8 +897,8 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 malformedManifest.Name);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Equal(
                 string.Format(
@@ -884,7 +911,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenReferencedApplicationManifestIsMissing_ThrowsWithExpectedPath()
+        public void DeploymentPublishLayoutResolver_WhenReferencedApplicationManifestIsMissing_ThrowsWithExpectedPath()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -895,11 +922,15 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 MissingManifest);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(
                 Path.Combine(root.FullName, MissingManifest),
+                exception.Message,
+                StringComparison.Ordinal);
+            Assert.Contains(
+                NoUpdateManifestOption,
                 exception.Message,
                 StringComparison.Ordinal);
             Assert.Contains(
@@ -910,44 +941,52 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(ApplicationManifestFileName)]
         [InlineData(@"missing\App.exe.manifest")]
-        public void DeploymentResolver_WhenResolvedApplicationManifestIsMissing_ThrowsNotFound(
+        public void DeploymentPublishLayoutResolver_WhenResolvedApplicationManifestIsMissing_ThrowsNotFound(
             string applicationManifestPath)
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             string resolvedPath = Path.Combine(root.FullName, applicationManifestPath);
-            ClickOnceFileGraphResolutionException exception = ResolveWithApplicationManifestProbe(
+            ClickOncePublishLayoutResolutionException exception = ResolveWithApplicationManifestProbe(
                 root,
                 resolvedPath,
                 ClickOnceFileSystem.IsFile);
 
             Assert.Contains(resolvedPath, exception.Message, StringComparison.Ordinal);
             Assert.Contains("file does not exist", exception.Message, StringComparison.Ordinal);
+            Assert.Contains(
+                NoUpdateManifestOption,
+                exception.Message,
+                StringComparison.Ordinal);
             Assert.Null(exception.InnerException);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenResolvedApplicationManifestIsDirectory_ThrowsNotFound()
+        public void DeploymentPublishLayoutResolver_WhenResolvedApplicationManifestIsDirectory_ThrowsNotFound()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
             string resolvedPath = Path.Combine(root.FullName, ApplicationManifestFileName);
             Directory.CreateDirectory(resolvedPath);
 
-            ClickOnceFileGraphResolutionException exception = ResolveWithApplicationManifestProbe(
+            ClickOncePublishLayoutResolutionException exception = ResolveWithApplicationManifestProbe(
                 root,
                 resolvedPath,
                 ClickOnceFileSystem.IsFile);
 
             Assert.Contains(resolvedPath, exception.Message, StringComparison.Ordinal);
             Assert.Contains("file does not exist", exception.Message, StringComparison.Ordinal);
+            Assert.Contains(
+                NoUpdateManifestOption,
+                exception.Message,
+                StringComparison.Ordinal);
             Assert.Null(exception.InnerException);
         }
 
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void DeploymentResolver_WhenApplicationManifestProbeFails_ThrowsReadFailure(
+        public void DeploymentPublishLayoutResolver_WhenApplicationManifestProbeFails_ThrowsReadFailure(
             bool unauthorized)
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
@@ -957,7 +996,7 @@ namespace Sign.Core.Test
                 ? new UnauthorizedAccessException()
                 : new IOException();
 
-            ClickOnceFileGraphResolutionException exception = ResolveWithApplicationManifestProbe(
+            ClickOncePublishLayoutResolutionException exception = ResolveWithApplicationManifestProbe(
                 root,
                 resolvedPath,
                 _ => throw expectedException);
@@ -975,7 +1014,7 @@ namespace Sign.Core.Test
         [InlineData(true, null)]
         [InlineData(true, "")]
         [InlineData(true, " ")]
-        public void DeploymentResolver_WhenEntryPointIsMissingOrHasNoTargetPath_Throws(
+        public void DeploymentPublishLayoutResolver_WhenEntryPointIsMissingOrHasNoTargetPath_Throws(
             bool hasEntryPoint,
             string? targetPath)
         {
@@ -1005,22 +1044,26 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
                 _payloadResolver);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => resolver.Resolve(deploymentManifestFile));
 
             Assert.Contains(deploymentManifestFile.FullName, exception.Message, StringComparison.Ordinal);
             Assert.Contains("does not identify an application manifest", exception.Message, StringComparison.Ordinal);
+            Assert.Contains(
+                NoUpdateManifestOption,
+                exception.Message,
+                StringComparison.Ordinal);
             ClickOnceManifestDiagnostic diagnostic = Assert.Single(exception.Diagnostics);
             Assert.Equal(OutputMessageType.Warning, diagnostic.Type);
             Assert.Contains(WarningOneTargetPath, diagnostic.Text, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenEntryPointIsUnresolved_DoesNotUseTargetPathAsFallback()
+        public void DeploymentPublishLayoutResolver_WhenEntryPointIsUnresolved_DoesNotUseTargetPathAsFallback()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1052,14 +1095,18 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
                 _payloadResolver);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => resolver.Resolve(deploymentManifestFile));
 
             Assert.Contains(applicationManifestFile.FullName, exception.Message, StringComparison.Ordinal);
+            Assert.Contains(
+                NoUpdateManifestOption,
+                exception.Message,
+                StringComparison.Ordinal);
             deploymentManifest.Received(1).ResolveFiles(
                 Arg.Is<IReadOnlyList<DirectoryInfo>>(directories =>
                     directories != null &&
@@ -1071,7 +1118,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenRequiredPayloadIsMissing_ThrowsWithTargetPath()
+        public void DeploymentPublishLayoutResolver_WhenRequiredPayloadIsMissing_ThrowsWithTargetPath()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1088,8 +1135,8 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 applicationManifest.Name);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
             Assert.Contains(
@@ -1100,7 +1147,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenApplicationResolutionProducesWarning_PreservesDiagnosticAndSucceeds()
+        public void DeploymentPublishLayoutResolver_WhenApplicationResolutionProducesWarning_PreservesDiagnosticAndSucceeds()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1166,15 +1213,15 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
                 _payloadResolver);
 
-            ClickOnceFileGraph graph = resolver.Resolve(deploymentManifestFile);
+            ResolvedClickOncePublishLayout layout = resolver.Resolve(deploymentManifestFile);
 
-            Assert.Equal(payload.FullName, Assert.Single(graph.Payloads).Source.FullName);
+            Assert.Equal(payload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
             Assert.Collection(
-                graph.Diagnostics,
+                layout.Diagnostics,
                 diagnostic =>
                 {
                     Assert.Equal(OutputMessageType.Warning, diagnostic.Type);
@@ -1188,7 +1235,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenApplicationResolutionRetries_PreservesEachDiagnosticOnceInOrder()
+        public void DeploymentPublishLayoutResolver_WhenApplicationResolutionRetries_PreservesEachDiagnosticOnceInOrder()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1255,16 +1302,16 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
                 _payloadResolver);
 
-            ClickOnceFileGraph graph = resolver.Resolve(deploymentManifestFile);
+            ResolvedClickOncePublishLayout layout = resolver.Resolve(deploymentManifestFile);
 
             Assert.Equal(expected: 2, actual: resolutionAttempt);
-            Assert.Equal(payload.FullName, Assert.Single(graph.Payloads).Source.FullName);
+            Assert.Equal(payload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
             Assert.Collection(
-                graph.Diagnostics,
+                layout.Diagnostics,
                 diagnostic =>
                 {
                     Assert.Equal(OutputMessageType.Warning, diagnostic.Type);
@@ -1278,7 +1325,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ApplicationResolver_WhenTargetExists_UsesTargetWithoutMappingSuffix()
+        public void ApplicationPublishLayoutResolver_WhenTargetExists_UsesTargetWithoutMappingSuffix()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1293,16 +1340,17 @@ namespace Sign.Core.Test
                 ApplicationManifestFileName,
                 application);
 
-            Assert.True(_applicationResolver.TryResolve(applicationManifest, out ClickOnceFileGraph? graph));
+            Assert.True(_applicationPublishLayoutResolver.TryResolve(applicationManifest, out ResolvedClickOncePublishLayout? layout));
 
-            Assert.NotNull(graph);
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            Assert.NotNull(layout);
+            Assert.Null(layout.Deployment);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
-            Assert.Null(payload.MappingAddedSuffix);
+            Assert.False(payload.IsFileExtensionMapped);
         }
 
         [Fact]
-        public void ApplicationResolver_WhenOnlyMappedTargetExists_RecordsOneMappingAddedSuffix()
+        public void ApplicationPublishLayoutResolver_WhenOnlyMappedTargetExists_SetsIsFileExtensionMapped()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1316,17 +1364,17 @@ namespace Sign.Core.Test
                 ApplicationManifestFileName,
                 application);
 
-            Assert.True(_applicationResolver.TryResolve(applicationManifest, out ClickOnceFileGraph? graph));
+            Assert.True(_applicationPublishLayoutResolver.TryResolve(applicationManifest, out ResolvedClickOncePublishLayout? layout));
 
-            Assert.NotNull(graph);
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            Assert.NotNull(layout);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
             Assert.Equal(PayloadTargetPath, payload.TargetPath);
-            Assert.Equal(DeploySuffix, payload.MappingAddedSuffix);
+            Assert.True(payload.IsFileExtensionMapped);
         }
 
         [Fact]
-        public void ApplicationResolver_WhenExactPayloadProbeFails_DoesNotUseMappedTarget()
+        public void ApplicationPublishLayoutResolver_WhenExactPayloadProbeFails_DoesNotUseMappedTarget()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1340,16 +1388,16 @@ namespace Sign.Core.Test
                 ApplicationManifestFileName,
                 application);
             UnauthorizedAccessException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(
+            ClickOncePayloadResolver payloadResolver = new(
                 file => file.FullName.Equals(inaccessiblePayloadPath, StringComparison.OrdinalIgnoreCase)
                     ? throw expectedException
                     : file.Exists);
-            ClickOnceApplicationManifestFileGraphResolver applicationResolver = new(
+            ClickOnceApplicationPublishLayoutResolver applicationPublishLayoutResolver = new(
                 new ClickOnceManifestReader(),
                 payloadResolver);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => applicationResolver.TryResolve(applicationManifest, out _));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => applicationPublishLayoutResolver.TryResolve(applicationManifest, out _));
 
             Assert.Same(expectedException, exception.InnerException);
             Assert.Equal(
@@ -1366,7 +1414,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ApplicationResolver_WhenDirectoryOccupiesExactPayloadPath_UsesMappedTarget()
+        public void ApplicationPublishLayoutResolver_WhenDirectoryOccupiesExactPayloadPath_UsesMappedTarget()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1380,16 +1428,16 @@ namespace Sign.Core.Test
                 ApplicationManifestFileName,
                 application);
 
-            Assert.True(_applicationResolver.TryResolve(applicationManifest, out ClickOnceFileGraph? graph));
+            Assert.True(_applicationPublishLayoutResolver.TryResolve(applicationManifest, out ResolvedClickOncePublishLayout? layout));
 
-            Assert.NotNull(graph);
-            ClickOnceFileGraphEntry payload = Assert.Single(graph.Payloads);
+            Assert.NotNull(layout);
+            ResolvedClickOncePayload payload = Assert.Single(layout.Application.Payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
-            Assert.Equal(DeploySuffix, payload.MappingAddedSuffix);
+            Assert.True(payload.IsFileExtensionMapped);
         }
 
         [Fact]
-        public void ApplicationResolver_WhenOnlyDoubleMappedTargetExists_DoesNotInventAdditionalSuffix()
+        public void ApplicationPublishLayoutResolver_WhenOnlyDoubleMappedTargetExists_DoesNotInventAdditionalSuffix()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1403,14 +1451,14 @@ namespace Sign.Core.Test
                 ApplicationManifestFileName,
                 application);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _applicationResolver.TryResolve(applicationManifest, out _));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _applicationPublishLayoutResolver.TryResolve(applicationManifest, out _));
 
             Assert.Contains(PayloadFileName, exception.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void ApplicationResolver_DoesNotUseDeploymentDirectoryFallback()
+        public void ApplicationPublishLayoutResolver_DoesNotUseDeploymentDirectoryFallback()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1424,30 +1472,30 @@ namespace Sign.Core.Test
                 $@"{ApplicationDirectory}\{ApplicationManifestFileName}",
                 application);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _applicationResolver.TryResolve(applicationManifest, out _));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _applicationPublishLayoutResolver.TryResolve(applicationManifest, out _));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void ApplicationResolver_WhenManifestIsNotClickOnce_ReturnsFalse()
+        public void ApplicationPublishLayoutResolver_WhenManifestIsNotClickOnce_ReturnsFalse()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             FileInfo fusionManifest = CreateFusionManifest(
                 temporaryDirectory.Directory,
                 DependencyManifestFileName);
 
-            bool result = _applicationResolver.TryResolve(
+            bool result = _applicationPublishLayoutResolver.TryResolve(
                 fusionManifest,
-                out ClickOnceFileGraph? graph);
+                out ResolvedClickOncePublishLayout? layout);
 
             Assert.False(result);
-            Assert.Null(graph);
+            Assert.Null(layout);
         }
 
         [Fact]
-        public void ApplicationResolver_WhenOptionalPayloadIsMissing_ThrowsWithDiagnostic()
+        public void ApplicationPublishLayoutResolver_WhenOptionalPayloadIsMissing_ThrowsWithDiagnostic()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1460,8 +1508,8 @@ namespace Sign.Core.Test
                 ApplicationManifestFileName,
                 application);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _applicationResolver.TryResolve(applicationManifest, out _));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _applicationPublishLayoutResolver.TryResolve(applicationManifest, out _));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
             Assert.Contains(
@@ -1472,7 +1520,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenOptionalPayloadHasNoTargetPath_Throws()
+        public void DeploymentPublishLayoutResolver_WhenOptionalPayloadHasNoTargetPath_Throws()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1488,14 +1536,14 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 applicationManifest.Name);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(MissingTargetPathMessage, exception.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void DeploymentResolver_WhenOptionalPayloadIsMissing_ThrowsWithDiagnostic()
+        public void DeploymentPublishLayoutResolver_WhenOptionalPayloadIsMissing_ThrowsWithDiagnostic()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1512,8 +1560,8 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 applicationManifest.Name);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
             Assert.Contains(
@@ -1524,7 +1572,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentResolver_WhenRequiredPayloadHasNoTargetPath_Throws()
+        public void DeploymentPublishLayoutResolver_WhenRequiredPayloadHasNoTargetPath_Throws()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1540,8 +1588,8 @@ namespace Sign.Core.Test
                 DeploymentManifestFileName,
                 applicationManifest.Name);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
-                () => _deploymentResolver.Resolve(deploymentManifest));
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(MissingTargetPathMessage, exception.Message, StringComparison.Ordinal);
         }
@@ -1556,7 +1604,7 @@ namespace Sign.Core.Test
             ApplicationManifest applicationManifest = CreateApplicationManifest();
             applicationManifest.FileReferences.Add(new FileReference() { IsOptional = true });
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => _payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     new ApplicationManifestAdapter(applicationManifest),
@@ -1586,9 +1634,9 @@ namespace Sign.Core.Test
             }
 
             UnauthorizedAccessException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(_ => throw expectedException);
+            ClickOncePayloadResolver payloadResolver = new(_ => throw expectedException);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     new ApplicationManifestAdapter(applicationManifest),
@@ -1621,10 +1669,10 @@ namespace Sign.Core.Test
             applicationManifest.FileReferences.Clear();
             AddFileReference(applicationManifest, PayloadFileName);
             IOException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(_ => throw expectedException);
+            ClickOncePayloadResolver payloadResolver = new(_ => throw expectedException);
             List<ClickOnceManifestDiagnostic> diagnostics = new();
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     new ApplicationManifestAdapter(applicationManifest),
@@ -1648,6 +1696,39 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void PayloadResolver_WhenTargetPathIsRooted_PreservesExistingDiagnostics()
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            FileInfo applicationManifestFile = CreateFile(
+                temporaryDirectory.Directory,
+                ApplicationManifestFileName);
+            ApplicationManifest applicationManifest = CreateApplicationManifest();
+            AddFileReference(applicationManifest, WarningOneTargetPath);
+            applicationManifest.ResolveFiles(
+                new[] { temporaryDirectory.Directory.FullName });
+            ClickOnceManifestDiagnostic existingDiagnostic = Assert.Single(
+                new ApplicationManifestAdapter(applicationManifest).Diagnostics);
+            applicationManifest.FileReferences.Clear();
+            AddFileReference(
+                applicationManifest,
+                Path.Combine(temporaryDirectory.Directory.FullName, PayloadFileName));
+            ClickOncePayloadResolver payloadResolver = new();
+            List<ClickOnceManifestDiagnostic> diagnostics = new();
+
+            ClickOncePublishLayoutResolutionException exception =
+                Assert.Throws<ClickOncePublishLayoutResolutionException>(
+                    () => payloadResolver.ResolveForExplicitApplication(
+                        applicationManifestFile,
+                        new ApplicationManifestAdapter(applicationManifest),
+                        diagnostics));
+
+            ClickOnceManifestDiagnostic diagnostic = Assert.Single(exception.Diagnostics);
+            Assert.Equal(existingDiagnostic.Name, diagnostic.Name);
+            Assert.Equal(existingDiagnostic.Text, diagnostic.Text);
+            Assert.Equal(existingDiagnostic.Type, diagnostic.Type);
+        }
+
+        [Fact]
         public void PayloadResolver_WhenRequiredFileProbeHasPathTooLongFailure_ReportsInvalidTargetPath()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
@@ -1657,9 +1738,9 @@ namespace Sign.Core.Test
             ApplicationManifest applicationManifest = CreateApplicationManifest();
             AddFileReference(applicationManifest, PayloadFileName);
             PathTooLongException expectedException = new();
-            ClickOncePayloadFileResolver payloadResolver = new(_ => throw expectedException);
+            ClickOncePayloadResolver payloadResolver = new(_ => throw expectedException);
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     new ApplicationManifestAdapter(applicationManifest),
@@ -1711,17 +1792,17 @@ namespace Sign.Core.Test
             CreateFile(root, entryPoint.TargetPath);
             CreateFile(root, fileReference.TargetPath);
 
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForExplicitApplication(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
                 new ApplicationManifestAdapter(applicationManifest),
                 new List<ClickOnceManifestDiagnostic>());
 
             Assert.Equal(expected: 3, actual: payloads.Count);
-            Assert.Contains(payloads, payload => ReferenceEquals(payload.ManifestReference, assemblyReference));
-            Assert.Contains(payloads, payload => ReferenceEquals(payload.ManifestReference, entryPoint));
-            Assert.Contains(payloads, payload => ReferenceEquals(payload.ManifestReference, fileReference));
-            Assert.DoesNotContain(payloads, payload => ReferenceEquals(payload.ManifestReference, prerequisiteReference));
-            Assert.DoesNotContain(payloads, payload => ReferenceEquals(payload.ManifestReference, virtualReference));
+            Assert.Contains(payloads, payload => ReferenceEquals(payload.Reference, assemblyReference));
+            Assert.Contains(payloads, payload => ReferenceEquals(payload.Reference, entryPoint));
+            Assert.Contains(payloads, payload => ReferenceEquals(payload.Reference, fileReference));
+            Assert.DoesNotContain(payloads, payload => ReferenceEquals(payload.Reference, prerequisiteReference));
+            Assert.DoesNotContain(payloads, payload => ReferenceEquals(payload.Reference, virtualReference));
             Assert.Null(prerequisiteReference.ResolvedPath);
             Assert.Null(virtualReference.ResolvedPath);
         }
@@ -1742,16 +1823,16 @@ namespace Sign.Core.Test
             };
             applicationManifest.AssemblyReferences.Add(reference);
 
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForExplicitApplication(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
                 new ApplicationManifestAdapter(applicationManifest),
                 new List<ClickOnceManifestDiagnostic>());
 
-            ClickOnceFileGraphEntry payload = Assert.Single(payloads);
+            ResolvedClickOncePayload payload = Assert.Single(payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
             Assert.Equal(expectedPayload.FullName, reference.ResolvedPath);
             Assert.Equal(sourcePathPayload.Name, reference.SourcePath);
-            Assert.Same(reference, payload.ManifestReference);
+            Assert.Same(reference, payload.Reference);
         }
 
         [Fact]
@@ -1774,16 +1855,16 @@ namespace Sign.Core.Test
             applicationManifest.ResolveFiles(new[] { root.FullName });
             Assert.Equal(identityPayload.FullName, reference.ResolvedPath);
 
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForExplicitApplication(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
                 new ApplicationManifestAdapter(applicationManifest),
                 new List<ClickOnceManifestDiagnostic>());
 
-            ClickOnceFileGraphEntry payload = Assert.Single(payloads);
+            ResolvedClickOncePayload payload = Assert.Single(payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
             Assert.Equal(expectedPayload.FullName, reference.ResolvedPath);
             Assert.Same(identity, reference.AssemblyIdentity);
-            Assert.Same(reference, payload.ManifestReference);
+            Assert.Same(reference, payload.Reference);
         }
 
         [Fact]
@@ -1820,7 +1901,7 @@ namespace Sign.Core.Test
                     reference.ResolvedPath = "diagnostic-path.dll";
                 });
 
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForExplicitApplication(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
                 applicationManifest,
                 new List<ClickOnceManifestDiagnostic>());
@@ -1853,15 +1934,15 @@ namespace Sign.Core.Test
             applicationManifest.Diagnostics.Returns(
                 Array.Empty<ClickOnceManifestDiagnostic>());
 
-            IReadOnlyList<ClickOnceFileGraphEntry> payloads = _payloadResolver.ResolveForExplicitApplication(
+            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
                 applicationManifest,
                 new List<ClickOnceManifestDiagnostic>());
 
-            ClickOnceFileGraphEntry payload = Assert.Single(payloads);
+            ResolvedClickOncePayload payload = Assert.Single(payloads);
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
             Assert.Equal(expectedPayload.FullName, reference.ResolvedPath);
-            Assert.Same(reference, payload.ManifestReference);
+            Assert.Same(reference, payload.Reference);
         }
 
         [Fact]
@@ -1876,7 +1957,7 @@ namespace Sign.Core.Test
 
             applicationManifest.FileReferences.Add(new FileReference() { TargetPath = InvalidTargetPath });
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => _payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     new ApplicationManifestAdapter(applicationManifest),
@@ -1897,7 +1978,7 @@ namespace Sign.Core.Test
             ApplicationManifest applicationManifest = CreateApplicationManifest();
             applicationManifest.FileReferences.Add(new FileReference());
 
-            ClickOnceFileGraphResolutionException exception = Assert.Throws<ClickOnceFileGraphResolutionException>(
+            ClickOncePublishLayoutResolutionException exception = Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => _payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     new ApplicationManifestAdapter(applicationManifest),
@@ -2055,7 +2136,7 @@ namespace Sign.Core.Test
                 model.FileReferences);
         }
 
-        private static ClickOnceFileGraphResolutionException ResolveWithApplicationManifestProbe(
+        private static ClickOncePublishLayoutResolutionException ResolveWithApplicationManifestProbe(
             DirectoryInfo root,
             string resolvedPath,
             Func<FileInfo, bool> fileExists)
@@ -2085,12 +2166,12 @@ namespace Sign.Core.Test
                     return true;
                 });
 
-            ClickOnceDeployManifestFileGraphResolver resolver = new(
+            ClickOnceDeploymentPublishLayoutResolver resolver = new(
                 manifestReader,
-                new ClickOncePayloadFileResolver(),
+                new ClickOncePayloadResolver(),
                 fileExists);
 
-            return Assert.Throws<ClickOnceFileGraphResolutionException>(
+            return Assert.Throws<ClickOncePublishLayoutResolutionException>(
                 () => resolver.Resolve(deploymentManifestFile));
         }
     }
