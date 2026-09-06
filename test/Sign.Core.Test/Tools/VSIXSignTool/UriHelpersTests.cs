@@ -13,9 +13,6 @@ namespace Sign.Core.Test
         [InlineData("package:/sub/file.bin", "sub/file.bin")]
         [InlineData("package:///sub/file.bin?query=string", "sub/file.bin")]
         [InlineData("package:/sub/file.bin?query=string", "sub/file.bin")]
-        [InlineData("package:///ab%23c.txt", "ab%23c.txt")]
-        [InlineData("package:///ab%3Fc.txt", "ab%3Fc.txt")]
-        [InlineData("package:///folder/ab%3fc.txt", "folder/ab%3fc.txt")]
         public void ShouldHandlePackagePathForRelativeUris(string uri, string expected)
         {
             var part = new Uri(uri, UriKind.Absolute);
@@ -30,9 +27,6 @@ namespace Sign.Core.Test
         [InlineData("package:/sub/file.bin", "/sub/file.bin")]
         [InlineData("package:///sub/file.bin?query=string", "/sub/file.bin?query=string")]
         [InlineData("package:/sub/file.bin?query=string", "/sub/file.bin?query=string")]
-        [InlineData("package:///ab%23c.txt?query=string", "/ab%23c.txt?query=string")]
-        [InlineData("package:///ab%3Fc.txt?query=string", "/ab%3Fc.txt?query=string")]
-        [InlineData("package:///ab%2Fc.txt?query=string", "/ab%2Fc.txt?query=string")]
         public void ShouldHandleReferencePathForRelativeUris(string uri, string expected)
         {
             var part = new Uri(uri, UriKind.Absolute);

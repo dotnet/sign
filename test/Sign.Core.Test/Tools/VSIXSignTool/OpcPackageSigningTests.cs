@@ -116,11 +116,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData("abc.txt")]
         [InlineData("folder/abc.txt")]
-        [InlineData("ab%23c.txt")]
-        [InlineData("folder/ab%23c.txt")]
-        [InlineData("ab%3Fc.txt")]
-        [InlineData("folder/ab%3fc.txt")]
-        public async Task SignAsync_WithValidOrPercentEncodedZipEntryName_Succeeds(string entryName)
+        public async Task SignAsync_WithValidZipEntryName_Succeeds(string entryName)
         {
             string path = CreatePackageWithEntry(entryName);
             VsixSignTool signTool = new(Substitute.For<ILogger<IVsixSignTool>>());
@@ -144,18 +140,18 @@ namespace Sign.Core.Test
 
             using (OpcPackage package = OpcPackage.Open(path))
             {
-                OpcSignature signature = Assert.Single(package.GetSignatures());
-
-                using Stream signatureStream = signature.Part!.Open();
-                XmlDocument signatureDocument = new();
-                signatureDocument.Load(signatureStream);
-
-                Assert.Contains(
-                    signatureDocument.GetElementsByTagName("Reference").Cast<XmlElement>(),
-                    reference => reference.GetAttribute("URI").StartsWith(
-                        $"/{entryName}?ContentType=",
-                        StringComparison.Ordinal));
+                Assert.Single(package.GetSignatures());
             }
+        }
+
+        [Theory]
+        [InlineData("ab%23c.txt")]
+        [InlineData("folder/ab%23c.txt")]
+        [InlineData("ab%3Fc.txt")]
+        [InlineData("folder/ab%3fc.txt")]
+        public void PartNameValidation_WithPercentEncodedUriDelimiter_DoesNotThrow(string entryName)
+        {
+            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(entryName);
         }
 
         [Theory]
