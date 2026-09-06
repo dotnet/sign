@@ -132,6 +132,8 @@ namespace Sign.Core
         {
             var path = partUri.ToPackagePath();
 
+            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(path);
+
             if (Archive.GetEntry(path) != null)
             {
                 throw new InvalidOperationException("The part already exists.");

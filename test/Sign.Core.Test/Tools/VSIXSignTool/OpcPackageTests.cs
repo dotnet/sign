@@ -159,6 +159,37 @@ namespace Sign.Core.Test
         }
 
         [Theory]
+        [InlineData("new%23part.reject", "new#part.reject")]
+        [InlineData("new%3Fpart.reject", "new?part.reject")]
+        public void CreatePart_WithUriThatDecodesToUnsupportedDelimiter_DoesNotModifyPackage(
+            string partUri,
+            string decodedPartName)
+        {
+            string path;
+            int initialContentTypeCount;
+            string[] initialEntryNames;
+
+            using (OpcPackage package = ShadowCopyPackage(SamplePackage, out path, OpcPackageFileMode.ReadWrite))
+            {
+                initialContentTypeCount = package.ContentTypes.Count;
+                initialEntryNames = package.Archive.Entries.Select(entry => entry.FullName).ToArray();
+
+                InvalidDataException exception = Assert.Throws<InvalidDataException>(
+                    () => package.CreatePart(new Uri(partUri, UriKind.Relative), "application/test"));
+
+                Assert.Contains(decodedPartName, exception.Message, StringComparison.Ordinal);
+                Assert.Equal(initialContentTypeCount, package.ContentTypes.Count);
+                Assert.Equal(initialEntryNames, package.Archive.Entries.Select(entry => entry.FullName));
+            }
+
+            using (OpcPackage package = OpcPackage.Open(path))
+            {
+                Assert.Equal(initialContentTypeCount, package.ContentTypes.Count);
+                Assert.Equal(initialEntryNames, package.Archive.Entries.Select(entry => entry.FullName));
+            }
+        }
+
+        [Theory]
         [InlineData("extension.vsixmanifest")]
         [InlineData("/extension.vsixmanifest")]
         [InlineData("package:///extension.vsixmanifest")]
