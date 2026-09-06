@@ -426,7 +426,12 @@ namespace Sign.Core
 
         private static bool IsWindowsReservedFileName(string segment)
         {
-            string fileName = Path.GetFileNameWithoutExtension(segment);
+            int extensionSeparatorIndex = segment.IndexOf('.');
+            ReadOnlySpan<char> fileName = extensionSeparatorIndex < 0
+                ? segment
+                : segment.AsSpan(
+                    start: 0,
+                    extensionSeparatorIndex);
 
             if (fileName.Equals("CON", StringComparison.OrdinalIgnoreCase) ||
                 fileName.Equals("PRN", StringComparison.OrdinalIgnoreCase) ||
@@ -441,7 +446,7 @@ namespace Sign.Core
                 return false;
             }
 
-            ReadOnlySpan<char> prefix = fileName.AsSpan(0, 3);
+            ReadOnlySpan<char> prefix = fileName[..3];
             char suffix = fileName[3];
 
             return (prefix.Equals("COM", StringComparison.OrdinalIgnoreCase) ||
