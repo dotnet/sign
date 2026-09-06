@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- PackageDigitalSignatureManager is implemented by WindowsBase. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
     <ProjectReference Include="..\..\src\Sign.Core\Sign.Core.csproj" />
     <ProjectReference Include="..\Sign.TestInfrastructure\Sign.TestInfrastructure.csproj" />
   </ItemGroup>

@@ -14,7 +14,7 @@ namespace Sign.Core
             var existingSignatures = package.GetSignatures().ToList();
             foreach (var part in package.GetParts())
             {
-                if (existingSignatures.All(existing => Uri.Compare(part.Uri, existing.Part?.Uri, UriComponents.Path, UriFormat.Unescaped, StringComparison.Ordinal) != 0))
+                if (existingSignatures.All(existing => Uri.Compare(part.Uri, existing.Part?.Uri, UriComponents.Path, UriFormat.UriEscaped, StringComparison.Ordinal) != 0))
                 {
                     yield return part;
                 }
