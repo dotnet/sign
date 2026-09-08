@@ -6,6 +6,7 @@ namespace Sign.Core
 {
     internal interface IDeployManifest : IClickOnceManifest
     {
+        bool HasUnsupportedResourceFallback { get; }
         bool MapFileExtensions { get; }
     }
 }

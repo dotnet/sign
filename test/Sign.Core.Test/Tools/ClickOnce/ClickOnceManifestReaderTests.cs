@@ -39,7 +39,7 @@ namespace Sign.Core.Test
             Assert.True(result);
             Assert.NotNull(manifest);
             Assert.Equal("TestApplication", manifest.AssemblyIdentity.Name);
-            Assert.NotNull(manifest.OutputMessages);
+            Assert.NotNull(manifest.Diagnostics);
 
             manifest.ReadOnly = true;
 
@@ -134,6 +134,76 @@ namespace Sign.Core.Test
 
             Assert.False(result);
             Assert.Null(manifest);
+        }
+
+        [Theory]
+        [InlineData(
+            "<configuration><startup /></configuration>",
+            typeof(ArgumentException))]
+        [InlineData(
+            """
+            <wrapper xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+              <asmv1:assemblyIdentity name="Test" version="1.0.0.0" />
+            </wrapper>
+            """,
+            typeof(InvalidCastException))]
+        public void TryReadApplicationManifest_WhenManifestUtilitiesThrowsContentException_ThrowsInvalidOperationException(
+            string xml,
+            Type expectedInnerExceptionType)
+        {
+            using MemoryStream stream = CreateStream(xml);
+            ClickOnceManifestReader reader = new();
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(
+                    () => reader.TryReadApplicationManifest(
+                        stream,
+                        out _));
+
+            Assert.IsType(
+                expectedInnerExceptionType,
+                exception.InnerException);
+        }
+
+        [Theory]
+        [InlineData(
+            "<configuration><startup /></configuration>",
+            typeof(ArgumentException))]
+        [InlineData(
+            """
+            <wrapper xmlns:asmv1="urn:schemas-microsoft-com:asm.v1">
+              <asmv1:assemblyIdentity name="Test" version="1.0.0.0" />
+            </wrapper>
+            """,
+            typeof(InvalidCastException))]
+        public void TryReadDeployManifest_WhenManifestUtilitiesThrowsContentException_ThrowsInvalidOperationException(
+            string xml,
+            Type expectedInnerExceptionType)
+        {
+            using MemoryStream stream = CreateStream(xml);
+            ClickOnceManifestReader reader = new();
+
+            InvalidOperationException exception =
+                Assert.Throws<InvalidOperationException>(
+                    () => reader.TryReadDeployManifest(
+                        stream,
+                        out _));
+
+            Assert.IsType(
+                expectedInnerExceptionType,
+                exception.InnerException);
+        }
+
+        [Fact]
+        public void ManifestReader_WhenXmlRootIsUnrecognized_ThrowsArgumentException()
+        {
+            using MemoryStream stream = CreateStream(
+                "<configuration><startup /></configuration>");
+
+            Assert.Throws<ArgumentException>(
+                () => ManifestReader.ReadManifest(
+                    stream,
+                    preserveStream: true));
         }
 
         [Fact]
@@ -548,7 +618,7 @@ namespace Sign.Core.Test
             Assert.Same(manifest.AssemblyReferences, adapter.AssemblyReferences);
             Assert.Same(manifest.EntryPoint, adapter.EntryPoint);
             Assert.Same(manifest.FileReferences, adapter.FileReferences);
-            Assert.Same(manifest.OutputMessages, adapter.OutputMessages);
+            Assert.Empty(adapter.Diagnostics);
         }
 
         [Fact]
@@ -563,7 +633,8 @@ namespace Sign.Core.Test
             Assert.Same(manifest.AssemblyIdentity, adapter.AssemblyIdentity);
             Assert.Same(manifest.AssemblyReferences, adapter.AssemblyReferences);
             Assert.Same(manifest.EntryPoint, adapter.EntryPoint);
-            Assert.Same(manifest.OutputMessages, adapter.OutputMessages);
+            Assert.Same(manifest.FileReferences, adapter.FileReferences);
+            Assert.Empty(adapter.Diagnostics);
             Assert.Equal(manifest.MapFileExtensions, adapter.MapFileExtensions);
         }
 
@@ -607,13 +678,10 @@ namespace Sign.Core.Test
 
             adapter.ResolveFiles(Array.Empty<DirectoryInfo>());
 
-            Assert.Equal(
-                expected: 1,
-                actual: adapter.OutputMessages.ErrorCount);
-            OutputMessage message = adapter.OutputMessages[0];
-            Assert.Equal(ExpectedMessageName, message.Name);
-            Assert.Equal(OutputMessageType.Error, message.Type);
-            Assert.False(string.IsNullOrWhiteSpace(message.Text));
+            ClickOnceManifestDiagnostic diagnostic = Assert.Single(adapter.Diagnostics);
+            Assert.Equal(ExpectedMessageName, diagnostic.Name);
+            Assert.Equal(OutputMessageType.Error, diagnostic.Type);
+            Assert.False(string.IsNullOrWhiteSpace(diagnostic.Text));
         }
 
         [Fact]

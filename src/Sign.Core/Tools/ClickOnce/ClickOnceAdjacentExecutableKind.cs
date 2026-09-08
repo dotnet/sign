@@ -4,7 +4,9 @@
 
 namespace Sign.Core
 {
-    internal interface IApplicationManifest : IClickOnceManifest
+    internal enum ClickOnceAdjacentExecutableKind
     {
+        Setup,
+        Launcher
     }
 }
