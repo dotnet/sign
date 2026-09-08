@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.CodeSigning;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.SignatureProviders.ArtifactSigning
 {
@@ -20,6 +20,7 @@ namespace Sign.SignatureProviders.ArtifactSigning
         private readonly ILogger<ArtifactSigningService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
         private X509Certificate2? _certificate;
+        private X509Certificate2Collection? _additionalCertificates;
 
         public ArtifactSigningService(
             CertificateProfileClient certificateProfileClient,
@@ -72,8 +73,12 @@ namespace Sign.SignatureProviders.ArtifactSigning
                         X509Certificate2Collection collection = [];
                         collection.Import(rawData);
 
-                        // This should contain the certificate chain in root->leaf order.
-                        _certificate = collection[collection.Count - 1];
+                        // Find the leaf: the cert whose Subject is not any other cert's Issuer.
+                        IEnumerable<string> issuers = collection.Cast<X509Certificate2>().Select(x => x.Issuer);
+                        _certificate = collection.Cast<X509Certificate2>().FirstOrDefault(x => !issuers.Contains(x.Subject))
+                            ?? throw new InvalidOperationException("Unable to locate leaf certificate");
+
+                        _additionalCertificates = [.. collection.Cast<X509Certificate2>().Where(x => x != _certificate).ToArray()];
 
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                         //print the certificate info
@@ -94,6 +99,16 @@ namespace Sign.SignatureProviders.ArtifactSigning
             using X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
             RSA rsaPublicKey = certificate.GetRSAPublicKey()!;
             return new RSAArtifactSigning(_client, _accountName, _certificateProfileName, rsaPublicKey);
+        }
+
+        public async Task<X509Certificate2Collection> GetAdditionalCertificatesAsync(CancellationToken cancellationToken = default)
+        {
+            if (_additionalCertificates is null)
+            {
+                await GetCertificateAsync(cancellationToken);
+            }
+
+            return _additionalCertificates ?? [];
         }
     }
 }
