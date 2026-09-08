@@ -18,7 +18,7 @@ namespace Sign.Core
 
         internal OpcPart(OpcPackage package, string path, ZipArchiveEntry entry, OpcPackageFileMode mode)
         {
-            Uri = new Uri(OpcPackage.BasePackageUri, path);
+            Uri = new Uri(OpcPackage.BasePackageUri, UriHelpers.EscapePartPath(path));
             Package = package;
             _path = path;
             Entry = entry;
@@ -86,7 +86,7 @@ namespace Sign.Core
             var path = GetRelationshipFilePath();
             var entry = Package.Archive.GetEntry(path);
             var readOnlyMode = _mode != OpcPackageFileMode.ReadWrite;
-            var location = new Uri(OpcPackage.BasePackageUri, path);
+            var location = new Uri(OpcPackage.BasePackageUri, UriHelpers.EscapePartPath(path));
             if (entry == null)
             {
                 return new OpcRelationships(location, readOnlyMode);
