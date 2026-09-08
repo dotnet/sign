@@ -102,6 +102,11 @@
         <target state="translated">{0} 的回應時間太長。處理序結束代碼為 {1}。引數: {2}</target>
         <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
       </trans-unit>
+      <trans-unit id="ReadingSigningDependenciesFailed">
+        <source>Could not read the signing dependencies of {filePath}.</source>
+        <target state="new">Could not read the signing dependencies of {filePath}.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
       <trans-unit id="RunningCli">
         <source>Running {fileName} with parameters: '{args}'.</source>
         <target state="translated">正在執行具有參數 '{args}' 的 {fileName}。</target>
@@ -140,6 +145,11 @@
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
         <target state="translated">正在簽署 {filePath}。</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningFileAsPartOfOwner">
+        <source>Signing {filePath} as part of the file that owns it.</source>
+        <target state="new">Signing {filePath} as part of the file that owns it.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">

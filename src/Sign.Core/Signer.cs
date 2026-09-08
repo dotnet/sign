@@ -61,6 +61,7 @@ namespace Sign.Core
             }
 
             ICertificateProvider certificateProvider = _serviceProvider.GetRequiredService<ICertificateProvider>();
+            ISigningDependencyProvider signingDependencyProvider = _serviceProvider.GetRequiredService<ISigningDependencyProvider>();
 
             SignOptions signOptions = new(
                 applicationName,
@@ -74,6 +75,21 @@ namespace Sign.Core
                 antiMatcher,
                 recurseContainers);
 
+            // Some files own others that sit beside them on disk.  Owned files are signed as
+            // part of their owner; signing them separately would race with it and leave the
+            // owner referring to content that was never shipped.
+            IReadOnlyList<FileInfo> filesToSign = inputFiles;
+
+            if (recurseContainers)
+            {
+                filesToSign = signingDependencyProvider.ExcludeOwnedFiles(inputFiles);
+
+                foreach (FileInfo ownedFile in inputFiles.Except(filesToSign, FileInfoComparer.Instance))
+                {
+                    _logger.LogInformation(Resources.SigningFileAsPartOfOwner, ownedFile.FullName);
+                }
+            }
+
             try
             {
                 using (X509Certificate2 certificate = await certificateProvider.GetCertificateAsync())
@@ -83,14 +99,14 @@ namespace Sign.Core
                     certificateVerifier.Verify(certificate);
                 }
 
-                await Parallel.ForEachAsync(inputFiles, parallelOptions, async (input, token) =>
+                await Parallel.ForEachAsync(filesToSign, parallelOptions, async (input, token) =>
                 {
                     FileInfo output;
 
                     Stopwatch sw = Stopwatch.StartNew();
 
                     // Special case if there's only one input file and the output has a value, treat it as a file
-                    if (inputFiles.Count == 1 && !string.IsNullOrWhiteSpace(outputFile))
+                    if (filesToSign.Count == 1 && !string.IsNullOrWhiteSpace(outputFile))
                     {
                         // See if it has a file extension and if not, treat as a directory and use the input file name
                         if (Path.HasExtension(outputFile))
@@ -99,7 +115,7 @@ namespace Sign.Core
                         }
                         else
                         {
-                            output = new FileInfo(Path.Combine(ExpandFilePath(baseDirectory, outputFile), inputFiles[0].Name));
+                            output = new FileInfo(Path.Combine(ExpandFilePath(baseDirectory, outputFile), filesToSign[0].Name));
                         }
                     }
                     else

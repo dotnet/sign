@@ -192,6 +192,10 @@
     <value>{0} took too long to respond. The process exit code is {1}. Arguments: {2}</value>
     <comment>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</comment>
   </data>
+  <data name="ReadingSigningDependenciesFailed" xml:space="preserve">
+    <value>Could not read the signing dependencies of {filePath}.</value>
+    <comment>{Placeholder="{filePath}"} is a file path.</comment>
+  </data>
   <data name="RunningCli" xml:space="preserve">
     <value>Running {fileName} with parameters: '{args}'.</value>
     <comment>{Placeholder="{fileName}"} is a file name, and {Placeholder="{args}"} is process arguments.</comment>
@@ -203,6 +207,10 @@
   <data name="SignAsyncCalled" xml:space="preserve">
     <value>SignAsync called for {filePath}. Using {localFilePath} locally.</value>
     <comment>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</comment>
+  </data>
+  <data name="SigningFileAsPartOfOwner" xml:space="preserve">
+    <value>Signing {filePath} as part of the file that owns it.</value>
+    <comment>{Placeholder="{filePath}"} is a file path.</comment>
   </data>
   <data name="SigningAttempt" xml:space="preserve">
     <value>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</value>

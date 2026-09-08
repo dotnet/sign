@@ -241,6 +241,15 @@ namespace Sign.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not read the signing dependencies of {filePath}..
+        /// </summary>
+        internal static string ReadingSigningDependenciesFailed {
+            get {
+                return ResourceManager.GetString("ReadingSigningDependenciesFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Running {fileName} with parameters: &apos;{args}&apos;..
         /// </summary>
         internal static string RunningCli {
@@ -264,6 +273,15 @@ namespace Sign.Core {
         internal static string SignAsyncCalled {
             get {
                 return ResourceManager.GetString("SignAsyncCalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Signing {filePath} as part of the file that owns it..
+        /// </summary>
+        internal static string SigningFileAsPartOfOwner {
+            get {
+                return ResourceManager.GetString("SigningFileAsPartOfOwner", resourceCulture);
             }
         }
         

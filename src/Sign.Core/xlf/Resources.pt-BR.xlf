@@ -102,6 +102,11 @@
         <target state="translated">{0} demorou muito para responder. O código de saída do processo {1}. Argumentos: {2}</target>
         <note>{NumberedPlaceholder="{0}"} is a file name.  {NumberedPlaceholder="{1}"} is a process exit code.  {NumberedPlaceholder="{2}"} is process arguments.</note>
       </trans-unit>
+      <trans-unit id="ReadingSigningDependenciesFailed">
+        <source>Could not read the signing dependencies of {filePath}.</source>
+        <target state="new">Could not read the signing dependencies of {filePath}.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
       <trans-unit id="RunningCli">
         <source>Running {fileName} with parameters: '{args}'.</source>
         <target state="translated">Executando {fileName} com parâmetros: '{args}'.</target>
@@ -140,6 +145,11 @@
       <trans-unit id="SigningFile">
         <source>Signing {filePath}.</source>
         <target state="translated">Autenticando {filePath}.</target>
+        <note>{Placeholder="{filePath}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="SigningFileAsPartOfOwner">
+        <source>Signing {filePath} as part of the file that owns it.</source>
+        <target state="new">Signing {filePath} as part of the file that owns it.</target>
         <note>{Placeholder="{filePath}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="SigningSucceeded">

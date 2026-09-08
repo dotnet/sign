@@ -221,6 +221,65 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void IsMsiContainer_WhenFileIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _provider.IsMsiContainer(file: null!));
+
+            Assert.Equal("file", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(".cab")]
+        [InlineData(".msp")]
+        public void IsMsiContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
+        {
+            FileInfo file = new($"file{extension}");
+
+            Assert.False(_provider.IsMsiContainer(file));
+        }
+
+        [Theory]
+        [InlineData(".msi")]
+        [InlineData(".msm")]
+        [InlineData(".MSI")] // test case insensitivity
+        public void IsMsiContainer_WhenFileExtensionMatches_ReturnsTrue(string extension)
+        {
+            FileInfo file = new($"file{extension}");
+
+            Assert.True(_provider.IsMsiContainer(file));
+        }
+
+        [Fact]
+        public void IsCabContainer_WhenFileIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _provider.IsCabContainer(file: null!));
+
+            Assert.Equal("file", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(".msi")]
+        [InlineData(".zip")]
+        public void IsCabContainer_WhenFileExtensionDoesNotMatch_ReturnsFalse(string extension)
+        {
+            FileInfo file = new($"file{extension}");
+
+            Assert.False(_provider.IsCabContainer(file));
+        }
+
+        [Theory]
+        [InlineData(".cab")]
+        [InlineData(".CAB")] // test case insensitivity
+        public void IsCabContainer_WhenFileExtensionMatches_ReturnsTrue(string extension)
+        {
+            FileInfo file = new($"file{extension}");
+
+            Assert.True(_provider.IsCabContainer(file));
+        }
+
+        [Fact]
         public void GetContainer_WhenFileIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
@@ -253,6 +312,24 @@ namespace Sign.Core.Test
             IContainer? container = _provider.GetContainer(file);
 
             Assert.IsType<AppxContainer>(container);
+        }
+
+        [Fact]
+        public void GetContainer_WhenFileExtensionMatchesMsi_ReturnsContainer()
+        {
+            FileInfo file = new("file.msi");
+            IContainer? container = _provider.GetContainer(file);
+
+            Assert.IsType<MsiContainer>(container);
+        }
+
+        [Fact]
+        public void GetContainer_WhenFileExtensionMatchesCab_ReturnsContainer()
+        {
+            FileInfo file = new("file.cab");
+            IContainer? container = _provider.GetContainer(file);
+
+            Assert.IsType<CabContainer>(container);
         }
 
         [Fact]

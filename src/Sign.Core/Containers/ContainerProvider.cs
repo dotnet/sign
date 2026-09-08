@@ -17,6 +17,8 @@ namespace Sign.Core
         private readonly IMakeAppxCli _makeAppxCli;
         private readonly HashSet<string> _nuGetExtensions;
         private readonly HashSet<string> _zipExtensions;
+        private readonly HashSet<string> _msiExtensions;
+        private const string _cabExtension = ".cab";
 
         // Dependency injection requires a public constructor.
         public ContainerProvider(
@@ -68,6 +70,12 @@ namespace Sign.Core
                 ".vsix",
                 ".zip"
             };
+
+            _msiExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ".msi",
+                ".msm"
+            };
         }
 
         public bool IsAppxBundleContainer(FileInfo file)
@@ -98,6 +106,20 @@ namespace Sign.Core
             return _zipExtensions.Contains(file.Extension);
         }
 
+        public bool IsMsiContainer(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return _msiExtensions.Contains(file.Extension);
+        }
+
+        public bool IsCabContainer(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return string.Equals(file.Extension, _cabExtension, StringComparison.OrdinalIgnoreCase);
+        }
+
         public IContainer? GetContainer(FileInfo file)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
@@ -120,6 +142,16 @@ namespace Sign.Core
             if (IsNuGetContainer(file))
             {
                 return new NuGetContainer(file, _directoryService, _fileMatcher, _logger);
+            }
+
+            if (IsMsiContainer(file))
+            {
+                return new MsiContainer(file, _directoryService, _fileMatcher, _logger);
+            }
+
+            if (IsCabContainer(file))
+            {
+                return new CabContainer(file, _directoryService, _fileMatcher, _logger);
             }
 
             return null;
