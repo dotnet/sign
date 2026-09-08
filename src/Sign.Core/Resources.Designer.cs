@@ -356,6 +356,15 @@ namespace Sign.Core {
                 return ResourceManager.GetString("VSIXSignToolOpcContentTypeInvalid", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Package part name &apos;{0}&apos; contains the unsupported &apos;#&apos; character..
+        /// </summary>
+        internal static string VSIXSignToolOpcPartNameContainsFragmentDelimiter {
+            get {
+                return ResourceManager.GetString("VSIXSignToolOpcPartNameContainsFragmentDelimiter", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Unknown signing algorithm..

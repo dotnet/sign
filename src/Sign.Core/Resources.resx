@@ -243,6 +243,10 @@
     <value>Specified {0} is invalid.</value>
     <comment>{NumberedPlaceholder="{0}"} is the mode for reading OPC content. Either "default" or "override".</comment>
   </data>
+  <data name="VSIXSignToolOpcPartNameContainsFragmentDelimiter" xml:space="preserve">
+    <value>Package part name '{0}' contains the unsupported '#' character.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the package part name.</comment>
+  </data>
   <data name="VSIXSignToolUnknownSigningAlgorithm" xml:space="preserve">
     <value>Unknown signing algorithm.</value>
   </data>
