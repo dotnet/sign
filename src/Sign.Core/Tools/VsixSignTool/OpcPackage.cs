@@ -130,9 +130,11 @@ namespace Sign.Core
         /// <returns>An instance of the part just created.</returns>
         public OpcPart CreatePart(Uri partUri, string mimeType)
         {
+            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(partUri.OriginalString);
+
             var path = partUri.ToPackagePath();
 
-            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(path);
+            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(Uri.UnescapeDataString(path));
 
             if (Archive.GetEntry(path) != null)
             {

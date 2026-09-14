@@ -5,6 +5,9 @@
     "runtimes": {
       "dotnet/x64": [
         "8.0.29"
+      ],
+      "windowsdesktop/x64": [
+        "8.0.29"
       ]
     },
     "xcopy-msbuild": "18.0.0"

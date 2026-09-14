@@ -159,6 +159,8 @@ namespace Sign.Core.Test
         }
 
         [Theory]
+        [InlineData("new#part.reject", "new#part.reject")]
+        [InlineData("new?part.reject", "new?part.reject")]
         [InlineData("new%23part.reject", "new#part.reject")]
         [InlineData("new%3Fpart.reject", "new?part.reject")]
         public void CreatePart_WithUriThatDecodesToUnsupportedDelimiter_DoesNotModifyPackage(

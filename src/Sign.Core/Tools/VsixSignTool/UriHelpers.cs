@@ -21,10 +21,10 @@ namespace Sign.Core
         public static string ToPackagePath(this Uri partUri)
         {
             var absolute = partUri.IsAbsoluteUri ? partUri : new Uri(_packageBaseUri, partUri);
-            var pathUri = new Uri(absolute.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.Unescaped), UriKind.Absolute);
+            var pathUri = new Uri(absolute.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped), UriKind.Absolute);
             var resolved = _packageBaseUri.MakeRelativeUri(pathUri);
 
-            return resolved.ToString();
+            return resolved.OriginalString;
         }
 
         /// <summary>
@@ -35,10 +35,10 @@ namespace Sign.Core
         public static string ToQualifiedPath(this Uri partUri)
         {
             var absolute = partUri.IsAbsoluteUri ? partUri : new Uri(_rootedPackageBaseUri, partUri);
-            var pathUri = new Uri(absolute.GetComponents(UriComponents.SchemeAndServer | UriComponents.PathAndQuery, UriFormat.Unescaped), UriKind.Absolute);
+            var pathUri = new Uri(absolute.GetComponents(UriComponents.SchemeAndServer | UriComponents.PathAndQuery, UriFormat.UriEscaped), UriKind.Absolute);
             var resolved = _rootedPackageBaseUri.MakeRelativeUri(pathUri);
 
-            return resolved.ToString();
+            return resolved.OriginalString;
         }
 
 
@@ -50,7 +50,7 @@ namespace Sign.Core
         public static Uri ToQualifiedUri(this Uri partUri)
         {
             var absolute = partUri.IsAbsoluteUri ? partUri : new Uri(_rootedPackageBaseUri, partUri);
-            var pathUri = new Uri(absolute.GetComponents(UriComponents.SchemeAndServer | UriComponents.PathAndQuery, UriFormat.Unescaped), UriKind.Absolute);
+            var pathUri = new Uri(absolute.GetComponents(UriComponents.SchemeAndServer | UriComponents.PathAndQuery, UriFormat.UriEscaped), UriKind.Absolute);
 
             return _rootedPackageBaseUri.MakeRelativeUri(pathUri);
         }

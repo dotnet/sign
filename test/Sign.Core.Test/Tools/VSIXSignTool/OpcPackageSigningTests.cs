@@ -2,14 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.IO.Compression;
 using System.Globalization;
+using System.IO.Compression;
+using System.IO.Packaging;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Sign.Core.Timestamp;
+using Sign.TestInfrastructure;
 using Xunit.Abstractions;
 
 namespace Sign.Core.Test
@@ -350,12 +353,89 @@ namespace Sign.Core.Test
             }
         }
 
+        [Theory]
+        [InlineData("ab%23c.txt", "/ab%23c.txt?ContentType=text/plain", "/ab#c.txt?ContentType=text/plain", "/ab%2523c.txt?ContentType=text/plain")]
+        [InlineData("nested/ab%3Fc.txt", "/nested/ab%3Fc.txt?ContentType=text/plain", "/nested/ab?c.txt?ContentType=text/plain", "/nested/ab%253Fc.txt?ContentType=text/plain")]
+        [InlineData("ab%25c.txt", "/ab%25c.txt?ContentType=text/plain", null, "/ab%2525c.txt?ContentType=text/plain")]
+        [InlineData("nested/ordinary.txt", "/nested/ordinary.txt?ContentType=text/plain", null, null)]
+        [InlineData("caf%C3%A9.txt", "/caf%C3%A9.txt?ContentType=text/plain", "/café.txt?ContentType=text/plain", "/caf%25C3%25A9.txt?ContentType=text/plain")]
+        public void ShouldPreservePartNameInVerifiableSignature(
+            string partName,
+            string expectedReference,
+            string? incorrectlyDecodedReference,
+            string? doubleEncodedReference)
+        {
+            string path = CreatePackage(partName);
+
+            using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
+            using (RSA? rsaPrivateKey = certificate.GetRSAPrivateKey())
+            using (OpcPackage package = OpcPackage.Open(path, OpcPackageFileMode.ReadWrite))
+            {
+                OpcPart part = Assert.IsType<OpcPart>(
+                    package.GetPart(new Uri($"/{partName}", UriKind.Relative)));
+                Assert.Equal(partName, part.Entry.FullName);
+
+                OpcPackageSignatureBuilder signerBuilder = package.CreateSignatureBuilder();
+                signerBuilder.EnqueuePart(part);
+                signerBuilder.Sign(
+                    new SignConfigurationSet(
+                        publicCertificate: certificate,
+                        signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                        fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                        signingKey: rsaPrivateKey!));
+            }
+
+            IReadOnlyList<string> references = ReadManifestReferences(path);
+
+            Assert.Contains(expectedReference, references);
+
+            if (incorrectlyDecodedReference != null)
+            {
+                Assert.DoesNotContain(incorrectlyDecodedReference, references);
+            }
+
+            if (doubleEncodedReference != null)
+            {
+                Assert.DoesNotContain(doubleEncodedReference, references);
+            }
+
+            using (Package package = Package.Open(path, FileMode.Open, FileAccess.Read))
+            {
+                var signatureManager = new PackageDigitalSignatureManager(package);
+
+                Assert.True(signatureManager.IsSigned);
+                Assert.Equal(VerifyResult.Success, signatureManager.VerifySignatures(exitOnFailure: false));
+            }
+        }
+
         public static IEnumerable<object[]> RsaTimestampTheories
         {
             get
             {
                 yield return new object[] { 2048, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256 };
             }
+        }
+
+        private string CreatePackage(string partName)
+        {
+            string path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():D}.vsix");
+            _shadowFiles.Add(path);
+
+            using (ZipArchive archive = ZipFile.Open(path, ZipArchiveMode.Create))
+            {
+                WriteEntry(
+                    archive,
+                    "[Content_Types].xml",
+                    """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+                      <Default Extension="txt" ContentType="text/plain" />
+                    </Types>
+                    """);
+                WriteEntry(archive, partName, "content");
+            }
+
+            return path;
         }
 
         private string CreatePackageWithEntry(string entryName)
@@ -379,6 +459,23 @@ namespace Sign.Core.Test
             }
 
             return path;
+        }
+
+        private static IReadOnlyList<string> ReadManifestReferences(string path)
+        {
+            using ZipArchive archive = ZipFile.OpenRead(path);
+            ZipArchiveEntry signatureEntry = Assert.Single(
+                archive.Entries,
+                entry => entry.FullName.EndsWith(".psdsxs", StringComparison.Ordinal));
+            using Stream stream = signatureEntry.Open();
+            XDocument document = XDocument.Load(stream);
+            XNamespace digitalSignature = "http://www.w3.org/2000/09/xmldsig#";
+
+            return document
+                .Descendants(digitalSignature + "Manifest")
+                .Elements(digitalSignature + "Reference")
+                .Select(reference => Assert.IsType<XAttribute>(reference.Attribute("URI")).Value)
+                .ToList();
         }
 
         private static void WriteEntry(ZipArchive archive, string entryName, string content)
