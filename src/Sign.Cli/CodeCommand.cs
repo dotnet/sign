@@ -168,6 +168,11 @@ namespace Sign.Cli
                         (IServiceProvider serviceProvider) => signatureProvider.GetCertificateProvider(serviceProvider));
                 });
 
+            // Disposing the service provider flushes the console logger's
+            // background thread, so an error logged just before returning is
+            // not lost when the process exits.
+            using IDisposable? serviceProviderDisposable = serviceProvider as IDisposable;
+
             List<FileInfo> inputFiles = [];
 
             foreach (string fileArgument in filesArgument)
