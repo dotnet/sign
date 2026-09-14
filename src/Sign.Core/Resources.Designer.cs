@@ -356,6 +356,15 @@ namespace Sign.Core {
                 return ResourceManager.GetString("VSIXSignToolOpcContentTypeInvalid", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Package part name &apos;{0}&apos; contains the unsupported URI delimiter &apos;{1}&apos;..
+        /// </summary>
+        internal static string VSIXSignToolOpcPartNameContainsUnsupportedUriDelimiter {
+            get {
+                return ResourceManager.GetString("VSIXSignToolOpcPartNameContainsUnsupportedUriDelimiter", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Unknown signing algorithm..
