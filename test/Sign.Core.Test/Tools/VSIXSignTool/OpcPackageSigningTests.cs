@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Sign.Core.Timestamp;
 using Sign.TestInfrastructure;
 using Xunit.Abstractions;
@@ -72,6 +74,87 @@ namespace Sign.Core.Test
                 yield return new object[] { 2048, HashAlgorithmName.SHA256, HashAlgorithmName.SHA384, OpcKnownUris.SignatureAlgorithms.RsaSHA384.AbsoluteUri };
                 yield return new object[] { 2048, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, OpcKnownUris.SignatureAlgorithms.RsaSHA256.AbsoluteUri };
             }
+        }
+
+        [Theory]
+        [InlineData("ab#c.txt")]
+        [InlineData("folder/ab#c.txt")]
+        [InlineData("ab?c.txt")]
+        [InlineData("folder/ab?c.txt")]
+        public async Task SignAsync_WithRawUriDelimiterInZipEntryName_Throws(string entryName)
+        {
+            string path = CreatePackageWithEntry(entryName);
+            IReadOnlyDictionary<string, byte[]> originalEntries = ReadArchiveEntries(path);
+            VsixSignTool signTool = new(Substitute.For<ILogger<IVsixSignTool>>());
+
+            using (X509Certificate2 certificate = _pfxFilesFixture.GetPfx(
+                keySizeInBits: 2048,
+                HashAlgorithmName.SHA256))
+            using (RSA? rsaPrivateKey = certificate.GetRSAPrivateKey())
+            {
+                SignConfigurationSet configuration = new(
+                    publicCertificate: certificate,
+                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                    signingKey: rsaPrivateKey!);
+                SignOptions options = new(
+                    fileHashAlgorithm: HashAlgorithmName.SHA256,
+                    timestampService: null!);
+
+                InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(
+                    () => signTool.SignAsync(new FileInfo(path), configuration, options));
+
+                Assert.Contains(entryName, exception.Message, StringComparison.Ordinal);
+                Assert.Contains(entryName.Contains('#') ? "#" : "?", exception.Message, StringComparison.Ordinal);
+            }
+
+            using (OpcPackage package = OpcPackage.Open(path))
+            {
+                Assert.Empty(package.GetSignatures());
+            }
+
+            AssertArchiveEntriesEqual(originalEntries, ReadArchiveEntries(path));
+        }
+
+        [Theory]
+        [InlineData("abc.txt")]
+        [InlineData("folder/abc.txt")]
+        public async Task SignAsync_WithValidZipEntryName_Succeeds(string entryName)
+        {
+            string path = CreatePackageWithEntry(entryName);
+            VsixSignTool signTool = new(Substitute.For<ILogger<IVsixSignTool>>());
+
+            using (X509Certificate2 certificate = _pfxFilesFixture.GetPfx(
+                keySizeInBits: 2048,
+                HashAlgorithmName.SHA256))
+            using (RSA? rsaPrivateKey = certificate.GetRSAPrivateKey())
+            {
+                SignConfigurationSet configuration = new(
+                    publicCertificate: certificate,
+                    signatureDigestAlgorithm: HashAlgorithmName.SHA256,
+                    fileDigestAlgorithm: HashAlgorithmName.SHA256,
+                    signingKey: rsaPrivateKey!);
+                SignOptions options = new(
+                    fileHashAlgorithm: HashAlgorithmName.SHA256,
+                    timestampService: null!);
+
+                Assert.True(await signTool.SignAsync(new FileInfo(path), configuration, options));
+            }
+
+            using (OpcPackage package = OpcPackage.Open(path))
+            {
+                Assert.Single(package.GetSignatures());
+            }
+        }
+
+        [Theory]
+        [InlineData("ab%23c.txt")]
+        [InlineData("folder/ab%23c.txt")]
+        [InlineData("ab%3Fc.txt")]
+        [InlineData("folder/ab%3fc.txt")]
+        public void PartNameValidation_WithPercentEncodedUriDelimiter_DoesNotThrow(string entryName)
+        {
+            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(entryName);
         }
 
         [Theory]
@@ -355,6 +438,29 @@ namespace Sign.Core.Test
             return path;
         }
 
+        private string CreatePackageWithEntry(string entryName)
+        {
+            string path = Path.GetTempFileName();
+            _shadowFiles.Add(path);
+
+            using (FileStream stream = new(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
+            using (ZipArchive archive = new(stream, ZipArchiveMode.Create))
+            {
+                WriteEntry(
+                    archive,
+                    "[Content_Types].xml",
+                    """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+                      <Default Extension="txt" ContentType="text/plain" />
+                    </Types>
+                    """);
+                WriteEntry(archive, entryName, "test");
+            }
+
+            return path;
+        }
+
         private static IReadOnlyList<string> ReadManifestReferences(string path)
         {
             using ZipArchive archive = ZipFile.OpenRead(path);
@@ -372,11 +478,38 @@ namespace Sign.Core.Test
                 .ToList();
         }
 
-        private static void WriteEntry(ZipArchive archive, string name, string contents)
+        private static void WriteEntry(ZipArchive archive, string entryName, string content)
         {
-            ZipArchiveEntry entry = archive.CreateEntry(name);
-            using StreamWriter writer = new(entry.Open());
-            writer.Write(contents);
+            using StreamWriter writer = new(archive.CreateEntry(entryName).Open());
+            writer.Write(content);
+        }
+
+        private static IReadOnlyDictionary<string, byte[]> ReadArchiveEntries(string path)
+        {
+            using ZipArchive archive = ZipFile.OpenRead(path);
+            Dictionary<string, byte[]> entries = new(StringComparer.Ordinal);
+
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                using Stream stream = entry.Open();
+                using MemoryStream content = new();
+                stream.CopyTo(content);
+                entries.Add(entry.FullName, content.ToArray());
+            }
+
+            return entries;
+        }
+
+        private static void AssertArchiveEntriesEqual(
+            IReadOnlyDictionary<string, byte[]> expected,
+            IReadOnlyDictionary<string, byte[]> actual)
+        {
+            Assert.Equal(expected.Keys.Order(), actual.Keys.Order());
+
+            foreach ((string entryName, byte[] content) in expected)
+            {
+                Assert.Equal(content, actual[entryName]);
+            }
         }
 
         private OpcPackage ShadowCopyPackage(string packagePath, out string path, OpcPackageFileMode mode = OpcPackageFileMode.Read)

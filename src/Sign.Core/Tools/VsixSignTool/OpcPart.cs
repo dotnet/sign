@@ -16,14 +16,18 @@ namespace Sign.Core
         private readonly OpcPackageFileMode _mode;
         private readonly string _path;
 
-        internal OpcPart(OpcPackage package, string path, ZipArchiveEntry entry, OpcPackageFileMode mode)
+        internal OpcPart(OpcPackage package, ZipArchiveEntry entry, OpcPackageFileMode mode)
         {
+            string path = entry.FullName;
+
+            OpcPartNameValidator.ThrowIfContainsUnsupportedUriDelimiter(path);
             Uri = new Uri(OpcPackage.BasePackageUri, path);
             Package = package;
             _path = path;
             Entry = entry;
             _mode = mode;
         }
+
 
         internal OpcPackage Package { get; }
 
