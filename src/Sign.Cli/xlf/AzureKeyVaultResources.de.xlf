@@ -22,6 +22,11 @@
         <target state="translated">Verwenden Sie Azure Key Vault.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidCertificateVersionValue">
+        <source>Certificate version must be a 32-character string.</source>
+        <target state="new">Certificate version must be a 32-character string.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidKeyVaultUrl">
         <source>URL must only contain the protocol and host. (e.g.: https://&lt;vault-name&gt;.vault.azure.net/)</source>
         <target state="translated">Die URL darf nur das Protokoll und den Host enthalten. (Beispiel: https://&lt;vault-name&gt;.vault.azure.net/)</target>

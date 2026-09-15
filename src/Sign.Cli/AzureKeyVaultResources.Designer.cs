@@ -101,6 +101,15 @@ namespace Sign.Cli {
                 return ResourceManager.GetString("InvalidKeyVaultUrl", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate version must be a 32-character string..
+        /// </summary>
+        internal static string InvalidCertificateVersionValue {
+            get {
+                return ResourceManager.GetString("InvalidCertificateVersionValue", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to URL must be an absolute HTTPS URL to an Azure Key Vault..

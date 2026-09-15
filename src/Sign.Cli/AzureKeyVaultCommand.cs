@@ -43,7 +43,8 @@ namespace Sign.Cli
             };
             CertificateVersionOption = new Option<string>("--azure-key-vault-certificate-version", "-kvcv")
             {
-                Description = AzureKeyVaultResources.CertificateVersionOptionDescription
+                Description = AzureKeyVaultResources.CertificateVersionOptionDescription,
+                CustomParser = ParseCertificateVersion
             };
             FilesArgument = new Argument<List<string>?>("file(s)")
             {
@@ -89,10 +90,9 @@ namespace Sign.Cli
                 Uri url = parseResult.GetValue(UrlOption)!;
                 string certificateId = parseResult.GetValue(CertificateOption)!;
                 string? certificateVersion = parseResult.GetValue(CertificateVersionOption);
-                string certificateVersionPath = string.IsNullOrEmpty(certificateVersion) ? string.Empty : $"/{certificateVersion}";
 
                 // Construct the URI for the certificate from user parameters. We'll validate it with the SDK.
-                var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}{certificateVersionPath}");
+                var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}");
 
                 if (!KeyVaultCertificateIdentifier.TryCreate(certUri, out var certId))
                 {
@@ -127,7 +127,7 @@ namespace Sign.Cli
                             serviceProvider.GetRequiredService<CertificateClient>(),
                             serviceProvider.GetRequiredService<Func<Uri, CryptographyClient>>(),
                             certId.Name,
-                            certId.Version,
+                            certificateVersion,
                             serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());
                     });
                 });
@@ -150,6 +150,18 @@ namespace Sign.Cli
             }
 
             return uri;
+        }
+
+        private static string? ParseCertificateVersion(ArgumentResult result)
+        {
+            if (result.Tokens.Count != 1 || result.Tokens[0].Value.Length != 32)
+            {
+                result.AddError(AzureKeyVaultResources.InvalidCertificateVersionValue);
+
+                return null;
+            }
+
+            return result.Tokens[0].Value;
         }
     }
 }

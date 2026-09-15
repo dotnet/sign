@@ -17,7 +17,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
     public class KeyVaultServiceTests
     {
         private const string CertificateName = "a";
-        private const string CertificateVersion = "b";
+        private const string CertificateVersion = "0123456789abcdef0123456789abcdef";
         private static readonly Uri VaultUri = new("https://keyvault.test/");
         private static readonly Uri KeyId = new("https://keyvault.test/keys/a/key-version");
         private static readonly ILogger<KeyVaultService> Logger = Substitute.For<ILogger<KeyVaultService>>();
@@ -122,6 +122,31 @@ namespace Sign.SignatureProviders.KeyVault.Test
 
             await _certificateClient.Received(1)
                 .GetCertificateVersionAsync(CertificateName, CertificateVersion, cancellationToken);
+        }
+
+        [Fact]
+        public async Task GetCertificateAsync_WhenCertificateVersionDoesNotExist_DoesNotRetrieveLatestVersion()
+        {
+            CancellationToken cancellationToken = CancellationToken.None;
+            RequestFailedException expectedException = new(status: 404, message: "Not found");
+
+            _certificateClient
+                .GetCertificateVersionAsync(CertificateName, CertificateVersion, cancellationToken)
+                .Returns(Task.FromException<Response<KeyVaultCertificate>>(expectedException));
+
+            using KeyVaultService service = new(
+                _certificateClient,
+                _cryptographyClientFactory,
+                CertificateName,
+                CertificateVersion,
+                Logger);
+
+            RequestFailedException actualException = await Assert.ThrowsAsync<RequestFailedException>(
+                () => service.GetCertificateAsync(cancellationToken));
+
+            Assert.Same(expectedException, actualException);
+            await _certificateClient.DidNotReceiveWithAnyArgs()
+                .GetCertificateAsync(default!, default);
         }
 
         [Fact]
