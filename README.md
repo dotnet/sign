@@ -35,6 +35,21 @@ While the current version is limited to RSA and Azure Key Vault, it is desirable
 - ClickOnce `.application` and `.vsto` (via `Mage`). Notes below.
 - `.nupkg`
 
+## Static Web Assets
+
+Packages produced by the ASP.NET Core SDK (for example, Blazor and Razor class libraries) carry their browser
+assets in a `staticwebassets` directory and record each asset's integrity hash at pack time in
+`build/Microsoft.AspNetCore.StaticWebAssets.props`.  Signing such an asset --- most commonly a `.js` file, which is
+indistinguishable by extension from a Windows Script Host script --- changes the file and invalidates the recorded
+hash, which breaks consuming applications.
+
+When this tool recurses into a container and finds one of these `.props` files, it skips the assets in the
+package's `staticwebassets` directory and logs a warning for each skipped file.  Files elsewhere in the package,
+including `.js` files outside of `staticwebassets`, are unaffected.
+
+To sign static web assets anyway, list them explicitly using the `--file-list` option.  When a file list is
+provided, this tool signs whatever the list matches.
+
 ## ClickOnce
 There are a couple of possibilities for signing ClickOnce packages.
 

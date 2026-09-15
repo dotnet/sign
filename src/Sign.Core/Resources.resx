@@ -231,6 +231,10 @@
     <value>Completed in {millseconds} ms.</value>
     <comment>{Placeholder="{milliseconds}"} is a decimal number representing the number of milliseconds elapsed, and "ms" is the unit abbreviation for milliseconds.</comment>
   </data>
+  <data name="SkippingStaticWebAsset" xml:space="preserve">
+    <value>Skipping {filePath}. It is an ASP.NET Core static web asset, and signing it would invalidate the integrity hash recorded in {propsFileName}. To sign it anyway, list it explicitly using the --file-list option.</value>
+    <comment>{Placeholder="{filePath}"} is a file path. {Placeholder="{propsFileName}"} is a file name. "--file-list" is a command line option name and should not be translated.</comment>
+  </data>
   <data name="SubmittingFileForSigning" xml:space="preserve">
     <value>Submitting {filePath} for signing.</value>
     <comment>{Placeholder="{filePath}"} is a file path.</comment>
