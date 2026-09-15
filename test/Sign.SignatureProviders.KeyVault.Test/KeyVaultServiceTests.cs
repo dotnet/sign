@@ -2,9 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Azure;
+using Azure.Core;
+using Azure.Core.Pipeline;
 using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Keys;
 using Azure.Security.KeyVault.Keys.Cryptography;
@@ -269,6 +274,34 @@ namespace Sign.SignatureProviders.KeyVault.Test
             _cryptographyClientFactory.DidNotReceiveWithAnyArgs()(default!);
         }
 
+        [Fact]
+        public async Task GetCertificateAsync_WhenKeyIdIsMalformed_Throws()
+        {
+            using X509Certificate2 selfIssuedCertificate = SelfIssuedCertificateCreator.CreateCertificate();
+            string certificate = Convert.ToBase64String(selfIssuedCertificate.Export(X509ContentType.Cert));
+            string responseContent =
+                $$"""{"id":"https://keyvault.test/certificates/a/{{CertificateVersion}}","kid":"https://[bad","cer":"{{certificate}}"}""";
+            CertificateClientOptions options = new()
+            {
+                Transport = new HttpClientTransport(new ResponseMessageHandler(responseContent))
+            };
+            CertificateClient certificateClient = new(VaultUri, new TestTokenCredential(), options);
+
+            using KeyVaultService service = new(
+                certificateClient,
+                _cryptographyClientFactory,
+                CertificateName,
+                CertificateVersion,
+                Logger);
+
+            InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => service.GetCertificateAsync(CancellationToken.None));
+
+            Assert.Equal(Resources.InvalidCertificateKeyIdentifier, exception.Message);
+            Assert.IsType<UriFormatException>(exception.InnerException);
+            _cryptographyClientFactory.DidNotReceiveWithAnyArgs()(default!);
+        }
+
         private static KeyVaultCertificateWithPolicy CreateKeyVaultCertificateWithPolicy(Uri? keyId = null)
         {
             using X509Certificate2 selfIssuedCertificate = SelfIssuedCertificateCreator.CreateCertificate();
@@ -290,6 +323,46 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 keyId,
                 keyMaterial);
 #pragma warning restore NS2001
+        }
+
+        private sealed class ResponseMessageHandler : HttpMessageHandler
+        {
+            private readonly string _content;
+
+            internal ResponseMessageHandler(string content)
+            {
+                _content = content;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                HttpResponseMessage response = new(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(_content, Encoding.UTF8, "application/json"),
+                    RequestMessage = request
+                };
+
+                return Task.FromResult(response);
+            }
+        }
+
+        private sealed class TestTokenCredential : TokenCredential
+        {
+            public override AccessToken GetToken(
+                TokenRequestContext requestContext,
+                CancellationToken cancellationToken)
+            {
+                return new AccessToken("token", DateTimeOffset.MaxValue);
+            }
+
+            public override ValueTask<AccessToken> GetTokenAsync(
+                TokenRequestContext requestContext,
+                CancellationToken cancellationToken)
+            {
+                return ValueTask.FromResult(GetToken(requestContext, cancellationToken));
+            }
         }
     }
 }

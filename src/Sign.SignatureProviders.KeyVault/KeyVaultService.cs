@@ -133,7 +133,7 @@ namespace Sign.SignatureProviders.KeyVault
             {
                 keyId = certificate.KeyId;
             }
-            catch (ArgumentNullException exception)
+            catch (Exception exception) when (exception is ArgumentNullException or UriFormatException)
             {
                 throw new InvalidOperationException(Resources.InvalidCertificateKeyIdentifier, exception);
             }
