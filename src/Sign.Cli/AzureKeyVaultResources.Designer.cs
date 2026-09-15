@@ -69,6 +69,12 @@ namespace Sign.Cli {
             }
         }
         
+        internal static string CertificateVersionOptionDescription {
+            get {
+                return ResourceManager.GetString("CertificateVersionOptionDescription", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to ClickOnce signing via the legacy .clickonce ZIP workaround is no longer supported. See documentation..
         /// </summary>
@@ -93,6 +99,15 @@ namespace Sign.Cli {
         internal static string InvalidKeyVaultUrl {
             get {
                 return ResourceManager.GetString("InvalidKeyVaultUrl", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate version must be a 32-character string..
+        /// </summary>
+        internal static string InvalidCertificateVersionValue {
+            get {
+                return ResourceManager.GetString("InvalidCertificateVersionValue", resourceCulture);
             }
         }
         

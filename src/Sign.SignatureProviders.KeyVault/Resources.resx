@@ -127,4 +127,7 @@
   <data name="FetchingCertificate" xml:space="preserve">
     <value>Fetching certificate from Azure Key Vault.</value>
   </data>
+  <data name="InvalidCertificateKeyIdentifier" xml:space="preserve">
+    <value>The Azure Key Vault certificate does not have a valid backing key identifier for the configured vault.</value>
+  </data>
 </root>
