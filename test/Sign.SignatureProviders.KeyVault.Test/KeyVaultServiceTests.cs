@@ -18,34 +18,42 @@ namespace Sign.SignatureProviders.KeyVault.Test
     {
         private const string CertificateName = "a";
         private const string CertificateVersion = "b";
+        private static readonly Uri VaultUri = new("https://keyvault.test/");
+        private static readonly Uri KeyId = new("https://keyvault.test/keys/a/key-version");
         private static readonly ILogger<KeyVaultService> Logger = Substitute.For<ILogger<KeyVaultService>>();
 
         private readonly CertificateClient _certificateClient = Substitute.For<CertificateClient>();
+        private readonly Func<Uri, CryptographyClient> _cryptographyClientFactory = Substitute.For<Func<Uri, CryptographyClient>>();
         private readonly CryptographyClient _cryptographyClient = Substitute.For<CryptographyClient>();
+
+        public KeyVaultServiceTests()
+        {
+            _certificateClient.VaultUri.Returns(VaultUri);
+        }
 
         [Fact]
         public void Constructor_WhenCertificateClientIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(certificateClient: null!, _cryptographyClient, CertificateName, certificateVersion: null, Logger));
+                () => new KeyVaultService(certificateClient: null!, _cryptographyClientFactory, CertificateName, certificateVersion: null, Logger));
 
             Assert.Equal("certificateClient", exception.ParamName);
         }
 
         [Fact]
-        public void Constructor_WhenCryptographyClientIsNull_Throws()
+        public void Constructor_WhenCryptographyClientFactoryIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(_certificateClient, cryptographyClient: null!, CertificateName, certificateVersion: null, Logger));
+                () => new KeyVaultService(_certificateClient, cryptographyClientFactory: null!, CertificateName, certificateVersion: null, Logger));
 
-            Assert.Equal("cryptographyClient", exception.ParamName);
+            Assert.Equal("cryptographyClientFactory", exception.ParamName);
         }
 
         [Fact]
         public void Constructor_WhenCertificateNameIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(_certificateClient, _cryptographyClient, certificateName: null!, certificateVersion: null, Logger));
+                () => new KeyVaultService(_certificateClient, _cryptographyClientFactory, certificateName: null!, certificateVersion: null, Logger));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
@@ -54,7 +62,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenCertificateNameIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
-                () => new KeyVaultService(_certificateClient, _cryptographyClient, certificateName: string.Empty, certificateVersion: null, Logger));
+                () => new KeyVaultService(_certificateClient, _cryptographyClientFactory, certificateName: string.Empty, certificateVersion: null, Logger));
 
             Assert.Equal("certificateName", exception.ParamName);
         }
@@ -63,7 +71,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
         public void Constructor_WhenLoggerIsNull_Throws()
         {
             ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new KeyVaultService(_certificateClient, _cryptographyClient, CertificateName, certificateVersion: null, logger: null!));
+                () => new KeyVaultService(_certificateClient, _cryptographyClientFactory, CertificateName, certificateVersion: null, logger: null!));
 
             Assert.Equal("logger", exception.ParamName);
         }
@@ -79,7 +87,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 .GetCertificateAsync(CertificateName, cancellationToken)
                 .Returns(response);
 
-            using KeyVaultService service = new(_certificateClient, _cryptographyClient, CertificateName, certificateVersion: null, Logger);
+            using KeyVaultService service = new(_certificateClient, _cryptographyClientFactory, CertificateName, certificateVersion: null, Logger);
 
             using X509Certificate2 certificate1 = await service.GetCertificateAsync(cancellationToken);
             using X509Certificate2 certificate2 = await service.GetCertificateAsync(cancellationToken);
@@ -95,6 +103,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
             byte[] publicKey = selfIssuedCertificate.Export(X509ContentType.Cert);
             KeyVaultCertificate certificate = CertificateModelFactory.KeyVaultCertificate(
                 new CertificateProperties(CertificateName),
+                keyId: KeyId,
                 cer: publicKey);
             Response<KeyVaultCertificate> response = Response.FromValue(certificate, Substitute.For<Response>());
 
@@ -104,7 +113,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
 
             using KeyVaultService service = new(
                 _certificateClient,
-                _cryptographyClient,
+                _cryptographyClientFactory,
                 CertificateName,
                 CertificateVersion,
                 Logger);
@@ -130,20 +139,118 @@ namespace Sign.SignatureProviders.KeyVault.Test
             _cryptographyClient
                 .CreateRSAAsync(cancellationToken)
                 .Returns(rsaKeyVault);
+            _cryptographyClientFactory(KeyId).Returns(_cryptographyClient);
 
-            using KeyVaultService service = new(_certificateClient, _cryptographyClient, CertificateName, certificateVersion: null, Logger);
+            using KeyVaultService service = new(_certificateClient, _cryptographyClientFactory, CertificateName, certificateVersion: null, Logger);
 
             using RSA rsa = await service.GetRsaAsync(cancellationToken);
 
             Assert.IsType<RSAKeyVaultWrapper>(rsa);
+            _cryptographyClientFactory.Received(1)(KeyId);
         }
 
-        private static KeyVaultCertificateWithPolicy CreateKeyVaultCertificateWithPolicy()
+        [Fact]
+        public async Task GetRsaAsync_WhenCertificateAndKeyVersionsDiffer_UsesCertificateKeyId()
+        {
+            CancellationToken cancellationToken = CancellationToken.None;
+            using X509Certificate2 selfIssuedCertificate = SelfIssuedCertificateCreator.CreateCertificate();
+            byte[] publicKey = selfIssuedCertificate.Export(X509ContentType.Cert);
+            Uri certificateId = new($"https://keyvault.test/certificates/{CertificateName}/{CertificateVersion}");
+            KeyVaultCertificate certificate = CertificateModelFactory.KeyVaultCertificate(
+                new CertificateProperties(certificateId),
+                keyId: KeyId,
+                cer: publicKey);
+            Response<KeyVaultCertificate> response = Response.FromValue(certificate, Substitute.For<Response>());
+            RSAKeyVault rsaKeyVault = CreateRSAKeyVault();
+
+            _certificateClient
+                .GetCertificateVersionAsync(CertificateName, CertificateVersion, cancellationToken)
+                .Returns(response);
+            _cryptographyClientFactory(KeyId).Returns(_cryptographyClient);
+            _cryptographyClient
+                .CreateRSAAsync(cancellationToken)
+                .Returns(rsaKeyVault);
+
+            using KeyVaultService service = new(
+                _certificateClient,
+                _cryptographyClientFactory,
+                CertificateName,
+                CertificateVersion,
+                Logger);
+
+            using RSA rsa = await service.GetRsaAsync(cancellationToken);
+
+            _cryptographyClientFactory.Received(1)(KeyId);
+            _cryptographyClientFactory.DidNotReceive()(new Uri($"https://keyvault.test/keys/{CertificateName}/{CertificateVersion}"));
+        }
+
+        [Theory]
+        [InlineData("https://other-keyvault.test/keys/a/key-version")]
+        [InlineData("https://keyvault.test/certificates/a/key-version")]
+        [InlineData("https://keyvault.test/keys/a")]
+        public async Task GetCertificateAsync_WhenKeyIdIsInvalid_Throws(string keyId)
+        {
+            CancellationToken cancellationToken = CancellationToken.None;
+            KeyVaultCertificateWithPolicy certificate = CreateKeyVaultCertificateWithPolicy(
+                keyId: new Uri(keyId));
+            Response<KeyVaultCertificateWithPolicy> response = Response.FromValue(certificate, Substitute.For<Response>());
+
+            _certificateClient
+                .GetCertificateAsync(CertificateName, cancellationToken)
+                .Returns(response);
+
+            using KeyVaultService service = new(
+                _certificateClient,
+                _cryptographyClientFactory,
+                CertificateName,
+                certificateVersion: null,
+                Logger);
+
+            InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => service.GetCertificateAsync(cancellationToken));
+
+            Assert.Equal(Resources.InvalidCertificateKeyIdentifier, exception.Message);
+            _cryptographyClientFactory.DidNotReceiveWithAnyArgs()(default!);
+        }
+
+        [Fact]
+        public async Task GetCertificateAsync_WhenKeyIdIsMissing_Throws()
+        {
+            CancellationToken cancellationToken = CancellationToken.None;
+            using X509Certificate2 selfIssuedCertificate = SelfIssuedCertificateCreator.CreateCertificate();
+            byte[] publicKey = selfIssuedCertificate.Export(X509ContentType.Cert);
+            KeyVaultCertificateWithPolicy certificate = CertificateModelFactory.KeyVaultCertificateWithPolicy(
+                new CertificateProperties("test"),
+                keyId: null,
+                cer: publicKey);
+            Response<KeyVaultCertificateWithPolicy> response = Response.FromValue(certificate, Substitute.For<Response>());
+
+            _certificateClient
+                .GetCertificateAsync(CertificateName, cancellationToken)
+                .Returns(response);
+
+            using KeyVaultService service = new(
+                _certificateClient,
+                _cryptographyClientFactory,
+                CertificateName,
+                certificateVersion: null,
+                Logger);
+
+            InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => service.GetCertificateAsync(cancellationToken));
+
+            Assert.Equal(Resources.InvalidCertificateKeyIdentifier, exception.Message);
+            Assert.IsType<ArgumentNullException>(exception.InnerException);
+            _cryptographyClientFactory.DidNotReceiveWithAnyArgs()(default!);
+        }
+
+        private static KeyVaultCertificateWithPolicy CreateKeyVaultCertificateWithPolicy(Uri? keyId = null)
         {
             using X509Certificate2 selfIssuedCertificate = SelfIssuedCertificateCreator.CreateCertificate();
             byte[] publicKey = selfIssuedCertificate.Export(X509ContentType.Cert);
             return CertificateModelFactory.KeyVaultCertificateWithPolicy(
                 new CertificateProperties("test"),
+                keyId: keyId ?? KeyId,
                 cer: publicKey);
         }
 

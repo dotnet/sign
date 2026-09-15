@@ -17,6 +17,11 @@
         <target state="translated">Sertifika Azure Key Vault’tan getiriliyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidCertificateKeyIdentifier">
+        <source>The Azure Key Vault certificate does not have a valid backing key identifier for the configured vault.</source>
+        <target state="new">The Azure Key Vault certificate does not have a valid backing key identifier for the configured vault.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
