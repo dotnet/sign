@@ -86,5 +86,14 @@ namespace Sign.SignatureProviders.KeyVault {
                 return ResourceManager.GetString("FetchingCertificate", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The Azure Key Vault certificate does not have a valid backing key identifier for the configured vault..
+        /// </summary>
+        internal static string InvalidCertificateKeyIdentifier {
+            get {
+                return ResourceManager.GetString("InvalidCertificateKeyIdentifier", resourceCulture);
+            }
+        }
     }
 }

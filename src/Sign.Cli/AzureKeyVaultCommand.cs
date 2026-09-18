@@ -6,7 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys.Cryptography;
+using Azure.Security.KeyVault.Keys;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,6 +18,7 @@ namespace Sign.Cli
     internal sealed class AzureKeyVaultCommand : Command
     {
         internal Option<Uri> UrlOption { get; }
+        internal Option<string> CertificateVersionOption { get; }
         internal Option<string> CertificateOption { get; }
         internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
@@ -40,6 +41,11 @@ namespace Sign.Cli
                 Description = AzureKeyVaultResources.CertificateOptionDescription,
                 Required = true
             };
+            CertificateVersionOption = new Option<string>("--azure-key-vault-certificate-version", "-kvcv")
+            {
+                Description = AzureKeyVaultResources.CertificateVersionOptionDescription,
+                CustomParser = ParseCertificateVersion
+            };
             FilesArgument = new Argument<List<string>?>("file(s)")
             {
                 Description = Resources.FilesArgumentDescription,
@@ -48,6 +54,7 @@ namespace Sign.Cli
 
             Options.Add(UrlOption);
             Options.Add(CertificateOption);
+            Options.Add(CertificateVersionOption);
             AzureCredentialOptions.AddOptionsToCommand(this);
 
             Arguments.Add(FilesArgument);
@@ -82,8 +89,9 @@ namespace Sign.Cli
                 // the null-forgiving operator (!) to simplify the code.
                 Uri url = parseResult.GetValue(UrlOption)!;
                 string certificateId = parseResult.GetValue(CertificateOption)!;
+                string? certificateVersion = parseResult.GetValue(CertificateVersionOption);
 
-                // Construct the URI for the certificate and the key from user parameters. We'll validate those with the SDK
+                // Construct the URI for the certificate from user parameters. We'll validate it with the SDK.
                 var certUri = new Uri($"{url.Scheme}://{url.Authority}/certificates/{certificateId}");
 
                 if (!KeyVaultCertificateIdentifier.TryCreate(certUri, out var certId))
@@ -93,15 +101,12 @@ namespace Sign.Cli
                     return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
-                // The key uri is similar and the key name matches the certificate name
-                var keyUri = new Uri($"{url.Scheme}://{url.Authority}/keys/{certificateId}");
-
                 serviceProviderFactory.AddServices(services =>
                 {
                     services.AddAzureClients(builder =>
                     {
                         builder.AddCertificateClient(certId.VaultUri);
-                        builder.AddCryptographyClient(keyUri);
+                        builder.AddKeyClient(certId.VaultUri);
                         builder.UseCredential(credential);
                         builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
                     });
@@ -110,8 +115,9 @@ namespace Sign.Cli
                     {
                         return new KeyVaultService(
                             serviceProvider.GetRequiredService<CertificateClient>(),
-                            serviceProvider.GetRequiredService<CryptographyClient>(),
+                            serviceProvider.GetRequiredService<KeyClient>(),
                             certId.Name,
+                            certificateVersion,
                             serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());
                     });
                 });
@@ -134,6 +140,18 @@ namespace Sign.Cli
             }
 
             return uri;
+        }
+
+        private static string? ParseCertificateVersion(ArgumentResult result)
+        {
+            if (result.Tokens.Count != 1 || result.Tokens[0].Value.Length != 32)
+            {
+                result.AddError(AzureKeyVaultResources.InvalidCertificateVersionValue);
+
+                return null;
+            }
+
+            return result.Tokens[0].Value;
         }
     }
 }
