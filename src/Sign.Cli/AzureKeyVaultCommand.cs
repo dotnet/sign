@@ -6,7 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using Azure.Core;
 using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys.Cryptography;
+using Azure.Security.KeyVault.Keys;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -106,26 +106,16 @@ namespace Sign.Cli
                     services.AddAzureClients(builder =>
                     {
                         builder.AddCertificateClient(certId.VaultUri);
+                        builder.AddKeyClient(certId.VaultUri);
                         builder.UseCredential(credential);
                         builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
-                    });
-
-                    services.AddSingleton<Func<Uri, CryptographyClient>>(_ =>
-                    {
-                        return keyId =>
-                        {
-                            CryptographyClientOptions options = new();
-                            options.Retry.Mode = RetryMode.Exponential;
-
-                            return new CryptographyClient(keyId, credential, options);
-                        };
                     });
 
                     services.AddSingleton<KeyVaultService>(serviceProvider =>
                     {
                         return new KeyVaultService(
                             serviceProvider.GetRequiredService<CertificateClient>(),
-                            serviceProvider.GetRequiredService<Func<Uri, CryptographyClient>>(),
+                            serviceProvider.GetRequiredService<KeyClient>(),
                             certId.Name,
                             certificateVersion,
                             serviceProvider.GetRequiredService<ILogger<KeyVaultService>>());

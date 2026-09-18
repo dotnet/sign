@@ -3,7 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using Azure.Security.KeyVault.Certificates;
-using Azure.Security.KeyVault.Keys.Cryptography;
+using Azure.Security.KeyVault.Keys;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -24,7 +24,7 @@ namespace Sign.SignatureProviders.KeyVault.Test
             {
                 return new KeyVaultService(
                     Substitute.For<CertificateClient>(),
-                    Substitute.For<Func<Uri, CryptographyClient>>(),
+                    Substitute.For<KeyClient>(),
                     certificateName: "a",
                     certificateVersion: null,
                     sp.GetRequiredService<ILogger<KeyVaultService>>());

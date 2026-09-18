@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Keys;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -178,6 +179,7 @@ namespace Sign.Cli.Test
                 services.AddSingleton(certificateClient);
 
                 using Microsoft.Extensions.DependencyInjection.ServiceProvider serviceProvider = services.BuildServiceProvider();
+                KeyClient keyClient = serviceProvider.GetRequiredService<KeyClient>();
                 Type serviceType = Type.GetType(
                     "Sign.SignatureProviders.KeyVault.KeyVaultService, Sign.SignatureProviders.KeyVault",
                     throwOnError: true)!;
@@ -186,6 +188,7 @@ namespace Sign.Cli.Test
 
                 await certificateClient.Received(1)
                     .GetCertificateVersionAsync("a", CertificateVersion, Arg.Any<CancellationToken>());
+                Assert.Equal(new Uri("https://keyvault.test/"), keyClient.VaultUri);
             }
 
             [Theory]

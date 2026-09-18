@@ -17,9 +17,9 @@ namespace Sign.SignatureProviders.KeyVault
     internal sealed class KeyVaultService : ISignatureAlgorithmProvider, ICertificateProvider, IDisposable
     {
         private readonly CertificateClient _certificateClient;
-        private readonly Func<Uri, CryptographyClient> _cryptographyClientFactory;
         private readonly string? _certificateVersion;
         private readonly string _certificateName;
+        private readonly KeyClient _keyClient;
         private readonly ILogger<KeyVaultService> _logger;
         private readonly SemaphoreSlim _mutex = new(1);
         private CertificateInfo? _certificateInfo;
@@ -27,20 +27,20 @@ namespace Sign.SignatureProviders.KeyVault
 
         internal KeyVaultService(
             CertificateClient certificateClient,
-            Func<Uri, CryptographyClient> cryptographyClientFactory,
+            KeyClient keyClient,
             string certificateName,
             string? certificateVersion,
             ILogger<KeyVaultService> logger)
         {
             ArgumentNullException.ThrowIfNull(certificateClient, nameof(certificateClient));
-            ArgumentNullException.ThrowIfNull(cryptographyClientFactory, nameof(cryptographyClientFactory));
+            ArgumentNullException.ThrowIfNull(keyClient, nameof(keyClient));
             ArgumentException.ThrowIfNullOrEmpty(certificateName, nameof(certificateName));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
             _certificateName = certificateName;
             _certificateVersion = certificateVersion;
             _certificateClient = certificateClient;
-            _cryptographyClientFactory = cryptographyClientFactory;
+            _keyClient = keyClient;
             _logger = logger;
         }
 
@@ -66,7 +66,9 @@ namespace Sign.SignatureProviders.KeyVault
 
             try
             {
-                _cryptographyClient ??= _cryptographyClientFactory(certificateInfo.KeyId);
+                _cryptographyClient ??= _keyClient.GetCryptographyClient(
+                    certificateInfo.KeyIdentifier.Name,
+                    certificateInfo.KeyIdentifier.Version);
             }
             finally
             {
@@ -108,13 +110,13 @@ namespace Sign.SignatureProviders.KeyVault
                         certificate = response.Value;
                     }
 
-                    Uri keyId = GetKeyId(certificate);
+                    KeyVaultKeyIdentifier keyIdentifier = GetKeyIdentifier(certificate);
                     X509Certificate2 x509Certificate = new(certificate.Cer);
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                     _logger.LogTrace($"{Resources.CertificateDetails}{Environment.NewLine}{x509Certificate.ToString(verbose: true)}");
 
-                    _certificateInfo = new CertificateInfo(x509Certificate, keyId);
+                    _certificateInfo = new CertificateInfo(x509Certificate, keyIdentifier);
                 }
             }
             finally
@@ -125,7 +127,7 @@ namespace Sign.SignatureProviders.KeyVault
             return _certificateInfo;
         }
 
-        private Uri GetKeyId(KeyVaultCertificate certificate)
+        private KeyVaultKeyIdentifier GetKeyIdentifier(KeyVaultCertificate certificate)
         {
             Uri keyId;
 
@@ -151,18 +153,18 @@ namespace Sign.SignatureProviders.KeyVault
                 throw new InvalidOperationException(Resources.InvalidCertificateKeyIdentifier);
             }
 
-            return keyId;
+            return keyIdentifier;
         }
 
         private sealed class CertificateInfo
         {
             internal X509Certificate2 Certificate { get; }
-            internal Uri KeyId { get; }
+            internal KeyVaultKeyIdentifier KeyIdentifier { get; }
 
-            internal CertificateInfo(X509Certificate2 certificate, Uri keyId)
+            internal CertificateInfo(X509Certificate2 certificate, KeyVaultKeyIdentifier keyIdentifier)
             {
                 Certificate = certificate;
-                KeyId = keyId;
+                KeyIdentifier = keyIdentifier;
             }
         }
     }
