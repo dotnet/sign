@@ -164,7 +164,7 @@
       </trans-unit>
       <trans-unit id="VSIXSignToolOpcPartNameContainsUnsupportedUriDelimiter">
         <source>Package part name '{0}' contains the unsupported URI delimiter '{1}'.</source>
-        <target state="new">Package part name '{0}' contains the unsupported URI delimiter '{1}'.</target>
+        <target state="translated">包部件名称 '{0}' 包含不受支持的 URI 分隔符 '{1}'。</target>
         <note>{NumberedPlaceholder="{0}"} is the package part name. {NumberedPlaceholder="{1}"} is the unsupported URI delimiter.</note>
       </trans-unit>
       <trans-unit id="VSIXSignToolUnknownSigningAlgorithm">
