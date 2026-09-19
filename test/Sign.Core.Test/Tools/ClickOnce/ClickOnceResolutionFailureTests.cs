@@ -39,7 +39,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void PayloadResolver_WhenResolveFilesThrows_RestoresHintsClearsResolvedPathAndPreservesDiagnostics()
+        public void PayloadResolver_DoesNotResolveManifestAndPreservesExistingDiagnostics()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -47,6 +47,10 @@ namespace Sign.Core.Test
                 ClickOnceResolutionTestUtilities.CreateFile(
                     root,
                     ApplicationManifestFileName);
+            FileInfo payload =
+                ClickOnceResolutionTestUtilities.CreateFile(
+                    root,
+                    PayloadFileName);
             ApplicationManifest applicationModel =
                 ClickOnceResolutionTestUtilities.CreateApplicationManifest();
             AssemblyIdentity identity = new(
@@ -62,10 +66,10 @@ namespace Sign.Core.Test
 
             applicationModel.AssemblyReferences.Add(reference);
 
-            List<ClickOnceManifestDiagnostic> manifestDiagnostics = new();
             ClickOnceManifestDiagnostic expectedDiagnostic =
                 CreateWarningDiagnostic();
-            IOException expectedException = new();
+            List<ClickOnceManifestDiagnostic> manifestDiagnostics =
+                new() { expectedDiagnostic };
             IApplicationManifest applicationManifest =
                 Substitute.For<IApplicationManifest>();
 
@@ -79,42 +83,26 @@ namespace Sign.Core.Test
             applicationManifest
                 .When(manifest => manifest.ResolveFiles(
                     Arg.Any<IReadOnlyList<DirectoryInfo>>()))
-                .Do(_ =>
-                {
-                    Assert.Null(reference.SourcePath);
-                    Assert.Null(reference.AssemblyIdentity);
-                    reference.ResolvedPath = "partial-resolved-path.dll";
-                    manifestDiagnostics.Add(expectedDiagnostic);
-
-                    throw expectedException;
-                });
+                .Do(_ => throw new InvalidOperationException());
 
             ClickOncePayloadResolver payloadResolver = new();
             List<ClickOnceManifestDiagnostic> diagnostics = new();
 
-            ClickOncePublishLayoutResolutionException exception =
-                Assert.Throws<ClickOncePublishLayoutResolutionException>(
-                    () => payloadResolver.ResolveForExplicitApplication(
-                        applicationManifestFile,
-                        applicationManifest,
-                        diagnostics));
+            IReadOnlyList<ResolvedClickOncePayload> payloads =
+                payloadResolver.ResolveForExplicitApplication(
+                    applicationManifestFile,
+                    applicationManifest,
+                    diagnostics);
 
             Assert.Equal(SourcePath, reference.SourcePath);
             Assert.Same(identity, reference.AssemblyIdentity);
-            Assert.Null(reference.ResolvedPath);
-            Assert.Equal(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.ClickOnceApplicationManifestResolveFailed,
-                    applicationManifestFile.FullName),
-                exception.Message);
-            Assert.Same(expectedException, exception.InnerException);
-            Assert.Same(
-                expectedDiagnostic,
-                Assert.Single(exception.Diagnostics));
+            Assert.Equal(payload.FullName, reference.ResolvedPath);
+            Assert.Equal(payload.FullName, Assert.Single(payloads).Source.FullName);
             Assert.Same(
                 expectedDiagnostic,
                 Assert.Single(diagnostics));
+            applicationManifest.DidNotReceive().ResolveFiles(
+                Arg.Any<IReadOnlyList<DirectoryInfo>>());
         }
 
         [Fact]

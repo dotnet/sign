@@ -324,9 +324,7 @@ namespace Sign.Core.Test
             Assert.Equal(expectedPayload.FullName, payload.Source.FullName);
             Assert.Equal(PayloadTargetPath, payload.TargetPath);
             Assert.False(payload.IsFileExtensionMapped);
-            ClickOnceManifestDiagnostic diagnostic = Assert.Single(layout.Diagnostics);
-            Assert.Equal(OutputMessageType.Error, diagnostic.Type);
-            Assert.Contains(PayloadTargetPath, diagnostic.Text, StringComparison.Ordinal);
+            Assert.Empty(layout.Diagnostics);
         }
 
         [Fact]
@@ -371,9 +369,7 @@ namespace Sign.Core.Test
                     SharedPayloadFileName,
                     inaccessiblePayloadPath),
                 exception.Message);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic => diagnostic.Text.Contains(SharedPayloadFileName, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
@@ -418,9 +414,7 @@ namespace Sign.Core.Test
                     SharedPayloadFileName,
                     failedPayloadPath),
                 exception.Message);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic => diagnostic.Text.Contains(SharedPayloadFileName, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
@@ -466,9 +460,7 @@ namespace Sign.Core.Test
                     SharedPayloadFileName,
                     failedPayloadPath),
                 exception.Message);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic => diagnostic.Text.Contains(SharedPayloadFileName, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
@@ -1139,15 +1131,11 @@ namespace Sign.Core.Test
                 () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic =>
-                    diagnostic.Type == OutputMessageType.Error &&
-                    diagnostic.Text.Contains(PayloadTargetPath, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
-        public void DeploymentPublishLayoutResolver_WhenApplicationResolutionProducesWarning_PreservesDiagnosticAndSucceeds()
+        public void DeploymentPublishLayoutResolver_WhenApplicationManifestHasDiagnostics_PreservesDiagnosticsAndSucceeds()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1173,7 +1161,11 @@ namespace Sign.Core.Test
 
             ApplicationManifest applicationModel = CreateApplicationManifest();
             AddFileReference(applicationModel, payload.Name);
-            List<ClickOnceManifestDiagnostic> applicationDiagnostics = new();
+            List<ClickOnceManifestDiagnostic> applicationDiagnostics = new()
+            {
+                CreateWarningDiagnostic(WarningOneTargetPath),
+                CreateWarningDiagnostic(WarningTwoTargetPath)
+            };
             IApplicationManifest applicationManifest =
                 Substitute.For<IApplicationManifest>();
 
@@ -1184,15 +1176,6 @@ namespace Sign.Core.Test
             applicationManifest.FileReferences.Returns(
                 applicationModel.FileReferences);
             applicationManifest.Diagnostics.Returns(applicationDiagnostics);
-            applicationManifest
-                .When(manifest => manifest.ResolveFiles(
-                    Arg.Any<IReadOnlyList<DirectoryInfo>>()))
-                .Do(_ =>
-                {
-                    applicationDiagnostics.Add(CreateWarningDiagnostic(WarningOneTargetPath));
-                    applicationDiagnostics.Add(CreateWarningDiagnostic(WarningTwoTargetPath));
-                });
-
             IClickOnceManifestReader manifestReader =
                 Substitute.For<IClickOnceManifestReader>();
 
@@ -1235,7 +1218,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentPublishLayoutResolver_WhenApplicationResolutionRetries_PreservesEachDiagnosticOnceInOrder()
+        public void DeploymentPublishLayoutResolver_DoesNotResolveApplicationManifestDuringDiscovery()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1262,26 +1245,17 @@ namespace Sign.Core.Test
 
             ApplicationManifest applicationModel = CreateApplicationManifest();
             AddFileReference(applicationModel, payload.Name);
-            List<ClickOnceManifestDiagnostic> applicationDiagnostics = new();
             IApplicationManifest applicationManifest = Substitute.For<IApplicationManifest>();
-            int resolutionAttempt = 0;
 
             applicationManifest.AssemblyReferences.Returns(applicationModel.AssemblyReferences);
             applicationManifest.EntryPoint.Returns(applicationModel.EntryPoint);
             applicationManifest.FileReferences.Returns(applicationModel.FileReferences);
-            applicationManifest.Diagnostics.Returns(applicationDiagnostics);
+            applicationManifest.Diagnostics.Returns(
+                Array.Empty<ClickOnceManifestDiagnostic>());
             applicationManifest
                 .When(manifest => manifest.ResolveFiles(
                     Arg.Any<IReadOnlyList<DirectoryInfo>>()))
-                .Do(_ =>
-                {
-                    ++resolutionAttempt;
-                    applicationDiagnostics.Add(
-                        CreateWarningDiagnostic(
-                            resolutionAttempt == 1
-                                ? WarningOneTargetPath
-                                : WarningTwoTargetPath));
-                });
+                .Do(_ => throw new InvalidOperationException());
 
             IClickOnceManifestReader manifestReader = Substitute.For<IClickOnceManifestReader>();
 
@@ -1308,20 +1282,10 @@ namespace Sign.Core.Test
 
             ResolvedClickOncePublishLayout layout = resolver.Resolve(deploymentManifestFile);
 
-            Assert.Equal(expected: 2, actual: resolutionAttempt);
             Assert.Equal(payload.FullName, Assert.Single(layout.Application.Payloads).Source.FullName);
-            Assert.Collection(
-                layout.Diagnostics,
-                diagnostic =>
-                {
-                    Assert.Equal(OutputMessageType.Warning, diagnostic.Type);
-                    Assert.Contains(WarningOneTargetPath, diagnostic.Text, StringComparison.Ordinal);
-                },
-                diagnostic =>
-                {
-                    Assert.Equal(OutputMessageType.Warning, diagnostic.Type);
-                    Assert.Contains(WarningTwoTargetPath, diagnostic.Text, StringComparison.Ordinal);
-                });
+            Assert.Empty(layout.Diagnostics);
+            applicationManifest.DidNotReceive().ResolveFiles(
+                Arg.Any<IReadOnlyList<DirectoryInfo>>());
         }
 
         [Fact]
@@ -1408,9 +1372,7 @@ namespace Sign.Core.Test
                     PayloadFileName,
                     inaccessiblePayloadPath),
                 exception.Message);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic => diagnostic.Text.Contains(PayloadFileName, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
@@ -1495,7 +1457,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void ApplicationPublishLayoutResolver_WhenOptionalPayloadIsMissing_ThrowsWithDiagnostic()
+        public void ApplicationPublishLayoutResolver_WhenOptionalPayloadIsMissing_Throws()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1512,11 +1474,7 @@ namespace Sign.Core.Test
                 () => _applicationPublishLayoutResolver.TryResolve(applicationManifest, out _));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic =>
-                    diagnostic.Type == OutputMessageType.Error &&
-                    diagnostic.Text.Contains(PayloadTargetPath, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
@@ -1543,7 +1501,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentPublishLayoutResolver_WhenOptionalPayloadIsMissing_ThrowsWithDiagnostic()
+        public void DeploymentPublishLayoutResolver_WhenOptionalPayloadIsMissing_Throws()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1564,11 +1522,7 @@ namespace Sign.Core.Test
                 () => _deploymentPublishLayoutResolver.Resolve(deploymentManifest));
 
             Assert.Contains(PayloadTargetPath, exception.Message, StringComparison.Ordinal);
-            Assert.Contains(
-                exception.Diagnostics,
-                diagnostic =>
-                    diagnostic.Type == OutputMessageType.Error &&
-                    diagnostic.Text.Contains(PayloadTargetPath, StringComparison.Ordinal));
+            Assert.Empty(exception.Diagnostics);
         }
 
         [Fact]
@@ -1868,7 +1822,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void PayloadResolver_DuringDiagnosticResolution_SuppressesAndRestoresCompetingHints()
+        public void PayloadResolver_DoesNotResolveManifestAndUsesTargetPath()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -1894,12 +1848,7 @@ namespace Sign.Core.Test
             applicationManifest
                 .When(manifest => manifest.ResolveFiles(
                     Arg.Any<IReadOnlyList<DirectoryInfo>>()))
-                .Do(_ =>
-                {
-                    Assert.Null(reference.SourcePath);
-                    Assert.Null(reference.AssemblyIdentity);
-                    reference.ResolvedPath = "diagnostic-path.dll";
-                });
+                .Do(_ => throw new InvalidOperationException());
 
             IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                 applicationManifestFile,
@@ -1910,6 +1859,8 @@ namespace Sign.Core.Test
             Assert.Equal(SourcePath, reference.SourcePath);
             Assert.Same(identity, reference.AssemblyIdentity);
             Assert.Equal(expectedPayload.FullName, reference.ResolvedPath);
+            applicationManifest.DidNotReceive().ResolveFiles(
+                Arg.Any<IReadOnlyList<DirectoryInfo>>());
         }
 
         [Fact]

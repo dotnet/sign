@@ -142,15 +142,6 @@ namespace Sign.Core {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Failed to resolve files referenced by application manifest &apos;{0}&apos;..
-        /// </summary>
-        internal static string ClickOnceApplicationManifestResolveFailed {
-            get {
-                return ResourceManager.GetString("ClickOnceApplicationManifestResolveFailed", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; references application manifest &apos;{1}&apos;, but the file does not exist..
         /// </summary>
         internal static string ClickOnceDeploymentManifestApplicationManifestNotFound {

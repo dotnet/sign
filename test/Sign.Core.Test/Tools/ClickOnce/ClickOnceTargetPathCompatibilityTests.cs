@@ -132,9 +132,7 @@ namespace Sign.Core.Test
             Assert.Equal(
                 expectedCandidate,
                 Assert.Single(probeCandidates));
-            AssertSearchPaths(
-                Assert.Single(resolutionSearches),
-                root.FullName);
+            Assert.Empty(resolutionSearches);
         }
 
         [Theory]
@@ -218,17 +216,7 @@ namespace Sign.Core.Test
             AssertSearchPaths(
                 Assert.Single(deploymentResolutionSearches),
                 root.FullName);
-            Assert.Collection(
-                applicationResolutionSearches,
-                directories =>
-                    AssertSearchPaths(
-                        directories,
-                        applicationManifestFile.DirectoryName!),
-                directories =>
-                    AssertSearchPaths(
-                        directories,
-                        applicationManifestFile.DirectoryName!,
-                        root.FullName));
+            Assert.Empty(applicationResolutionSearches);
         }
 
         [Theory]
@@ -448,7 +436,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentPublishLayoutResolver_WhenOnlyMappedPayloadExistsInDeploymentDirectory_UsesFallbackAndPreservesFirstAttemptDiagnostic()
+        public void DeploymentPublishLayoutResolver_WhenOnlyMappedPayloadExistsInDeploymentDirectory_UsesFallbackWithoutPreliminaryDiagnostic()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -481,24 +469,7 @@ namespace Sign.Core.Test
             Assert.Equal(payload.FullName, entry.Source.FullName);
             Assert.Equal(PayloadFileName, entry.TargetPath);
             Assert.True(entry.IsFileExtensionMapped);
-            Assert.Collection(
-                layout.Diagnostics,
-                diagnostic =>
-                {
-                    Assert.Equal(OutputMessageType.Error, diagnostic.Type);
-                    Assert.Contains(
-                        PayloadFileName,
-                        diagnostic.Text,
-                        StringComparison.Ordinal);
-                },
-                diagnostic =>
-                {
-                    Assert.Equal(OutputMessageType.Error, diagnostic.Type);
-                    Assert.Contains(
-                        PayloadFileName,
-                        diagnostic.Text,
-                        StringComparison.Ordinal);
-                });
+            Assert.Empty(layout.Diagnostics);
         }
 
         private static IApplicationManifest CreateApplicationManifestSubstitute(

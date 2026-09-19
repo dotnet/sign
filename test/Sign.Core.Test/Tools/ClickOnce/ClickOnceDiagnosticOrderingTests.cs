@@ -71,7 +71,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void DeploymentPublishLayoutResolver_WhenFallbackSucceeds_PreservesRealDeploymentThenApplicationDiagnosticOrder()
+        public void DeploymentPublishLayoutResolver_WhenFallbackSucceeds_PreservesDeploymentDiagnostic()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -101,20 +101,13 @@ namespace Sign.Core.Test
             Assert.Equal(
                 payload.FullName,
                 Assert.Single(layout.Application.Payloads).Source.FullName);
-            Assert.Collection(
-                layout.Diagnostics,
-                diagnostic =>
-                    AssertDiagnostic(
-                        diagnostic,
-                        DeploymentWarningTargetPath),
-                diagnostic =>
-                    AssertDiagnostic(
-                        diagnostic,
-                        FallbackPayloadTargetPath));
+            AssertDiagnostic(
+                Assert.Single(layout.Diagnostics),
+                DeploymentWarningTargetPath);
         }
 
         [Fact]
-        public void DeploymentPublishLayoutResolver_WhenFallbackCannotResolveEveryPayload_PreservesRealCrossManifestDiagnosticOrder()
+        public void DeploymentPublishLayoutResolver_WhenFallbackCannotResolveEveryPayload_PreservesDeploymentDiagnostic()
         {
             using TemporaryDirectory temporaryDirectory = new(_directoryService);
             DirectoryInfo root = temporaryDirectory.Directory;
@@ -148,24 +141,9 @@ namespace Sign.Core.Test
                 MissingPayloadTargetPath,
                 exception.Message,
                 StringComparison.Ordinal);
-            Assert.Collection(
-                exception.Diagnostics,
-                diagnostic =>
-                    AssertDiagnostic(
-                        diagnostic,
-                        DeploymentWarningTargetPath),
-                diagnostic =>
-                    AssertDiagnostic(
-                        diagnostic,
-                        FallbackPayloadTargetPath),
-                diagnostic =>
-                    AssertDiagnostic(
-                        diagnostic,
-                        MissingPayloadTargetPath),
-                diagnostic =>
-                    AssertDiagnostic(
-                        diagnostic,
-                        MissingPayloadTargetPath));
+            AssertDiagnostic(
+                Assert.Single(exception.Diagnostics),
+                DeploymentWarningTargetPath);
         }
 
         private static void AssertDiagnostic(

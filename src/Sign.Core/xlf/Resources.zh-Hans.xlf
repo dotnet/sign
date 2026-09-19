@@ -57,11 +57,6 @@
         <target state="new">Application manifest '{0}' references required file '{1}', but it could not be found.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</note>
       </trans-unit>
-      <trans-unit id="ClickOnceApplicationManifestResolveFailed">
-        <source>Failed to resolve files referenced by application manifest '{0}'.</source>
-        <target state="new">Failed to resolve files referenced by application manifest '{0}'.</target>
-        <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
-      </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
         <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
         <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>

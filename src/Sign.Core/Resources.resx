@@ -155,10 +155,6 @@
     <value>Application manifest '{0}' references required file '{1}', but it could not be found.</value>
     <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</comment>
   </data>
-  <data name="ClickOnceApplicationManifestResolveFailed" xml:space="preserve">
-    <value>Failed to resolve files referenced by application manifest '{0}'.</value>
-    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path.</comment>
-  </data>
   <data name="ClickOnceDeploymentManifestApplicationManifestNotFound" xml:space="preserve">
     <value>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</value>
     <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</comment>

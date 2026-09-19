@@ -42,16 +42,11 @@ namespace Sign.Core
             DirectoryInfo[] searchDirectories = PathsEqual(applicationDirectory.FullName, deploymentDirectory.FullName)
                 ? new[] { applicationDirectory }
                 : new[] { applicationDirectory, deploymentDirectory };
-            DirectoryInfo[][] resolutionSearchDirectories = searchDirectories.Length == 1
-                ? new[] { searchDirectories }
-                // Preserve diagnostics from the application-directory attempt before retrying with fallback.
-                : new[] { new[] { applicationDirectory }, searchDirectories };
 
             return Resolve(
                 applicationManifestFile,
                 applicationManifest,
                 searchDirectories,
-                resolutionSearchDirectories,
                 mapFileExtensions ? PayloadLookupKind.Mapped : PayloadLookupKind.Unmapped,
                 diagnostics);
         }
@@ -69,7 +64,6 @@ namespace Sign.Core
                 applicationManifestFile,
                 applicationManifest,
                 new[] { applicationManifestFile.Directory! },
-                new[] { new[] { applicationManifestFile.Directory! } },
                 PayloadLookupKind.UnmappedThenMapped,
                 diagnostics);
         }
@@ -78,14 +72,12 @@ namespace Sign.Core
             FileInfo applicationManifestFile,
             IApplicationManifest applicationManifest,
             DirectoryInfo[] searchDirectories,
-            DirectoryInfo[][] resolutionSearchDirectories,
             PayloadLookupKind lookupKind,
             ICollection<ClickOnceManifestDiagnostic> diagnostics)
         {
             List<BaseReference> references = GetPhysicalReferences(applicationManifest);
-            int diagnosticCount = 0;
 
-            AddDiagnostics(applicationManifest, diagnostics, ref diagnosticCount);
+            AddDiagnostics(applicationManifest, diagnostics);
 
             foreach (BaseReference reference in references)
             {
@@ -94,40 +86,6 @@ namespace Sign.Core
                     reference.TargetPath,
                     searchDirectories,
                     diagnostics);
-            }
-
-            try
-            {
-                using TargetOnlyResolutionScope resolutionScope = new(references);
-
-                foreach (DirectoryInfo[] resolutionDirectories in resolutionSearchDirectories)
-                {
-                    try
-                    {
-                        applicationManifest.ResolveFiles(resolutionDirectories);
-                    }
-                    catch (Exception exception) when (
-                        exception is IOException or
-                        UnauthorizedAccessException or
-                        ArgumentException)
-                    {
-                        AddDiagnostics(applicationManifest, diagnostics, ref diagnosticCount);
-
-                        throw new ClickOncePublishLayoutResolutionException(
-                            string.Format(
-                                CultureInfo.CurrentCulture,
-                                Resources.ClickOnceApplicationManifestResolveFailed,
-                                applicationManifestFile.FullName),
-                            diagnostics,
-                            exception);
-                    }
-
-                    AddDiagnostics(applicationManifest, diagnostics, ref diagnosticCount);
-                }
-            }
-            finally
-            {
-                ClearResolvedPaths(applicationManifest);
             }
 
             List<ResolvedClickOncePayload> payloads = new(references.Count);
@@ -192,24 +150,6 @@ namespace Sign.Core
             }
 
             return payloads;
-        }
-
-        private static void ClearResolvedPaths(IApplicationManifest applicationManifest)
-        {
-            foreach (AssemblyReference reference in applicationManifest.AssemblyReferences)
-            {
-                reference.ResolvedPath = null;
-            }
-
-            foreach (FileReference reference in applicationManifest.FileReferences)
-            {
-                reference.ResolvedPath = null;
-            }
-
-            if (applicationManifest.EntryPoint is not null)
-            {
-                applicationManifest.EntryPoint.ResolvedPath = null;
-            }
         }
 
         private static List<BaseReference> GetPhysicalReferences(IApplicationManifest applicationManifest)
@@ -364,17 +304,12 @@ namespace Sign.Core
 
         private static void AddDiagnostics(
             IClickOnceManifest manifest,
-            ICollection<ClickOnceManifestDiagnostic> diagnostics,
-            ref int diagnosticCount)
+            ICollection<ClickOnceManifestDiagnostic> diagnostics)
         {
-            IReadOnlyList<ClickOnceManifestDiagnostic> manifestDiagnostics = manifest.Diagnostics;
-
-            for (int i = diagnosticCount; i < manifestDiagnostics.Count; ++i)
+            foreach (ClickOnceManifestDiagnostic diagnostic in manifest.Diagnostics)
             {
-                diagnostics.Add(manifestDiagnostics[i]);
+                diagnostics.Add(diagnostic);
             }
-
-            diagnosticCount = manifestDiagnostics.Count;
         }
 
         private static bool PathsEqual(string left, string right)
@@ -390,56 +325,6 @@ namespace Sign.Core
             Unmapped,
             Mapped,
             UnmappedThenMapped
-        }
-
-        private sealed class TargetOnlyResolutionScope : IDisposable
-        {
-            private readonly IReadOnlyList<ReferenceState> _states;
-
-            internal TargetOnlyResolutionScope(IEnumerable<BaseReference> references)
-            {
-                _states = references
-                    .Distinct<BaseReference>(ReferenceEqualityComparer.Instance)
-                    .Select(reference => new ReferenceState(reference))
-                    .ToArray();
-
-                foreach (ReferenceState state in _states)
-                {
-                    state.Reference.SourcePath = null;
-
-                    if (state.Reference is AssemblyReference assemblyReference)
-                    {
-                        assemblyReference.AssemblyIdentity = null;
-                    }
-                }
-            }
-
-            public void Dispose()
-            {
-                foreach (ReferenceState state in _states)
-                {
-                    state.Reference.SourcePath = state.SourcePath;
-
-                    if (state.Reference is AssemblyReference assemblyReference)
-                    {
-                        assemblyReference.AssemblyIdentity = state.AssemblyIdentity;
-                    }
-                }
-            }
-
-            private sealed class ReferenceState
-            {
-                internal ReferenceState(BaseReference reference)
-                {
-                    Reference = reference;
-                    SourcePath = reference.SourcePath;
-                    AssemblyIdentity = (reference as AssemblyReference)?.AssemblyIdentity;
-                }
-
-                internal BaseReference Reference { get; }
-                internal string? SourcePath { get; }
-                internal AssemblyIdentity? AssemblyIdentity { get; }
-            }
         }
     }
 }
