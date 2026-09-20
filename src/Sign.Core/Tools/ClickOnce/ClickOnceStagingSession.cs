@@ -191,12 +191,7 @@ namespace Sign.Core
 
                 try
                 {
-                    File.Move(
-                        mappedFile.UpdateFile.FullName,
-                        mappedFile.StagedFile.Destination.FullName);
-                    mappedFile.IsAtUpdatePath = false;
-                    mappedFile.SetResolvedPath(
-                        mappedFile.StagedFile.Destination.FullName);
+                    RestoreMappedFile(mappedFile);
                 }
                 catch (Exception exception) when (
                     exception is IOException or
@@ -214,6 +209,16 @@ namespace Sign.Core
             ThrowRestoreFailures(exceptions);
         }
 
+        private static void RestoreMappedFile(MappedFile mappedFile)
+        {
+            File.Move(
+                mappedFile.UpdateFile.FullName,
+                mappedFile.StagedFile.Destination.FullName);
+            mappedFile.IsAtUpdatePath = false;
+            mappedFile.SetResolvedPath(
+                mappedFile.StagedFile.Destination.FullName);
+        }
+
         private IReadOnlyList<Exception> RestoreMappedFiles(
             IEnumerable<MappedFile> movedFiles)
         {
@@ -223,12 +228,7 @@ namespace Sign.Core
             {
                 try
                 {
-                    File.Move(
-                        mappedFile.UpdateFile.FullName,
-                        mappedFile.StagedFile.Destination.FullName);
-                    mappedFile.IsAtUpdatePath = false;
-                    mappedFile.SetResolvedPath(
-                        mappedFile.StagedFile.Destination.FullName);
+                    RestoreMappedFile(mappedFile);
                 }
                 catch (Exception exception) when (
                     exception is IOException or
