@@ -11,6 +11,8 @@ namespace Sign.Core
 {
     internal sealed class ClickOnceManifestReader : IClickOnceManifestReader
     {
+        private const string AssemblyV1Namespace =
+            "urn:schemas-microsoft-com:asm.v1";
         private const string AssemblyV2Namespace =
             "urn:schemas-microsoft-com:asm.v2";
         private const string SignatureNamespace =
@@ -52,8 +54,12 @@ namespace Sign.Core
                 return false;
             }
 
-            ReplaceManifestInputStream(deployManifest);
-            manifest = new DeployManifestAdapter(deployManifest);
+            ReplaceManifestInputStream(
+                deployManifest,
+                out bool hasUnsupportedResourceFallback);
+            manifest = new DeployManifestAdapter(
+                deployManifest,
+                hasUnsupportedResourceFallback);
 
             return true;
         }
@@ -83,17 +89,41 @@ namespace Sign.Core
                     nameof(stream));
             }
 
-            return ManifestReader.ReadManifest(stream, preserveStream: true);
+            try
+            {
+                return ManifestReader.ReadManifest(
+                    stream,
+                    preserveStream: true);
+            }
+            catch (Exception exception) when (
+                exception is ArgumentException or
+                InvalidCastException)
+            {
+                throw new InvalidOperationException(
+                    "The manifest content could not be read.",
+                    exception);
+            }
         }
 
         private static void ReplaceManifestInputStream(Manifest manifest)
+        {
+            ReplaceManifestInputStream(
+                manifest,
+                out _);
+        }
+
+        private static void ReplaceManifestInputStream(
+            Manifest manifest,
+            out bool hasUnsupportedResourceFallback)
         {
             Stream input = manifest.InputStream;
             Stream? output = null;
 
             try
             {
-                output = CreateSanitizedManifestInputStream(input);
+                output = CreateSanitizedManifestInputStream(
+                    input,
+                    out hasUnsupportedResourceFallback);
                 manifest.InputStream = output;
                 output = null;
             }
@@ -104,7 +134,9 @@ namespace Sign.Core
             }
         }
 
-        private static Stream CreateSanitizedManifestInputStream(Stream input)
+        private static Stream CreateSanitizedManifestInputStream(
+            Stream input,
+            out bool hasUnsupportedResourceFallback)
         {
             input.Position = 0;
             MemoryStream output = new();
@@ -136,6 +168,9 @@ namespace Sign.Core
                     throw new XmlException(
                         "The manifest XML does not have a document element.");
 
+                hasUnsupportedResourceFallback =
+                    HasUnsupportedResourceFallback(root);
+
                 for (XmlNode? node = root.FirstChild;
                     node is not null;)
                 {
@@ -165,6 +200,56 @@ namespace Sign.Core
                 output.Dispose();
                 throw;
             }
+        }
+
+        private static bool HasUnsupportedResourceFallback(
+            XmlElement root)
+        {
+            foreach (XmlNode dependencyNode in root.ChildNodes)
+            {
+                if (dependencyNode is not XmlElement dependency ||
+                    dependency.LocalName != "dependency" ||
+                    !IsAssemblyNamespace(dependency.NamespaceURI))
+                {
+                    continue;
+                }
+
+                foreach (XmlNode dependentAssemblyNode in
+                    dependency.ChildNodes)
+                {
+                    if (dependentAssemblyNode is XmlElement dependentAssembly &&
+                        dependentAssembly.LocalName == "dependentAssembly" &&
+                        IsAssemblyNamespace(
+                            dependentAssembly.NamespaceURI) &&
+                        (HasAttribute(
+                            dependentAssembly,
+                            "resourceFallbackCulture") ||
+                        HasAttribute(
+                            dependentAssembly,
+                            "resourceFallbackCultureInternal")))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasAttribute(
+            XmlElement element,
+            string localName)
+        {
+            return element.HasAttribute(localName) ||
+                element.HasAttribute(
+                    localName,
+                    AssemblyV2Namespace);
+        }
+
+        private static bool IsAssemblyNamespace(string namespaceUri)
+        {
+            return namespaceUri == AssemblyV1Namespace ||
+                namespaceUri == AssemblyV2Namespace;
         }
 
         private static bool IsStaleSigningElement(XmlElement element)

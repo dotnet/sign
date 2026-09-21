@@ -122,6 +122,31 @@
         <target state="translated">Podepisování úlohy Mage pomocí {count} souborů.</target>
         <note>{Locked="Mage"} is another signing tool.  {Placeholder="{count}"} is the number of files to be signed.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceStagingCopyFailed">
+        <source>Failed to prepare file '{0}' for the signing operation.</source>
+        <target state="new">Failed to prepare file '{0}' for the signing operation.</target>
+        <note>{NumberedPlaceholder="{0}"} is a source file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceStagingDestinationCollision">
+        <source>Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</source>
+        <target state="new">Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</target>
+        <note>{NumberedPlaceholder="{0}"} and {NumberedPlaceholder="{1}"} are source file paths. {NumberedPlaceholder="{2}"} and {NumberedPlaceholder="{3}"} are manifest target paths.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceStagingMappedSuffixFailed">
+        <source>Failed to rename file '{0}' while updating manifest file information.</source>
+        <target state="new">Failed to rename file '{0}' while updating manifest file information.</target>
+        <note>{NumberedPlaceholder="{0}"} is a manifest target path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceStagingReferenceDestinationConflict">
+        <source>Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</source>
+        <target state="new">Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is a source file path. {NumberedPlaceholder="{1}"} and {NumberedPlaceholder="{2}"} are manifest target paths.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceStagingUnsafeTargetPath">
+        <source>Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</source>
+        <target state="new">Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</target>
+        <note>{NumberedPlaceholder="{0}"} is a manifest target path. {NumberedPlaceholder="{1}"} is a source file path.</note>
+      </trans-unit>
       <trans-unit id="CreatingDirectory">
         <source>Creating directory {path}.</source>
         <target state="translated">Vytváří se adresář {path}.</target>
