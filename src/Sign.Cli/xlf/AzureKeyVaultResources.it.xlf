@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CertificateVersionOptionDescription">
         <source>Optional version of the Azure Key Vault certificate.</source>
-        <target state="new">Optional version of the Azure Key Vault certificate.</target>
+        <target state="translated">Versione facoltativa del certificato di Azure Key Vault.</target>
         <note />
       </trans-unit>
       <trans-unit id="ClickOnceExtensionNotSupported">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateVersionValue">
         <source>Certificate version must be a 32-character string.</source>
-        <target state="new">Certificate version must be a 32-character string.</target>
+        <target state="translated">La versione del certificato deve essere una stringa di 32 caratteri.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidKeyVaultUrl">
