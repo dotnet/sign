@@ -257,6 +257,51 @@ namespace Sign.Core {
                 return ResourceManager.GetString("ClickOnceSignatureProviderSigning", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to prepare file &apos;{0}&apos; for the signing operation..
+        /// </summary>
+        internal static string ClickOnceStagingCopyFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceStagingCopyFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Source files &apos;{0}&apos; and &apos;{1}&apos; have conflicting target paths &apos;{2}&apos; and &apos;{3}&apos;..
+        /// </summary>
+        internal static string ClickOnceStagingDestinationCollision {
+            get {
+                return ResourceManager.GetString("ClickOnceStagingDestinationCollision", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to rename file &apos;{0}&apos; while updating manifest file information..
+        /// </summary>
+        internal static string ClickOnceStagingMappedSuffixFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceStagingMappedSuffixFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Source file &apos;{0}&apos; is referenced with conflicting target paths &apos;{1}&apos; and &apos;{2}&apos;..
+        /// </summary>
+        internal static string ClickOnceStagingReferenceDestinationConflict {
+            get {
+                return ResourceManager.GetString("ClickOnceStagingReferenceDestinationConflict", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest target path &apos;{0}&apos; for source file &apos;{1}&apos; is invalid or unsupported..
+        /// </summary>
+        internal static string ClickOnceStagingUnsafeTargetPath {
+            get {
+                return ResourceManager.GetString("ClickOnceStagingUnsafeTargetPath", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to {fileName} returned the error {error}.
