@@ -22,7 +22,33 @@ namespace Sign.Core.Test
             string relativePath,
             string? contents = null)
         {
-            string path = Path.Combine(FullPath, relativePath);
+            ArgumentException.ThrowIfNullOrWhiteSpace(
+                relativePath,
+                nameof(relativePath));
+
+            if (Path.IsPathRooted(relativePath))
+            {
+                throw new ArgumentException(
+                    message: "The file path must be relative.",
+                    paramName: nameof(relativePath));
+            }
+
+            string path = Path.GetFullPath(
+                Path.Combine(FullPath, relativePath));
+            string normalizedRelativePath =
+                Path.GetRelativePath(FullPath, path);
+
+            if (normalizedRelativePath == ".." ||
+                normalizedRelativePath.StartsWith(
+                    value: $"..{Path.DirectorySeparatorChar}",
+                    comparisonType: StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    message:
+                        "The file path cannot escape the test directory.",
+                    paramName: nameof(relativePath));
+            }
+
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path: path, contents: contents);
 

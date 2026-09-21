@@ -79,10 +79,12 @@ namespace Sign.Core
                 exception is IOException or
                 UnauthorizedAccessException)
             {
-                Exception primaryException =
+                bool artifactIsUnavailable =
                     exception is FileNotFoundException ||
-                    exception is DirectoryNotFoundException &&
-                        !File.Exists(artifact.FullName)
+                    (exception is DirectoryNotFoundException &&
+                        !File.Exists(artifact.FullName));
+                Exception primaryException =
+                    artifactIsUnavailable
                         ? new InvalidOperationException(
                             message: "The signed artifact is unavailable.",
                             innerException: exception)
