@@ -34,87 +34,87 @@
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestInvalidTargetPath">
         <source>Application manifest '{0}' contains invalid target path '{1}'.</source>
-        <target state="new">Application manifest '{0}' contains invalid target path '{1}'.</target>
+        <target state="translated">Il manifesto dell'applicazione '{0}' contiene un percorso di destinazione non valido '{1}'.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is an invalid target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestMissingTargetPath">
         <source>Application manifest '{0}' contains a required file reference without a target path.</source>
-        <target state="new">Application manifest '{0}' contains a required file reference without a target path.</target>
+        <target state="translated">Il manifesto dell'applicazione '{0}' contiene un riferimento a file obbligatorio senza un percorso di destinazione.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestPayloadProbeFailed">
         <source>Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</source>
-        <target state="new">Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</target>
+        <target state="translated">Non è stato possibile accedere al candidato di origine '{2}' per il percorso di destinazione '{1}' nel manifesto dell'applicazione '{0}'.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is the exact target path from the manifest. {NumberedPlaceholder="{2}"} is the absolute source candidate path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestReadFailed">
         <source>Failed to read application manifest '{0}'.</source>
-        <target state="new">Failed to read application manifest '{0}'.</target>
+        <target state="translated">Non è stato possibile leggere il manifesto dell'applicazione '{0}'.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestRequiredFileNotFound">
         <source>Application manifest '{0}' references required file '{1}', but it could not be found.</source>
-        <target state="new">Application manifest '{0}' references required file '{1}', but it could not be found.</target>
+        <target state="translated">Il manifesto dell'applicazione '{0}' fa riferimento al file richiesto '{1}', ma non è stato trovato.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
         <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">Il manifesto di distribuzione '{0}' fa riferimento al manifesto dell'applicazione '{1}', ma il file non esiste. Per firmare senza aggiornare i metadati del manifesto ClickOnce, usa '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
         <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">Il manifesto di distribuzione '{0}' fa riferimento al percorso di destinazione del manifesto dell'applicazione '{1}', che non può essere rappresentato sotto la directory di gestione temporanea. Per firmare senza aggiornare i metadati del manifesto ClickOnce, usa '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is an invalid application manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestLauncherProbeFailed">
         <source>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</source>
-        <target state="new">Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <target state="translated">Non è stato possibile accedere ai candidati dell'utilità di avvio '{0}' associati al manifesto di distribuzione '{1}'.</target>
         <note>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestMissingEntryPoint">
         <source>Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">Il manifesto di distribuzione '{0}' non identifica un manifesto dell'applicazione. Per firmare senza aggiornare i metadati del manifesto ClickOnce, usa '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReadFailed">
         <source>Failed to read deployment manifest '{0}'.</source>
-        <target state="new">Failed to read deployment manifest '{0}'.</target>
+        <target state="translated">Non è stato possibile leggere il manifesto di distribuzione '{0}'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationReadFailed">
         <source>Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</source>
-        <target state="new">Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</target>
+        <target state="translated">Non è stato possibile leggere il manifesto dell'applicazione '{0}' a cui fa riferimento il manifesto di distribuzione '{1}'.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationWrongType">
         <source>File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</source>
-        <target state="new">File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</target>
+        <target state="translated">Il file '{0}' a cui fa riferimento il manifesto di distribuzione '{1}' non è un manifesto dell'applicazione.</target>
         <note>{NumberedPlaceholder="{0}"} is a referenced file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestResolveFailed">
         <source>Failed to resolve files referenced by deployment manifest '{0}'.</source>
-        <target state="new">Failed to resolve files referenced by deployment manifest '{0}'.</target>
+        <target state="translated">Non è stato possibile risolvere i file a cui fa riferimento il manifesto di distribuzione '{0}'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestSetupProbeFailed">
         <source>Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</source>
-        <target state="new">Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <target state="translated">Non è stato possibile accedere al candidato del programma di avvio automatico dell'installazione '{0}' associato al manifesto di distribuzione '{1}'.</target>
         <note>{NumberedPlaceholder="{0}"} is the absolute setup bootstrapper candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnresolvedApplicationManifest">
         <source>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">Il manifesto di distribuzione '{0}' non ha risolto il manifesto dell'applicazione a cui viene fatto riferimento '{1}'. Per firmare senza aggiornare i metadati del manifesto ClickOnce, usa '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnsupportedReferences">
         <source>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">Il manifesto di distribuzione '{0}' ha una struttura dei riferimenti non supportata dal runtime ClickOnce. Deve contenere esattamente una dipendenza da assembly: il manifesto dell'applicazione. Tale dipendenza non deve essere di tipo prerequisito, facoltativo o di fallback delle risorse e il manifesto di distribuzione non deve contenere riferimenti a file. Per firmare senza aggiornare i metadati del manifesto ClickOnce, usare '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestWrongType">
         <source>File '{0}' is not a deployment manifest.</source>
-        <target state="new">File '{0}' is not a deployment manifest.</target>
+        <target state="translated">Il file '{0}' non è un manifesto della distribuzione.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
@@ -124,27 +124,27 @@
       </trans-unit>
       <trans-unit id="ClickOnceStagingCopyFailed">
         <source>Failed to prepare file '{0}' for the signing operation.</source>
-        <target state="new">Failed to prepare file '{0}' for the signing operation.</target>
+        <target state="translated">Impossibile preparare il '{0}' file per l'operazione di firma.</target>
         <note>{NumberedPlaceholder="{0}"} is a source file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingDestinationCollision">
         <source>Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</source>
-        <target state="new">Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</target>
+        <target state="translated">I file di origine '{0}' e '{1}' hanno percorsi di destinazione '{2}' e '{3}' in conflitto.</target>
         <note>{NumberedPlaceholder="{0}"} and {NumberedPlaceholder="{1}"} are source file paths. {NumberedPlaceholder="{2}"} and {NumberedPlaceholder="{3}"} are manifest target paths.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingMappedSuffixFailed">
         <source>Failed to rename file '{0}' while updating manifest file information.</source>
-        <target state="new">Failed to rename file '{0}' while updating manifest file information.</target>
+        <target state="translated">Non è stato possibile rinominare il file '{0}' durante l'aggiornamento delle informazioni del file manifesto.</target>
         <note>{NumberedPlaceholder="{0}"} is a manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingReferenceDestinationConflict">
         <source>Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</source>
-        <target state="new">Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</target>
+        <target state="translated">Il file di origine '{0}' fa riferimento con percorsi di destinazione '{1}' e '{2}' in conflitto.</target>
         <note>{NumberedPlaceholder="{0}"} is a source file path. {NumberedPlaceholder="{1}"} and {NumberedPlaceholder="{2}"} are manifest target paths.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingUnsafeTargetPath">
         <source>Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</source>
-        <target state="new">Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</target>
+        <target state="translated">Il percorso di destinazione del manifesto '{0}' per il file di origine '{1}' non è valido o non è supportato.</target>
         <note>{NumberedPlaceholder="{0}"} is a manifest target path. {NumberedPlaceholder="{1}"} is a source file path.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
