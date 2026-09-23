@@ -226,6 +226,24 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task ExecuteAsync_OperationThrowsSynchronously_PublishesException()
+        {
+            using DirectoryServiceStub directoryService = new();
+            using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            InvalidOperationException expected = new(message: "Failure.");
+
+            InvalidOperationException actual =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => coordinator.ExecuteAsync(
+                            CreateIdentity(),
+                            () => throw expected)
+                        .WaitAsync(timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_SharedArtifactIsUnavailable_SharesException()
         {
             using TestDirectory directory = new();

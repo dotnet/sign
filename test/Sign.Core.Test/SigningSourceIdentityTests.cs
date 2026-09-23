@@ -94,6 +94,38 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void ContainerEntry_SamePathWithDifferentParents_IsNotEqual()
+        {
+            SigningSourceIdentity left =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\first.zip"),
+                    entryPath: "payload/file.dll");
+            SigningSourceIdentity right =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\second.zip"),
+                    entryPath: "payload/file.dll");
+
+            Assert.NotEqual(left, right);
+        }
+
+        [Fact]
+        public void PhysicalFile_AndContainerEntry_AreNotEqual()
+        {
+            SigningSourceIdentity physical =
+                SigningSourceIdentity.PhysicalFile(path: @"C:\file.bin");
+            SigningSourceIdentity entry =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\container.zip"),
+                    entryPath: "file.bin");
+
+            Assert.NotEqual(physical, entry);
+            Assert.NotEqual(entry, physical);
+        }
+
+        [Fact]
         public void ContainerEntry_EquivalentRecursiveIdentity_IsEqual()
         {
             SigningSourceIdentity parentLeft =

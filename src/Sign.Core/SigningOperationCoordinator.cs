@@ -37,9 +37,14 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(operation, nameof(operation));
             _snapshotLifetime.ThrowIfDisposed();
 
-            OperationState candidate = new(operation, CreateSnapshot);
+            OperationState candidate = new();
             // Equal identities share one operation and its retained snapshot.
             OperationState state = _operations.GetOrAdd(identity, candidate);
+
+            if (ReferenceEquals(state, candidate))
+            {
+                _ = state.RunAsync(operation, CreateSnapshot);
+            }
 
             return state.GetResultAsync();
         }
@@ -112,20 +117,9 @@ namespace Sign.Core
         {
             private static readonly AsyncLocal<OperationState?>
                 s_executingState = new();
-            private readonly Func<Task<FileInfo>> _operation;
-            private readonly Func<FileInfo, SigningOperationResult> _snapshot;
             private readonly
                 TaskCompletionSource<SigningOperationResult> _completion =
                     new(TaskCreationOptions.RunContinuationsAsynchronously);
-            private int _started;
-
-            internal OperationState(
-                Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot)
-            {
-                _operation = operation;
-                _snapshot = snapshot;
-            }
 
             internal Task<SigningOperationResult> GetResultAsync()
             {
@@ -144,15 +138,12 @@ namespace Sign.Core
                         message: "A signing operation cannot await itself.");
                 }
 
-                if (Interlocked.Exchange(ref _started, value: 1) == 0)
-                {
-                    Start();
-                }
-
                 return _completion.Task;
             }
 
-            private void Start()
+            internal async Task RunAsync(
+                Func<Task<FileInfo>> operation,
+                Func<FileInfo, SigningOperationResult> snapshot)
             {
                 Task<FileInfo> operationTask;
                 OperationState? previousState = s_executingState.Value;
@@ -162,7 +153,7 @@ namespace Sign.Core
                 {
                     // The delegate must fully write and flush the artifact and
                     // close every writer before its task completes.
-                    operationTask = _operation();
+                    operationTask = operation();
                 }
                 catch (Exception exception)
                 {
@@ -185,17 +176,12 @@ namespace Sign.Core
                     return;
                 }
 
-                _ = CompleteAsync(operationTask);
-            }
-
-            private async Task CompleteAsync(Task<FileInfo> operationTask)
-            {
                 try
                 {
                     FileInfo artifact =
                         await operationTask.ConfigureAwait(
                             continueOnCapturedContext: false);
-                    SigningOperationResult result = _snapshot(artifact);
+                    SigningOperationResult result = snapshot(artifact);
                     _completion.TrySetResult(result);
                 }
                 catch (Exception exception)

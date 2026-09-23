@@ -7,19 +7,18 @@ namespace Sign.Core
     internal sealed class SigningSourceIdentity :
         IEquatable<SigningSourceIdentity>
     {
-        private readonly IdentityKind _kind;
-        private readonly string? _path;
+        private readonly string _path;
         private readonly SigningSourceIdentity? _parent;
 
         private SigningSourceIdentity(
-            IdentityKind kind,
-            string? path,
+            string path,
             SigningSourceIdentity? parent)
         {
-            _kind = kind;
             _path = path;
             _parent = parent;
         }
+
+        private bool IsContainerEntry => _parent is not null;
 
         internal static SigningSourceIdentity Capture(FileInfo file)
         {
@@ -33,7 +32,6 @@ namespace Sign.Core
             ArgumentException.ThrowIfNullOrWhiteSpace(path, nameof(path));
 
             return new SigningSourceIdentity(
-                kind: IdentityKind.PhysicalPath,
                 path: Path.GetFullPath(path),
                 parent: null);
         }
@@ -45,7 +43,6 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(parent, nameof(parent));
 
             return new SigningSourceIdentity(
-                kind: IdentityKind.ContainerEntry,
                 path: NormalizeEntryPath(entryPath),
                 parent: parent);
         }
@@ -57,25 +54,27 @@ namespace Sign.Core
                 return true;
             }
 
-            if (other is null || _kind != other._kind)
+            if (
+                other is null ||
+                IsContainerEntry != other.IsContainerEntry)
             {
                 return false;
             }
 
-            return _kind switch
+            if (!IsContainerEntry)
             {
-                IdentityKind.PhysicalPath => string.Equals(
+                return string.Equals(
                     a: _path,
                     b: other._path,
-                    comparisonType: StringComparison.OrdinalIgnoreCase),
-                IdentityKind.ContainerEntry =>
-                    _parent!.Equals(other._parent) &&
-                    string.Equals(
-                        a: _path,
-                        b: other._path,
-                        comparisonType: StringComparison.Ordinal),
-                _ => false
-            };
+                    comparisonType: StringComparison.OrdinalIgnoreCase);
+            }
+
+            return
+                _parent!.Equals(other._parent) &&
+                string.Equals(
+                    a: _path,
+                    b: other._path,
+                    comparisonType: StringComparison.Ordinal);
         }
 
         public override bool Equals(object? obj)
@@ -85,17 +84,11 @@ namespace Sign.Core
 
         public override int GetHashCode()
         {
-            return _kind switch
-            {
-                IdentityKind.PhysicalPath => HashCode.Combine(
-                    _kind,
-                    StringComparer.OrdinalIgnoreCase.GetHashCode(_path!)),
-                IdentityKind.ContainerEntry => HashCode.Combine(
-                    _kind,
+            return IsContainerEntry
+                ? HashCode.Combine(
                     _parent,
-                    StringComparer.Ordinal.GetHashCode(_path!)),
-                _ => 0
-            };
+                    StringComparer.Ordinal.GetHashCode(_path))
+                : StringComparer.OrdinalIgnoreCase.GetHashCode(_path);
         }
 
         private static string NormalizeEntryPath(string entryPath)
@@ -150,12 +143,6 @@ namespace Sign.Core
             }
 
             return string.Join(separator: '/', values: segments);
-        }
-
-        private enum IdentityKind
-        {
-            PhysicalPath,
-            ContainerEntry
         }
     }
 }
