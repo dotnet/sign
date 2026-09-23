@@ -26,27 +26,38 @@ namespace Sign.Core
                 cleanup: _snapshotDirectory.Dispose);
         }
 
-        // Results borrow coordinator-owned snapshots. Dispose only after all
-        // operations and materializations finish. Disposal rejects new work
-        // but does not cancel work already running.
+        // Results borrow coordinator-owned snapshots. Disposal rejects new
+        // work, lets active owner operations finish, and defers cleanup until
+        // active owner and materialization leases are released.
         internal Task<SigningOperationResult> ExecuteAsync(
             SigningSourceIdentity identity,
             Func<Task<FileInfo>> operation)
         {
             ArgumentNullException.ThrowIfNull(identity, nameof(identity));
             ArgumentNullException.ThrowIfNull(operation, nameof(operation));
-            _snapshotLifetime.ThrowIfDisposed();
+            IDisposable? lease = _snapshotLifetime.EnterOperation();
 
-            OperationState candidate = new();
-            // Equal identities share one operation and its retained snapshot.
-            OperationState state = _operations.GetOrAdd(identity, candidate);
-
-            if (ReferenceEquals(state, candidate))
+            try
             {
-                _ = state.RunAsync(operation, CreateSnapshot);
-            }
+                OperationState candidate = new();
+                // Equal identities share one operation and its retained
+                // snapshot.
+                OperationState state = _operations.GetOrAdd(
+                    identity,
+                    candidate);
 
-            return state.GetResultAsync();
+                if (ReferenceEquals(state, candidate))
+                {
+                    _ = state.RunAsync(operation, CreateSnapshot, lease);
+                    lease = null;
+                }
+
+                return state.GetResultAsync();
+            }
+            finally
+            {
+                lease?.Dispose();
+            }
         }
 
         public void Dispose()
@@ -56,9 +67,6 @@ namespace Sign.Core
 
         private SigningOperationResult CreateSnapshot(FileInfo artifact)
         {
-            using IDisposable lease =
-                _snapshotLifetime.EnterOperation();
-
             if (artifact is null)
             {
                 throw new InvalidOperationException(
@@ -143,8 +151,10 @@ namespace Sign.Core
 
             internal async Task RunAsync(
                 Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot)
+                Func<FileInfo, SigningOperationResult> snapshot,
+                IDisposable operationLease)
             {
+                using IDisposable lease = operationLease;
                 Task<FileInfo> operationTask;
                 OperationState? previousState = s_executingState.Value;
                 s_executingState.Value = this;

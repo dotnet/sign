@@ -672,6 +672,59 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task Dispose_ActiveOwner_DefersCleanupAndAllowsCompletion()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            SigningOperationCoordinator coordinator = new(
+                directoryService: directoryService);
+            FileInfo artifact = directory.CreateFile(
+                "signed.bin",
+                "signed content");
+            TaskCompletionSource entered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            async Task<FileInfo> OperateAsync()
+            {
+                entered.SetResult();
+                await release.Task;
+
+                return artifact;
+            }
+
+            Task<SigningOperationResult> operation =
+                coordinator.ExecuteAsync(
+                    CreateIdentity(),
+                    OperateAsync);
+            await entered.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            DirectoryInfo snapshotDirectory =
+                Assert.Single(directoryService.Directories);
+
+            coordinator.Dispose();
+            snapshotDirectory.Refresh();
+
+            Assert.True(snapshotDirectory.Exists);
+
+            release.SetResult();
+            _ = await operation.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+
+            Assert.True(
+                condition: SpinWait.SpinUntil(
+                    condition: () =>
+                    {
+                        snapshotDirectory.Refresh();
+
+                        return !snapshotDirectory.Exists;
+                    },
+                    timeout: TimeSpan.FromSeconds(value: 5)),
+                userMessage: "Snapshot cleanup timed out.");
+        }
+
+        [Fact]
         public void ExecuteAsync_AfterDispose_Throws()
         {
             using DirectoryServiceStub directoryService = new();
