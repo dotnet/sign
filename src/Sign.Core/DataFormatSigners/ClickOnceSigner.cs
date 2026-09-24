@@ -256,7 +256,29 @@ namespace Sign.Core
             return files;
         }
 
-        public void CopySigningDependencies(FileInfo deploymentManifestFile, DirectoryInfo destination, SignOptions signOptions)
+        public void StageSigningDependencies(
+            FileInfo deploymentManifestFile,
+            DirectoryInfo stagingDirectory,
+            SignOptions signOptions)
+        {
+            CopyDependencies(
+                deploymentManifestFile,
+                stagingDirectory);
+        }
+
+        public void CopySigningResults(
+            FileInfo deploymentManifestFile,
+            DirectoryInfo outputDirectory,
+            SignOptions signOptions)
+        {
+            CopyDependencies(
+                deploymentManifestFile,
+                outputDirectory);
+        }
+
+        private void CopyDependencies(
+            FileInfo deploymentManifestFile,
+            DirectoryInfo destination)
         {
             // copy _all_ files, ignoring matching options, because we need them to be available to generate
             // valid manifests.

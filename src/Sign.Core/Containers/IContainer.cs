@@ -8,8 +8,11 @@ namespace Sign.Core
 {
     internal interface IContainer : IDisposable
     {
-        IEnumerable<FileInfo> GetFiles();
-        IEnumerable<FileInfo> GetFiles(Matcher matcher);
+        IEnumerable<SigningFile> GetFiles(
+            SigningSourceIdentity parentIdentity);
+        IEnumerable<SigningFile> GetFiles(
+            Matcher matcher,
+            SigningSourceIdentity parentIdentity);
 
         ValueTask OpenAsync();
         ValueTask SaveAsync();

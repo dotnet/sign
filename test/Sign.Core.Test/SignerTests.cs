@@ -63,6 +63,34 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task SignAsync_WhenPlanningFails_ReturnsFailed()
+        {
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                inputFiles: new FileInfo[] { null! },
+                outputFile: null,
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 1,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Failed, exitCode);
+            Assert.Contains(
+                logger.Entries,
+                entry => entry.LogLevel == LogLevel.Error);
+        }
+
+        [Fact]
         public async Task SignAsync_WhenFileIsPortableExecutable_Signs()
         {
             FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
