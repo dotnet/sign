@@ -14,7 +14,5 @@ namespace Sign.Core
             : base(manifest)
         {
         }
-
-        public FileReferenceCollection FileReferences => Manifest.FileReferences;
     }
 }

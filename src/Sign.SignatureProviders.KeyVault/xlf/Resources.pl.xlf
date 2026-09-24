@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="InvalidCertificateKeyIdentifier">
         <source>The Azure Key Vault certificate does not have a valid backing key identifier for the configured vault.</source>
-        <target state="new">The Azure Key Vault certificate does not have a valid backing key identifier for the configured vault.</target>
+        <target state="translated">Certyfikat usługi Azure Key Vault nie ma prawidłowego identyfikatora klucza zapasowego dla skonfigurowanego magazynu.</target>
         <note />
       </trans-unit>
     </body>
