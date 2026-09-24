@@ -61,6 +61,35 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task SignAsync_WhenContainersAreNested_PropagatesRecursiveSourceIdentity()
+        {
+            const string nestedAppxName = "nestedcontainer.appx";
+            AggregatingSignerTest test = new(
+                $"{AppxBundleContainerName}/{nestedAppxName}/a.dll");
+            FileInfo bundle = Assert.Single(test.Files);
+            SigningSourceIdentity bundleIdentity =
+                SigningSourceIdentity.Capture(bundle);
+            SigningSourceIdentity nestedAppxIdentity =
+                SigningSourceIdentity.ContainerEntry(
+                    bundleIdentity,
+                    nestedAppxName);
+
+            await test.Signer.SignAsync(test.Files, _options);
+
+            Assert.Equal(
+                bundleIdentity,
+                Assert.Single(
+                    test.Containers[AppxBundleContainerName]
+                        .GetFilesParentIdentities));
+            Assert.Equal(
+                nestedAppxIdentity,
+                Assert.Single(
+                    test.Containers[
+                        $"{AppxBundleContainerName}/{nestedAppxName}"]
+                        .GetFilesParentIdentities));
+        }
+
+        [Fact]
         public async Task SignAsync_WhenRecurseContainersIsFalse_SignsOnlyAppxItself()
         {
             AggregatingSignerTest test = new(
