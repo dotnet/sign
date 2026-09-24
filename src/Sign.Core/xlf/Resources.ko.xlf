@@ -34,87 +34,87 @@
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestInvalidTargetPath">
         <source>Application manifest '{0}' contains invalid target path '{1}'.</source>
-        <target state="new">Application manifest '{0}' contains invalid target path '{1}'.</target>
+        <target state="translated">애플리케이션 매니페스트 '{0}'에 유효하지 않은 대상 경로 '{1}'이(가) 포함되어 있습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is an invalid target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestMissingTargetPath">
         <source>Application manifest '{0}' contains a required file reference without a target path.</source>
-        <target state="new">Application manifest '{0}' contains a required file reference without a target path.</target>
+        <target state="translated">애플리케이션 매니페스트 '{0}'에 대상 경로가 없는 필수 파일 참조가 포함되어 있습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestPayloadProbeFailed">
         <source>Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</source>
-        <target state="new">Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</target>
+        <target state="translated">애플리케이션 매니페스트 '{0}'에서 대상 경로 '{1}'에 해당하는 원본 후보 '{2}'에 액세스하지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is the exact target path from the manifest. {NumberedPlaceholder="{2}"} is the absolute source candidate path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestReadFailed">
         <source>Failed to read application manifest '{0}'.</source>
-        <target state="new">Failed to read application manifest '{0}'.</target>
+        <target state="translated">애플리케이션 매니페스트 '{0}'을(를) 읽지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestRequiredFileNotFound">
         <source>Application manifest '{0}' references required file '{1}', but it could not be found.</source>
-        <target state="new">Application manifest '{0}' references required file '{1}', but it could not be found.</target>
+        <target state="translated">애플리케이션 매니페스트 '{0}'에서 필요한 파일 '{1}'을(를) 참조하지만 파일을 찾을 수 없습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
         <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에서 애플리케이션 매니페스트 '{1}'을(를) 참조하지만 파일이 없습니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
         <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에서 애플리케이션 매니페스트 대상 경로 '{1}'을(를) 참조하지만, 이 경로는 스테이징 디렉터리 아래에 나타낼 수 없습니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is an invalid application manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestLauncherProbeFailed">
         <source>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</source>
-        <target state="new">Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <target state="translated">배포 매니페스트 '{0}'과(와) 연결된 런처 후보 '{1}'에 액세스하지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestMissingEntryPoint">
         <source>Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에서 애플리케이션 매니페스트를 식별하지 않습니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReadFailed">
         <source>Failed to read deployment manifest '{0}'.</source>
-        <target state="new">Failed to read deployment manifest '{0}'.</target>
+        <target state="translated">배포 매니페스트 '{0}'을(를) 읽지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationReadFailed">
         <source>Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</source>
-        <target state="new">Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에서 참조하는 애플리케이션 매니페스트 '{1}'을(를) 읽지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationWrongType">
         <source>File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</source>
-        <target state="new">File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</target>
+        <target state="translated">배포 매니페스트에서 참조하는 파일 '{0}' '{1}'이 응용 프로그램 매니페스트가 아닙니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a referenced file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestResolveFailed">
         <source>Failed to resolve files referenced by deployment manifest '{0}'.</source>
-        <target state="new">Failed to resolve files referenced by deployment manifest '{0}'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에서 참조하는 파일을 확인하지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestSetupProbeFailed">
         <source>Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</source>
-        <target state="new">Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <target state="translated">배포 매니페스트 '{0}'과(와) 연결된 설치 부트스트래퍼 후보 '{1}'에 액세스하지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is the absolute setup bootstrapper candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnresolvedApplicationManifest">
         <source>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에서 참조하는 애플리케이션 매니페스트 '{1}'을(를) 확인하지 못했습니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnsupportedReferences">
         <source>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">배포 매니페스트 '{0}'에 ClickOnce 런타임에서 지원되지 않는 참조 구조가 있습니다. 배포 매니페스트에는 어셈블리 종속성이 정확히 하나만 포함되어야 하며, 해당 종속성은 애플리케이션 매니페스트여야 합니다. 이 종속성은 필수 종속성, 선택적 종속성 또는 리소스 대체 종속성이 아니어야 하며, 배포 매니페스트에는 파일 참조가 포함되지 않아야 합니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestWrongType">
         <source>File '{0}' is not a deployment manifest.</source>
-        <target state="new">File '{0}' is not a deployment manifest.</target>
+        <target state="translated">파일 '{0}'은(는) 배포 매니페스트가 아닙니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
@@ -124,27 +124,27 @@
       </trans-unit>
       <trans-unit id="ClickOnceStagingCopyFailed">
         <source>Failed to prepare file '{0}' for the signing operation.</source>
-        <target state="new">Failed to prepare file '{0}' for the signing operation.</target>
+        <target state="translated">서명 작업에 필요한 파일 '{0}'을(를) 준비하지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a source file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingDestinationCollision">
         <source>Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</source>
-        <target state="new">Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</target>
+        <target state="translated">소스 파일 '{0}' 및 '{1}'에 충돌하는 대상 경로 '{2}' 및 '{3}'가 있습니다.</target>
         <note>{NumberedPlaceholder="{0}"} and {NumberedPlaceholder="{1}"} are source file paths. {NumberedPlaceholder="{2}"} and {NumberedPlaceholder="{3}"} are manifest target paths.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingMappedSuffixFailed">
         <source>Failed to rename file '{0}' while updating manifest file information.</source>
-        <target state="new">Failed to rename file '{0}' while updating manifest file information.</target>
+        <target state="translated">매니페스트 파일 정보를 업데이트하는 동안 파일 '{0}' 이름을 바꾸지 못했습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingReferenceDestinationConflict">
         <source>Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</source>
-        <target state="new">Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</target>
+        <target state="translated">소스 파일 '{0}'이 충돌하는 대상 경로 '{1}' 및 '{2}'로 참조됩니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a source file path. {NumberedPlaceholder="{1}"} and {NumberedPlaceholder="{2}"} are manifest target paths.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingUnsafeTargetPath">
         <source>Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</source>
-        <target state="new">Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</target>
+        <target state="translated">원본 파일 '{1}'의 매니페스트 대상 경로 '{0}'이(가) 유효하지 않거나 지원되지 않습니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a manifest target path. {NumberedPlaceholder="{1}"} is a source file path.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
