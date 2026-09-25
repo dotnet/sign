@@ -177,7 +177,8 @@ namespace Sign.Core.Test
                 SignerSpy,
                 _containerProvider,
                 fileMetadataService,
-                new MatcherFactory());
+                new MatcherFactory(),
+                new StaticWebAssetFilter(Substitute.For<ILogger<IStaticWebAssetFilter>>()));
             _containerProvider.Containers = Containers.Values.ToList();
         }
     }
