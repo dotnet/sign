@@ -2,17 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.Collections.Concurrent;
-
 namespace Sign.Core
 {
-    internal sealed class SigningOperationCoordinator : IDisposable
+    internal sealed class SigningOperationCoordinator : IAsyncDisposable
     {
         private readonly
-            ConcurrentDictionary<SigningSourceIdentity, OperationState>
+            Dictionary<SigningSourceIdentity, OperationState>
             _operations = new();
+        private readonly object _gate = new();
         private readonly TemporaryDirectory _snapshotDirectory;
-        private readonly SigningOperationSnapshotLifetime _snapshotLifetime;
+        private Task? _disposal;
 
         internal SigningOperationCoordinator(
             IDirectoryService directoryService)
@@ -22,47 +21,95 @@ namespace Sign.Core
                 nameof(directoryService));
 
             _snapshotDirectory = new TemporaryDirectory(directoryService);
-            _snapshotLifetime = new SigningOperationSnapshotLifetime(
-                cleanup: _snapshotDirectory.Dispose);
         }
 
-        // Results borrow coordinator-owned snapshots. Disposal rejects new
-        // work, lets active owner operations finish, and defers cleanup until
-        // active owner and materialization leases are released.
+        // Results borrow coordinator-owned snapshots. ExecuteAsync is safe to
+        // call concurrently with itself and DisposeAsync; new work is rejected
+        // after disposal starts. Disposal awaits every published operation
+        // before deleting snapshots; concurrent and repeated DisposeAsync
+        // calls share that disposal and its outcome. Signing operations are
+        // not cancellable, so disposal waits for the slowest in-flight
+        // operation. Callers must finish their own materializations before
+        // disposal, and operation delegates must not dispose the coordinator.
         internal Task<SigningOperationResult> ExecuteAsync(
             SigningSourceIdentity identity,
             Func<Task<FileInfo>> operation)
         {
             ArgumentNullException.ThrowIfNull(identity, nameof(identity));
             ArgumentNullException.ThrowIfNull(operation, nameof(operation));
-            IDisposable? lease = _snapshotLifetime.EnterOperation();
 
-            try
+            OperationState candidate = new();
+            OperationState state;
+
+            lock (_gate)
             {
-                OperationState candidate = new();
+                ThrowIfDisposed();
                 // Equal identities share one operation and its retained
                 // snapshot.
-                OperationState state = _operations.GetOrAdd(
+                if (_operations.TryGetValue(
                     identity,
-                    candidate);
-
-                if (ReferenceEquals(state, candidate))
+                    out OperationState? existing))
                 {
-                    _ = state.RunAsync(operation, CreateSnapshot, lease);
-                    lease = null;
+                    state = existing;
                 }
+                else
+                {
+                    state = candidate;
+                    _operations.Add(identity, state);
+                }
+            }
 
-                return state.GetResultAsync();
-            }
-            finally
+            if (ReferenceEquals(state, candidate))
             {
-                lease?.Dispose();
+                state.Start(
+                    operation,
+                    CreateSnapshot);
             }
+
+            return state.GetResultAsync();
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-            _snapshotLifetime.Dispose();
+            Task disposal;
+
+            lock (_gate)
+            {
+                disposal = _disposal ??= DisposeCoreAsync(
+                    _operations.Values.ToArray());
+            }
+
+            return new ValueTask(disposal);
+        }
+
+        private async Task DisposeCoreAsync(OperationState[] states)
+        {
+            // Leave _gate before waiting or deleting snapshots.
+            await Task.Yield();
+
+            foreach (OperationState state in states)
+            {
+                try
+                {
+                    await state.Completion.ConfigureAwait(
+                        continueOnCapturedContext: false);
+                }
+                catch
+                {
+                    // Operation faults are observed by their waiters.
+                }
+            }
+
+            _snapshotDirectory.Dispose();
+        }
+
+        internal void ThrowIfDisposed()
+        {
+            if (_disposal is not null)
+            {
+                throw new ObjectDisposedException(
+                    objectName: nameof(SigningOperationCoordinator));
+            }
         }
 
         private SigningOperationResult CreateSnapshot(FileInfo artifact)
@@ -86,7 +133,7 @@ namespace Sign.Core
 
                 return new SigningOperationResult(
                     snapshot: snapshot,
-                    snapshotLifetime: _snapshotLifetime);
+                    coordinator: this);
             }
             catch (Exception exception) when (
                 exception is IOException or
@@ -129,11 +176,14 @@ namespace Sign.Core
                 TaskCompletionSource<SigningOperationResult> _completion =
                     new(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            internal Task<SigningOperationResult> Completion =>
+                _completion.Task;
+
             internal Task<SigningOperationResult> GetResultAsync()
             {
-                if (_completion.Task.IsCompleted)
+                if (Completion.IsCompleted)
                 {
-                    return _completion.Task;
+                    return Completion;
                 }
 
                 // This marker flows into child tasks. Until completion, any
@@ -146,15 +196,22 @@ namespace Sign.Core
                         message: "A signing operation cannot await itself.");
                 }
 
-                return _completion.Task;
+                return Completion;
             }
 
-            internal async Task RunAsync(
+            internal void Start(
                 Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot,
-                IDisposable operationLease)
+                Func<FileInfo, SigningOperationResult> snapshot)
             {
-                using IDisposable lease = operationLease;
+                _ = RunAsync(
+                    operation,
+                    snapshot);
+            }
+
+            private async Task RunAsync(
+                Func<Task<FileInfo>> operation,
+                Func<FileInfo, SigningOperationResult> snapshot)
+            {
                 Task<FileInfo> operationTask;
                 OperationState? previousState = s_executingState.Value;
                 s_executingState.Value = this;

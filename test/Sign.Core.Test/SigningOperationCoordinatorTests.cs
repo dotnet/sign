@@ -11,7 +11,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -100,7 +100,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin",
@@ -143,7 +143,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             using Barrier barrier = new(participantCount: 9);
             FileInfo artifact = directory.CreateFile(
@@ -195,7 +195,7 @@ namespace Sign.Core.Test
         public async Task ExecuteAsync_OwnerAndWaiters_ObserveSameException()
         {
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             SigningSourceIdentity identity = CreateIdentity();
             InvalidOperationException expected = new(message: "Failure.");
@@ -229,7 +229,7 @@ namespace Sign.Core.Test
         public async Task ExecuteAsync_OperationThrowsSynchronously_PublishesException()
         {
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             InvalidOperationException expected = new(message: "Failure.");
 
@@ -248,7 +248,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             SigningSourceIdentity identity = CreateIdentity();
             FileInfo artifact = new(
@@ -291,7 +291,7 @@ namespace Sign.Core.Test
         public async Task ExecuteAsync_OperationThrowsOperationCanceledException_SharesFault()
         {
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             SigningSourceIdentity identity = CreateIdentity();
             OperationCanceledException expected = new(message: "Canceled.");
@@ -328,9 +328,9 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator firstCoordinator =
+            await using SigningOperationCoordinator firstCoordinator =
                 new(directoryService: directoryService);
-            using SigningOperationCoordinator secondCoordinator =
+            await using SigningOperationCoordinator secondCoordinator =
                 new(directoryService: directoryService);
             FileInfo firstArtifact = directory.CreateFile(
                 relativePath: "first.bin");
@@ -365,9 +365,9 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator firstCoordinator =
+            await using SigningOperationCoordinator firstCoordinator =
                 new(directoryService: directoryService);
-            using SigningOperationCoordinator secondCoordinator =
+            await using SigningOperationCoordinator secondCoordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 "second.bin",
@@ -398,7 +398,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = new(
                 Path.Combine(directory.FullPath, "signed.bin"));
@@ -437,7 +437,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = new(
                 Path.Combine(directory.FullPath, "missing.bin"));
@@ -458,7 +458,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -476,7 +476,7 @@ namespace Sign.Core.Test
         public async Task ExecuteAsync_MissingArtifact_Throws()
         {
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
 
             InvalidOperationException exception =
@@ -494,7 +494,7 @@ namespace Sign.Core.Test
         public async Task ExecuteAsync_NullTask_Throws()
         {
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
 
             InvalidOperationException exception =
@@ -513,7 +513,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 Path.Combine("owner", "signed.bin"),
@@ -563,7 +563,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 "signed.bin",
@@ -590,7 +590,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 "signed.bin",
@@ -619,7 +619,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 "signed.bin",
@@ -641,12 +641,12 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task Dispose_ExistingSnapshots_DeletesSnapshotsAndPreventsMaterialization()
+        public async Task DisposeAsync_ExistingSnapshots_DeletesSnapshotsAndPreventsMaterialization()
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            SigningOperationCoordinator coordinator = new(
-                directoryService: directoryService);
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 "signed.bin",
                 "signed content");
@@ -658,7 +658,7 @@ namespace Sign.Core.Test
 
             Assert.True(snapshotDirectory.Exists);
 
-            coordinator.Dispose();
+            await coordinator.DisposeAsync();
             snapshotDirectory.Refresh();
 
             Assert.False(snapshotDirectory.Exists);
@@ -672,12 +672,12 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task Dispose_ActiveOwner_DefersCleanupAndAllowsCompletion()
+        public async Task DisposeAsync_ActiveOwner_WaitsForOwnerThenDeletesSnapshots()
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            SigningOperationCoordinator coordinator = new(
-                directoryService: directoryService);
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 "signed.bin",
                 "signed content");
@@ -703,34 +703,290 @@ namespace Sign.Core.Test
             DirectoryInfo snapshotDirectory =
                 Assert.Single(directoryService.Directories);
 
-            coordinator.Dispose();
+            Task disposeTask = coordinator.DisposeAsync().AsTask();
+
+            Assert.False(disposeTask.IsCompleted);
+
+            release.SetResult();
+            SigningOperationResult result = await operation.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            await disposeTask.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
             snapshotDirectory.Refresh();
 
+            Assert.NotNull(result);
+            Assert.False(snapshotDirectory.Exists);
+        }
+
+        [Fact]
+        public async Task DisposeAsync_OwnerStartsNestedOperationBeforeDispose_WaitsForNestedOperation()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo ownerArtifact = directory.CreateFile(
+                "owner.bin",
+                "owner content");
+            FileInfo nestedArtifact = directory.CreateFile(
+                "nested.bin",
+                "nested content");
+            SigningSourceIdentity ownerIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\owner.bin");
+            SigningSourceIdentity nestedIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\nested.bin");
+            TaskCompletionSource nestedEntered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource releaseNested = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource nestedCompleted = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource releaseOwner = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            async Task<FileInfo> RunOwnerAsync()
+            {
+                await coordinator.ExecuteAsync(
+                    nestedIdentity,
+                    async () =>
+                    {
+                        nestedEntered.SetResult();
+                        await releaseNested.Task;
+
+                        return nestedArtifact;
+                    });
+                nestedCompleted.SetResult();
+                await releaseOwner.Task;
+
+                return ownerArtifact;
+            }
+
+            Task<SigningOperationResult> owner =
+                coordinator.ExecuteAsync(
+                    ownerIdentity,
+                    RunOwnerAsync);
+            await nestedEntered.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            DirectoryInfo snapshotDirectory =
+                Assert.Single(directoryService.Directories);
+
+            Task disposeTask = coordinator.DisposeAsync().AsTask();
+            snapshotDirectory.Refresh();
+
+            Assert.False(disposeTask.IsCompleted);
             Assert.True(snapshotDirectory.Exists);
+
+            releaseNested.SetResult();
+            await nestedCompleted.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+
+            Assert.False(disposeTask.IsCompleted);
+
+            releaseOwner.SetResult();
+            _ = await owner.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            await disposeTask.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            snapshotDirectory.Refresh();
+
+            Assert.False(snapshotDirectory.Exists);
+        }
+
+        [Fact]
+        public async Task DisposeAsync_OwnerStartsNestedOperationAfterDispose_NestedCallThrowsObjectDisposed()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact = directory.CreateFile(
+                "owner.bin",
+                "owner content");
+            SigningSourceIdentity ownerIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\owner.bin");
+            SigningSourceIdentity nestedIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\nested.bin");
+            TaskCompletionSource ownerEntered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource attemptNested = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource<Exception?> nestedException = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            async Task<FileInfo> RunOwnerAsync()
+            {
+                ownerEntered.SetResult();
+                await attemptNested.Task;
+                Exception? exception = null;
+
+                try
+                {
+                    await coordinator.ExecuteAsync(
+                            nestedIdentity,
+                            () => Task.FromResult(artifact))
+                        .ConfigureAwait(continueOnCapturedContext: false);
+                }
+                catch (Exception caughtException)
+                {
+                    exception = caughtException;
+                }
+
+                nestedException.SetResult(exception);
+
+                return artifact;
+            }
+
+            Task<SigningOperationResult> owner =
+                coordinator.ExecuteAsync(
+                    ownerIdentity,
+                    RunOwnerAsync);
+            await ownerEntered.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            DirectoryInfo snapshotDirectory =
+                Assert.Single(directoryService.Directories);
+
+            Task disposeTask = coordinator.DisposeAsync().AsTask();
+
+            Assert.False(disposeTask.IsCompleted);
+
+            attemptNested.SetResult();
+            Exception? exception = await nestedException.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            _ = await owner.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            await disposeTask.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            snapshotDirectory.Refresh();
+
+            Assert.IsType<ObjectDisposedException>(exception);
+            Assert.False(snapshotDirectory.Exists);
+        }
+
+        [Fact]
+        public async Task DisposeAsync_ConcurrentCalls_DeleteSnapshotsOnce()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceSpy directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact = directory.CreateFile(
+                "signed.bin",
+                "signed content");
+            TaskCompletionSource entered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            async Task<FileInfo> OperateAsync()
+            {
+                entered.SetResult();
+                await release.Task;
+
+                return artifact;
+            }
+
+            Task<SigningOperationResult> operation =
+                coordinator.ExecuteAsync(
+                    CreateIdentity(),
+                    OperateAsync);
+            await entered.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            DirectoryInfo snapshotDirectory =
+                Assert.Single(directoryService.Directories);
+
+            Task firstDispose = coordinator.DisposeAsync().AsTask();
+            Task secondDispose = coordinator.DisposeAsync().AsTask();
+
+            Assert.False(firstDispose.IsCompleted);
+            Assert.False(secondDispose.IsCompleted);
 
             release.SetResult();
             _ = await operation.WaitAsync(
                 timeout: TimeSpan.FromSeconds(value: 5));
+            await Task.WhenAll(firstDispose, secondDispose).WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            snapshotDirectory.Refresh();
 
-            Assert.True(
-                condition: SpinWait.SpinUntil(
-                    condition: () =>
-                    {
-                        snapshotDirectory.Refresh();
-
-                        return !snapshotDirectory.Exists;
-                    },
-                    timeout: TimeSpan.FromSeconds(value: 5)),
-                userMessage: "Snapshot cleanup timed out.");
+            Assert.False(snapshotDirectory.Exists);
+            Assert.Equal(expected: 1, actual: directoryService.DeleteCount);
         }
 
         [Fact]
-        public void ExecuteAsync_AfterDispose_Throws()
+        public async Task DisposeAsync_DeleteFails_AllCallersObserveFailure()
+        {
+            using TestDirectory directory = new();
+            IOException deleteException = new("Delete failed.");
+            using DirectoryServiceSpy directoryService = new()
+            {
+                DeleteException = deleteException
+            };
+            SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact = directory.CreateFile(
+                "signed.bin",
+                "signed content");
+            TaskCompletionSource entered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            async Task<FileInfo> OperateAsync()
+            {
+                entered.SetResult();
+                await release.Task;
+
+                return artifact;
+            }
+
+            Task<SigningOperationResult> operation =
+                coordinator.ExecuteAsync(
+                    CreateIdentity(),
+                    OperateAsync);
+            await entered.Task.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+
+            Task firstDispose = coordinator.DisposeAsync().AsTask();
+            Task secondDispose = coordinator.DisposeAsync().AsTask();
+
+            Assert.False(firstDispose.IsCompleted);
+            Assert.False(secondDispose.IsCompleted);
+
+            release.SetResult();
+            _ = await operation.WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+            IOException first = await Assert.ThrowsAsync<IOException>(
+                () => firstDispose.WaitAsync(
+                    timeout: TimeSpan.FromSeconds(value: 5)));
+            IOException second = await Assert.ThrowsAsync<IOException>(
+                () => secondDispose.WaitAsync(
+                    timeout: TimeSpan.FromSeconds(value: 5)));
+            IOException later = await Assert.ThrowsAsync<IOException>(
+                () => coordinator.DisposeAsync().AsTask());
+
+            Assert.Same(deleteException, first);
+            Assert.Same(deleteException, second);
+            Assert.Same(deleteException, later);
+            Assert.Equal(expected: 1, actual: directoryService.DeleteCount);
+            Assert.Throws<ObjectDisposedException>(
+                () =>
+                {
+                    _ = coordinator.ExecuteAsync(
+                        CreateIdentity(),
+                        () => throw new InvalidOperationException());
+                });
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_AfterDisposeAsync_Throws()
         {
             using DirectoryServiceStub directoryService = new();
-            SigningOperationCoordinator coordinator = new(
-                directoryService: directoryService);
-            coordinator.Dispose();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            await coordinator.DisposeAsync();
 
             Assert.Throws<ObjectDisposedException>(
                 () =>
@@ -742,23 +998,14 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void Dispose_ActiveOperation_DefersCleanupUntilLeaseReleased()
+        public async Task DisposeAsync_CalledTwice_IsIdempotent()
         {
-            bool cleanedUp = false;
-            using SigningOperationSnapshotLifetime lifetime = new(
-                cleanup: () => cleanedUp = true);
-            using IDisposable lease =
-                lifetime.EnterOperation();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
 
-            lifetime.Dispose();
-
-            Assert.False(cleanedUp);
-            Assert.Throws<ObjectDisposedException>(
-                () => lifetime.EnterOperation());
-
-            lease.Dispose();
-
-            Assert.True(cleanedUp);
+            await coordinator.DisposeAsync();
+            await coordinator.DisposeAsync();
         }
 
         [Theory]
@@ -789,7 +1036,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -827,7 +1074,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -877,7 +1124,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -918,7 +1165,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo prerequisiteArtifact =
                 directory.CreateFile(relativePath: "prerequisite.bin");
@@ -993,7 +1240,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo dependentArtifact =
                 directory.CreateFile(relativePath: "dependent.bin");
@@ -1044,7 +1291,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -1083,7 +1330,7 @@ namespace Sign.Core.Test
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
-            using SigningOperationCoordinator coordinator =
+            await using SigningOperationCoordinator coordinator =
                 new(directoryService: directoryService);
             FileInfo artifact = directory.CreateFile(
                 relativePath: "signed.bin");
@@ -1126,5 +1373,39 @@ namespace Sign.Core.Test
                 path: @"C:\source.bin");
         }
 
+        private sealed class DirectoryServiceSpy : IDirectoryService
+        {
+            private readonly DirectoryServiceStub _directoryService = new();
+            private int _deleteCount;
+
+            internal Exception? DeleteException { get; init; }
+
+            internal int DeleteCount => Volatile.Read(ref _deleteCount);
+
+            internal IReadOnlyList<DirectoryInfo> Directories =>
+                _directoryService.Directories;
+
+            public DirectoryInfo CreateTemporaryDirectory()
+            {
+                return _directoryService.CreateTemporaryDirectory();
+            }
+
+            public void Delete(DirectoryInfo directory)
+            {
+                Interlocked.Increment(ref _deleteCount);
+
+                if (DeleteException is not null)
+                {
+                    throw DeleteException;
+                }
+
+                _directoryService.Delete(directory);
+            }
+
+            public void Dispose()
+            {
+                _directoryService.Dispose();
+            }
+        }
     }
 }
