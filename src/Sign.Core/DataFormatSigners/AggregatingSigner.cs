@@ -13,6 +13,7 @@ namespace Sign.Core
         private readonly IFileMetadataService _fileMetadataService;
         private readonly IMatcherFactory _matcherFactory;
         private readonly IEnumerable<IDataFormatSigner> _signers;
+        private readonly ISigningDependencyProvider _signingDependencyProvider;
 
         // Dependency injection requires a public constructor.
         public AggregatingSigner(
@@ -20,19 +21,22 @@ namespace Sign.Core
             IDefaultDataFormatSigner defaultSigner,
             IContainerProvider containerProvider,
             IFileMetadataService fileMetadataService,
-            IMatcherFactory matcherFactory)
+            IMatcherFactory matcherFactory,
+            ISigningDependencyProvider signingDependencyProvider)
         {
             ArgumentNullException.ThrowIfNull(signers, nameof(signers));
             ArgumentNullException.ThrowIfNull(defaultSigner, nameof(defaultSigner));
             ArgumentNullException.ThrowIfNull(containerProvider, nameof(containerProvider));
             ArgumentNullException.ThrowIfNull(fileMetadataService, nameof(fileMetadataService));
             ArgumentNullException.ThrowIfNull(matcherFactory, nameof(matcherFactory));
+            ArgumentNullException.ThrowIfNull(signingDependencyProvider, nameof(signingDependencyProvider));
 
             _signers = signers;
             _defaultSigner = defaultSigner;
             _containerProvider = containerProvider;
             _fileMetadataService = fileMetadataService;
             _matcherFactory = matcherFactory;
+            _signingDependencyProvider = signingDependencyProvider;
         }
 
         public bool CanSign(FileInfo file)
@@ -62,15 +66,24 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
+            IEnumerable<FileInfo> filesToSign = files;
+
             if (options.RecurseContainers)
             {
-                await SignContainerContentsAsync(files, options);
+                IReadOnlyList<FileInfo> signingDependencies = await SignContainerContentsAsync(files, options);
+
+                if (signingDependencies.Count > 0)
+                {
+                    // Signing dependencies are rebuilt by their owner, so they're signed here
+                    // instead of as inputs of their own.
+                    filesToSign = files.Concat(signingDependencies).ToList();
+                }
             }
 
             // split by code sign service and fallback to default
 
             var grouped = (from signer in _signers
-                           from file in files
+                           from file in filesToSign
                            where signer.CanSign(file)
                            group file by signer into groups
                            select groups).ToList();
@@ -78,7 +91,7 @@ namespace Sign.Core
             // get all files and exclude existing; 
 
             // This is to catch PE files that don't have the correct extension set
-            var defaultFiles = files.Except(grouped.SelectMany(g => g))
+            var defaultFiles = filesToSign.Except(grouped.SelectMany(g => g))
                                     .Where(_fileMetadataService.IsPortableExecutable)
                                     .Select(f => new { _defaultSigner.Signer, f })
                                     .GroupBy(a => a.Signer, k => k.f)
@@ -92,7 +105,7 @@ namespace Sign.Core
             await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
         }
 
-        private async Task SignContainerContentsAsync(IEnumerable<FileInfo> files, SignOptions options)
+        private async Task<IReadOnlyList<FileInfo>> SignContainerContentsAsync(IEnumerable<FileInfo> files, SignOptions options)
         {
             // See if any of them are archives
             List<FileInfo> archives = (from file in files
@@ -210,6 +223,85 @@ namespace Sign.Core
                 containers.ForEach(tz => tz.Dispose());
                 containers.Clear();
             }
+
+            // An owner rebuilds the files it owns, so those must not be expanded and re-signed
+            // independently here.
+            IReadOnlyList<FileInfo> unownedFiles = _signingDependencyProvider.ExcludeOwnedFiles(files);
+
+            List<FileInfo> cabs = (from file in unownedFiles
+                                   where _containerProvider.IsCabContainer(file)
+                                   select file).ToList();
+
+            try
+            {
+                foreach (FileInfo cab in cabs)
+                {
+                    IContainer container = _containerProvider.GetContainer(cab)!;
+
+                    await container.OpenAsync();
+
+                    containers.Add(container);
+                }
+
+                List<FileInfo> allFiles = containers
+                    .SelectMany(container => GetFiles(container, options))
+                    .ToList();
+
+                if (allFiles.Count > 0)
+                {
+                    await SignAsync(allFiles, options);
+
+                    await Parallel.ForEachAsync(containers, (container, cancellationToken) => container.SaveAsync());
+                }
+            }
+            finally
+            {
+                containers.ForEach(container => container.Dispose());
+                containers.Clear();
+            }
+
+            List<FileInfo> msis = (from file in files
+                                   where _containerProvider.IsMsiContainer(file)
+                                   select file).ToList();
+
+            try
+            {
+                foreach (FileInfo msi in msis)
+                {
+                    IContainer container = _containerProvider.GetContainer(msi)!;
+
+                    await container.OpenAsync();
+
+                    containers.Add(container);
+                }
+
+                List<FileInfo> allFiles = containers
+                    .SelectMany(container => GetFiles(container, options))
+                    .ToList();
+
+                if (allFiles.Count > 0)
+                {
+                    await SignAsync(allFiles, options);
+
+                    await Parallel.ForEachAsync(containers, (container, cancellationToken) => container.SaveAsync());
+                }
+            }
+            finally
+            {
+                containers.ForEach(container => container.Dispose());
+                containers.Clear();
+            }
+
+            // The owners have rebuilt the files they own by now, so hand those back to be signed.
+            List<FileInfo> signingDependencies = new();
+
+            foreach (FileInfo file in files)
+            {
+                signingDependencies.AddRange(
+                    _signingDependencyProvider.GetSigningDependencies(file).Where(dependency => dependency.Exists));
+            }
+
+            return signingDependencies;
         }
 
 
@@ -222,6 +314,23 @@ namespace Sign.Core
                 {
                     signer.CopySigningDependencies(file, destination, options);
                 }
+            }
+
+            // Owned files live beside their owner.  They're needed both to sign the owner and to
+            // copy the result back out again.
+            foreach (FileInfo dependency in _signingDependencyProvider.GetSigningDependencies(file))
+            {
+                if (!dependency.Exists)
+                {
+                    continue;
+                }
+
+                string relativePath = Path.GetRelativePath(file.Directory!.FullName, dependency.FullName);
+                string destinationPath = Path.Combine(destination.FullName, relativePath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+                dependency.CopyTo(destinationPath, overwrite: true);
             }
         }
 

@@ -60,6 +60,8 @@ namespace Sign.Core
             services.AddSingleton<IFileListReader, FileListReader>();
             services.AddSingleton<IFileMatcher, FileMatcher>();
             services.AddSingleton<IContainerProvider, ContainerProvider>();
+            services.AddSingleton<ISigningDependencyReader, MsiSigningDependencyReader>();
+            services.AddSingleton<ISigningDependencyProvider, SigningDependencyProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
             services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();

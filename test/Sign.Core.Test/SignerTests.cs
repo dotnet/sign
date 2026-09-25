@@ -16,6 +16,10 @@ using Microsoft.VisualBasic;
 using NSubstitute;
 using NuGet.Packaging;
 using Sign.TestInfrastructure;
+using WixToolset.Dtf.Compression.Cab;
+using MsiDatabase = WixToolset.Dtf.WindowsInstaller.Database;
+using MsiInstaller = WixToolset.Dtf.WindowsInstaller.Installer;
+using MsiDatabaseOpenMode = WixToolset.Dtf.WindowsInstaller.DatabaseOpenMode;
 
 namespace Sign.Core.Test
 {
@@ -213,6 +217,132 @@ namespace Sign.Core.Test
             foreach (var outputFile in outputFiles)
             {
                 await VerifyAuthenticodeSignedFileAsync(outputFile);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task SignAsync_WhenFileIsMsi_SignsPackagedFiles(bool embedCabinet)
+        {
+            DirectoryInfo sourceDirectory = _temporaryDirectory.Directory.CreateSubdirectory(Path.GetRandomFileName());
+            FileInfo payloadFile = CopyThisAssembly(sourceDirectory);
+            FileInfo msiFile = MsiCreator.Create(sourceDirectory, [payloadFile], embedCabinet);
+
+            // Only the package should have a copy of the payload.
+            payloadFile.Delete();
+
+            await SignAsync(_temporaryDirectory, [msiFile], outputFile: null!);
+
+            await VerifyAuthenticodeSignedFileAsync(msiFile);
+
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo packagedFile = await ExtractPackagedFileAsync(msiFile, temporaryDirectory);
+
+                await VerifyAuthenticodeSignedFileAsync(packagedFile);
+                VerifyPackagedFileStats(msiFile, packagedFile);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileIsMsiWithExternalCabinet_SignsCabinet()
+        {
+            DirectoryInfo sourceDirectory = _temporaryDirectory.Directory.CreateSubdirectory(Path.GetRandomFileName());
+            FileInfo payloadFile = CopyThisAssembly(sourceDirectory);
+            FileInfo msiFile = MsiCreator.Create(sourceDirectory, [payloadFile], embedCabinet: false);
+            FileInfo cabFile = new(Path.Combine(sourceDirectory.FullName, "test.cab"));
+
+            payloadFile.Delete();
+
+            await SignAsync(_temporaryDirectory, [msiFile], outputFile: null!);
+
+            await VerifyAuthenticodeSignedFileAsync(cabFile);
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFilesAreMsiAndItsCabinet_LeavesPackageDescribingItsPayload()
+        {
+            DirectoryInfo sourceDirectory = _temporaryDirectory.Directory.CreateSubdirectory(Path.GetRandomFileName());
+
+            // The payload has no version, so the package records its hash as well as its size.
+            FileInfo payloadFile = new(Path.Combine(sourceDirectory.FullName, "script.ps1"));
+
+            File.WriteAllText(payloadFile.FullName, "Write-Host 'Hello, World!'");
+
+            FileInfo msiFile = MsiCreator.Create(sourceDirectory, [payloadFile], embedCabinet: false);
+            FileInfo cabFile = new(Path.Combine(sourceDirectory.FullName, "test.cab"));
+
+            payloadFile.Delete();
+
+            // The cabinet is owned by the package.  Signing it independently would race with the
+            // package's own run and leave the File table describing a payload that never shipped.
+            await SignAsync(_temporaryDirectory, [msiFile, cabFile], outputFile: null!);
+
+            await VerifyAuthenticodeSignedFileAsync(msiFile);
+            await VerifyAuthenticodeSignedFileAsync(cabFile);
+
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo packagedFile = await ExtractPackagedFileAsync(msiFile, temporaryDirectory);
+
+                await VerifySignedCmsAsync(GetSignedCmsFromPowerShellScript(packagedFile));
+                VerifyPackagedFileStats(msiFile, packagedFile);
+            }
+        }
+
+        private FileInfo CopyThisAssembly(DirectoryInfo directory)
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+            FileInfo file = new(Path.Combine(directory.FullName, thisAssemblyFile.Name));
+
+            File.Copy(thisAssemblyFile.FullName, file.FullName);
+
+            return file;
+        }
+
+        private async Task<FileInfo> ExtractPackagedFileAsync(FileInfo msiFile, TemporaryDirectory temporaryDirectory)
+        {
+            using (MsiContainer container = new(
+                msiFile,
+                _directoryService,
+                Substitute.For<IFileMatcher>(),
+                Substitute.For<ILogger>()))
+            {
+                await container.OpenAsync();
+
+                FileInfo extractedFile = container.GetFiles().Single();
+                FileInfo packagedFile = new(
+                    Path.Combine(temporaryDirectory.Directory.FullName, extractedFile.Name));
+
+                extractedFile.CopyTo(packagedFile.FullName);
+
+                return packagedFile;
+            }
+        }
+
+        private static void VerifyPackagedFileStats(FileInfo msiFile, FileInfo packagedFile)
+        {
+            using (MsiDatabase database = new(msiFile.FullName, MsiDatabaseOpenMode.ReadOnly))
+            {
+                int actualFileSize = database.ExecuteIntegerQuery(
+                    "SELECT `FileSize` FROM `File` WHERE `File` = 'File0'").Single();
+
+                Assert.Equal(packagedFile.Length, actualFileSize);
+
+                IList<int> actualHash = database.ExecuteIntegerQuery(
+                    "SELECT `HashPart1`, `HashPart2`, `HashPart3`, `HashPart4` " +
+                    "FROM `MsiFileHash` WHERE `File_` = 'File0'");
+
+                // The hash is only recorded for files without a version.
+                if (actualHash.Count > 0)
+                {
+                    int[] expectedHash = new int[4];
+
+                    MsiInstaller.GetFileHash(packagedFile.FullName, expectedHash);
+
+                    Assert.Equal(expectedHash, actualHash);
+                }
             }
         }
 
@@ -561,6 +691,8 @@ namespace Sign.Core.Test
             services.AddSingleton<IFileListReader, FileListReader>();
             services.AddSingleton<IFileMatcher, FileMatcher>();
             services.AddSingleton<IContainerProvider, ContainerProvider>();
+            services.AddSingleton<ISigningDependencyReader, MsiSigningDependencyReader>();
+            services.AddSingleton<ISigningDependencyProvider, SigningDependencyProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
             services.AddSingleton<ISignatureAlgorithmProvider>(_keyVaultServiceStub);

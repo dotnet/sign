@@ -34,5 +34,6 @@
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.11" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.11" />
     <PackageVersion Include="System.Text.Json" Version="10.0.11" />
+    <PackageVersion Include="WixToolset.Dtf.WindowsInstaller.Package" Version="6.0.0" />
   </ItemGroup>
 </Project>
