@@ -34,87 +34,87 @@
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestInvalidTargetPath">
         <source>Application manifest '{0}' contains invalid target path '{1}'.</source>
-        <target state="new">Application manifest '{0}' contains invalid target path '{1}'.</target>
+        <target state="translated">應用程式資訊清單 '{0}' 包含無效的目標路徑 '{1}'。</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is an invalid target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestMissingTargetPath">
         <source>Application manifest '{0}' contains a required file reference without a target path.</source>
-        <target state="new">Application manifest '{0}' contains a required file reference without a target path.</target>
+        <target state="translated">應用程式資訊清單 '{0}' 包含缺少目標路徑的必要檔案參考。</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestPayloadProbeFailed">
         <source>Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</source>
-        <target state="new">Failed to access source candidate '{2}' for target path '{1}' in application manifest '{0}'.</target>
+        <target state="translated">無法存取應用程式資訊清單 '{0}' 中目標路徑 '{1}' 的來源候選 '{2}'。</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is the exact target path from the manifest. {NumberedPlaceholder="{2}"} is the absolute source candidate path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestReadFailed">
         <source>Failed to read application manifest '{0}'.</source>
-        <target state="new">Failed to read application manifest '{0}'.</target>
+        <target state="translated">無法讀取應用程式資訊清單 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestRequiredFileNotFound">
         <source>Application manifest '{0}' references required file '{1}', but it could not be found.</source>
-        <target state="new">Application manifest '{0}' references required file '{1}', but it could not be found.</target>
+        <target state="translated">應用程式資訊清單 '{0}' 參考必要檔案 '{1}'，但找不到。</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
         <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">部署資訊清單 '{0}' 參考的應用程式資訊清單 '{1}' 不存在。若要在不更新 ClickOnce 資訊清單中繼資料的情況下簽署，請使用 '--clickonce-signing-version 2 --no-update-clickonce-manifest'。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
         <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">部署資訊清單 '{0}' 參考了應用程式資訊清單目標路徑 '{1}'，但該路徑無法在暫存目錄中表示。若要在不更新 ClickOnce 資訊清單中繼資料的情況下簽署，請使用 '--clickonce-signing-version 2 --no-update-clickonce-manifest'。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is an invalid application manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestLauncherProbeFailed">
         <source>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</source>
-        <target state="new">Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <target state="translated">無法存取與部署資訊清單 '{1}' 關聯的啟動器候選路徑 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestMissingEntryPoint">
         <source>Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">部署資訊清單 '{0}' 未指定應用程式資訊清單。若要在不更新 ClickOnce 資訊清單中繼資料的情況下簽署，請使用 '--clickonce-signing-version 2 --no-update-clickonce-manifest'。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReadFailed">
         <source>Failed to read deployment manifest '{0}'.</source>
-        <target state="new">Failed to read deployment manifest '{0}'.</target>
+        <target state="translated">無法讀取部署資訊清單 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationReadFailed">
         <source>Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</source>
-        <target state="new">Failed to read application manifest '{0}' referenced by deployment manifest '{1}'.</target>
+        <target state="translated">無法讀取部署資訊清單 '{1}' 所參考的應用程式資訊清單 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestReferencedApplicationWrongType">
         <source>File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</source>
-        <target state="new">File '{0}' referenced by deployment manifest '{1}' is not an application manifest.</target>
+        <target state="translated">部署資訊清單 '{1}' 參考的檔案 '{0}' 不是應用程式資訊清單。</target>
         <note>{NumberedPlaceholder="{0}"} is a referenced file path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestResolveFailed">
         <source>Failed to resolve files referenced by deployment manifest '{0}'.</source>
-        <target state="new">Failed to resolve files referenced by deployment manifest '{0}'.</target>
+        <target state="translated">無法解析部署資訊清單 '{0}' 所參考的檔案。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestSetupProbeFailed">
         <source>Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</source>
-        <target state="new">Failed to access setup bootstrapper candidate '{0}' associated with deployment manifest '{1}'.</target>
+        <target state="translated">無法存取與部署資訊清單 '{1}' 關聯的設定啟動程序載入程式候選路徑 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is the absolute setup bootstrapper candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnresolvedApplicationManifest">
         <source>Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' did not resolve its referenced application manifest '{1}'. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">部署資訊清單 '{0}' 無法解析其參考的應用程式資訊清單 '{1}'。若要在不更新 ClickOnce 資訊清單中繼資料的情況下簽署，請使用 '--clickonce-signing-version 2 --no-update-clickonce-manifest'。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestUnsupportedReferences">
         <source>Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
-        <target state="new">Deployment manifest '{0}' has a reference structure unsupported by the ClickOnce runtime. It must contain exactly one assembly dependency: the application manifest. That dependency must not be a prerequisite, optional, or resource-fallback dependency, and the deployment manifest must not contain file references. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</target>
+        <target state="translated">部署資訊清單 '{0}' 的參照結構不受 ClickOnce 執行階段支援。它必須恰好包含一個組件相依性，也就是應用程式資訊清單。該相依性不得是先決條件、選用項目或資源回復相依性，而且部署資訊清單不得包含檔案參照。若要在不更新 ClickOnce 資訊清單中繼資料的情況下簽署，請使用 '--clickonce-signing-version 2 --no-update-clickonce-manifest'。</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestWrongType">
         <source>File '{0}' is not a deployment manifest.</source>
-        <target state="new">File '{0}' is not a deployment manifest.</target>
+        <target state="translated">檔案 '{0}' 不是部署資訊清單。</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
@@ -124,27 +124,27 @@
       </trans-unit>
       <trans-unit id="ClickOnceStagingCopyFailed">
         <source>Failed to prepare file '{0}' for the signing operation.</source>
-        <target state="new">Failed to prepare file '{0}' for the signing operation.</target>
+        <target state="translated">無法準備檔案 '{0}' 以進行簽署作業。</target>
         <note>{NumberedPlaceholder="{0}"} is a source file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingDestinationCollision">
         <source>Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</source>
-        <target state="new">Source files '{0}' and '{1}' have conflicting target paths '{2}' and '{3}'.</target>
+        <target state="translated">來源檔案 '{0}' 和 '{1}' 具有衝突的目標路徑 '{2}' 和 '{3}'。</target>
         <note>{NumberedPlaceholder="{0}"} and {NumberedPlaceholder="{1}"} are source file paths. {NumberedPlaceholder="{2}"} and {NumberedPlaceholder="{3}"} are manifest target paths.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingMappedSuffixFailed">
         <source>Failed to rename file '{0}' while updating manifest file information.</source>
-        <target state="new">Failed to rename file '{0}' while updating manifest file information.</target>
+        <target state="translated">更新資訊清單檔案資訊時，無法重新命名檔案 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is a manifest target path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingReferenceDestinationConflict">
         <source>Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</source>
-        <target state="new">Source file '{0}' is referenced with conflicting target paths '{1}' and '{2}'.</target>
+        <target state="translated">以衝突的目標路徑 '{1}' 和 '{2}' 參考來源檔案 '{0}'。</target>
         <note>{NumberedPlaceholder="{0}"} is a source file path. {NumberedPlaceholder="{1}"} and {NumberedPlaceholder="{2}"} are manifest target paths.</note>
       </trans-unit>
       <trans-unit id="ClickOnceStagingUnsafeTargetPath">
         <source>Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</source>
-        <target state="new">Manifest target path '{0}' for source file '{1}' is invalid or unsupported.</target>
+        <target state="translated">來源檔案 '{1}' 的資訊清單目標路徑 '{0}' 無效或不受支援。</target>
         <note>{NumberedPlaceholder="{0}"} is a manifest target path. {NumberedPlaceholder="{1}"} is a source file path.</note>
       </trans-unit>
       <trans-unit id="CreatingDirectory">
