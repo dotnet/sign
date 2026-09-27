@@ -16,6 +16,8 @@ namespace Sign.Core.Test
             using TestDirectory sourceDirectory = new();
             using TestDirectory outputRoot = new();
             using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
             FileInfo source = new(
                 Path.Combine(sourceDirectory.FullPath, "source.application"));
             File.WriteAllText(source.FullName, "unsigned");
@@ -34,6 +36,11 @@ namespace Sign.Core.Test
                 Substitute.For<IAggregatingDataFormatSigner>();
             List<string> operations = new();
 
+            signer
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    options)
+                .Returns(true);
             signer.CanSign(source).Returns(true);
             signer
                 .When(
@@ -44,19 +51,19 @@ namespace Sign.Core.Test
                 .Do(
                     call =>
                     {
-                        Assert.True(output.Directory!.Exists);
+                        Assert.False(output.Directory!.Exists);
                         operations.Add("stage");
                     });
             signer
-                .SignAsync(
-                    Arg.Any<IEnumerable<SigningFile>>(),
-                    options)
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    options,
+                    coordinator)
                 .Returns(
                     call =>
                     {
-                        SigningFile stagedFile = call
-                            .Arg<IEnumerable<SigningFile>>()
-                            .Single();
+                        SigningFile stagedFile =
+                            call.Arg<SigningFile>();
 
                         Assert.Equal(
                             plan.Source.SourceIdentity,
@@ -68,32 +75,16 @@ namespace Sign.Core.Test
 
                         return Task.CompletedTask;
                     });
-            signer
-                .When(
-                    value => value.CopySigningResults(
-                        Arg.Any<FileInfo>(),
-                        Arg.Is<DirectoryInfo>(
-                            directory =>
-                                directory.FullName ==
-                                output.Directory!.FullName),
-                        options))
-                .Do(
-                    call =>
-                    {
-                        File.WriteAllText(
-                            output.FullName,
-                            "stale-output");
-                        operations.Add("publish");
-                    });
             SigningOperationExecutor executor = new(
                 signer,
                 directoryService,
-                Substitute.For<ILogger<ISigner>>());
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
 
             await executor.ExecuteAsync(plan, options);
 
             Assert.Equal(
-                new[] { "stage", "sign", "publish" },
+                new[] { "stage", "sign" },
                 operations);
             Assert.Equal(
                 "unsigned-signed",
@@ -101,13 +92,17 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public void Stage_ArtifactRemainsAvailableUntilDisposed()
+        public async Task Stage_ArtifactRemainsAvailableUntilDisposed()
         {
             using TestDirectory sourceDirectory = new();
             using TestDirectory outputRoot = new();
             using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
             FileInfo source = new(
-                Path.Combine(sourceDirectory.FullPath, "source.bin"));
+                Path.Combine(
+                    sourceDirectory.FullPath,
+                    "source.application"));
             File.WriteAllText(source.FullName, "content");
             SigningOperationPlan plan = new(
                 SigningFile.Capture(source),
@@ -116,16 +111,22 @@ namespace Sign.Core.Test
             SignOptions options = new(
                 HashAlgorithmName.SHA256,
                 new Uri("https://timestamp.test"));
+            IAggregatingDataFormatSigner signer =
+                Substitute.For<IAggregatingDataFormatSigner>();
+
+            signer.IsOriginalFileNameRequired(source).Returns(true);
             SigningOperationExecutor executor = new(
-                Substitute.For<IAggregatingDataFormatSigner>(),
+                signer,
                 directoryService,
-                Substitute.For<ILogger<ISigner>>());
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
 
             SigningOperationStage stage = executor.Stage(plan, options);
             FileInfo stagedFile = stage.Input.File;
             DirectoryInfo stagingDirectory = stagedFile.Directory!;
 
             Assert.True(stagedFile.Exists);
+            Assert.Equal(source.Name, stagedFile.Name);
             Assert.Equal(
                 plan.Source.SourceIdentity,
                 stage.Input.SourceIdentity);
@@ -136,160 +137,334 @@ namespace Sign.Core.Test
             Assert.False(stagingDirectory.Exists);
         }
 
-        [Fact]
-        public void StageAndPublish_WithClickOnceSigner_CopiesDependenciesBeforePrimaryFile()
+        [Theory]
+        [InlineData("source.custom", true)]
+        [InlineData("source.application", false)]
+        public async Task Stage_KeepsOriginalFileNameOnlyWhenSignerRequiresIt(
+            string fileName,
+            bool isOriginalFileNameRequired)
         {
             using TestDirectory sourceDirectory = new();
             using TestDirectory outputRoot = new();
             using DirectoryServiceStub directoryService = new();
-            string applicationFilesPath = Path.Combine(
-                "Application Files",
-                "MyApp_1_0_0_0");
-            string dllPath = Path.Combine(
-                applicationFilesPath,
-                "MyApp.dll.deploy");
-            string manifestPath = Path.Combine(
-                applicationFilesPath,
-                "MyApp.exe.manifest");
-            FileInfo source = WriteFile(
-                sourceDirectory.FullPath,
-                "MyApp.application",
-                "application");
-            WriteFile(sourceDirectory.FullPath, "setup.exe", "setup");
-            WriteFile(sourceDirectory.FullPath, dllPath, "dll");
-            WriteFile(sourceDirectory.FullPath, manifestPath, "manifest");
-            FileInfo output = new(
-                Path.Combine(
-                    outputRoot.FullPath,
-                    "nested",
-                    "Signed.application"));
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo source = new(
+                Path.Combine(sourceDirectory.FullPath, fileName));
+            File.WriteAllText(source.FullName, "content");
             SigningOperationPlan plan = new(
                 SigningFile.Capture(source),
-                output);
+                new FileInfo(
+                    Path.Combine(outputRoot.FullPath, "output.bin")));
             SignOptions options = new(
                 HashAlgorithmName.SHA256,
                 new Uri("https://timestamp.test"));
-            IDataFormatSigner publishObserver =
-                Substitute.For<IDataFormatSigner>();
-            bool? dependencyPublishedBeforePrimary = null;
+            IAggregatingDataFormatSigner signer =
+                Substitute.For<IAggregatingDataFormatSigner>();
 
-            publishObserver.CanSign(Arg.Any<FileInfo>()).Returns(true);
-            publishObserver
+            signer.CanSign(source).Returns(true);
+            signer
+                .IsOriginalFileNameRequired(source)
+                .Returns(isOriginalFileNameRequired);
+            SigningOperationExecutor executor = new(
+                signer,
+                directoryService,
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
+
+            using SigningOperationStage stage = executor.Stage(plan, options);
+            FileInfo stagedFile = stage.Input.File;
+
+            Assert.Equal(source.Extension, stagedFile.Extension);
+            Assert.Equal(
+                isOriginalFileNameRequired,
+                string.Equals(
+                    source.Name,
+                    stagedFile.Name,
+                    StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_DuplicateSourceWithDifferentOutputs_SignsOnce()
+        {
+            using TestDirectory sourceDirectory = new();
+            using TestDirectory outputDirectory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo source = sourceDirectory.CreateFile(
+                relativePath: "source.bin",
+                contents: "unsigned");
+            SigningFile signingFile = SigningFile.Capture(source);
+            SigningOperationPlan first = new(
+                signingFile,
+                new FileInfo(
+                    Path.Combine(
+                        outputDirectory.FullPath,
+                        "first",
+                        "signed.bin")));
+            SigningOperationPlan second = new(
+                signingFile,
+                new FileInfo(
+                    Path.Combine(
+                        outputDirectory.FullPath,
+                        "second",
+                        "signed.bin")));
+            SignOptions options = new(
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"));
+            IAggregatingDataFormatSigner signer =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            int signingCount = 0;
+
+            signer
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    options)
+                .Returns(true);
+            signer
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    options,
+                    coordinator)
+                .Returns(
+                    call =>
+                    {
+                        SigningFile staged =
+                            call.Arg<SigningFile>();
+                        Interlocked.Increment(ref signingCount);
+                        File.AppendAllText(
+                            staged.File.FullName,
+                            "-signed");
+
+                        return Task.CompletedTask;
+                    });
+            SigningOperationExecutor executor = new(
+                signer,
+                directoryService,
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
+
+            await Task.WhenAll(
+                executor.ExecuteAsync(first, options),
+                executor.ExecuteAsync(second, options));
+
+            Assert.Equal(expected: 1, actual: signingCount);
+            Assert.Equal(
+                "unsigned-signed",
+                File.ReadAllText(first.Output.FullName));
+            Assert.Equal(
+                "unsigned-signed",
+                File.ReadAllText(second.Output.FullName));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteAsync_StagingDirectoryHasExtraFile_PublishesSiblingsOnlyWhenDependenciesStaged(
+            bool isDependencyStaged)
+        {
+            using TestDirectory sourceDirectory = new();
+            using TestDirectory outputDirectory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo source = sourceDirectory.CreateFile(
+                relativePath: "source.bin",
+                contents: "unsigned");
+            SigningOperationPlan plan = new(
+                SigningFile.Capture(source),
+                new FileInfo(
+                    Path.Combine(outputDirectory.FullPath, "signed.bin")));
+            SignOptions options = new(
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"));
+            IAggregatingDataFormatSigner signer =
+                Substitute.For<IAggregatingDataFormatSigner>();
+
+            signer
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    options)
+                .Returns(true);
+            signer
                 .When(
-                    value => value.CopySigningResults(
+                    value => value.StageSigningDependencies(
                         Arg.Any<FileInfo>(),
                         Arg.Any<DirectoryInfo>(),
                         options))
                 .Do(
                     call =>
                     {
-                        dependencyPublishedBeforePrimary =
-                            File.Exists(
+                        if (isDependencyStaged)
+                        {
+                            File.WriteAllText(
                                 Path.Combine(
-                                    output.DirectoryName!,
-                                    dllPath)) &&
-                            !File.Exists(output.FullName);
+                                    call.Arg<DirectoryInfo>().FullName,
+                                    "dependency.bin"),
+                                "dependency");
+                        }
                     });
-            AggregatingSigner aggregatingSigner = new(
-                [CreateClickOnceSigner(), publishObserver],
-                Substitute.For<IDefaultDataFormatSigner>(),
-                Substitute.For<IContainerProvider>(),
-                Substitute.For<IFileMetadataService>(),
-                Substitute.For<IMatcherFactory>());
-            SigningOperationExecutor executor = new(
-                aggregatingSigner,
-                directoryService,
-                Substitute.For<ILogger<ISigner>>());
-
-            using (SigningOperationStage stage = executor.Stage(plan, options))
-            {
-                string stagingPath = stage.Input.File.DirectoryName!;
-
-                Assert.Equal(
-                    new[]
+            signer
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    options,
+                    coordinator)
+                .Returns(
+                    call =>
                     {
-                        dllPath,
-                        manifestPath,
-                        "setup.exe",
-                        stage.Input.File.Name
-                    }.Order(StringComparer.Ordinal),
-                    GetRelativeFilePaths(stagingPath));
+                        FileInfo staged = call.Arg<SigningFile>().File;
 
-                foreach (string path in new[]
-                {
-                    stage.Input.File.FullName,
-                    Path.Combine(stagingPath, dllPath),
-                    Path.Combine(stagingPath, manifestPath)
-                })
-                {
-                    File.AppendAllText(path, "-signed");
-                }
+                        File.AppendAllText(staged.FullName, "-signed");
+                        File.WriteAllText(
+                            Path.Combine(
+                                staged.DirectoryName!,
+                                "sidecar.tmp"),
+                            "sidecar");
 
-                executor.Publish(stage, plan, options);
-            }
+                        return Task.CompletedTask;
+                    });
+            SigningOperationExecutor executor = new(
+                signer,
+                directoryService,
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
 
-            Assert.True(dependencyPublishedBeforePrimary);
+            await executor.ExecuteAsync(plan, options);
+
             Assert.Equal(
-                new[]
-                {
-                    dllPath,
-                    manifestPath,
-                    "setup.exe",
-                    output.Name
-                }.Order(StringComparer.Ordinal),
-                GetRelativeFilePaths(output.DirectoryName!));
+                "unsigned-signed",
+                File.ReadAllText(plan.Output.FullName));
             Assert.Equal(
-                "application-signed",
-                File.ReadAllText(output.FullName));
+                isDependencyStaged,
+                File.Exists(
+                    Path.Combine(
+                        outputDirectory.FullPath,
+                        "dependency.bin")));
             Assert.Equal(
-                "dll-signed",
-                File.ReadAllText(
-                    Path.Combine(output.DirectoryName!, dllPath)));
-            Assert.Equal(
-                "manifest-signed",
-                File.ReadAllText(
-                    Path.Combine(output.DirectoryName!, manifestPath)));
-            Assert.Equal(
-                "setup",
-                File.ReadAllText(
-                    Path.Combine(output.DirectoryName!, "setup.exe")));
+                isDependencyStaged,
+                File.Exists(
+                    Path.Combine(
+                        outputDirectory.FullPath,
+                        "sidecar.tmp")));
         }
 
-        private static ClickOnceSigner CreateClickOnceSigner()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteAsync_WhenFileHasNoSigningWork_CopiesWithoutClaimingIdentity(
+            bool inPlace)
         {
-            return new ClickOnceSigner(
-                Substitute.For<ISignatureAlgorithmProvider>(),
-                Substitute.For<ICertificateProvider>(),
-                Substitute.For<IServiceProvider>(),
-                Substitute.For<IMageCli>(),
-                Substitute.For<IManifestSigner>(),
-                Substitute.For<ILogger<IDataFormatSigner>>(),
-                Substitute.For<IFileMatcher>());
+            using TestDirectory sourceDirectory = new();
+            using TestDirectory outputDirectory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo source = sourceDirectory.CreateFile(
+                relativePath: "App.exe.manifest",
+                contents: "unsigned");
+            SigningOperationPlan plan = new(
+                SigningFile.Capture(source),
+                inPlace
+                    ? source
+                    : new FileInfo(
+                        Path.Combine(
+                            outputDirectory.FullPath,
+                            "nested",
+                            source.Name)));
+            SignOptions options = new(
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"));
+            IAggregatingDataFormatSigner signer =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            SigningOperationExecutor executor = new(
+                signer,
+                directoryService,
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
+            bool laterOwnerRan = false;
+
+            await executor.ExecuteAsync(plan, options);
+            await coordinator.ExecuteAsync(
+                plan.Source.SourceIdentity,
+                () =>
+                {
+                    laterOwnerRan = true;
+
+                    return Task.FromResult(source);
+                });
+
+            Assert.Equal(
+                "unsigned",
+                File.ReadAllText(plan.Output.FullName));
+            Assert.True(laterOwnerRan);
+            await signer
+                .DidNotReceiveWithAnyArgs()
+                .SignOwnerAsync(default!, default!, default!);
         }
 
-        private static IEnumerable<string> GetRelativeFilePaths(
-            string directoryPath)
+        [Fact]
+        public async Task ExecuteAsync_DuplicateSourceFailure_SharesFailure()
         {
-            return Directory
-                .EnumerateFiles(
-                    directoryPath,
-                    "*",
-                    SearchOption.AllDirectories)
-                .Select(path => Path.GetRelativePath(directoryPath, path))
-                .Order(StringComparer.Ordinal);
-        }
+            using TestDirectory sourceDirectory = new();
+            using TestDirectory outputDirectory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo source = sourceDirectory.CreateFile(
+                relativePath: "source.bin",
+                contents: "unsigned");
+            SigningFile signingFile = SigningFile.Capture(source);
+            SigningOperationPlan first = new(
+                signingFile,
+                new FileInfo(
+                    Path.Combine(
+                        outputDirectory.FullPath,
+                        "first.bin")));
+            SigningOperationPlan second = new(
+                signingFile,
+                new FileInfo(
+                    Path.Combine(
+                        outputDirectory.FullPath,
+                        "second.bin")));
+            SignOptions options = new(
+                HashAlgorithmName.SHA256,
+                new Uri("https://timestamp.test"));
+            IAggregatingDataFormatSigner signer =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            InvalidOperationException expected =
+                new(message: "Failure.");
 
-        private static FileInfo WriteFile(
-            string directoryPath,
-            string relativePath,
-            string content)
-        {
-            FileInfo file = new(Path.Combine(directoryPath, relativePath));
+            signer
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    options)
+                .Returns(true);
+            signer
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    options,
+                    coordinator)
+                .Returns(Task.FromException(expected));
+            SigningOperationExecutor executor = new(
+                signer,
+                directoryService,
+                Substitute.For<ILogger<ISigner>>(),
+                coordinator);
+            Task firstTask = executor.ExecuteAsync(first, options);
+            Task secondTask = executor.ExecuteAsync(second, options);
 
-            file.Directory!.Create();
-            File.WriteAllText(file.FullName, content);
+            InvalidOperationException firstException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => firstTask);
+            InvalidOperationException secondException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => secondTask);
 
-            return file;
+            Assert.Same(expected, firstException);
+            Assert.Same(expected, secondException);
+            Assert.False(first.Output.Exists);
+            Assert.False(second.Output.Exists);
         }
     }
 }

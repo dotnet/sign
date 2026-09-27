@@ -227,6 +227,11 @@
         <target state="translated">SignAsync wurde für {filePath} aufgerufen. {localFilePath} wird lokal verwendet.</target>
         <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
       </trans-unit>
+      <trans-unit id="SignedArtifactUnavailable">
+        <source>The signed artifact is unavailable.</source>
+        <target state="new">The signed artifact is unavailable.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
         <target state="translated">Der Versuch #{attempt} von {maxAttempts} Versuchen wird nach {seconds} Sek. ausgeführt.</target>
