@@ -464,6 +464,15 @@ namespace Sign.Core {
                 return ResourceManager.GetString("SignAsyncCalled", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The signed artifact is unavailable.
+        /// </summary>
+        internal static string SignedArtifactUnavailable {
+            get {
+                return ResourceManager.GetString("SignedArtifactUnavailable", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s..

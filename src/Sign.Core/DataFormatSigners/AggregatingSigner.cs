@@ -57,65 +57,278 @@ namespace Sign.Core
             };
         }
 
+        public bool HasSigningWork(FileInfo file, SignOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+            return (options.RecurseContainers && IsContainer(file)) ||
+                GetSigners(file).Count > 0;
+        }
+
         public async Task SignAsync(IEnumerable<FileInfo> files, SignOptions options)
         {
             ArgumentNullException.ThrowIfNull(files, nameof(files));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            await SignAsync(
+            await SignUncoordinatedAsync(
                 files.Select(SigningFile.Capture),
                 options);
         }
 
         public async Task SignAsync(
             IEnumerable<SigningFile> files,
-            SignOptions options)
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
         {
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
+            ArgumentNullException.ThrowIfNull(
+                coordinator,
+                nameof(coordinator));
 
             List<SigningFile> signingFiles = files.ToList();
+            List<SigningFile> containerFiles = signingFiles
+                .Where(file => IsContainer(file.File))
+                .ToList();
+            HashSet<SigningSourceIdentity> containerIdentities =
+                containerFiles
+                    .Select(file => file.SourceIdentity)
+                    .ToHashSet();
+            List<SigningFile> sequentialFiles = signingFiles
+                .Where(
+                    file =>
+                        !containerIdentities.Contains(
+                            file.SourceIdentity) &&
+                        IsSequentialCoordinationRequired(file.File))
+                .ToList();
+            HashSet<SigningSourceIdentity> sequentialIdentities =
+                sequentialFiles
+                    .Select(file => file.SourceIdentity)
+                    .ToHashSet();
 
+            await Task.WhenAll(
+                containerFiles.Select(
+                    file => SignCoordinatedAsync(
+                        file,
+                        options,
+                        coordinator)));
+
+            // Ordinary files precede sequential (ClickOnce) files because
+            // ClickOnce manifests hash the payload bytes present when they
+            // are signed.
+            await SignCoordinatedBatchAsync(
+                signingFiles
+                    .Where(
+                        file =>
+                            !containerIdentities.Contains(
+                                file.SourceIdentity) &&
+                            !sequentialIdentities.Contains(
+                                file.SourceIdentity) &&
+                            HasSigningWork(file.File, options))
+                    .ToList(),
+                options,
+                coordinator);
+
+            foreach (SigningFile file in sequentialFiles)
+            {
+                await SignCoordinatedAsync(
+                    file,
+                    options,
+                    coordinator);
+            }
+        }
+
+        public async Task SignOwnerAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            ArgumentNullException.ThrowIfNull(
+                coordinator,
+                nameof(coordinator));
+
+            await SignOwnerCoreAsync(file, options, coordinator);
+        }
+
+        private async Task SignOwnerCoreAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator? coordinator)
+        {
             if (options.RecurseContainers)
             {
                 await SignContainerContentsAsync(
-                    signingFiles,
-                    options);
+                    new[] { file },
+                    options,
+                    coordinator);
             }
 
-            // split by code sign service and fallback to default
+            await SignCurrentFileAsync(file, options, coordinator);
+        }
 
-            var grouped = (from signer in _signers
-                           from file in signingFiles
-                           where signer.CanSign(file.File)
-                           group file.File by signer into groups
-                           select groups).ToList();
+        private async Task SignCurrentFileAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator? coordinator)
+        {
+            List<IDataFormatSigner> signers = GetSigners(file.File);
 
-            // get all files and exclude existing; 
+            await Task.WhenAll(
+                signers.Select(
+                    signer => coordinator is not null
+                        ? signer.SignAsync(
+                            file,
+                            options,
+                            coordinator)
+                        : signer.SignAsync(
+                            new[] { file.File },
+                            options)));
+        }
 
-            // This is to catch PE files that don't have the correct extension set
-            HashSet<FileInfo> explicitlyAssignedFiles = grouped
-                .SelectMany(group => group)
-                .ToHashSet(FileInfoComparer.Instance);
-            IGrouping<IDataFormatSigner, FileInfo>? defaultFiles = signingFiles
-                                    .Select(file => file.File)
-                                    .Where(file => !explicitlyAssignedFiles.Contains(file))
-                                    .Distinct(FileInfoComparer.Instance)
-                                    .Where(_fileMetadataService.IsPortableExecutable)
-                                    .Select(f => new { _defaultSigner.Signer, f })
-                                    .GroupBy(a => a.Signer, k => k.f)
-                                    .SingleOrDefault(); // one group here
+        private List<IDataFormatSigner> GetSigners(FileInfo file)
+        {
+            List<IDataFormatSigner> signers = _signers
+                .Where(signer => signer.CanSign(file))
+                .ToList();
 
-            if (defaultFiles != null)
+            if (signers.Count == 0 &&
+                _fileMetadataService.IsPortableExecutable(file))
             {
-                grouped.Add(defaultFiles);
+                signers.Add(_defaultSigner.Signer);
             }
 
-            await Task.WhenAll(grouped.Select(g => g.Key.SignAsync(g.ToList(), options)));
+            return signers;
+        }
+
+        private async Task SignCoordinatedAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            SigningOperationResult result =
+                await coordinator.ExecuteArtifactAsync(
+                    file.SourceIdentity,
+                    async () =>
+                    {
+                        await SignOwnerCoreAsync(
+                            file,
+                            options,
+                            coordinator);
+
+                        return SigningOperationArtifact.Single(
+                            file.File);
+                    });
+
+            result.Materialize(file.File);
+        }
+
+        // Claims every file, signs the claimed files with one call per
+        // signer as the uncoordinated path does, then materializes every
+        // result, including those of files claimed elsewhere. This relies on
+        // the coordinator invoking a claimed operation before
+        // ExecuteArtifactAsync returns. The batch waits on no other
+        // operation before it completes, so it cannot join a wait cycle.
+        private async Task SignCoordinatedBatchAsync(
+            IReadOnlyList<SigningFile> files,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            if (files.Count == 0)
+            {
+                return;
+            }
+
+            TaskCompletionSource batch = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            List<SigningFile> ownedFiles = new();
+            List<Task<SigningOperationResult>> results = new();
+            SigningFile? claimingFile = null;
+
+            try
+            {
+                foreach (SigningFile file in files)
+                {
+                    claimingFile = file;
+                    results.Add(
+                        coordinator.ExecuteArtifactAsync(
+                            file.SourceIdentity,
+                            () => AwaitBatchAsync(file)));
+                    claimingFile = null;
+                }
+
+                await SignWithSignersAsync(ownedFiles, options);
+                batch.SetResult();
+            }
+            catch (Exception exception)
+            {
+                // Owned operations share the batch's failure.
+                batch.TrySetException(exception);
+
+                throw;
+            }
+
+            for (int i = 0; i < files.Count; ++i)
+            {
+                SigningOperationResult result = await results[i];
+
+                result.Materialize(files[i].File);
+            }
+
+            async Task<SigningOperationArtifact> AwaitBatchAsync(
+                SigningFile file)
+            {
+                if (!ReferenceEquals(claimingFile, file))
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "A batched signing operation started after " +
+                            "its claim.");
+                }
+
+                ownedFiles.Add(file);
+
+                await batch.Task.ConfigureAwait(
+                    continueOnCapturedContext: false);
+
+                return SigningOperationArtifact.Single(file.File);
+            }
+        }
+
+        private bool IsContainer(FileInfo file)
+        {
+            return _containerProvider.IsZipContainer(file) ||
+                _containerProvider.IsNuGetContainer(file) ||
+                _containerProvider.IsAppxContainer(file) ||
+                _containerProvider.IsAppxBundleContainer(file);
+        }
+
+        public bool IsSequentialCoordinationRequired(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return _signers.Any(
+                signer =>
+                    signer.RequiresSequentialCoordination &&
+                    signer.CanSign(file));
+        }
+
+        public bool IsOriginalFileNameRequired(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return _signers.Any(
+                signer =>
+                    signer.RequiresOriginalFileName &&
+                    signer.CanSign(file));
         }
 
         private async Task SignContainerContentsAsync(
             IReadOnlyList<SigningFile> files,
-            SignOptions options)
+            SignOptions options,
+            SigningOperationCoordinator? coordinator)
         {
             // See if any of them are archives
             List<SigningFile> archives = (from file in files
@@ -151,7 +364,10 @@ namespace Sign.Core
                 if (allFiles.Count > 0)
                 {
                     // Send the files from the archives through the aggregator to sign
-                    await SignAsync(allFiles, options);
+                    await SignRecursiveAsync(
+                        allFiles,
+                        options,
+                        coordinator);
 
                     // After signing the contents, save the zip
                     // For NuPkg, this step removes the signature too, but that's ok as it'll get signed below
@@ -202,7 +418,10 @@ namespace Sign.Core
                 if (allFiles.Count > 0)
                 {
                     // Send the files from the archives through the aggregator to sign
-                    await SignAsync(allFiles, options);
+                    await SignRecursiveAsync(
+                        allFiles,
+                        options,
+                        coordinator);
                 }
 
                 // Save the appx with the updated publisher info
@@ -253,7 +472,10 @@ namespace Sign.Core
                 if (allFiles.Count > 0)
                 {
                     // Send the files from the archives through the aggregator to sign
-                    await SignAsync(allFiles, options);
+                    await SignRecursiveAsync(
+                        allFiles,
+                        options,
+                        coordinator);
 
                     // After signing the contents, save the zip
                     await Parallel.ForEachAsync(
@@ -270,6 +492,74 @@ namespace Sign.Core
             }
         }
 
+        private Task SignRecursiveAsync(
+            IEnumerable<SigningFile> files,
+            SignOptions options,
+            SigningOperationCoordinator? coordinator)
+        {
+            return coordinator is null
+                ? SignUncoordinatedAsync(files, options)
+                : SignAsync(files, options, coordinator);
+        }
+
+        private async Task SignUncoordinatedAsync(
+            IEnumerable<SigningFile> files,
+            SignOptions options)
+        {
+            List<SigningFile> signingFiles = files.ToList();
+
+            if (options.RecurseContainers)
+            {
+                await SignContainerContentsAsync(
+                    signingFiles,
+                    options,
+                    coordinator: null);
+            }
+
+            await SignWithSignersAsync(signingFiles, options);
+        }
+
+        private async Task SignWithSignersAsync(
+            IReadOnlyList<SigningFile> signingFiles,
+            SignOptions options)
+        {
+            List<IGrouping<IDataFormatSigner, FileInfo>> grouped =
+                (from signer in _signers
+                 from file in signingFiles
+                 where signer.CanSign(file.File)
+                 group file.File by signer).ToList();
+            HashSet<FileInfo> explicitlyAssignedFiles = grouped
+                .SelectMany(group => group)
+                .ToHashSet(FileInfoComparer.Instance);
+            IGrouping<IDataFormatSigner, FileInfo>? defaultFiles =
+                signingFiles
+                    .Select(file => file.File)
+                    .Where(
+                        file =>
+                            !explicitlyAssignedFiles.Contains(file))
+                    .Distinct(FileInfoComparer.Instance)
+                    .Where(_fileMetadataService.IsPortableExecutable)
+                    .Select(file => new
+                    {
+                        _defaultSigner.Signer,
+                        File = file
+                    })
+                    .GroupBy(item => item.Signer, item => item.File)
+                    .SingleOrDefault();
+
+            if (defaultFiles is not null)
+            {
+                grouped.Add(defaultFiles);
+            }
+
+            await Task.WhenAll(
+                grouped.Select(
+                    group =>
+                        group.Key.SignAsync(
+                            group.ToList(),
+                            options)));
+        }
+
 
         public void StageSigningDependencies(
             FileInfo source,
@@ -283,23 +573,6 @@ namespace Sign.Core
                     signer.StageSigningDependencies(
                         source,
                         stagingDirectory,
-                        options);
-                }
-            }
-        }
-
-        public void CopySigningResults(
-            FileInfo stagedFile,
-            DirectoryInfo outputDirectory,
-            SignOptions options)
-        {
-            foreach (IDataFormatSigner signer in _signers)
-            {
-                if (signer.CanSign(stagedFile))
-                {
-                    signer.CopySigningResults(
-                        stagedFile,
-                        outputDirectory,
                         options);
                 }
             }

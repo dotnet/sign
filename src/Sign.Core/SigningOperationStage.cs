@@ -11,7 +11,8 @@ namespace Sign.Core
         internal SigningOperationStage(
             TemporaryDirectory temporaryDirectory,
             SigningFile source,
-            SigningFile input)
+            SigningFile input,
+            bool hasStagedDependencies)
         {
             ArgumentNullException.ThrowIfNull(
                 temporaryDirectory,
@@ -22,10 +23,12 @@ namespace Sign.Core
             _temporaryDirectory = temporaryDirectory;
             Source = source;
             Input = input;
+            HasStagedDependencies = hasStagedDependencies;
         }
 
         internal SigningFile Source { get; }
         internal SigningFile Input { get; }
+        internal bool HasStagedDependencies { get; }
 
         public void Dispose()
         {

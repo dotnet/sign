@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -88,6 +89,845 @@ namespace Sign.Core.Test
             Assert.Contains(
                 logger.Entries,
                 entry => entry.LogLevel == LogLevel.Error);
+        }
+
+        [Theory]
+        [InlineData(null, "")]
+        [InlineData("signed", "")]
+        [InlineData(null, "nested")]
+        [InlineData("signed", "nested")]
+        public async Task SignAsync_ClickOnceInputsInSameOrNestedDirectory_AreSequential(
+            string? outputFile,
+            string secondDirectory)
+        {
+            FileInfo first = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "First.application"));
+            FileInfo second = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    secondDirectory,
+                    "Second.application"));
+
+            second.Directory!.Create();
+            File.WriteAllText(first.FullName, "first");
+            File.WriteAllText(second.FullName, "second");
+
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            int activeCount = 0;
+            int maximumActiveCount = 0;
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+            StubSequentialCoordination(aggregatingSigner, ".application");
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    async call =>
+                    {
+                        int active =
+                            Interlocked.Increment(ref activeCount);
+                        int observed;
+
+                        do
+                        {
+                            observed = Volatile.Read(
+                                ref maximumActiveCount);
+                        }
+                        while (active > observed &&
+                            Interlocked.CompareExchange(
+                                ref maximumActiveCount,
+                                active,
+                                observed) != observed);
+
+                        await Task.Delay(
+                            TimeSpan.FromMilliseconds(50));
+                        File.AppendAllText(
+                            call.Arg<SigningFile>().File.FullName,
+                            "-signed");
+                        Interlocked.Decrement(ref activeCount);
+                    });
+            Signer signer = new(
+                CreateServiceProvider(aggregatingSigner),
+                Substitute.For<ILogger<ISigner>>());
+
+            int exitCode = await signer.SignAsync(
+                new[] { first, second },
+                outputFile,
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 2,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal(expected: 1, actual: maximumActiveCount);
+
+            string outputDirectory = outputFile is null
+                ? _temporaryDirectory.Directory.FullName
+                : Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    outputFile);
+
+            Assert.Equal(
+                "first-signed",
+                File.ReadAllText(
+                    Path.Combine(outputDirectory, first.Name)));
+            Assert.Equal(
+                "second-signed",
+                File.ReadAllText(
+                    Path.Combine(
+                        outputDirectory,
+                        secondDirectory,
+                        second.Name)));
+        }
+
+        [Fact]
+        public async Task SignAsync_ClickOnceInputsInSiblingDirectories_RunConcurrently()
+        {
+            // "publish2" shares a string prefix with "publish" but is not
+            // nested in it.
+            FileInfo first = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "publish",
+                    "App.application"));
+            FileInfo second = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "publish2",
+                    "App.application"));
+
+            first.Directory!.Create();
+            second.Directory!.Create();
+            File.WriteAllText(first.FullName, "first");
+            File.WriteAllText(second.FullName, "second");
+
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            TaskCompletionSource bothStarted = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            int startedCount = 0;
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+            StubSequentialCoordination(aggregatingSigner, ".application");
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    async _ =>
+                    {
+                        if (Interlocked.Increment(ref startedCount) == 2)
+                        {
+                            bothStarted.TrySetResult();
+                        }
+
+                        await Task.WhenAny(
+                            bothStarted.Task,
+                            Task.Delay(TimeSpan.FromSeconds(10)));
+                    });
+            Signer signer = new(
+                CreateServiceProvider(aggregatingSigner),
+                Substitute.For<ILogger<ISigner>>());
+
+            int exitCode = await signer.SignAsync(
+                new[] { first, second },
+                outputFile: null,
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 2,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.True(bothStarted.Task.IsCompletedSuccessfully);
+        }
+
+        [Fact]
+        public async Task SignAsync_WithOutput_SignsInInputOrder()
+        {
+            FileInfo application = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "App.application"));
+            FileInfo payload = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "Payload.dll"));
+
+            File.WriteAllText(application.FullName, "application");
+            File.WriteAllText(payload.FullName, "payload");
+
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            List<string> signedFileExtensions = new();
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+            StubSequentialCoordination(aggregatingSigner, ".application");
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    call =>
+                    {
+                        FileInfo file = call.Arg<SigningFile>().File;
+
+                        signedFileExtensions.Add(file.Extension);
+                        File.AppendAllText(file.FullName, "-signed");
+
+                        return Task.CompletedTask;
+                    });
+            Signer signer = new(
+                CreateServiceProvider(aggregatingSigner),
+                Substitute.For<ILogger<ISigner>>());
+
+            int exitCode = await signer.SignAsync(
+                new[] { application, payload },
+                outputFile: "signed",
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 1,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal(
+                new[] { ".application", ".dll" },
+                signedFileExtensions);
+        }
+
+        [Fact]
+        public async Task SignAsync_NestedClickOnceInputsWithSharedDescendant_DoNotDeadlock()
+        {
+            // publish\App.application (parent input)
+            // publish\sub\App.application (nested input)
+            // publish\sub\Child.application (discovered by both)
+            DirectoryInfo publish = _temporaryDirectory.Directory
+                .CreateSubdirectory("publish");
+            DirectoryInfo sub = publish.CreateSubdirectory("sub");
+            FileInfo parent = new(
+                Path.Combine(publish.FullName, "App.application"));
+            FileInfo nested = new(
+                Path.Combine(sub.FullName, "App.application"));
+            FileInfo child = new(
+                Path.Combine(sub.FullName, "Child.application"));
+
+            File.WriteAllText(parent.FullName, "parent");
+            File.WriteAllText(nested.FullName, "nested");
+            File.WriteAllText(child.FullName, "child");
+
+            using X509Certificate2 certificate =
+                SelfIssuedCertificateCreator.CreateCertificate();
+            using RSA privateKey = certificate.GetRSAPrivateKey()!;
+            ISignatureAlgorithmProvider signatureAlgorithmProvider =
+                Substitute.For<ISignatureAlgorithmProvider>();
+            ICertificateProvider certificateProvider =
+                Substitute.For<ICertificateProvider>();
+            IServiceProvider clickOnceServiceProvider =
+                Substitute.For<IServiceProvider>();
+            IMageCli mageCli = Substitute.For<IMageCli>();
+            using ManualResetEventSlim parentClaimedChild = new();
+            ConcurrentQueue<string> mageArguments = new();
+
+            certificateProvider
+                .GetCertificateAsync(Arg.Any<CancellationToken>())
+                .Returns(certificate);
+            signatureAlgorithmProvider
+                .GetRsaAsync(Arg.Any<CancellationToken>())
+                .Returns(privateKey);
+            mageCli
+                .RunAsync(Arg.Any<string>())
+                .Returns(
+                    async call =>
+                    {
+                        string arguments = call.Arg<string>();
+
+                        mageArguments.Enqueue(arguments);
+
+                        // Only the parent's staging places Child.application
+                        // under "sub". Hold the parent's claim on it long
+                        // enough for the nested input to claim itself.
+                        if (arguments.Contains(
+                            $@"sub{Path.DirectorySeparatorChar}{child.Name}",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            parentClaimedChild.Set();
+                            await Task.Delay(
+                                TimeSpan.FromMilliseconds(500));
+                        }
+
+                        return 0;
+                    });
+
+            ClickOnceSigner clickOnceSigner = new(
+                signatureAlgorithmProvider,
+                certificateProvider,
+                clickOnceServiceProvider,
+                mageCli,
+                Substitute.For<IManifestSigner>(),
+                Substitute.For<ILogger<IDataFormatSigner>>(),
+                Substitute.For<IFileMatcher>());
+            AggregatingSigner aggregatingSigner = new(
+                new IDataFormatSigner[] { clickOnceSigner },
+                Substitute.For<IDefaultDataFormatSigner>(),
+                Substitute.For<IContainerProvider>(),
+                Substitute.For<IFileMetadataService>(),
+                Substitute.For<IMatcherFactory>());
+
+            clickOnceServiceProvider
+                .GetService(typeof(IAggregatingDataFormatSigner))
+                .Returns(aggregatingSigner);
+
+            // Hold the nested input back until the parent owns
+            // Child.application.
+            ILogger<ISigner> logger = Substitute.For<ILogger<ISigner>>();
+
+            logger
+                .When(
+                    value => value.Log(
+                        LogLevel.Information,
+                        Arg.Any<EventId>(),
+                        Arg.Any<Arg.AnyType>(),
+                        Arg.Any<Exception?>(),
+                        Arg.Any<Func<Arg.AnyType, Exception?, string>>()))
+                .Do(
+                    call =>
+                    {
+                        string? message = call.Args()[2]?.ToString();
+
+                        if (message is not null &&
+                            message.Contains(
+                                nested.FullName,
+                                StringComparison.OrdinalIgnoreCase) &&
+                            !message.Contains(
+                                child.Name,
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            parentClaimedChild.Wait(
+                                TimeSpan.FromSeconds(10));
+                        }
+                    });
+
+            Signer signer = new(
+                CreateServiceProvider(aggregatingSigner),
+                logger);
+            Task<int> signTask = signer.SignAsync(
+                new[] { parent, nested },
+                outputFile: null,
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 2,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Task completed = await Task.WhenAny(
+                signTask,
+                Task.Delay(TimeSpan.FromSeconds(30)));
+
+            Assert.Same(signTask, completed);
+            Assert.Equal(ExitCode.Success, await signTask);
+            Assert.Equal(expected: 3, actual: mageArguments.Count);
+        }
+
+        [Fact]
+        public async Task SignAsync_ClickOnceAndSiblingInputs_StagesSignedSiblingAtAnyConcurrency()
+        {
+            FileInfo application = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "App.application"));
+            FileInfo payload = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    "Payload.dll"));
+
+            File.WriteAllText(application.FullName, "application");
+            File.WriteAllText(payload.FullName, "payload");
+
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            string? stagedPayloadContents = null;
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+            StubSequentialCoordination(aggregatingSigner, ".application");
+            aggregatingSigner
+                .When(
+                    value => value.StageSigningDependencies(
+                        Arg.Is<FileInfo>(
+                            file => file.Extension == ".application"),
+                        Arg.Any<DirectoryInfo>(),
+                        Arg.Any<SignOptions>()))
+                .Do(
+                    call =>
+                    {
+                        // Mirrors ClickOnce v1 dependency staging.
+                        FileInfo source = call.Arg<FileInfo>();
+                        DirectoryInfo staging =
+                            call.Arg<DirectoryInfo>();
+
+                        File.Copy(
+                            Path.Combine(
+                                source.DirectoryName!,
+                                payload.Name),
+                            Path.Combine(
+                                staging.FullName,
+                                payload.Name));
+                    });
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    async call =>
+                    {
+                        FileInfo file = call.Arg<SigningFile>().File;
+
+                        if (file.Extension == ".application")
+                        {
+                            stagedPayloadContents = File.ReadAllText(
+                                Path.Combine(
+                                    file.DirectoryName!,
+                                    payload.Name));
+                        }
+                        else
+                        {
+                            await Task.Delay(
+                                TimeSpan.FromMilliseconds(200));
+                        }
+
+                        File.AppendAllText(file.FullName, "-signed");
+                    });
+            Signer signer = new(
+                CreateServiceProvider(aggregatingSigner),
+                Substitute.For<ILogger<ISigner>>());
+
+            int exitCode = await signer.SignAsync(
+                new[] { application, payload },
+                outputFile: null,
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 2,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal("payload-signed", stagedPayloadContents);
+            Assert.Equal(
+                "payload-signed",
+                File.ReadAllText(payload.FullName));
+            Assert.Equal(
+                "application-signed",
+                File.ReadAllText(application.FullName));
+        }
+
+        [Fact]
+        public async Task SignAsync_InputsRequiringSequentialCoordination_AreSequential()
+        {
+            FileInfo first = CreateInput("First.custom");
+            FileInfo second = CreateInput("Second.custom");
+            IAggregatingDataFormatSigner aggregatingSigner =
+                CreateActivityTrackingSigner(
+                    overlapWindow: TimeSpan.FromMilliseconds(250),
+                    out Func<int> getMaximumActiveCount);
+
+            StubSequentialCoordination(aggregatingSigner, ".custom");
+
+            int exitCode = await SignInPlaceAsync(
+                aggregatingSigner,
+                maxConcurrency: 2,
+                first,
+                second);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal(expected: 1, actual: getMaximumActiveCount());
+        }
+
+        [Fact]
+        public async Task SignAsync_ClickOnceExtensionWithoutSequentialCoordination_RunsConcurrently()
+        {
+            FileInfo first = CreateInput("First.application");
+            FileInfo second = CreateInput("Second.application");
+            IAggregatingDataFormatSigner aggregatingSigner =
+                CreateActivityTrackingSigner(
+                    overlapWindow: TimeSpan.FromSeconds(10),
+                    out Func<int> getMaximumActiveCount);
+
+            int exitCode = await SignInPlaceAsync(
+                aggregatingSigner,
+                maxConcurrency: 2,
+                first,
+                second);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal(expected: 2, actual: getMaximumActiveCount());
+        }
+
+        [Theory]
+        [InlineData(".custom", true)]
+        [InlineData(".application", false)]
+        public async Task SignAsync_InPlace_SignsOnlyInputsRequiringSequentialCoordinationLast(
+            string extension,
+            bool requiresSequentialCoordination)
+        {
+            FileInfo first = CreateInput($"App{extension}");
+            FileInfo payload = CreateInput("Payload.dll");
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            List<string> signedFileExtensions = new();
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+
+            if (requiresSequentialCoordination)
+            {
+                StubSequentialCoordination(aggregatingSigner, extension);
+            }
+
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    call =>
+                    {
+                        signedFileExtensions.Add(
+                            call.Arg<SigningFile>().File.Extension);
+
+                        return Task.CompletedTask;
+                    });
+
+            int exitCode = await SignInPlaceAsync(
+                aggregatingSigner,
+                maxConcurrency: 1,
+                first,
+                payload);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal(
+                requiresSequentialCoordination
+                    ? new[] { ".dll", extension }
+                    : new[] { extension, ".dll" },
+                signedFileExtensions);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task SignAsync_WithOutput_CopyWithoutSigningDoesNotOverwriteSignedLayoutFile(
+            bool isCopiedInputFirst)
+        {
+            FileInfo application = CreateInput("App.application");
+            FileInfo manifest = CreateInput("App.exe.manifest");
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Is<FileInfo>(
+                        file => file.Extension == application.Extension),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+            StubSequentialCoordination(aggregatingSigner, ".application");
+            aggregatingSigner
+                .When(
+                    value => value.StageSigningDependencies(
+                        Arg.Any<FileInfo>(),
+                        Arg.Any<DirectoryInfo>(),
+                        Arg.Any<SignOptions>()))
+                .Do(
+                    call => File.Copy(
+                        manifest.FullName,
+                        Path.Combine(
+                            call.Arg<DirectoryInfo>().FullName,
+                            manifest.Name)));
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    call =>
+                    {
+                        // Mirrors ClickOnce signing the application
+                        // manifest in its staged layout.
+                        File.AppendAllText(
+                            Path.Combine(
+                                call.Arg<SigningFile>().File.DirectoryName!,
+                                manifest.Name),
+                            "-signed");
+
+                        return Task.CompletedTask;
+                    });
+
+            int exitCode = await SignAsync(
+                aggregatingSigner,
+                outputFile: "signed",
+                maxConcurrency: 1,
+                isCopiedInputFirst
+                    ? new[] { manifest, application }
+                    : new[] { application, manifest });
+
+            Assert.Equal(ExitCode.Success, exitCode);
+            Assert.Equal(
+                $"{manifest.Name}-signed",
+                File.ReadAllText(
+                    Path.Combine(
+                        _temporaryDirectory.Directory.FullName,
+                        "signed",
+                        manifest.Name)));
+        }
+
+        private FileInfo CreateInput(string fileName)
+        {
+            FileInfo file = new(
+                Path.Combine(
+                    _temporaryDirectory.Directory.FullName,
+                    fileName));
+
+            File.WriteAllText(file.FullName, fileName);
+
+            return file;
+        }
+
+        private static IAggregatingDataFormatSigner CreateActivityTrackingSigner(
+            TimeSpan overlapWindow,
+            out Func<int> getMaximumActiveCount)
+        {
+            IAggregatingDataFormatSigner aggregatingSigner =
+                Substitute.For<IAggregatingDataFormatSigner>();
+            TaskCompletionSource bothStarted = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            int activeCount = 0;
+            int maximumActiveCount = 0;
+
+            aggregatingSigner
+                .HasSigningWork(
+                    Arg.Any<FileInfo>(),
+                    Arg.Any<SignOptions>())
+                .Returns(true);
+            aggregatingSigner
+                .CanSign(Arg.Any<FileInfo>())
+                .Returns(true);
+            aggregatingSigner
+                .SignOwnerAsync(
+                    Arg.Any<SigningFile>(),
+                    Arg.Any<SignOptions>(),
+                    Arg.Any<SigningOperationCoordinator>())
+                .Returns(
+                    async _ =>
+                    {
+                        int active =
+                            Interlocked.Increment(ref activeCount);
+                        int observed;
+
+                        do
+                        {
+                            observed = Volatile.Read(
+                                ref maximumActiveCount);
+                        }
+                        while (active > observed &&
+                            Interlocked.CompareExchange(
+                                ref maximumActiveCount,
+                                active,
+                                observed) != observed);
+
+                        if (active == 2)
+                        {
+                            bothStarted.TrySetResult();
+                        }
+
+                        // Overlapping operations meet here; sequential
+                        // ones wait out the window one at a time.
+                        await Task.WhenAny(
+                            bothStarted.Task,
+                            Task.Delay(overlapWindow));
+                        Interlocked.Decrement(ref activeCount);
+                    });
+
+            getMaximumActiveCount =
+                () => Volatile.Read(ref maximumActiveCount);
+
+            return aggregatingSigner;
+        }
+
+        private static void StubSequentialCoordination(
+            IAggregatingDataFormatSigner aggregatingSigner,
+            string extension)
+        {
+            aggregatingSigner
+                .IsSequentialCoordinationRequired(
+                    Arg.Is<FileInfo>(
+                        file => string.Equals(
+                            file.Extension,
+                            extension,
+                            StringComparison.OrdinalIgnoreCase)))
+                .Returns(true);
+        }
+
+        private Task<int> SignInPlaceAsync(
+            IAggregatingDataFormatSigner aggregatingSigner,
+            int maxConcurrency,
+            params FileInfo[] inputs)
+        {
+            return SignAsync(
+                aggregatingSigner,
+                outputFile: null,
+                maxConcurrency,
+                inputs);
+        }
+
+        private Task<int> SignAsync(
+            IAggregatingDataFormatSigner aggregatingSigner,
+            string? outputFile,
+            int maxConcurrency,
+            params FileInfo[] inputs)
+        {
+            Signer signer = new(
+                CreateServiceProvider(aggregatingSigner),
+                Substitute.For<ILogger<ISigner>>());
+
+            return signer.SignAsync(
+                inputs,
+                outputFile,
+                fileList: null,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+        }
+
+        private IServiceProvider CreateServiceProvider(
+            IAggregatingDataFormatSigner aggregatingSigner)
+        {
+            ICertificateProvider certificateProvider =
+                Substitute.For<ICertificateProvider>();
+            ICertificateVerifier certificateVerifier =
+                Substitute.For<ICertificateVerifier>();
+            IServiceProvider serviceProvider =
+                Substitute.For<IServiceProvider>();
+
+            certificateProvider
+                .GetCertificateAsync(
+                    Arg.Any<CancellationToken>())
+                .Returns(
+                    _ => SelfIssuedCertificateCreator.CreateCertificate());
+            serviceProvider
+                .GetService(Arg.Any<Type>())
+                .Returns(
+                    call =>
+                    {
+                        Type serviceType = call.Arg<Type>();
+
+                        if (serviceType ==
+                            typeof(IAggregatingDataFormatSigner))
+                        {
+                            return aggregatingSigner;
+                        }
+
+                        if (serviceType == typeof(IDirectoryService))
+                        {
+                            return _directoryService;
+                        }
+
+                        if (serviceType ==
+                            typeof(ICertificateProvider))
+                        {
+                            return certificateProvider;
+                        }
+
+                        if (serviceType ==
+                            typeof(ICertificateVerifier))
+                        {
+                            return certificateVerifier;
+                        }
+
+                        return null;
+                    });
+
+            return serviceProvider;
         }
 
         [Fact]

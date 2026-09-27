@@ -11,7 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
-    internal sealed class ClickOnceSigner : RetryingSigner, IDataFormatSigner
+    internal sealed class ClickOnceSigner :
+        RetryingSigner,
+        IDataFormatSigner
     {
         private readonly Lazy<IAggregatingDataFormatSigner> _aggregatingSigner;
         private readonly ICertificateProvider _certificateProvider;
@@ -49,6 +51,12 @@ namespace Sign.Core
             _aggregatingSigner = new Lazy<IAggregatingDataFormatSigner>(() => serviceProvider.GetService<IAggregatingDataFormatSigner>()!);
         }
 
+        public bool RequiresSequentialCoordination => true;
+
+        // StageSigningDependencies copies the source directory around the
+        // staged manifest, so a renamed manifest would leave two copies.
+        public bool RequiresOriginalFileName => true;
+
         public bool CanSign(FileInfo file)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
@@ -65,7 +73,39 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            Logger.LogInformation(Resources.ClickOnceSignatureProviderSigning, files.Count());
+            await SignAsync(
+                files.Select(SigningFile.Capture),
+                options,
+                coordinator: null);
+        }
+
+        public Task SignAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            ArgumentNullException.ThrowIfNull(
+                coordinator,
+                nameof(coordinator));
+
+            return SignAsync(
+                new[] { file },
+                options,
+                coordinator);
+        }
+
+        private async Task SignAsync(
+            IEnumerable<SigningFile> files,
+            SignOptions options,
+            SigningOperationCoordinator? coordinator)
+        {
+            List<SigningFile> signingFiles = files.ToList();
+
+            Logger.LogInformation(
+                Resources.ClickOnceSignatureProviderSigning,
+                signingFiles.Count);
 
             var args = "-a sha256RSA";
             if (!string.IsNullOrWhiteSpace(options.ApplicationName))
@@ -79,7 +119,10 @@ namespace Sign.Core
             using (RSA rsaPrivateKey = await _signatureAlgorithmProvider.GetRsaAsync())
             {
                 // This outer loop is for a deployment manifest file (.application/.vsto).
-                await Parallel.ForEachAsync(files, _parallelOptions, async (file, state) =>
+                await Parallel.ForEachAsync(
+                    signingFiles,
+                    _parallelOptions,
+                    async (file, state) =>
                 {
                     // We need to be explicit about the order these files are signed in. The data files must be signed first
                     // Then the .manifest file
@@ -92,32 +135,71 @@ namespace Sign.Core
                     // Look for the data files first - these are .deploy files
                     // we need to rename them, sign, then restore the name
 
-                    DirectoryInfo clickOnceDirectory = file.Directory!;
+                    DirectoryInfo clickOnceDirectory =
+                        file.File.Directory!;
 
                     // get the files, _including_ the SignOptions, so that we only actually try to sign the files specified.
                     // this is useful if e.g. you don't want to sign third-party assemblies that your application depends on
                     // but you do still want to sign your own assemblies.
-                    List<FileInfo> filteredFiles = GetFiles(clickOnceDirectory, options).ToList();
-                    List<FileInfo> deployFilesToSign = filteredFiles
-                        .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
+                    List<SigningFile> filteredFiles =
+                        GetFiles(file, clickOnceDirectory, options)
+                            .ToList();
+                    List<SigningFile> deployFilesToSign = filteredFiles
+                        .Where(
+                            f => ".deploy".Equals(
+                                f.File.Extension,
+                                StringComparison.OrdinalIgnoreCase))
                         .ToList();
-                    List<FileInfo> contentFiles = new();
+                    List<SigningFile> contentFiles = new();
 
                     RemoveDeployExtension(deployFilesToSign, contentFiles);
 
-                    List<FileInfo> filesToSign = contentFiles.ToList(); // copy it since we may add setup.exe
-                    IEnumerable<FileInfo> setupExe = filteredFiles.Where(f => ".exe".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
+                    List<SigningFile> filesToSign =
+                        contentFiles.ToList();
+                    IEnumerable<SigningFile> setupExe = filteredFiles
+                        .Where(
+                            f => ".exe".Equals(
+                                f.File.Extension,
+                                StringComparison.OrdinalIgnoreCase));
                     filesToSign.AddRange(setupExe);
 
                     // sign the inner files
-                    await _aggregatingSigner.Value.SignAsync(filesToSign!, options);
+                    if (coordinator is null)
+                    {
+                        await _aggregatingSigner.Value.SignAsync(
+                            filesToSign.Select(
+                                signingFile => signingFile.File),
+                            options);
+                    }
+                    else
+                    {
+                        await _aggregatingSigner.Value.SignAsync(
+                            filesToSign,
+                            options,
+                            coordinator);
+                    }
 
                     // rename the rest of the deploy files since signing the manifest will need them.
                     // this uses the overload of GetFiles() that ignores file matching options because we
                     // require all files to be named correctly in order to generate valid manifests.
-                    List<FileInfo> filesExceptFiltered = GetFiles(clickOnceDirectory).Except(filteredFiles, FileInfoComparer.Instance).ToList();
-                    List<FileInfo> deployFiles = filesExceptFiltered
-                        .Where(f => ".deploy".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
+                    HashSet<SigningSourceIdentity> filteredIdentities =
+                        filteredFiles
+                            .Select(
+                                signingFile =>
+                                    signingFile.SourceIdentity)
+                            .ToHashSet();
+                    List<SigningFile> filesExceptFiltered =
+                        GetFiles(file, clickOnceDirectory)
+                            .Where(
+                                signingFile =>
+                                    !filteredIdentities.Contains(
+                                        signingFile.SourceIdentity))
+                            .ToList();
+                    List<SigningFile> deployFiles = filesExceptFiltered
+                        .Where(
+                            f => ".deploy".Equals(
+                                f.File.Extension,
+                                StringComparison.OrdinalIgnoreCase))
                         .ToList();
 
                     RemoveDeployExtension(deployFiles, contentFiles);
@@ -127,15 +209,34 @@ namespace Sign.Core
                     // Inner files are now signed
                     // now look for the manifest file and sign that if we have one
 
-                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
+                    SigningFile? manifestFile = filteredFiles
+                        .SingleOrDefault(
+                            f => ".manifest".Equals(
+                                f.File.Extension,
+                                StringComparison.OrdinalIgnoreCase));
 
-                    string fileArgs = $@"-update ""{manifestFile}"" {args}";
+                    string fileArgs =
+                        $@"-update ""{manifestFile?.File}"" {args}";
 
-                    if (manifestFile is not null && !await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
+                    if (manifestFile is not null)
                     {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
-
-                        throw new SigningException(message);
+                        await SignDiscoveredFileAsync(
+                            manifestFile,
+                            coordinator,
+                            includeSiblings: false,
+                            async () =>
+                            {
+                                if (!await SignAsync(
+                                    fileArgs,
+                                    manifestFile.File,
+                                    rsaPrivateKey,
+                                    certificate,
+                                    options))
+                                {
+                                    throw CreateSigningException(
+                                        manifestFile.File);
+                                }
+                            });
                     }
 
                     string publisherParam = string.Empty;
@@ -154,60 +255,228 @@ namespace Sign.Core
 
                     // Now sign deployment manifest files (.application/.vsto).
                     // Order by desending length to put the inner one first
-                    List<FileInfo> deploymentManifestFiles = filteredFiles
-                        .Where(f => ".vsto".Equals(f.Extension, StringComparison.OrdinalIgnoreCase) ||
-                                    ".application".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
-                        .Select(f => new { file = f, f.FullName.Length })
+                    List<SigningFile> deploymentManifestFiles =
+                        filteredFiles
+                        .Where(f => CanSign(f.File))
+                        .Select(
+                            f => new
+                            {
+                                file = f,
+                                f.File.FullName.Length
+                            })
                         .OrderByDescending(f => f.Length)
                         .Select(f => f.file)
                         .ToList();
+                    TaskCompletionSource layoutReady = new(
+                        TaskCreationOptions.RunContinuationsAsynchronously);
+                    List<Task<SigningOperationResult>>
+                        pendingDiscoveredResults = new();
+                    List<(SigningOperationResult Result, FileInfo Destination)>
+                        completedDiscoveredResults = new();
 
-                    foreach (FileInfo deploymentManifestFile in deploymentManifestFiles)
+                    try
                     {
-                        fileArgs = $@"-update ""{deploymentManifestFile.FullName}"" {args} {publisherParam}";
-                        if (manifestFile is not null)
+                        foreach (
+                            SigningFile deploymentManifestFile
+                            in deploymentManifestFiles)
                         {
-                            fileArgs += $@" -appm ""{manifestFile.FullName}""";
-                        }
-                        if (options.DescriptionUrl is not null)
-                        {
-                            fileArgs += $@" -SupportURL {options.DescriptionUrl.AbsoluteUri}";
+                            fileArgs =
+                                $@"-update ""{deploymentManifestFile.File.FullName}"" {args} {publisherParam}";
+                            if (manifestFile is not null)
+                            {
+                                fileArgs +=
+                                    $@" -appm ""{manifestFile.File.FullName}""";
+                            }
+                            if (options.DescriptionUrl is not null)
+                            {
+                                fileArgs +=
+                                    $@" -SupportURL {options.DescriptionUrl.AbsoluteUri}";
+                            }
+
+                            async Task SignDeploymentManifestAsync()
+                            {
+                                if (!await SignAsync(
+                                    fileArgs,
+                                    deploymentManifestFile.File,
+                                    rsaPrivateKey,
+                                    certificate,
+                                    options))
+                                {
+                                    throw CreateSigningException(
+                                        deploymentManifestFile.File);
+                                }
+                            }
+
+                            if (coordinator is null ||
+                                deploymentManifestFile
+                                    .SourceIdentity.Equals(
+                                        file.SourceIdentity))
+                            {
+                                await SignDeploymentManifestAsync();
+                            }
+                            else
+                            {
+                                TaskCompletionSource signed = new(
+                                    TaskCreationOptions
+                                        .RunContinuationsAsynchronously);
+                                Task<SigningOperationResult> resultTask =
+                                    coordinator.ExecuteArtifactAsync(
+                                        deploymentManifestFile
+                                            .SourceIdentity,
+                                        async () =>
+                                        {
+                                            try
+                                            {
+                                                await
+                                                    SignDeploymentManifestAsync();
+                                                signed.TrySetResult();
+                                                await layoutReady.Task;
+
+                                                return
+                                                    SigningOperationArtifact
+                                                        .Layout(
+                                                            deploymentManifestFile
+                                                                .File,
+                                                            deploymentManifestFile
+                                                                .File
+                                                                .Directory!);
+                                            }
+                                            catch (Exception exception)
+                                            {
+                                                signed.TrySetException(
+                                                    exception);
+
+                                                throw;
+                                            }
+                                        });
+                                Task firstCompletion =
+                                    await Task.WhenAny(
+                                        resultTask,
+                                        signed.Task);
+
+                                if (ReferenceEquals(
+                                    firstCompletion,
+                                    resultTask))
+                                {
+                                    completedDiscoveredResults.Add(
+                                        (await resultTask,
+                                            deploymentManifestFile.File));
+                                }
+                                else
+                                {
+                                    await signed.Task;
+                                    pendingDiscoveredResults.Add(resultTask);
+                                }
+                            }
                         }
 
-                        if (!await SignAsync(fileArgs, deploymentManifestFile, rsaPrivateKey, certificate, options))
+                        // restore the .deploy files
+                        foreach (SigningFile contentFile in contentFiles)
                         {
-                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, deploymentManifestFile.FullName);
+                            File.Move(
+                                contentFile.File.FullName,
+                                $"{contentFile.File.FullName}.deploy");
+                        }
 
-                            throw new SigningException(message);
+                        // Layouts signed elsewhere contain .deploy names, so
+                        // they are copied only after the names are restored.
+                        foreach (
+                            (SigningOperationResult result,
+                                FileInfo destination)
+                            in completedDiscoveredResults)
+                        {
+                            result.Materialize(destination);
+                        }
+
+                        layoutReady.TrySetResult();
+
+                        // This flow signed these manifests in this layout,
+                        // which is unchanged since their snapshots were
+                        // taken, so copying the snapshots back is redundant.
+                        // Awaiting surfaces snapshot failures before the
+                        // layout is published or deleted.
+                        foreach (
+                            Task<SigningOperationResult> resultTask
+                            in pendingDiscoveredResults)
+                        {
+                            await resultTask;
                         }
                     }
-
-                    // restore the .deploy files
-                    foreach (FileInfo contentFile in contentFiles)
+                    catch (Exception exception)
                     {
-                        File.Move(contentFile.FullName, $"{contentFile.FullName}.deploy");
+                        layoutReady.TrySetException(exception);
+
+                        throw;
                     }
                 });
             }
         }
 
-        private static void RemoveDeployExtension(List<FileInfo> deployFilesToSign, List<FileInfo> contentFiles)
+        private static void RemoveDeployExtension(
+            List<SigningFile> deployFilesToSign,
+            List<SigningFile> contentFiles)
         {
-            foreach (FileInfo deployFileToSign in deployFilesToSign)
+            foreach (SigningFile deployFileToSign in deployFilesToSign)
             {
                 // Rename to file without .deploy extension
                 // For example:
                 //      *  MyApp.dll.deploy => MyApp.dll
                 //      *  MyApp.exe.deploy => MyApp.exe
                 string contentFilePath = Path.Combine(
-                    deployFileToSign.DirectoryName!,
-                    Path.GetFileNameWithoutExtension(deployFileToSign.Name));
+                    deployFileToSign.File.DirectoryName!,
+                    Path.GetFileNameWithoutExtension(
+                        deployFileToSign.File.Name));
                 FileInfo contentFile = new(contentFilePath);
 
-                File.Move(deployFileToSign.FullName, contentFile.FullName);
+                File.Move(
+                    deployFileToSign.File.FullName,
+                    contentFile.FullName);
 
-                contentFiles.Add(contentFile);
+                contentFiles.Add(
+                    deployFileToSign.WithFile(contentFile));
             }
+        }
+
+        private static SigningException CreateSigningException(
+            FileInfo file)
+        {
+            string message = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.SigningFailed,
+                file.FullName);
+
+            return new SigningException(message);
+        }
+
+        private static async Task SignDiscoveredFileAsync(
+            SigningFile file,
+            SigningOperationCoordinator? coordinator,
+            bool includeSiblings,
+            Func<Task> operation)
+        {
+            if (coordinator is null)
+            {
+                await operation();
+
+                return;
+            }
+
+            SigningOperationResult result =
+                await coordinator.ExecuteArtifactAsync(
+                    file.SourceIdentity,
+                    async () =>
+                    {
+                        await operation();
+
+                        return includeSiblings
+                            ? SigningOperationArtifact.Layout(
+                                file.File,
+                                file.File.Directory!)
+                            : SigningOperationArtifact.Single(
+                                file.File);
+                    });
+
+            result.Materialize(file.File);
         }
 
         protected override async Task<bool> SignCoreAsync(string? args, FileInfo file, RSA rsaPrivateKey, X509Certificate2 certificate, SignOptions options)
@@ -228,19 +497,30 @@ namespace Sign.Core
         }
 
 
-        private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot)
+        private static IEnumerable<SigningFile> GetFiles(
+            SigningFile source,
+            DirectoryInfo clickOnceRoot)
         {
-            return clickOnceRoot.EnumerateFiles("*", SearchOption.AllDirectories);
+            return clickOnceRoot
+                .EnumerateFiles("*", SearchOption.AllDirectories)
+                .Select(
+                    file => GetSigningFile(
+                        source,
+                        clickOnceRoot,
+                        file));
         }
 
-        private IEnumerable<FileInfo> GetFiles(DirectoryInfo clickOnceRoot, SignOptions options)
+        private IEnumerable<SigningFile> GetFiles(
+            SigningFile source,
+            DirectoryInfo clickOnceRoot,
+            SignOptions options)
         {
             IEnumerable<FileInfo> files;
 
             if (options.Matcher is null)
             {
                 // If not filtered, default to all
-                files = GetFiles(clickOnceRoot);
+                return GetFiles(source, clickOnceRoot);
             }
             else
             {
@@ -253,7 +533,23 @@ namespace Sign.Core
 
                 files = files.Except(antiFiles, FileInfoComparer.Instance).ToList();
             }
-            return files;
+            return files.Select(
+                file => GetSigningFile(
+                    source,
+                    clickOnceRoot,
+                    file));
+        }
+
+        private static SigningFile GetSigningFile(
+            SigningFile source,
+            DirectoryInfo sourceDirectory,
+            FileInfo file)
+        {
+            return FileInfoComparer.Instance.Equals(
+                source.File,
+                file)
+                ? source
+                : source.GetSibling(file, sourceDirectory);
         }
 
         public void StageSigningDependencies(
@@ -266,23 +562,17 @@ namespace Sign.Core
                 stagingDirectory);
         }
 
-        public void CopySigningResults(
-            FileInfo deploymentManifestFile,
-            DirectoryInfo outputDirectory,
-            SignOptions signOptions)
-        {
-            CopyDependencies(
-                deploymentManifestFile,
-                outputDirectory);
-        }
-
         private void CopyDependencies(
             FileInfo deploymentManifestFile,
             DirectoryInfo destination)
         {
             // copy _all_ files, ignoring matching options, because we need them to be available to generate
             // valid manifests.
-            foreach (FileInfo file in GetFiles(deploymentManifestFile.Directory!))
+            foreach (
+                FileInfo file
+                in deploymentManifestFile.Directory!.EnumerateFiles(
+                    "*",
+                    SearchOption.AllDirectories))
             {
                 // don't copy the file itself because that's already taken care of (and we don't want a duplicate copy with the 'real' name)
                 // lying around since it'll get copied back and overwrite the signed one.

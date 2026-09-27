@@ -47,6 +47,27 @@ namespace Sign.Core
                 parent: parent);
         }
 
+        internal SigningSourceIdentity GetSibling(string relativePath)
+        {
+            string normalizedRelativePath =
+                NormalizeEntryPath(relativePath);
+
+            return IsContainerEntry
+                ? ContainerEntry(
+                    _parent!,
+                    CombineEntryPaths(
+                        Path.GetDirectoryName(_path.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar)),
+                        normalizedRelativePath))
+                : PhysicalFile(
+                    Path.Combine(
+                        Path.GetDirectoryName(_path)!,
+                        normalizedRelativePath.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar)));
+        }
+
         public bool Equals(SigningSourceIdentity? other)
         {
             if (ReferenceEquals(this, other))
@@ -143,6 +164,15 @@ namespace Sign.Core
             }
 
             return string.Join(separator: '/', values: segments);
+        }
+
+        private static string CombineEntryPaths(
+            string? directory,
+            string relativePath)
+        {
+            return string.IsNullOrEmpty(directory)
+                ? relativePath
+                : $"{directory.Replace('\\', '/')}/{relativePath}";
         }
     }
 }

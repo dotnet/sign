@@ -559,6 +559,65 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task ExecuteArtifactAsync_LayoutUsedByMultipleOutputs_MaterializesAllFiles()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo primary = directory.CreateFile(
+                Path.Combine("owner", "signed.application"),
+                "signed manifest");
+            FileInfo dependency = directory.CreateFile(
+                Path.Combine(
+                    "owner",
+                    "Application Files",
+                    "payload.dll.deploy"),
+                "signed payload");
+
+            SigningOperationResult result =
+                await coordinator.ExecuteArtifactAsync(
+                    CreateIdentity(),
+                    () => Task.FromResult(
+                        SigningOperationArtifact.Layout(
+                            primary,
+                            primary.Directory!)));
+            FileInfo first = result.Materialize(
+                new FileInfo(
+                    Path.Combine(
+                        directory.FullPath,
+                        "first",
+                        "app.application")));
+            FileInfo second = result.Materialize(
+                new FileInfo(
+                    Path.Combine(
+                        directory.FullPath,
+                        "second",
+                        "renamed.application")));
+
+            Assert.Equal(
+                "signed manifest",
+                File.ReadAllText(first.FullName));
+            Assert.Equal(
+                "signed manifest",
+                File.ReadAllText(second.FullName));
+            Assert.Equal(
+                "signed payload",
+                File.ReadAllText(
+                    Path.Combine(
+                        first.DirectoryName!,
+                        "Application Files",
+                        dependency.Name)));
+            Assert.Equal(
+                "signed payload",
+                File.ReadAllText(
+                    Path.Combine(
+                        second.DirectoryName!,
+                        "Application Files",
+                        dependency.Name)));
+        }
+
+        [Fact]
         public async Task ExecuteAsync_OwnerArtifactDeleted_ResultStillMaterializes()
         {
             using TestDirectory directory = new();
@@ -1158,6 +1217,37 @@ namespace Sign.Core.Test
 
             Assert.Equal(expected: 1, actual: ownerCount);
             Assert.Same(results[0], results[1]);
+        }
+
+        [Fact]
+        public async Task ExecuteArtifactAsync_Owner_InvokesOperationBeforeReturning()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact =
+                directory.CreateFile(relativePath: "artifact.bin");
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            bool invoked = false;
+
+            Task<SigningOperationResult> resultTask =
+                coordinator.ExecuteArtifactAsync(
+                    SigningSourceIdentity.Capture(artifact),
+                    async () =>
+                    {
+                        invoked = true;
+                        await release.Task;
+
+                        return SigningOperationArtifact.Single(artifact);
+                    });
+
+            Assert.True(invoked);
+            Assert.False(resultTask.IsCompleted);
+
+            release.SetResult();
+            await resultTask.WaitAsync(TimeSpan.FromSeconds(5));
         }
 
         [Fact]

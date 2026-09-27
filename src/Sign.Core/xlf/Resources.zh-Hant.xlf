@@ -227,6 +227,11 @@
         <target state="translated">已針對 {filePath} 呼叫 SignAsync。正在本機使用 {localFilePath}。</target>
         <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
       </trans-unit>
+      <trans-unit id="SignedArtifactUnavailable">
+        <source>The signed artifact is unavailable.</source>
+        <target state="new">The signed artifact is unavailable.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>
         <target state="translated">在 {seconds} 秒後執行 {maxAttempts} 次嘗試的第 attempt #{attempt} 次嘗試。</target>

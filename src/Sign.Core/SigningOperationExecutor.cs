@@ -10,22 +10,28 @@ namespace Sign.Core
     {
         private readonly IDirectoryService _directoryService;
         private readonly ILogger<ISigner> _logger;
+        private readonly SigningOperationCoordinator _coordinator;
         private readonly IAggregatingDataFormatSigner _signer;
 
         internal SigningOperationExecutor(
             IAggregatingDataFormatSigner signer,
             IDirectoryService directoryService,
-            ILogger<ISigner> logger)
+            ILogger<ISigner> logger,
+            SigningOperationCoordinator coordinator)
         {
             ArgumentNullException.ThrowIfNull(signer, nameof(signer));
             ArgumentNullException.ThrowIfNull(
                 directoryService,
                 nameof(directoryService));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+            ArgumentNullException.ThrowIfNull(
+                coordinator,
+                nameof(coordinator));
 
             _signer = signer;
             _directoryService = directoryService;
             _logger = logger;
+            _coordinator = coordinator;
         }
 
         internal async Task ExecuteAsync(
@@ -35,11 +41,36 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(plan, nameof(plan));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            using SigningOperationStage stage = Stage(plan, options);
+            if (!_signer.HasSigningWork(plan.Source.File, options))
+            {
+                CopyWithoutSigning(plan);
 
-            await SignAsync(stage, options);
+                return;
+            }
 
-            Publish(stage, plan, options);
+            SigningOperationResult result =
+                await _coordinator.ExecuteArtifactAsync(
+                    plan.Source.SourceIdentity,
+                    () => ExecuteOwnerAsync(plan, options));
+
+            result.Materialize(plan.Output);
+        }
+
+        private static void CopyWithoutSigning(SigningOperationPlan plan)
+        {
+            FileInfo source = plan.Source.File;
+            FileInfo output = plan.Output;
+
+            if (string.Equals(
+                Path.GetFullPath(source.FullName),
+                Path.GetFullPath(output.FullName),
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            output.Directory!.Create();
+            source.CopyTo(output.FullName, overwrite: true);
         }
 
         internal SigningOperationStage Stage(
@@ -49,8 +80,6 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(plan, nameof(plan));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            plan.Output.Directory!.Create();
-
             TemporaryDirectory temporaryDirectory =
                 new(_directoryService);
 
@@ -59,7 +88,9 @@ namespace Sign.Core
                 FileInfo source = plan.Source.File;
                 string stagedPath = Path.Combine(
                     temporaryDirectory.Directory.FullName,
-                    Path.GetRandomFileName());
+                    _signer.IsOriginalFileNameRequired(source)
+                        ? source.Name
+                        : Path.GetRandomFileName());
 
                 if (_signer.CanSign(source))
                 {
@@ -68,6 +99,8 @@ namespace Sign.Core
                         source.Extension);
                 }
 
+                bool hasStagedDependencies = false;
+
                 if (source.Length > 0)
                 {
                     source.CopyTo(stagedPath, overwrite: true);
@@ -75,6 +108,13 @@ namespace Sign.Core
                         source,
                         temporaryDirectory.Directory,
                         options);
+                    hasStagedDependencies = temporaryDirectory.Directory
+                        .EnumerateFileSystemInfos()
+                        .Any(
+                            entry => !string.Equals(
+                                entry.FullName,
+                                stagedPath,
+                                StringComparison.OrdinalIgnoreCase));
                 }
 
                 return new SigningOperationStage(
@@ -82,7 +122,8 @@ namespace Sign.Core
                     plan.Source,
                     new SigningFile(
                         new FileInfo(stagedPath),
-                        plan.Source.SourceIdentity));
+                        plan.Source.SourceIdentity),
+                    hasStagedDependencies);
             }
             catch
             {
@@ -104,29 +145,40 @@ namespace Sign.Core
                 stage.Source.File.FullName,
                 stage.Input.File.FullName);
 
-            await _signer.SignAsync(
-                new[] { stage.Input },
-                options);
+            await _signer.SignOwnerAsync(
+                stage.Input,
+                options,
+                _coordinator);
         }
 
-        internal void Publish(
-            SigningOperationStage stage,
+        private async Task<SigningOperationArtifact> ExecuteOwnerAsync(
             SigningOperationPlan plan,
             SignOptions options)
         {
-            ArgumentNullException.ThrowIfNull(stage, nameof(stage));
-            ArgumentNullException.ThrowIfNull(plan, nameof(plan));
-            ArgumentNullException.ThrowIfNull(options, nameof(options));
+            SigningOperationStage stage = Stage(plan, options);
 
-            FileInfo output = plan.Output;
+            try
+            {
+                await SignAsync(stage, options);
 
-            _signer.CopySigningResults(
-                stage.Input.File,
-                output.Directory!,
-                options);
-            stage.Input.File.CopyTo(
-                output.FullName,
-                overwrite: true);
+                // The whole staging directory is published only when the
+                // signer staged dependencies (ClickOnce); otherwise only the
+                // input is.
+                return stage.HasStagedDependencies
+                    ? SigningOperationArtifact.OwnedLayout(
+                        stage.Input.File,
+                        stage.Input.File.Directory!,
+                        stage)
+                    : SigningOperationArtifact.OwnedSingle(
+                        stage.Input.File,
+                        stage);
+            }
+            catch
+            {
+                stage.Dispose();
+
+                throw;
+            }
         }
     }
 }

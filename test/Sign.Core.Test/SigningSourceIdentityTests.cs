@@ -199,5 +199,132 @@ namespace Sign.Core.Test
             Assert.Equal(original, replacement);
         }
 
+        [Fact]
+        public void GetSibling_PhysicalFile_CombinesWithSourceDirectory()
+        {
+            SigningSourceIdentity source =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\App.application");
+
+            SigningSourceIdentity sibling = source.GetSibling(
+                @"Application Files\App_1_0_0_0\App.exe");
+
+            Assert.Equal(
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\Application Files\App_1_0_0_0\App.exe"),
+                sibling);
+        }
+
+        [Fact]
+        public void GetSibling_PhysicalFileCaseOnlyVariant_IsEqual()
+        {
+            SigningSourceIdentity source =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\App.application");
+
+            SigningSourceIdentity sibling = source.GetSibling("app.EXE");
+            SigningSourceIdentity expected =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\App.exe");
+
+            Assert.Equal(expected, sibling);
+            Assert.Equal(expected.GetHashCode(), sibling.GetHashCode());
+        }
+
+        [Fact]
+        public void GetSibling_PhysicalFileRelativeSegmentsAndSeparators_AreNormalized()
+        {
+            SigningSourceIdentity source =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\App.application");
+
+            SigningSourceIdentity left = source.GetSibling(
+                @"directory\.\child\..\file.bin");
+            SigningSourceIdentity right = source.GetSibling(
+                "directory/file.bin");
+
+            Assert.Equal(left, right);
+            Assert.Equal(
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\directory\file.bin"),
+                left);
+        }
+
+        [Fact]
+        public void GetSibling_ContainerEntry_CombinesWithEntryDirectoryUnderSameParent()
+        {
+            SigningSourceIdentity parent =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\container.zip");
+            SigningSourceIdentity source =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: parent,
+                    entryPath: "publish/App.application");
+
+            SigningSourceIdentity sibling = source.GetSibling(
+                @"Application Files\App.exe");
+            SigningSourceIdentity expected =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: parent,
+                    entryPath: "publish/Application Files/App.exe");
+
+            Assert.Equal(expected, sibling);
+            Assert.Equal(expected.GetHashCode(), sibling.GetHashCode());
+        }
+
+        [Fact]
+        public void GetSibling_ContainerEntryAtContainerRoot_CombinesWithoutDirectory()
+        {
+            SigningSourceIdentity parent =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\container.zip");
+            SigningSourceIdentity source =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: parent,
+                    entryPath: "App.application");
+
+            SigningSourceIdentity sibling = source.GetSibling("App.exe");
+
+            Assert.Equal(
+                SigningSourceIdentity.ContainerEntry(
+                    parent: parent,
+                    entryPath: "App.exe"),
+                sibling);
+        }
+
+        [Fact]
+        public void GetSibling_ContainerEntryCaseOnlyVariant_IsNotEqual()
+        {
+            SigningSourceIdentity parent =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\container.zip");
+            SigningSourceIdentity source =
+                SigningSourceIdentity.ContainerEntry(
+                    parent: parent,
+                    entryPath: "App.application");
+
+            SigningSourceIdentity sibling = source.GetSibling("app.EXE");
+
+            Assert.NotEqual(
+                SigningSourceIdentity.ContainerEntry(
+                    parent: parent,
+                    entryPath: "App.exe"),
+                sibling);
+        }
+
+        [Theory]
+        [InlineData("../file.bin")]
+        [InlineData("directory/../../file.bin")]
+        [InlineData(@"C:\directory\file.bin")]
+        [InlineData(@"\\server\share\file.bin")]
+        public void GetSibling_InvalidRelativePath_Throws(string relativePath)
+        {
+            SigningSourceIdentity source =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\App.application");
+
+            Assert.Throws<ArgumentException>(
+                () => source.GetSibling(relativePath));
+        }
     }
 }

@@ -35,6 +35,45 @@ namespace Sign.Core
             SigningSourceIdentity identity,
             Func<Task<FileInfo>> operation)
         {
+            ArgumentNullException.ThrowIfNull(operation, nameof(operation));
+
+            return ExecuteArtifactAsync(
+                identity,
+                ExecuteOperationAsync);
+
+            async Task<SigningOperationArtifact> ExecuteOperationAsync()
+            {
+                Task<FileInfo> operationTask = operation();
+
+                if (operationTask is null)
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "The signing operation returned no task.");
+                }
+
+                FileInfo artifact =
+                    await operationTask.ConfigureAwait(
+                        continueOnCapturedContext: false);
+
+                if (artifact is null)
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "The signing operation returned no artifact.");
+                }
+
+                return SigningOperationArtifact.Single(artifact);
+            }
+        }
+
+        // A claiming caller's operation is invoked before this method
+        // returns, so callers can learn synchronously which identities they
+        // own.
+        internal Task<SigningOperationResult> ExecuteArtifactAsync(
+            SigningSourceIdentity identity,
+            Func<Task<SigningOperationArtifact>> operation)
+        {
             ArgumentNullException.ThrowIfNull(identity, nameof(identity));
             ArgumentNullException.ThrowIfNull(operation, nameof(operation));
 
@@ -112,7 +151,8 @@ namespace Sign.Core
             }
         }
 
-        private SigningOperationResult CreateSnapshot(FileInfo artifact)
+        private SigningOperationResult CreateSnapshot(
+            SigningOperationArtifact artifact)
         {
             if (artifact is null)
             {
@@ -120,19 +160,93 @@ namespace Sign.Core
                     message: "The signing operation returned no artifact.");
             }
 
-            FileInfo snapshot = new(
+            DirectoryInfo snapshotDirectory = new(
                 Path.Combine(
                     _snapshotDirectory.Directory.FullName,
                     $"{Guid.NewGuid():N}"));
+            List<SigningOperationResult.SnapshotFile> snapshots = new();
 
             try
             {
-                File.Copy(
-                    sourceFileName: artifact.FullName,
-                    destFileName: snapshot.FullName);
+                _snapshotDirectory.Directory.Refresh();
+
+                if (!_snapshotDirectory.Directory.Exists)
+                {
+                    throw new DirectoryNotFoundException(
+                        _snapshotDirectory.Directory.FullName);
+                }
+
+                artifact.PrimaryFile.Refresh();
+
+                if (!artifact.PrimaryFile.Exists)
+                {
+                    throw new InvalidOperationException(
+                        message: Resources.SignedArtifactUnavailable,
+                        innerException: new FileNotFoundException(
+                            message:
+                                "The primary signing artifact does " +
+                                "not exist.",
+                            fileName:
+                                artifact.PrimaryFile.FullName));
+                }
+
+                string rootPath = EnsureTrailingSeparator(
+                    Path.GetFullPath(
+                        artifact.RootDirectory.FullName));
+                IReadOnlyList<FileInfo> files =
+                    artifact.IncludeSiblings
+                        ? artifact.RootDirectory
+                            .EnumerateFiles(
+                                "*",
+                                SearchOption.AllDirectories)
+                            .ToList()
+                        : new[] { artifact.PrimaryFile };
+
+                foreach (FileInfo file in files)
+                {
+                    string sourcePath = Path.GetFullPath(file.FullName);
+
+                    if (!sourcePath.StartsWith(
+                        rootPath,
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(
+                            message:
+                                "A signing operation artifact escapes " +
+                                "its root directory.");
+                    }
+
+                    string relativePath = Path.GetRelativePath(
+                        artifact.RootDirectory.FullName,
+                        sourcePath);
+                    FileInfo snapshot = artifact.IncludeSiblings
+                        ? new FileInfo(
+                            Path.Combine(
+                                snapshotDirectory.FullName,
+                                relativePath))
+                        : new FileInfo(
+                            snapshotDirectory.FullName);
+
+                    if (artifact.IncludeSiblings)
+                    {
+                        snapshot.Directory!.Create();
+                    }
+                    File.Copy(
+                        sourceFileName: sourcePath,
+                        destFileName: snapshot.FullName);
+                    snapshots.Add(
+                        new SigningOperationResult.SnapshotFile(
+                            snapshot,
+                            relativePath,
+                            isPrimary: string.Equals(
+                                sourcePath,
+                                Path.GetFullPath(
+                                    artifact.PrimaryFile.FullName),
+                                StringComparison.OrdinalIgnoreCase)));
+                }
 
                 return new SigningOperationResult(
-                    snapshot: snapshot,
+                    snapshots,
                     coordinator: this);
             }
             catch (Exception exception) when (
@@ -142,15 +256,22 @@ namespace Sign.Core
                 bool artifactIsUnavailable =
                     exception is FileNotFoundException ||
                     (exception is DirectoryNotFoundException &&
-                        !File.Exists(artifact.FullName));
+                        !File.Exists(
+                            artifact.PrimaryFile.FullName));
                 Exception primaryException =
                     artifactIsUnavailable
                         ? new InvalidOperationException(
-                            message: "The signed artifact is unavailable.",
+                            message:
+                                Resources.SignedArtifactUnavailable,
                             innerException: exception)
                         : exception;
                 Exception? cleanupException =
-                    SigningOperationFile.TryDelete(snapshot);
+                    artifact.IncludeSiblings
+                        ? SigningOperationDirectory.TryDelete(
+                            snapshotDirectory)
+                        : SigningOperationFile.TryDelete(
+                            new FileInfo(
+                                snapshotDirectory.FullName));
 
                 if (cleanupException is not null)
                 {
@@ -166,6 +287,13 @@ namespace Sign.Core
 
                 throw;
             }
+        }
+
+        private static string EnsureTrailingSeparator(string path)
+        {
+            return Path.EndsInDirectorySeparator(path)
+                ? path
+                : $"{path}{Path.DirectorySeparatorChar}";
         }
 
         private sealed class OperationState
@@ -200,8 +328,9 @@ namespace Sign.Core
             }
 
             internal void Start(
-                Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot)
+                Func<Task<SigningOperationArtifact>> operation,
+                Func<SigningOperationArtifact, SigningOperationResult>
+                    snapshot)
             {
                 _ = RunAsync(
                     operation,
@@ -209,10 +338,11 @@ namespace Sign.Core
             }
 
             private async Task RunAsync(
-                Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot)
+                Func<Task<SigningOperationArtifact>> operation,
+                Func<SigningOperationArtifact, SigningOperationResult>
+                    snapshot)
             {
-                Task<FileInfo> operationTask;
+                Task<SigningOperationArtifact> operationTask;
                 OperationState? previousState = s_executingState.Value;
                 s_executingState.Value = this;
 
@@ -245,10 +375,11 @@ namespace Sign.Core
 
                 try
                 {
-                    FileInfo artifact =
+                    using SigningOperationArtifact artifact =
                         await operationTask.ConfigureAwait(
                             continueOnCapturedContext: false);
-                    SigningOperationResult result = snapshot(artifact);
+                    SigningOperationResult result =
+                        snapshot(artifact);
                     _completion.TrySetResult(result);
                 }
                 catch (Exception exception)
@@ -259,9 +390,33 @@ namespace Sign.Core
 
             private void PublishException(Exception exception)
             {
-                // Fault rather than cancel the task so all waiters observe the
-                // same OperationCanceledException instance.
+                // Fault even for cancellation exceptions so every waiter
+                // observes the same original exception instance.
                 _completion.TrySetException(exception);
+            }
+        }
+
+        internal static class SigningOperationDirectory
+        {
+            internal static Exception? TryDelete(DirectoryInfo directory)
+            {
+                try
+                {
+                    directory.Delete(recursive: true);
+
+                    return null;
+                }
+                catch (Exception exception) when (
+                    exception is DirectoryNotFoundException)
+                {
+                    return null;
+                }
+                catch (Exception exception) when (
+                    exception is IOException or
+                    UnauthorizedAccessException)
+                {
+                    return exception;
+                }
             }
         }
     }
