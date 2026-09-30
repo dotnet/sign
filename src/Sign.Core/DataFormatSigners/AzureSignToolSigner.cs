@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using AzureSign.Core;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using AzureSign.Core;
-using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
@@ -119,12 +119,16 @@ namespace Sign.Core
 
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
             using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
-            using (AuthenticodeKeyVaultSigner signer = new(
-                rsa,
-                certificate,
-                options.FileHashAlgorithm,
-                timestampConfiguration))
             {
+                X509Certificate2Collection additionalCertificates = await _certificateProvider.GetAdditionalCertificatesAsync();
+
+                using AuthenticodeKeyVaultSigner signer = new(
+                    rsa,
+                    certificate,
+                    options.FileHashAlgorithm,
+                    timestampConfiguration,
+                    additionalCertificates);
+
                 // Partition files: STA-required files (.js, .vbs) are signed sequentially
                 // to avoid blocking ThreadPool threads (each STA call uses thread.Join()).
                 // Non-STA files are signed in parallel as before.
