@@ -62,6 +62,7 @@ namespace Sign.Core
             services.AddSingleton<IContainerProvider, ContainerProvider>();
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
+            services.AddSingleton<IStaticWebAssetFilter, StaticWebAssetFilter>();
             services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();
             services.AddSingleton<IDataFormatSigner, ClickOnceSigner>();
             services.AddSingleton<IDataFormatSigner, VsixSigner>();
