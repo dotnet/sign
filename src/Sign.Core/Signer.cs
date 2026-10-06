@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
@@ -58,6 +59,44 @@ namespace Sign.Core
                 {
                     fileListReader.Read(reader, out matcher, out antiMatcher);
                 }
+            }
+
+            // Apply file-list filtering to standalone input files too,
+            // consistent with how container and ClickOnce contents are filtered.
+            if (matcher is not null || antiMatcher is not null)
+            {
+                IFileMatcher fileMatcherService = _serviceProvider.GetRequiredService<IFileMatcher>();
+                DirectoryInfoWrapper baseDirectoryWrapper = new(baseDirectory);
+                IContainerProvider containerProvider = _serviceProvider.GetRequiredService<IContainerProvider>();
+
+                HashSet<string>? includedRelativePaths = matcher is not null
+                    ? fileMatcherService.EnumerateMatches(baseDirectoryWrapper, matcher)
+                        .Select(f => Path.GetRelativePath(baseDirectory.FullName, f.FullName))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    : null;
+
+                HashSet<string> excludedRelativePaths = antiMatcher is not null
+                    ? fileMatcherService.EnumerateMatches(baseDirectoryWrapper, antiMatcher)
+                        .Select(f => Path.GetRelativePath(baseDirectory.FullName, f.FullName))
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    : new HashSet<string>();
+
+                inputFiles = inputFiles
+                    .Where(f =>
+                    {
+                        // The file list applies to the contents of containers and ClickOnce
+                        // deployments, so those inputs are not filtered at the top level.
+                        if (IsContainerOrClickOnceDeployment(containerProvider, f))
+                        {
+                            return true;
+                        }
+
+                        string relativePath = Path.GetRelativePath(baseDirectory.FullName, f.FullName);
+
+                        return (includedRelativePaths is null || includedRelativePaths.Contains(relativePath))
+                            && !excludedRelativePaths.Contains(relativePath);
+                    })
+                    .ToList();
             }
 
             ICertificateProvider certificateProvider = _serviceProvider.GetRequiredService<ICertificateProvider>();
@@ -191,6 +230,16 @@ namespace Sign.Core
             }
 
             return file;
+        }
+
+        private static bool IsContainerOrClickOnceDeployment(IContainerProvider containerProvider, FileInfo file)
+        {
+            return containerProvider.IsAppxBundleContainer(file)
+                || containerProvider.IsAppxContainer(file)
+                || containerProvider.IsNuGetContainer(file)
+                || containerProvider.IsZipContainer(file)
+                || ".vsto".Equals(file.Extension, StringComparison.OrdinalIgnoreCase)
+                || ".application".Equals(file.Extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
