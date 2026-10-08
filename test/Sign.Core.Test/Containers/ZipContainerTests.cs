@@ -4,6 +4,7 @@
 
 using System.IO.Compression;
 using System.Text;
+using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -131,6 +132,51 @@ namespace Sign.Core.Test
                 Assert.NotNull(zip.GetEntry("a"));
                 Assert.NotNull(zip.GetEntry("b"));
             }
+        }
+
+        [Fact]
+        public async Task GetFiles_WithParentIdentity_ReturnsEntriesRelativeToExtractionRoot()
+        {
+            FileInfo zipFile = CreateZipFile("lib/a.dll", "readme.txt");
+            SigningSourceIdentity parentIdentity =
+                SigningSourceIdentity.Capture(zipFile);
+            Matcher matcher = new();
+
+            matcher.AddInclude("**/*.dll");
+
+            using (DirectoryServiceStub directoryService = new())
+            using (ZipContainer container = new(zipFile, directoryService, new FileMatcher(), Substitute.For<ILogger>()))
+            {
+                await container.OpenAsync();
+
+                string extractionRoot = directoryService.Directories[0].FullName;
+                SigningFile[] allFiles = container
+                    .GetFiles(parentIdentity)
+                    .OrderBy(file => file.File.FullName, StringComparer.Ordinal)
+                    .ToArray();
+                SigningFile matchedFile = Assert.Single(
+                    container.GetFiles(matcher, parentIdentity));
+
+                Assert.Collection(
+                    allFiles,
+                    file => AssertEntry(file, extractionRoot, parentIdentity, "lib/a.dll"),
+                    file => AssertEntry(file, extractionRoot, parentIdentity, "readme.txt"));
+                AssertEntry(matchedFile, extractionRoot, parentIdentity, "lib/a.dll");
+            }
+        }
+
+        private static void AssertEntry(
+            SigningFile file,
+            string extractionRoot,
+            SigningSourceIdentity parentIdentity,
+            string entryPath)
+        {
+            Assert.Equal(
+                Path.GetFullPath(Path.Combine(extractionRoot, entryPath)),
+                file.File.FullName);
+            Assert.Equal(
+                SigningSourceIdentity.ContainerEntry(parentIdentity, entryPath),
+                file.SourceIdentity);
         }
 
         private static FileInfo CreateZipFile(params string[] entryNames)

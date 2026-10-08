@@ -502,8 +502,10 @@ namespace Sign.Core.Test
             }
         }
 
-        [Fact]
-        public void CopySigningDependencies_CopiesCorrectFiles()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SigningDependencyCopy_CopiesCorrectFiles(bool stage)
         {
             using (TemporaryDirectory temporaryDirectory = new(_directoryService))
             {
@@ -572,7 +574,20 @@ namespace Sign.Core.Test
                         Assert.Empty(signingDirectory.Directory.EnumerateFiles());
                         Assert.Empty(signingDirectory.Directory.EnumerateDirectories());
                         // tell the provider to copy what it needs into the signing directory
-                        signer.CopySigningDependencies(applicationFile, signingDirectory.Directory, options);
+                        if (stage)
+                        {
+                            signer.StageSigningDependencies(
+                                applicationFile,
+                                signingDirectory.Directory,
+                                options);
+                        }
+                        else
+                        {
+                            signer.CopySigningResults(
+                                applicationFile,
+                                signingDirectory.Directory,
+                                options);
+                        }
                         // and make sure we got it. We expect only the DLL to be copied, and NOT the .application file itself.
                         IEnumerable<FileInfo> copiedFiles = signingDirectory.Directory.EnumerateFiles("*", SearchOption.AllDirectories);
                         IEnumerable<DirectoryInfo> copiedDirectories = signingDirectory.Directory.EnumerateDirectories();
