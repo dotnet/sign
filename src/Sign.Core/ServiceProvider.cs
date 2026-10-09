@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Configuration;
 
 namespace Sign.Core
 {
-    internal sealed class ServiceProvider : IServiceProvider
+    internal sealed class ServiceProvider : IServiceProvider, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -24,6 +24,14 @@ namespace Sign.Core
         public object? GetService(Type serviceType)
         {
             return _serviceProvider.GetService(serviceType);
+        }
+
+        // Disposes the underlying provider's singletons, including the logger
+        // factory. The console logger writes on a background thread, so this
+        // is what flushes any pending log output before the process exits.
+        public void Dispose()
+        {
+            (_serviceProvider as IDisposable)?.Dispose();
         }
 
         internal static ServiceProvider CreateDefault(
