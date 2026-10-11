@@ -391,6 +391,7 @@ namespace Sign.Core.Test
 
             await VerifyVsixAsync(file, _temporaryDirectory);
         }
+
         [Fact]
         public async Task SignAsync_WhenFileListMatchesFilesInSubdirectory_SignsOnlyTheMatchingFile()
         {
@@ -482,6 +483,60 @@ namespace Sign.Core.Test
             // The script does not match the file list, so it must be left untouched.
             Assert.Equal(scriptHashBefore, SHA256.HashData(File.ReadAllBytes(script.FullName)));
         }
+
+        [Theory]
+        [InlineData("signed")]
+        [InlineData("signed.v1")]
+        public async Task SignAsync_WhenFileListFiltersMultipleInputsToOne_WithOutputDirectory_PreservesRelativePath(string outputDirectoryName)
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            DirectoryInfo subdirectory = Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "sub"));
+
+            FileInfo file1 = new(Path.Combine(subdirectory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // Only the file under sub/ is selected, so two inputs are filtered down to one.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "sub/*.dll");
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                files,
+                outputFile: outputDirectoryName,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // Multi-input rules apply, so the output is a directory and sub/ is preserved.
+            FileInfo expectedOutput = new(Path.Combine(_temporaryDirectory.Directory.FullName, outputDirectoryName, "sub", file1.Name));
+
+            Assert.True(File.Exists(expectedOutput.FullName));
+            await VerifyAuthenticodeSignedFileAsync(expectedOutput);
+
+            // The relative path must not be flattened.
+            Assert.False(File.Exists(Path.Combine(_temporaryDirectory.Directory.FullName, outputDirectoryName, file1.Name)));
+        }
+
         private async Task SignAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
         {
             await SignAsync(temporaryDirectory, new[] { file }, outputFile.FullName);

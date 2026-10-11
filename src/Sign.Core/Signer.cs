@@ -60,6 +60,8 @@ namespace Sign.Core
                     fileListReader.Read(reader, out matcher, out antiMatcher);
                 }
             }
+            // Remember the original number of inputs before filtering.
+            int originalInputCount = inputFiles.Count;
 
             // Apply file-list filtering to standalone input files too,
             // consistent with how container and ClickOnce contents are filtered.
@@ -129,7 +131,7 @@ namespace Sign.Core
                     Stopwatch sw = Stopwatch.StartNew();
 
                     // Special case if there's only one input file and the output has a value, treat it as a file
-                    if (inputFiles.Count == 1 && !string.IsNullOrWhiteSpace(outputFile))
+                    if (originalInputCount == 1 && !string.IsNullOrWhiteSpace(outputFile))
                     {
                         // See if it has a file extension and if not, treat as a directory and use the input file name
                         if (Path.HasExtension(outputFile))
