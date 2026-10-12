@@ -8,9 +8,12 @@ You can find the latest version of Sign CLI on [NuGet.org](https://www.nuget.org
 
 ## Prerequisites
 
-- An up-to-date x64-based version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
+- An up-to-date x64 or ARM64 version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
 - [.NET 8 SDK or later](https://dotnet.microsoft.com/download)
-- [Microsoft Visual C++ 14 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- On x64: [Microsoft Visual C++ 14 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- For ClickOnce and VSTO signing: a recent [.NET Framework](https://dotnet.microsoft.com/download/dotnet-framework), with version 4.8.1 or later required on ARM64
+
+Dynamics Business Central `.app` signing requires Windows x64. Its native signing plugin, `NavSip.dll`, is not available for ARM64. The same Sign CLI package supports both architectures for other file types.
 
 ## Install
 

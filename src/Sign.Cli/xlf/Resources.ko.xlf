@@ -188,8 +188,8 @@
         <note>{Locked="none", "critical", "error", "warning", "information", "debug", "trace"} are option values and should not be localized.</note>
       </trans-unit>
       <trans-unit id="x86NotSupported">
-        <source>Only Windows x64 is supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
-        <target state="translated">현재 Windows x64만 지원됩니다. Windows x86 지원에 대해서는 https://github.com/dotnet/sign/issues/474를 참조하세요.</target>
+        <source>Only Windows x64 and ARM64 are supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
+        <target state="needs-review-translation">현재 Windows x64만 지원됩니다. Windows x86 지원에 대해서는 https://github.com/dotnet/sign/issues/474를 참조하세요.</target>
         <note />
       </trans-unit>
     </body>
