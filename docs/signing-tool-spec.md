@@ -65,7 +65,7 @@ The scope of the preview release will be limited to the existing funtionality cu
 **Goals**
 
 - Support for Authenticode, VSIX, NuGet (author signature), ClickOnce
-- Only run on Windows x64.
+- Run on Windows x64 and ARM64. Dynamics Business Central `.app` signing requires Windows x64.
 - Support a single certificate for all files in the operation.
 
 **Non-Goals**
@@ -73,7 +73,7 @@ The scope of the preview release will be limited to the existing funtionality cu
 - Strong Name signing won't be in v1; guidance is to use an snk not based on a cert. If easy, perhaps can revisit.
 - Containers, including Notary v2 support.
 - Extensibility. v1 will support different signing providers.
-- Support Authenticode on platforms other than Windows x64. Future work will be required to support ARM64 and non-Windows hosts. Support for certain file types may be limited due to platform support.
+- Support Authenticode on non-Windows hosts. Support for certain file types may be limited due to platform support.
 - Offline distribution.
 
 #### v1
