@@ -167,6 +167,11 @@
         <target state="translated">디렉터리 {path}이(가) 여전히 존재합니다.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
+      <trans-unit id="DynamicsBusinessCentralArm64NotSupported">
+        <source>Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</source>
+        <target state="new">Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</target>
+        <note>{Locked="NavSip.dll"} is a file name. {Locked=".app"} is a file extension.</note>
+      </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
         <target state="translated">{count} 파일로 AppInstaller 작업을 편집하는 중입니다.</target>
