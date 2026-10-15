@@ -6,5 +6,8 @@ namespace Sign.Core
 {
     internal interface IAggregatingDataFormatSigner : IDataFormatSigner
     {
+        Task SignAsync(
+            IEnumerable<SigningFile> files,
+            SignOptions options);
     }
 }
