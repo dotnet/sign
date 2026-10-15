@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Runtime.InteropServices;
+
 namespace Sign.Core.Test
 {
     public class ToolConfigurationProviderTests
@@ -30,7 +32,7 @@ namespace Sign.Core.Test
         [Fact]
         public void MakeAppx_Always_ReturnsFile()
         {
-            string expectedFilePath = Path.Combine(_rootDirectory.FullName, "tools", "SDK", "x64", "makeappx.exe");
+            string expectedFilePath = Path.Combine(_rootDirectory.FullName, "tools", "SDK", WindowsArchitecture.GetSdkDirectoryName(RuntimeInformation.ProcessArchitecture), "makeappx.exe");
 
             Assert.Equal(expectedFilePath, _provider.MakeAppx.FullName);
         }
@@ -38,9 +40,23 @@ namespace Sign.Core.Test
         [Fact]
         public void SignToolManifest_Always_ReturnsFile()
         {
-            string expectedFilePath = Path.Combine(_rootDirectory.FullName, "tools", "SDK", "x64", "SignTool.exe.manifest");
+            string expectedFilePath = Path.Combine(_rootDirectory.FullName, "tools", "SDK", WindowsArchitecture.GetSdkDirectoryName(RuntimeInformation.ProcessArchitecture), "SignTool.exe.manifest");
 
             Assert.Equal(expectedFilePath, _provider.SignToolManifest.FullName);
+        }
+
+        [Theory]
+        [InlineData(Architecture.X64, "x64")]
+        [InlineData(Architecture.Arm64, "arm64")]
+        public void Constructor_SelectsNativeToolsForProcessArchitecture(Architecture architecture, string directoryName)
+        {
+            ToolConfigurationProvider provider = new(DirectoryLocator, architecture);
+
+            Assert.Equal(Path.Combine(_rootDirectory.FullName, "tools", "SDK", directoryName, "makeappx.exe"), provider.MakeAppx.FullName);
+            Assert.Equal(Path.Combine(_rootDirectory.FullName, "tools", "SDK", directoryName, "SignTool.exe.manifest"), provider.SignToolManifest.FullName);
+            Assert.Equal(Path.Combine(_rootDirectory.FullName, "tools", "SDK", "x86", "mage.exe"), provider.Mage.FullName);
+            Assert.True(provider.MakeAppx.Exists);
+            Assert.True(provider.SignToolManifest.Exists);
         }
     }
 }
