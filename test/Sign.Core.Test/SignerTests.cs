@@ -4,10 +4,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
+using System.Security.Principal;
 using System.Text;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
@@ -213,6 +216,385 @@ namespace Sign.Core.Test
             foreach (var outputFile in outputFiles)
             {
                 await VerifyAuthenticodeSignedFileAsync(outputFile);
+            }
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_OnlyFiltersStandaloneFiles()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            FileInfo file1 = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // Only file1 is listed in the file list.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, file1.Name);
+
+            byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                files,
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // file1 is in the file list, so it must be signed.
+            await VerifyAuthenticodeSignedFileAsync(file1);
+
+            // file2 is not in the file list, so it must be left untouched.
+            byte[] file2HashAfter = SHA256.HashData(File.ReadAllBytes(file2.FullName));
+            Assert.Equal(file2HashBefore, file2HashAfter);
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListHasOnlyExclusions_DoesNotSignAnyStandaloneFiles()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            FileInfo file1 = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // An exclusion-only file list does not implicitly include everything.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, $"!{file2.Name}");
+
+            byte[] file1HashBefore = SHA256.HashData(File.ReadAllBytes(file1.FullName));
+            byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                files,
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            Assert.Equal(file1HashBefore, SHA256.HashData(File.ReadAllBytes(file1.FullName)));
+            Assert.Equal(file2HashBefore, SHA256.HashData(File.ReadAllBytes(file2.FullName)));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListIncludesAllAndExcludesOne_SignsOnlyTheNonExcludedFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            FileInfo file1 = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // Include everything, then exclude file2.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, $"**/*{Environment.NewLine}!{file2.Name}");
+
+            byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                files,
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // file1 matches the include-all pattern and is not excluded, so it must be signed.
+            await VerifyAuthenticodeSignedFileAsync(file1);
+
+            // file2 is explicitly excluded, so it must be left untouched.
+            Assert.Equal(file2HashBefore, SHA256.HashData(File.ReadAllBytes(file2.FullName)));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_AndInputIsContainer_SignsContainerContents()
+        {
+            FileInfo file = TestAssets.GetTestAsset(_temporaryDirectory.Directory, "VsixPackage.vsix");
+
+            // The file list targets files inside the container, not the container itself.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                new[] { file },
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            await VerifyVsixAsync(file, _temporaryDirectory);
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListMatchesFilesInSubdirectory_SignsOnlyTheMatchingFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            DirectoryInfo subdirectory = Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "sub"));
+
+            FileInfo file1 = new(Path.Combine(subdirectory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // Only the files under the sub directory are listed.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "sub/*.dll");
+
+            byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                files,
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // file1 is under sub/ and matches the pattern, so it must be signed.
+            await VerifyAuthenticodeSignedFileAsync(file1);
+
+            // file2 is outside sub/, so it must be left untouched.
+            Assert.Equal(file2HashBefore, SHA256.HashData(File.ReadAllBytes(file2.FullName)));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_WithContainerAndStandaloneFile_FiltersOnlyTheStandaloneFile()
+        {
+            FileInfo container = TestAssets.GetTestAsset(_temporaryDirectory.Directory, "VsixPackage.vsix");
+
+            FileInfo script = new(Path.Combine(_temporaryDirectory.Directory.FullName, "script.ps1"));
+            File.WriteAllText(script.FullName, "Write-Host 'Hello, World!'");
+
+            // The file list matches only dlls, so the script is not selected.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            byte[] scriptHashBefore = SHA256.HashData(File.ReadAllBytes(script.FullName));
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                new[] { container, script },
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // The container is not filtered at the top level, so its contents are signed.
+            await VerifyVsixAsync(container, _temporaryDirectory);
+
+            // The script does not match the file list, so it must be left untouched.
+            Assert.Equal(scriptHashBefore, SHA256.HashData(File.ReadAllBytes(script.FullName)));
+        }
+
+        [Theory]
+        [InlineData("signed")]
+        [InlineData("signed.v1")]
+        public async Task SignAsync_WhenFileListFiltersMultipleInputsToOne_WithOutputDirectory_PreservesRelativePath(string outputDirectoryName)
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            DirectoryInfo subdirectory = Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "sub"));
+
+            FileInfo file1 = new(Path.Combine(subdirectory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // Only the file under sub/ is selected, so two inputs are filtered down to one.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "sub/*.dll");
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                files,
+                outputFile: outputDirectoryName,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // Multi-input rules apply, so the output is a directory and sub/ is preserved.
+            FileInfo expectedOutput = new(Path.Combine(_temporaryDirectory.Directory.FullName, outputDirectoryName, "sub", file1.Name));
+
+            Assert.True(File.Exists(expectedOutput.FullName));
+            await VerifyAuthenticodeSignedFileAsync(expectedOutput);
+
+            // The relative path must not be flattened.
+            Assert.False(File.Exists(Path.Combine(_temporaryDirectory.Directory.FullName, outputDirectoryName, file1.Name)));
+        }
+
+        [Fact]
+        [SupportedOSPlatform("windows")]
+        public async Task SignAsync_WhenFileListProvided_DoesNotScanUnreadableFoldersInBaseDirectory()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+            FileInfo file = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+
+            File.Copy(thisAssemblyFile.FullName, file.FullName);
+
+            // The ** pattern would make a directory scan enter every subdirectory of the base directory.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            // This folder is not an input and nobody can list it.
+            DirectoryInfo restricted = Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "restricted"));
+            FileSystemAccessRule denyList = new(
+                new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null),
+                FileSystemRights.ListDirectory,
+                AccessControlType.Deny);
+
+            DirectorySecurity security = restricted.GetAccessControl();
+            security.AddAccessRule(denyList);
+            restricted.SetAccessControl(security);
+
+            try
+            {
+                ServiceProvider serviceProvider = Create();
+                TestLogger<ISigner> logger = new();
+                Signer signer = new(serviceProvider, logger);
+
+                int exitCode = await signer.SignAsync(
+                    new[] { file },
+                    outputFile: null,
+                    fileList: fileList,
+                    recurseContainers: true,
+                    _temporaryDirectory.Directory,
+                    applicationName: "a",
+                    publisherName: null,
+                    description: "b",
+                    new Uri("https://description.test"),
+                    _certificatesFixture.TimestampServiceUrl,
+                    maxConcurrency: 4,
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256);
+
+                Assert.Equal(ExitCode.Success, exitCode);
+
+                await VerifyAuthenticodeSignedFileAsync(file);
+            }
+            finally
+            {
+                // Restore access so the temporary directory can be deleted.
+                security = restricted.GetAccessControl();
+                security.RemoveAccessRule(denyList);
+                restricted.SetAccessControl(security);
             }
         }
 
