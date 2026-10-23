@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
@@ -60,28 +59,17 @@ namespace Sign.Core
                     fileListReader.Read(reader, out matcher, out antiMatcher);
                 }
             }
+
             // Remember the original number of inputs before filtering.
             int originalInputCount = inputFiles.Count;
 
             // Apply file-list filtering to standalone input files too,
             // consistent with how container and ClickOnce contents are filtered.
+            // Only the given inputs are matched, in memory. The base directory is not scanned,
+            // so unrelated (for example unreadable) folders are never touched.
             if (matcher is not null || antiMatcher is not null)
             {
-                IFileMatcher fileMatcherService = _serviceProvider.GetRequiredService<IFileMatcher>();
-                DirectoryInfoWrapper baseDirectoryWrapper = new(baseDirectory);
                 IContainerProvider containerProvider = _serviceProvider.GetRequiredService<IContainerProvider>();
-
-                HashSet<string>? includedRelativePaths = matcher is not null
-                    ? fileMatcherService.EnumerateMatches(baseDirectoryWrapper, matcher)
-                        .Select(f => Path.GetRelativePath(baseDirectory.FullName, f.FullName))
-                        .ToHashSet(StringComparer.OrdinalIgnoreCase)
-                    : null;
-
-                HashSet<string> excludedRelativePaths = antiMatcher is not null
-                    ? fileMatcherService.EnumerateMatches(baseDirectoryWrapper, antiMatcher)
-                        .Select(f => Path.GetRelativePath(baseDirectory.FullName, f.FullName))
-                        .ToHashSet(StringComparer.OrdinalIgnoreCase)
-                    : new HashSet<string>();
 
                 inputFiles = inputFiles
                     .Where(f =>
@@ -93,10 +81,14 @@ namespace Sign.Core
                             return true;
                         }
 
-                        string relativePath = Path.GetRelativePath(baseDirectory.FullName, f.FullName);
+                        string[] candidate = [f.FullName];
 
-                        return (includedRelativePaths is null || includedRelativePaths.Contains(relativePath))
-                            && !excludedRelativePaths.Contains(relativePath);
+                        bool isIncluded = matcher is null
+                            || matcher.Match(baseDirectory.FullName, candidate).HasMatches;
+                        bool isExcluded = antiMatcher is not null
+                            && antiMatcher.Match(baseDirectory.FullName, candidate).HasMatches;
+
+                        return isIncluded && !isExcluded;
                     })
                     .ToList();
             }

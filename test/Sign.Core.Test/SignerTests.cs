@@ -4,10 +4,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
+using System.Security.Principal;
 using System.Text;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
@@ -535,6 +538,64 @@ namespace Sign.Core.Test
 
             // The relative path must not be flattened.
             Assert.False(File.Exists(Path.Combine(_temporaryDirectory.Directory.FullName, outputDirectoryName, file1.Name)));
+        }
+
+        [Fact]
+        [SupportedOSPlatform("windows")]
+        public async Task SignAsync_WhenFileListProvided_DoesNotScanUnreadableFoldersInBaseDirectory()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+            FileInfo file = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+
+            File.Copy(thisAssemblyFile.FullName, file.FullName);
+
+            // The ** pattern would make a directory scan enter every subdirectory of the base directory.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            // This folder is not an input and nobody can list it.
+            DirectoryInfo restricted = Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "restricted"));
+            FileSystemAccessRule denyList = new(
+                new SecurityIdentifier(WellKnownSidType.WorldSid, domainSid: null),
+                FileSystemRights.ListDirectory,
+                AccessControlType.Deny);
+
+            DirectorySecurity security = restricted.GetAccessControl();
+            security.AddAccessRule(denyList);
+            restricted.SetAccessControl(security);
+
+            try
+            {
+                ServiceProvider serviceProvider = Create();
+                TestLogger<ISigner> logger = new();
+                Signer signer = new(serviceProvider, logger);
+
+                int exitCode = await signer.SignAsync(
+                    new[] { file },
+                    outputFile: null,
+                    fileList: fileList,
+                    recurseContainers: true,
+                    _temporaryDirectory.Directory,
+                    applicationName: "a",
+                    publisherName: null,
+                    description: "b",
+                    new Uri("https://description.test"),
+                    _certificatesFixture.TimestampServiceUrl,
+                    maxConcurrency: 4,
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256);
+
+                Assert.Equal(ExitCode.Success, exitCode);
+
+                await VerifyAuthenticodeSignedFileAsync(file);
+            }
+            finally
+            {
+                // Restore access so the temporary directory can be deleted.
+                security = restricted.GetAccessControl();
+                security.RemoveAccessRule(denyList);
+                restricted.SetAccessControl(security);
+            }
         }
 
         private async Task SignAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
