@@ -154,6 +154,7 @@ namespace Sign.Core.Test
                     ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
                     ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
                     certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
+                    certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
                     signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
 
                     ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
@@ -255,6 +256,7 @@ namespace Sign.Core.Test
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
             certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
@@ -294,6 +296,7 @@ namespace Sign.Core.Test
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
             certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
@@ -359,6 +362,7 @@ namespace Sign.Core.Test
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
             certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(

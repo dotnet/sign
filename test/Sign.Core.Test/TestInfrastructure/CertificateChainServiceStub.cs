@@ -48,7 +48,7 @@ namespace Sign.Core.Test
 
         public Task<X509Certificate2Collection> GetAdditionalCertificatesAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(new X509Certificate2Collection(new[] { Intermediate, Root }));
+            return Task.FromResult(new X509Certificate2Collection(new[] { new X509Certificate2(Intermediate), new X509Certificate2(Root) }));
         }
 
         public Task<RSA> GetRsaAsync(CancellationToken cancellationToken = default)

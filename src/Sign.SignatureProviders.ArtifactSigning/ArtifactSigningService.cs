@@ -43,6 +43,14 @@ namespace Sign.SignatureProviders.ArtifactSigning
         {
             _mutex.Dispose();
             _certificate?.Dispose();
+            if (_additionalCertificates is not null)
+            {
+                foreach (X509Certificate2 certificate in _additionalCertificates)
+                {
+                    certificate.Dispose();
+                }
+            }
+
             GC.SuppressFinalize(this);
         }
 
@@ -75,10 +83,11 @@ namespace Sign.SignatureProviders.ArtifactSigning
 
                         // Find the leaf: the cert whose Subject is not any other cert's Issuer.
                         IEnumerable<string> issuers = collection.Cast<X509Certificate2>().Select(x => x.Issuer);
-                        _certificate = collection.Cast<X509Certificate2>().FirstOrDefault(x => !issuers.Contains(x.Subject))
+                        X509Certificate2 certificate = collection.Cast<X509Certificate2>().FirstOrDefault(x => !issuers.Contains(x.Subject))
                             ?? throw new InvalidOperationException("Unable to locate leaf certificate");
 
-                        _additionalCertificates = [.. collection.Cast<X509Certificate2>().Where(x => x != _certificate)];
+                        _additionalCertificates = [.. collection.Cast<X509Certificate2>().Where(x => x != certificate)];
+                        _certificate = certificate;
 
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                         //print the certificate info
@@ -105,10 +114,10 @@ namespace Sign.SignatureProviders.ArtifactSigning
         {
             if (_additionalCertificates is null)
             {
-                await GetCertificateAsync(cancellationToken);
+                using X509Certificate2 certificate = await GetCertificateAsync(cancellationToken);
             }
 
-            return _additionalCertificates ?? [];
+            return [.. _additionalCertificates!.Cast<X509Certificate2>().Select(certificate => new X509Certificate2(certificate))];
         }
     }
 }

@@ -122,50 +122,60 @@ namespace Sign.Core
             {
                 X509Certificate2Collection additionalCertificates = await _certificateProvider.GetAdditionalCertificatesAsync();
 
-                using AuthenticodeKeyVaultSigner signer = new(
-                    rsa,
-                    certificate,
-                    options.FileHashAlgorithm,
-                    timestampConfiguration,
-                    additionalCertificates);
-
-                // Partition files: STA-required files (.js, .vbs) are signed sequentially
-                // to avoid blocking ThreadPool threads (each STA call uses thread.Join()).
-                // Non-STA files are signed in parallel as before.
-                List<FileInfo> staFiles = new();
-                List<FileInfo> nonStaFiles = new();
-
-                foreach (FileInfo file in files)
+                try
                 {
-                    if (StaThreadExtensions.Contains(file.Extension))
+                    using AuthenticodeKeyVaultSigner signer = new(
+                        rsa,
+                        certificate,
+                        options.FileHashAlgorithm,
+                        timestampConfiguration,
+                        additionalCertificates);
+
+                    // Partition files: STA-required files (.js, .vbs) are signed sequentially
+                    // to avoid blocking ThreadPool threads (each STA call uses thread.Join()).
+                    // Non-STA files are signed in parallel as before.
+                    List<FileInfo> staFiles = new();
+                    List<FileInfo> nonStaFiles = new();
+
+                    foreach (FileInfo file in files)
                     {
-                        staFiles.Add(file);
+                        if (StaThreadExtensions.Contains(file.Extension))
+                        {
+                            staFiles.Add(file);
+                        }
+                        else
+                        {
+                            nonStaFiles.Add(file);
+                        }
                     }
-                    else
+
+                    foreach (FileInfo file in staFiles)
                     {
-                        nonStaFiles.Add(file);
+                        if (!await SignAsync(signer, file, options))
+                        {
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+                            throw new SigningException(message);
+                        }
+                    }
+
+                    await Parallel.ForEachAsync(nonStaFiles, async (file, state) =>
+                    {
+                        if (!await SignAsync(signer, file, options))
+                        {
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+                            throw new SigningException(message);
+                        }
+                    });
+                }
+                finally
+                {
+                    foreach (X509Certificate2 additionalCertificate in additionalCertificates)
+                    {
+                        additionalCertificate.Dispose();
                     }
                 }
-
-                foreach (FileInfo file in staFiles)
-                {
-                    if (!await SignAsync(signer, file, options))
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
-
-                        throw new SigningException(message);
-                    }
-                }
-
-                await Parallel.ForEachAsync(nonStaFiles, async (file, state) =>
-                {
-                    if (!await SignAsync(signer, file, options))
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
-
-                        throw new SigningException(message);
-                    }
-                });
             }
         }
 

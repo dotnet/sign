@@ -104,11 +104,21 @@ namespace Sign.SignatureProviders.ArtifactSigning.Test
 
                 X509Certificate2Collection result = await service.GetAdditionalCertificatesAsync(CancellationToken.None);
 
-                Assert.Equal(2, result.Count);
-                HashSet<string> thumbprints = result.Cast<X509Certificate2>().Select(c => c.Thumbprint).ToHashSet();
-                Assert.Contains(root.Thumbprint, thumbprints);
-                Assert.Contains(intermediate.Thumbprint, thumbprints);
-                Assert.DoesNotContain(leaf.Thumbprint, thumbprints);
+                try
+                {
+                    Assert.Equal(2, result.Count);
+                    HashSet<string> thumbprints = result.Cast<X509Certificate2>().Select(c => c.Thumbprint).ToHashSet();
+                    Assert.Contains(root.Thumbprint, thumbprints);
+                    Assert.Contains(intermediate.Thumbprint, thumbprints);
+                    Assert.DoesNotContain(leaf.Thumbprint, thumbprints);
+                }
+                finally
+                {
+                    foreach (X509Certificate2 certificate in result)
+                    {
+                        certificate.Dispose();
+                    }
+                }
             }
         }
 
