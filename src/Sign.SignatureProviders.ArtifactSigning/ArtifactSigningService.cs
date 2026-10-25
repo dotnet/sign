@@ -78,7 +78,7 @@ namespace Sign.SignatureProviders.ArtifactSigning
                         _certificate = collection.Cast<X509Certificate2>().FirstOrDefault(x => !issuers.Contains(x.Subject))
                             ?? throw new InvalidOperationException("Unable to locate leaf certificate");
 
-                        _additionalCertificates = [.. collection.Cast<X509Certificate2>().Where(x => x != _certificate).ToArray()];
+                        _additionalCertificates = [.. collection.Cast<X509Certificate2>().Where(x => x != _certificate)];
 
                         _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                         //print the certificate info
