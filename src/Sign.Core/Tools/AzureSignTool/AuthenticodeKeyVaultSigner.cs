@@ -56,8 +56,7 @@ namespace Sign.Core
             }
             catch
             {
-                _chain.Dispose();
-                _certificateStore.Dispose();
+                Dispose();
                 throw;
             }
         }
@@ -122,40 +121,54 @@ namespace Sign.Core
                 }
 
                 logger.LogTrace("Calling SignerSignEx3 with flags: {Flags}", flags);
-                int result = Mssign32.SignerSignEx3(
-                    flags,
-                    &subjectInfo,
-                    &signerCert,
-                    &signatureInfo,
-                    IntPtr.Zero,
-                    timeStampFlags,
-                    pTimestampAlgorithm,
-                    pTimestampUrl,
-                    IntPtr.Zero,
-                    sipData,
-                    &context,
-                    IntPtr.Zero,
-                    &signCallbackInfo,
-                    IntPtr.Zero);
-
-                if (result == 0 && context != IntPtr.Zero)
+                try
                 {
-                    int freeResult = Mssign32.SignerFreeSignerContext(context);
-                    Debug.Assert(freeResult == 0);
+                    return Mssign32.SignerSignEx3(
+                        flags,
+                        &subjectInfo,
+                        &signerCert,
+                        &signatureInfo,
+                        IntPtr.Zero,
+                        timeStampFlags,
+                        pTimestampAlgorithm,
+                        pTimestampUrl,
+                        IntPtr.Zero,
+                        sipData,
+                        &context,
+                        IntPtr.Zero,
+                        &signCallbackInfo,
+                        IntPtr.Zero);
                 }
-
-                if (result == 0 && sipKind == SipKind.Appx && clientData.pAppxSipState != IntPtr.Zero)
+                finally
                 {
-                    Marshal.Release(clientData.pAppxSipState);
-                }
+                    try
+                    {
+                        if (context != IntPtr.Zero)
+                        {
+                            int freeResult = Mssign32.SignerFreeSignerContext(context);
+                            Debug.Assert(freeResult == 0);
+                        }
+                    }
+                    finally
+                    {
+                        if (clientData.pAppxSipState != IntPtr.Zero)
+                        {
+                            Marshal.Release(clientData.pAppxSipState);
+                        }
 
-                GC.KeepAlive(this);
-                return result;
+                        GC.KeepAlive(this);
+                    }
+                }
             }
         }
 
         public void Dispose()
         {
+            foreach (X509ChainElement element in _chain.ChainElements)
+            {
+                element.Certificate.Dispose();
+            }
+
             _chain.Dispose();
             _certificateStore.Dispose();
         }

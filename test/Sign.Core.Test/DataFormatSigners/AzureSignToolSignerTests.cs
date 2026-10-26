@@ -247,6 +247,49 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task Dispose_ReleasesChainCertificatesWithoutDisposingBorrowedInputs()
+        {
+            using CertificateChainServiceStub certificateService = new();
+            using RSA rsa = await certificateService.GetRsaAsync();
+            X509Certificate2Collection additionalCertificates = new(new[] { certificateService.Intermediate, certificateService.Root });
+            using AuthenticodeKeyVaultSigner signer = new(
+                rsa,
+                certificateService.Leaf,
+                HashAlgorithmName.SHA256,
+                TimeStampConfiguration.None,
+                additionalCertificates);
+            FieldInfo? chainField = typeof(AuthenticodeKeyVaultSigner).GetField("_chain", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(chainField);
+            X509Chain chain = Assert.IsType<X509Chain>(chainField.GetValue(signer));
+            X509Certificate2[] chainCertificates = chain.ChainElements.Cast<X509ChainElement>()
+                .Select(element => element.Certificate).ToArray();
+
+            try
+            {
+                Assert.Equal(3, chainCertificates.Length);
+
+                signer.Dispose();
+
+                Assert.All(chainCertificates, certificate => Assert.Equal(IntPtr.Zero, certificate.Handle));
+                Assert.NotEqual(IntPtr.Zero, certificateService.Leaf.Handle);
+                Assert.NotEqual(IntPtr.Zero, certificateService.Intermediate.Handle);
+                Assert.NotEqual(IntPtr.Zero, certificateService.Root.Handle);
+
+                byte[] data = new byte[] { 1, 2, 3 };
+                byte[] signature = rsa.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                using RSA publicKey = certificateService.Leaf.GetRSAPublicKey()!;
+                Assert.True(publicKey.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
+            }
+            finally
+            {
+                foreach (X509Certificate2 certificate in chainCertificates)
+                {
+                    certificate.Dispose();
+                }
+            }
+        }
+
+        [Fact]
         public async Task SignAsync_WithAdditionalCertificates_IncludesIntermediateInSignerChain()
         {
             using CertificateChainServiceStub certificateService = new();
