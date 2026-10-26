@@ -3,6 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -153,6 +154,7 @@ namespace Sign.Core.Test
                     ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
                     ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
                     certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
+                    certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
                     signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
 
                     ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
@@ -186,6 +188,61 @@ namespace Sign.Core.Test
             }
         }
 
+        [Fact]
+        public async Task SignAsync_WithAdditionalCertificates_IncludesIntermediateInSignerChain()
+        {
+            using CertificateChainServiceStub certificateService = new();
+            ConcurrentQueue<byte[][]> signerChains = new();
+
+            AzureSignToolSigner signer = Substitute.ForPartsOf<AzureSignToolSigner>(
+                Substitute.For<IToolConfigurationProvider>(),
+                certificateService,
+                certificateService,
+                Substitute.For<ILogger<IDataFormatSigner>>());
+
+
+            signer.When(instance => instance.SignFileCore(
+                Arg.Any<AuthenticodeKeyVaultSigner>(), Arg.Any<FileInfo>(), Arg.Any<SignOptions>(), Arg.Any<FileInfo>()))
+                .DoNotCallBase();
+            signer.When(instance => instance.SignFileCore(
+                Arg.Any<AuthenticodeKeyVaultSigner>(), Arg.Any<FileInfo>(), Arg.Any<SignOptions>(), Arg.Any<FileInfo>()))
+                .Do(call =>
+                {
+                    // Snapshot AzureSign.Core's constructed chain before SignAsync disposes the signer.
+                    FieldInfo? chainField = typeof(AuthenticodeKeyVaultSigner).GetField("_chain", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Assert.NotNull(chainField);
+                    X509Chain chain = Assert.IsType<X509Chain>(chainField.GetValue(call.Arg<AuthenticodeKeyVaultSigner>()));
+                    signerChains.Enqueue(chain.ChainElements.Cast<X509ChainElement>()
+                        .Select(element => element.Certificate.RawData).ToArray());
+                });
+
+            SignOptions options = new(
+                applicationName: null,
+                publisherName: null,
+                description: null,
+                descriptionUrl: null,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256,
+                timestampService: null!,
+                matcher: null,
+                antiMatcher: null,
+                recurseContainers: true);
+
+            await signer.SignAsync(new[] { new FileInfo("test.dll") }, options);
+
+            byte[][] signerChain = Assert.Single(signerChains);
+            Assert.Collection(
+                signerChain,
+                certificate => Assert.Equal(certificateService.Leaf.RawData, certificate),
+                certificate => Assert.Equal(certificateService.Intermediate.RawData, certificate),
+                certificate => Assert.Equal(certificateService.Root.RawData, certificate));
+            signer.Received(1).SignFileCore(
+                Arg.Any<AuthenticodeKeyVaultSigner>(),
+                Arg.Is<FileInfo>(file => file.Name == "test.dll"),
+                options,
+                Arg.Any<FileInfo>());
+        }
+
         [Theory]
         [InlineData(".vbs")]
         [InlineData(".VBS")]
@@ -199,6 +256,7 @@ namespace Sign.Core.Test
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
             certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
@@ -238,6 +296,7 @@ namespace Sign.Core.Test
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
             certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
@@ -303,6 +362,7 @@ namespace Sign.Core.Test
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
             certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
             SignOptions options = new(
