@@ -60,6 +60,39 @@ namespace Sign.Core
                 }
             }
 
+            // Remember the original number of inputs before filtering.
+            int originalInputCount = inputFiles.Count;
+
+            // Apply file-list filtering to standalone input files too,
+            // consistent with how container and ClickOnce contents are filtered.
+            // Only the given inputs are matched, in memory. The base directory is not scanned,
+            // so unrelated (for example unreadable) folders are never touched.
+            if (matcher is not null || antiMatcher is not null)
+            {
+                IContainerProvider containerProvider = _serviceProvider.GetRequiredService<IContainerProvider>();
+
+                inputFiles = inputFiles
+                    .Where(f =>
+                    {
+                        // The file list applies to the contents of containers and ClickOnce
+                        // deployments, so those inputs are not filtered at the top level.
+                        if (IsContainerOrClickOnceDeployment(containerProvider, f))
+                        {
+                            return true;
+                        }
+
+                        string[] candidate = [f.FullName];
+
+                        bool isIncluded = matcher is null
+                            || matcher.Match(baseDirectory.FullName, candidate).HasMatches;
+                        bool isExcluded = antiMatcher is not null
+                            && antiMatcher.Match(baseDirectory.FullName, candidate).HasMatches;
+
+                        return isIncluded && !isExcluded;
+                    })
+                    .ToList();
+            }
+
             ICertificateProvider certificateProvider = _serviceProvider.GetRequiredService<ICertificateProvider>();
 
             SignOptions signOptions = new(
@@ -90,7 +123,7 @@ namespace Sign.Core
                     Stopwatch sw = Stopwatch.StartNew();
 
                     // Special case if there's only one input file and the output has a value, treat it as a file
-                    if (inputFiles.Count == 1 && !string.IsNullOrWhiteSpace(outputFile))
+                    if (originalInputCount == 1 && !string.IsNullOrWhiteSpace(outputFile))
                     {
                         // See if it has a file extension and if not, treat as a directory and use the input file name
                         if (Path.HasExtension(outputFile))
@@ -191,6 +224,16 @@ namespace Sign.Core
             }
 
             return file;
+        }
+
+        private static bool IsContainerOrClickOnceDeployment(IContainerProvider containerProvider, FileInfo file)
+        {
+            return containerProvider.IsAppxBundleContainer(file)
+                || containerProvider.IsAppxContainer(file)
+                || containerProvider.IsNuGetContainer(file)
+                || containerProvider.IsZipContainer(file)
+                || ".vsto".Equals(file.Extension, StringComparison.OrdinalIgnoreCase)
+                || ".application".Equals(file.Extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
