@@ -117,145 +117,82 @@ namespace Sign.Core
             IReadOnlyList<SigningFile> files,
             SignOptions options)
         {
-            // See if any of them are archives
             List<SigningFile> archives = (from file in files
                                        where _containerProvider.IsZipContainer(file.File) || _containerProvider.IsNuGetContainer(file.File)
                                        select file).ToList();
 
-            // expand the archives and sign recursively first
-            List<OpenedContainer> containers = new();
+            await ProcessContainersAsync(
+                archives,
+                container => GetFiles(
+                    container,
+                    options),
+                options,
+                saveWhenEmpty: false);
 
-            try
-            {
-                foreach (SigningFile archive in archives)
-                {
-                    IContainer container =
-                        _containerProvider.GetContainer(archive.File)!;
-
-                    await container.OpenAsync();
-
-                    containers.Add(
-                        new OpenedContainer(
-                            container,
-                            archive.SourceIdentity));
-                }
-
-                // See if there's any files in the expanded zip that we need to sign
-                List<SigningFile> allFiles = containers
-                    .SelectMany(
-                        container => GetFiles(
-                            container,
-                            options))
-                    .ToList();
-
-                if (allFiles.Count > 0)
-                {
-                    // Send the files from the archives through the aggregator to sign
-                    await SignAsync(allFiles, options);
-
-                    // After signing the contents, save the zip
-                    // For NuPkg, this step removes the signature too, but that's ok as it'll get signed below
-                    await Parallel.ForEachAsync(
-                        containers,
-                        (container, cancellationToken) =>
-                            container.Container.SaveAsync());
-                }
-            }
-            finally
-            {
-                containers.ForEach(
-                    container => container.Container.Dispose());
-                containers.Clear();
-            }
-
-            // See if there's any appx's in here, process them recursively first to sign the inner files
             List<SigningFile> appxs = (from file in files
                                     where _containerProvider.IsAppxContainer(file.File)
                                     select file).ToList();
 
-            // See if there's any appxbundles here, process them recursively first
-            // expand the archives and sign recursively first
-            // This will also update the publisher information to get it ready for signing
-            try
-            {
-                foreach (SigningFile appx in appxs)
-                {
-                    IContainer container =
-                        _containerProvider.GetContainer(appx.File)!;
-
-                    await container.OpenAsync();
-
-                    containers.Add(
-                        new OpenedContainer(
-                            container,
-                            appx.SourceIdentity));
-                }
-
-                // See if there's any files in the expanded zip that we need to sign
-                List<SigningFile> allFiles = containers
-                    .SelectMany(
-                        container => GetFiles(
-                            container,
-                            options))
-                    .ToList();
-
-                if (allFiles.Count > 0)
-                {
-                    // Send the files from the archives through the aggregator to sign
-                    await SignAsync(allFiles, options);
-                }
-
-                // Save the appx with the updated publisher info
-                await Parallel.ForEachAsync(
-                    containers,
-                    (container, cancellationToken) =>
-                        container.Container.SaveAsync());
-            }
-            finally
-            {
-                containers.ForEach(
-                    container => container.Container.Dispose());
-                containers.Clear();
-            }
+            await ProcessContainersAsync(
+                appxs,
+                container => GetFiles(
+                    container,
+                    options),
+                options,
+                saveWhenEmpty: true);
 
             List<SigningFile> bundles = (from file in files
                                       where _containerProvider.IsAppxBundleContainer(file.File)
                                       select file).ToList();
 
+            Matcher appxBundleFileMatcher = _matcherFactory.Create();
+
+            appxBundleFileMatcher.AddInclude("**/*.appx");
+            appxBundleFileMatcher.AddInclude("**/*.msix");
+
+            await ProcessContainersAsync(
+                bundles,
+                container => container.Container.GetFiles(
+                    appxBundleFileMatcher,
+                    container.SourceIdentity),
+                options,
+                saveWhenEmpty: false);
+        }
+
+        private async Task ProcessContainersAsync(
+            IReadOnlyList<SigningFile> files,
+            Func<OpenedContainer, IEnumerable<SigningFile>> getFiles,
+            SignOptions options,
+            bool saveWhenEmpty)
+        {
+            List<OpenedContainer> containers = new();
+
             try
             {
-                foreach (SigningFile bundle in bundles)
+                foreach (SigningFile file in files)
                 {
                     IContainer container =
-                        _containerProvider.GetContainer(bundle.File)!;
+                        _containerProvider.GetContainer(file.File)!;
 
                     await container.OpenAsync();
 
                     containers.Add(
                         new OpenedContainer(
                             container,
-                            bundle.SourceIdentity));
+                            file.SourceIdentity));
                 }
 
-                Matcher appxBundleFileMatcher = _matcherFactory.Create();
-
-                appxBundleFileMatcher.AddInclude("**/*.appx");
-                appxBundleFileMatcher.AddInclude("**/*.msix");
-
-                // See if there's any files in the expanded zip that we need to sign
                 List<SigningFile> allFiles = containers
-                    .SelectMany(
-                        container => container.Container.GetFiles(
-                            appxBundleFileMatcher,
-                            container.SourceIdentity))
+                    .SelectMany(getFiles)
                     .ToList();
 
                 if (allFiles.Count > 0)
                 {
-                    // Send the files from the archives through the aggregator to sign
                     await SignAsync(allFiles, options);
+                }
 
-                    // After signing the contents, save the zip
+                if (saveWhenEmpty || allFiles.Count > 0)
+                {
                     await Parallel.ForEachAsync(
                         containers,
                         (container, cancellationToken) =>
@@ -266,7 +203,6 @@ namespace Sign.Core
             {
                 containers.ForEach(
                     container => container.Container.Dispose());
-                containers.Clear();
             }
         }
 
