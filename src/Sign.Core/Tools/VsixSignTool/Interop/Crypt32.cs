@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Sign.Core.Interop
 {
-    internal static class Crypt32
+    internal static partial class Crypt32
     {
         [method: DllImport("crypt32.dll", CallingConvention = CallingConvention.Winapi)]
         public static extern void CryptMemFree(

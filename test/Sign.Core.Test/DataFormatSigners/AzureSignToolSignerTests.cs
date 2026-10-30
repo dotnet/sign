@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using AzureSign.Core;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Sign.TestInfrastructure;
@@ -18,14 +17,17 @@ namespace Sign.Core.Test
     public sealed class AzureSignToolSignerTests : IDisposable
     {
         private readonly TrustedCertificateFixture _certificateFixture;
+        private readonly CertificatesFixture _certificatesFixture;
         private readonly DirectoryService _directoryService;
         private readonly AzureSignToolSigner _signer;
 
-        public AzureSignToolSignerTests(TrustedCertificateFixture certificateFixture)
+        public AzureSignToolSignerTests(TrustedCertificateFixture certificateFixture, CertificatesFixture certificatesFixture)
         {
             ArgumentNullException.ThrowIfNull(certificateFixture, nameof(certificateFixture));
+            ArgumentNullException.ThrowIfNull(certificatesFixture, nameof(certificatesFixture));
 
             _certificateFixture = certificateFixture;
+            _certificatesFixture = certificatesFixture;
             _directoryService = new(Substitute.For<ILogger<IDirectoryService>>());
             _signer = new AzureSignToolSigner(
                 Substitute.For<IToolConfigurationProvider>(),
@@ -188,6 +190,105 @@ namespace Sign.Core.Test
             }
         }
 
+        [Theory]
+        [InlineData("SHA256", false)]
+        [InlineData("SHA384", false)]
+        [InlineData("SHA512", false)]
+        [InlineData("SHA256", true)]
+        [InlineData("SHA384", true)]
+        [InlineData("SHA512", true)]
+        public void SignFile_WithSupportedDigest_SignsPortableExecutable(string algorithmName, bool timestamp)
+        {
+            using TemporaryDirectory temporaryDirectory = new(_directoryService);
+            FileInfo file = new(Path.Combine(temporaryDirectory.Directory.FullName, "test.dll"));
+            File.Copy(typeof(AzureSignToolSignerTests).Assembly.Location, file.FullName);
+
+            using RSA rsa = RSA.Create(keySizeInBits: 2048);
+            CertificateRequest request = new("CN=Test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using X509Certificate2 certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddDays(1));
+            HashAlgorithmName algorithm = new(algorithmName);
+            TimeStampConfiguration timestampConfiguration = timestamp
+                ? new(_certificatesFixture.TimestampServiceUrl.AbsoluteUri, algorithm)
+                : TimeStampConfiguration.None;
+            using AuthenticodeKeyVaultSigner signer = new(rsa, certificate, algorithm, timestampConfiguration, new X509Certificate2Collection());
+
+            int result = signer.SignFile(file.FullName, "description", "https://description.test", Substitute.For<ILogger>());
+
+            Assert.Equal(0, result);
+            Assert.True(AuthenticodeSignatureReader.TryGetSignedCms(file, out SignedCms? signedCms));
+            SignerInfo signerInfo = Assert.Single(signedCms.SignerInfos.Cast<SignerInfo>());
+            Assert.Equal(certificate.RawData, signerInfo.Certificate!.RawData);
+            Assert.Equal(CryptoConfig.MapNameToOID(algorithmName), signerInfo.DigestAlgorithm.Value);
+            signerInfo.CheckSignature(verifySignatureOnly: true);
+
+            if (timestamp)
+            {
+                CryptographicAttributeObject attribute = Assert.Single(
+                    signerInfo.UnsignedAttributes.Cast<CryptographicAttributeObject>(),
+                    attribute => attribute.Oid.IsEqualTo(Oids.MicrosoftRfc3161Timestamp));
+                AsnEncodedData value = Assert.Single(attribute.Values.Cast<AsnEncodedData>());
+                SignedCms timestampCms = new();
+                timestampCms.Decode(value.RawData);
+                SignerInfo timestampSigner = Assert.Single(timestampCms.SignerInfos.Cast<SignerInfo>());
+                Assert.Equal(_certificatesFixture.TimestampServiceCertificate.GetRawCertData(), timestampSigner.Certificate!.RawData);
+                timestampSigner.CheckSignature(verifySignatureOnly: true);
+                Assert.True(Rfc3161TimestampToken.TryDecode(value.RawData, out Rfc3161TimestampToken? token, out _));
+                Assert.Equal(CryptoConfig.MapNameToOID(algorithmName), token.TokenInfo.HashAlgorithmId.Value);
+                using IncrementalHash hash = IncrementalHash.CreateHash(algorithm);
+                hash.AppendData(signerInfo.GetSignature());
+                Assert.Equal(
+                    hash.GetHashAndReset(),
+                    token.TokenInfo.GetMessageHash().ToArray());
+            }
+            else
+            {
+                Assert.Empty(signerInfo.UnsignedAttributes.Cast<CryptographicAttributeObject>());
+            }
+        }
+
+        [Fact]
+        public async Task Dispose_ReleasesChainCertificatesWithoutDisposingBorrowedInputs()
+        {
+            using CertificateChainServiceStub certificateService = new();
+            using RSA rsa = await certificateService.GetRsaAsync();
+            X509Certificate2Collection additionalCertificates = new(new[] { certificateService.Intermediate, certificateService.Root });
+            using AuthenticodeKeyVaultSigner signer = new(
+                rsa,
+                certificateService.Leaf,
+                HashAlgorithmName.SHA256,
+                TimeStampConfiguration.None,
+                additionalCertificates);
+            FieldInfo? chainField = typeof(AuthenticodeKeyVaultSigner).GetField("_chain", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(chainField);
+            X509Chain chain = Assert.IsType<X509Chain>(chainField.GetValue(signer));
+            X509Certificate2[] chainCertificates = chain.ChainElements.Cast<X509ChainElement>()
+                .Select(element => element.Certificate).ToArray();
+
+            try
+            {
+                Assert.Equal(3, chainCertificates.Length);
+
+                signer.Dispose();
+
+                Assert.All(chainCertificates, certificate => Assert.Equal(IntPtr.Zero, certificate.Handle));
+                Assert.NotEqual(IntPtr.Zero, certificateService.Leaf.Handle);
+                Assert.NotEqual(IntPtr.Zero, certificateService.Intermediate.Handle);
+                Assert.NotEqual(IntPtr.Zero, certificateService.Root.Handle);
+
+                byte[] data = new byte[] { 1, 2, 3 };
+                byte[] signature = rsa.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                using RSA publicKey = certificateService.Leaf.GetRSAPublicKey()!;
+                Assert.True(publicKey.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1));
+            }
+            finally
+            {
+                foreach (X509Certificate2 certificate in chainCertificates)
+                {
+                    certificate.Dispose();
+                }
+            }
+        }
+
         [Fact]
         public async Task SignAsync_WithAdditionalCertificates_IncludesIntermediateInSignerChain()
         {
@@ -208,7 +309,7 @@ namespace Sign.Core.Test
                 Arg.Any<AuthenticodeKeyVaultSigner>(), Arg.Any<FileInfo>(), Arg.Any<SignOptions>(), Arg.Any<FileInfo>()))
                 .Do(call =>
                 {
-                    // Snapshot AzureSign.Core's constructed chain before SignAsync disposes the signer.
+                    // Snapshot the constructed chain before SignAsync disposes the signer.
                     FieldInfo? chainField = typeof(AuthenticodeKeyVaultSigner).GetField("_chain", BindingFlags.Instance | BindingFlags.NonPublic);
                     Assert.NotNull(chainField);
                     X509Chain chain = Assert.IsType<X509Chain>(chainField.GetValue(call.Arg<AuthenticodeKeyVaultSigner>()));

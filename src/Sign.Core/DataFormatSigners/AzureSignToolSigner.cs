@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using AzureSign.Core;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
@@ -114,7 +113,7 @@ namespace Sign.Core
             }
             else
             {
-                timestampConfiguration = new(options.TimestampService.AbsoluteUri, options.TimestampHashAlgorithm, TimeStampType.RFC3161);
+                timestampConfiguration = new(options.TimestampService.AbsoluteUri, options.TimestampHashAlgorithm);
             }
 
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
@@ -262,7 +261,6 @@ namespace Sign.Core
                     file.FullName,
                     options.Description ?? string.Empty,
                     options.DescriptionUrl?.AbsoluteUri ?? string.Empty,
-                    pageHashing: null,
                     _logger);
             }
         }

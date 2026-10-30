@@ -10,7 +10,6 @@
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
     <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.9.2" />
     <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.10.2" />
-    <PackageVersion Include="AzureSign.Core" Version="7.0.1" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.13" />
     <!-- 17.10.46 is the latest version compatible with repeated ClickOnce manifest writes.
