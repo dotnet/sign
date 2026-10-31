@@ -502,11 +502,112 @@ namespace Sign.Core.Test
             }
         }
 
+        [Fact]
+        public async Task SignAsync_WhenMultipleApplicationManifestsExist_SignsEachDeploymentManifestWithItsOwnManifest()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo clickOnceFile = new(
+                    Path.Combine(
+                        temporaryDirectory.Directory.FullName,
+                        $"{Path.GetRandomFileName()}.clickonce"));
+
+                ContainerSpy containerSpy = new(clickOnceFile);
+
+                FileInfo firstApplicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "FirstAddIn.application");
+                FileInfo firstManifestFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "FirstAddIn.dll.manifest");
+                FileInfo secondApplicationFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "SecondAddIn.application");
+                FileInfo secondManifestFile = AddFile(
+                    containerSpy,
+                    temporaryDirectory.Directory,
+                    string.Empty,
+                    "SecondAddIn.dll.manifest");
+
+                SignOptions options = new(
+                    "ApplicationName",
+                    "PublisherName",
+                    "Description",
+                    new Uri("https://description.test"),
+                    HashAlgorithmName.SHA256,
+                    HashAlgorithmName.SHA256,
+                    new Uri("http://timestamp.test"),
+                    matcher: null,
+                    antiMatcher: null,
+                    recurseContainers: true);
+
+                using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
+                using (RSA privateKey = certificate.GetRSAPrivateKey()!)
+                {
+                    ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
+                    ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
+                    certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(certificate);
+                    signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(privateKey);
+
+                    IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
+                    AggregatingSignerSpy aggregatingSignerSpy = new();
+                    serviceProvider.GetService(Arg.Any<Type>()).Returns(aggregatingSignerSpy);
+
+                    IMageCli mageCli = Substitute.For<IMageCli>();
+                    mageCli.RunAsync(Arg.Any<string>()).Returns(0);
+
+                    IManifestSigner manifestSigner = Substitute.For<IManifestSigner>();
+                    IFileMatcher fileMatcher = Substitute.For<IFileMatcher>();
+                    ILogger<IDataFormatSigner> logger = Substitute.For<ILogger<IDataFormatSigner>>();
+                    ClickOnceSigner signer = new(
+                        signatureAlgorithmProvider,
+                        certificateProvider,
+                        serviceProvider,
+                        mageCli,
+                        manifestSigner,
+                        logger,
+                        fileMatcher);
+
+                    await signer.SignAsync(new[] { firstApplicationFile }, options);
+
+                    foreach ((FileInfo deploymentManifestFile, FileInfo applicationManifestFile) in new[]
+                    {
+                        (firstApplicationFile, firstManifestFile),
+                        (secondApplicationFile, secondManifestFile),
+                    })
+                    {
+                        string expectedManifestArgs = $"-update \"{applicationManifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\"";
+                        string expectedDeploymentArgs = $"-update \"{deploymentManifestFile.FullName}\" -a sha256RSA -n \"{options.ApplicationName}\" -pub \"{options.PublisherName}\" -appm \"{applicationManifestFile.FullName}\" -SupportURL https://description.test/";
+
+                        await mageCli.Received(1).RunAsync(Arg.Is<string>(args => string.Equals(expectedManifestArgs, args, StringComparison.Ordinal)));
+                        await mageCli.Received(1).RunAsync(Arg.Is<string>(args => string.Equals(expectedDeploymentArgs, args, StringComparison.Ordinal)));
+                        manifestSigner.Received(1).Sign(
+                            Arg.Is<FileInfo>(fi => fi != null && fi.Name == applicationManifestFile.Name),
+                            Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
+                        manifestSigner.Received(1).Sign(
+                            Arg.Is<FileInfo>(fi => fi != null && fi.Name == deploymentManifestFile.Name),
+                            Arg.Is<X509Certificate2>(c => ReferenceEquals(certificate, c)),
+                            Arg.Is<RSA>(rsa => ReferenceEquals(privateKey, rsa)),
+                            Arg.Is<SignOptions>(o => ReferenceEquals(options, o)));
+                    }
+
+                    Assert.Equal(4, mageCli.ReceivedCalls().Count());
+                }
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void SigningDependencyCopy_CopiesCorrectFiles(bool stage)
-        {
+        public void SigningDependencyCopy_CopiesCorrectFiles(bool stage)        {
             using (TemporaryDirectory temporaryDirectory = new(_directoryService))
             {
                 FileInfo clickOnceFile = new(
