@@ -133,6 +133,10 @@
   <data name="CertificateRSANotFound" xml:space="preserve">
     <value>Unable to acquire RSA private key for the provided certificate.</value>
   </data>
+  <data name="UnsupportedCertificateFileFormat" xml:space="preserve">
+    <value>Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a certificate file format name.</comment>
+  </data>
   <data name="UnsupportedPublicKeyAlgorithm" xml:space="preserve">
     <value>The certificate has an unsupported public key algorithm.</value>
   </data>

@@ -356,7 +356,7 @@ namespace Sign.Core.Test
 
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
-            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
             certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
@@ -396,7 +396,7 @@ namespace Sign.Core.Test
 
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
-            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
             certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 
@@ -462,7 +462,7 @@ namespace Sign.Core.Test
 
             ISignatureAlgorithmProvider signatureAlgorithmProvider = Substitute.For<ISignatureAlgorithmProvider>();
             ICertificateProvider certificateProvider = Substitute.For<ICertificateProvider>();
-            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate.Export(X509ContentType.Pfx)));
+            certificateProvider.GetCertificateAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2(certificate));
             certificateProvider.GetAdditionalCertificatesAsync(Arg.Any<CancellationToken>()).Returns(new X509Certificate2Collection());
             signatureAlgorithmProvider.GetRsaAsync(Arg.Any<CancellationToken>()).Returns(RSA.Create(rsa.ExportParameters(includePrivateParameters: true)));
 

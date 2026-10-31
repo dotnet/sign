@@ -141,7 +141,7 @@ namespace Sign.Core.Test
 
         internal X509Certificate2 CloneIssuerCert()
         {
-            return new X509Certificate2(_cert.RawData);
+            return X509Certificate2.CreateFromPem(_cert.ExportCertificatePem());
         }
 
         internal void Revoke(X509Certificate2 certificate, DateTimeOffset revocationTime)

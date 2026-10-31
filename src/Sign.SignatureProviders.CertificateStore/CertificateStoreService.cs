@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sign.Core;
@@ -120,8 +122,7 @@ namespace Sign.SignatureProviders.CertificateStore
             {
                 _logger.LogTrace(Resources.FetchingCertificateFromFile);
 
-                X509Certificate2Collection certCollection = new();
-                certCollection.Import(_certificatePath, _certificatePassword, X509KeyStorageFlags.EphemeralKeySet);
+                X509Certificate2Collection certCollection = LoadCertificates(_certificatePath, _certificatePassword);
 
                 foreach (var cert in certCollection)
                 {
@@ -152,6 +153,64 @@ namespace Sign.SignatureProviders.CertificateStore
             }
 
             throw new ArgumentException(_isPrivateMachineKeyContainer ? Resources.CertificateNotFoundInMachineStore : Resources.CertificateNotFoundInUserStore, _certificateFingerprint);
+        }
+
+        private static X509Certificate2Collection LoadCertificates(string path, string? password)
+        {
+#if NET9_0_OR_GREATER
+            X509ContentType contentType = X509Certificate2.GetCertContentType(path);
+            switch (contentType)
+            {
+                case X509ContentType.Cert:
+                    return new X509Certificate2Collection(X509CertificateLoader.LoadCertificateFromFile(path));
+                case X509ContentType.Pfx:
+                    return X509CertificateLoader.LoadPkcs12CollectionFromFile(path, password, X509KeyStorageFlags.EphemeralKeySet);
+                case X509ContentType.Pkcs7:
+                    SignedCms signedCms = new();
+                    byte[] rawData = File.ReadAllBytes(path);
+                    try
+                    {
+                        // Parse binary first so embedded PEM content cannot replace the outer certificate bundle.
+                        signedCms.Decode(rawData);
+                    }
+                    catch (CryptographicException)
+                    {
+                        byte[] decodedData = new byte[rawData.Length];
+                        // Windows also accepts UTF-16LE certificate text without a BOM.
+                        if (!TryDecodePkcs7Text(Encoding.UTF8.GetString(rawData), decodedData, out int bytesWritten)
+                            && !TryDecodePkcs7Text(Encoding.Unicode.GetString(rawData), decodedData, out bytesWritten))
+                        {
+                            throw;
+                        }
+
+                        signedCms.Decode(decodedData.AsSpan(0, bytesWritten));
+                    }
+                    return signedCms.Certificates;
+                default:
+                    throw new NotSupportedException(string.Format(Resources.UnsupportedCertificateFileFormat, contentType));
+            }
+#else
+            X509Certificate2Collection certificates = new();
+            certificates.Import(path, password, X509KeyStorageFlags.EphemeralKeySet);
+            return certificates;
+#endif
+        }
+
+        private static bool TryDecodePkcs7Text(ReadOnlySpan<char> text, Span<byte> destination, out int bytesWritten)
+        {
+            text = text.TrimStart('\uFEFF');
+            // Windows accepts PEM following an arbitrary prefix, not just at a text-line boundary.
+            int pemStart = text.IndexOf("-----BEGIN ", StringComparison.Ordinal);
+            if (pemStart >= 0)
+            {
+                text = text[pemStart..];
+            }
+            if (PemEncoding.TryFind(text, out PemFields fields))
+            {
+                text = text[fields.Base64Data];
+            }
+
+            return Convert.TryFromBase64Chars(text, destination, out bytesWritten);
         }
 
         private bool TryFindCertificate(StoreLocation storeLocation, string expectedFingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)

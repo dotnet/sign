@@ -72,15 +72,17 @@ namespace Sign.SignatureProviders.ArtifactSigning.Test
             Assert.Equal("logger", exception.ParamName);
         }
 
-        [Fact]
-        public async Task GetCertificateAsync_WhenChainReturned_ReturnsLeafCertificate()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task GetCertificateAsync_WhenChainReturned_ReturnsLeafCertificate(bool partialReads)
         {
-            var (root, intermediate, leaf) = BuildCertificateChain();
+            (X509Certificate2 root, X509Certificate2 intermediate, X509Certificate2 leaf) = BuildCertificateChain();
             using (root)
             using (intermediate)
             using (leaf)
             {
-                CertificateProfileClient client = CreateClientReturningChain(root, intermediate, leaf);
+                CertificateProfileClient client = CreateClientReturningChain(partialReads, root, intermediate, leaf);
 
                 using ArtifactSigningService service = new(client, AccountName, CertificateProfileName, Logger);
 
@@ -93,12 +95,12 @@ namespace Sign.SignatureProviders.ArtifactSigning.Test
         [Fact]
         public async Task GetAdditionalCertificatesAsync_WhenChainReturned_ReturnsNonLeafCertificates()
         {
-            var (root, intermediate, leaf) = BuildCertificateChain();
+            (X509Certificate2 root, X509Certificate2 intermediate, X509Certificate2 leaf) = BuildCertificateChain();
             using (root)
             using (intermediate)
             using (leaf)
             {
-                CertificateProfileClient client = CreateClientReturningChain(root, intermediate, leaf);
+                CertificateProfileClient client = CreateClientReturningChain(partialReads: false, root, intermediate, leaf);
 
                 using ArtifactSigningService service = new(client, AccountName, CertificateProfileName, Logger);
 
@@ -122,13 +124,13 @@ namespace Sign.SignatureProviders.ArtifactSigning.Test
             }
         }
 
-        private static CertificateProfileClient CreateClientReturningChain(params X509Certificate2[] certificates)
+        private static CertificateProfileClient CreateClientReturningChain(bool partialReads, params X509Certificate2[] certificates)
         {
             X509Certificate2Collection collection = new(certificates);
             byte[] pkcs7 = collection.Export(X509ContentType.Pkcs7)!;
 
             Response<Stream> response = Response.FromValue<Stream>(
-                new MemoryStream(pkcs7),
+                partialReads ? new PartialReadStream(pkcs7) : new MemoryStream(pkcs7),
                 Substitute.For<Response>());
 
             CertificateProfileClient client = Substitute.For<CertificateProfileClient>();
@@ -137,6 +139,15 @@ namespace Sign.SignatureProviders.ArtifactSigning.Test
                 .Returns(response);
 
             return client;
+        }
+
+        private sealed class PartialReadStream(byte[] buffer) : MemoryStream(buffer)
+        {
+            public override int Read(byte[] buffer, int offset, int count)
+                => base.Read(buffer, offset, Math.Min(count, 7));
+
+            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+                => base.ReadAsync(buffer[..Math.Min(buffer.Length, 7)], cancellationToken);
         }
 
         /// <summary>

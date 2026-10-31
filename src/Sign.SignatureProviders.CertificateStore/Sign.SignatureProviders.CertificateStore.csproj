@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sign.Core\Sign.Core.csproj" />
   </ItemGroup>
 

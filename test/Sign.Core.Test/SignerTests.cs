@@ -448,7 +448,7 @@ namespace Sign.Core.Test
 
             using (Stream stream = entry!.Open())
             {
-                stream.Read(buffer.Span);
+                stream.ReadExactly(buffer.Span);
             }
 
             SignedCms signedCms = new();
