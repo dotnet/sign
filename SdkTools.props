@@ -7,6 +7,7 @@
 
   <PropertyGroup>
     <NetSdkBinDir Condition=" '$(NetSdkBinDir)' == '' ">$(MSBuildProgramFiles32)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools</NetSdkBinDir>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeSdkFilesInPackage</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,12 +30,12 @@
     <SdkFile86 Include="$(NetSdkBinDir)\mage.exe" />
   </ItemGroup>
 
-  <Target Name="CopySdkFiles" AfterTargets="Build">
+  <Target Name="CopySdkFiles" AfterTargets="Build" Condition="'$(TargetFramework)' != ''">
     <Copy SourceFiles="@(SdkFile64)" DestinationFolder="$(OutputPath)\tools\SDK\x64" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(SdkFile86)" DestinationFolder="$(OutputPath)\tools\SDK\x86" SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="UpdateWintrust" AfterTargets="Build">
+  <Target Name="UpdateWintrust" AfterTargets="Build" Condition="'$(TargetFramework)' != ''">
     <PropertyGroup>
       <PowerShellFilePath Condition=" '$(PowerShellFilePath)' == '' ">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellFilePath>  
       <ScriptFilePath Condition=" '$(ScriptFilePath)' == '' ">$(RepositoryRootDirectory)\scripts\UpdateWintrust.ps1</ScriptFilePath>
@@ -43,21 +44,17 @@
     <Exec Command="$(PowerShellFilePath) -NonInteractive -NoProfile -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(OutputPath)tools\SDK\x64\wintrust.dll.ini' } &quot;" LogStandardErrorAsError="true" />
   </Target>
 
-  <ItemGroup>
-    <Content Include="@(SdkFile64)" Exclude="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini">
-      <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="$(OutputPath)\tools\SDK\x64\wintrust.dll.ini">
-      <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-    <Content Include="@(SdkFile86)">
-      <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
+  <Target Name="IncludeSdkFilesInPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="@(SdkFile64)" Exclude="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini">
+        <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="$(OutputPath)\tools\SDK\x64\wintrust.dll.ini">
+        <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      </TfmSpecificPackageFile>
+      <TfmSpecificPackageFile Include="@(SdkFile86)">
+        <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x86</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 </Project>
