@@ -47,6 +47,11 @@
         <target state="translated">Recupero del certificato dal file in corso.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnsupportedCertificateFileFormat">
+        <source>Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</source>
+        <target state="new">Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</target>
+        <note>{NumberedPlaceholder="{0}"} is a certificate file format name.</note>
+      </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
         <source>The certificate has an unsupported public key algorithm.</source>
         <target state="translated">Il certificato contiene un algoritmo a chiave pubblica non supportato.</target>

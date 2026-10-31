@@ -1,7 +1,10 @@
 ﻿param
 (
     [Parameter(Mandatory = $True)]
-    [string] $PackageDirectoryPath
+    [string] $PackageDirectoryPath,
+
+    [Parameter(Mandatory = $True)]
+    [string] $TargetFrameworks
 )
 
 Add-Type -AssemblyName 'System.IO.Compression'
@@ -60,28 +63,39 @@ If ($packageFilePaths.Count -ne 1)
 [bool] $overwrite = $True
 [System.IO.File]::Copy($sourcePackageFilePath, $destinationFile.FullName, $overwrite)
 
-[string[]] $expectedEntryFullNames =
-    'tools/net8.0/any/sign.dll',
-    'tools/net8.0/any/Microsoft.Build.Framework.dll',
-    'tools/net8.0/any/Microsoft.Build.Tasks.Core.dll',
-    'tools/net8.0/any/Microsoft.Build.Utilities.Core.dll',
-    'tools/net8.0/any/Microsoft.NET.StringTools.dll',
-    'tools/net8.0/any/tools/SDK/x64/appxpackaging.dll',
-    'tools/net8.0/any/tools/SDK/x64/appxsip.dll',
-    'tools/net8.0/any/tools/SDK/x64/makeappx.exe',
-    'tools/net8.0/any/tools/SDK/x64/makepri.exe',
-    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest',
-    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxSip.dll.manifest',
-    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Appx.OpcServices.dll.manifest',
-    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.mssign32.dll.manifest',
-    'tools/net8.0/any/tools/SDK/x64/Microsoft.Windows.Build.Signing.wintrust.dll.manifest',
-    'tools/net8.0/any/tools/SDK/x64/mssign32.dll',
-    'tools/net8.0/any/tools/SDK/x64/NavSip.dll',
-    'tools/net8.0/any/tools/SDK/x64/opcservices.dll',
-    'tools/net8.0/any/tools/SDK/x64/SignTool.exe.manifest',
-    'tools/net8.0/any/tools/SDK/x64/wintrust.dll',
-    'tools/net8.0/any/tools/SDK/x64/wintrust.dll.ini',
-    'tools/net8.0/any/tools/SDK/x86/mage.exe'
+[string[]] $expectedRelativePaths =
+    'sign.dll',
+    'sign.deps.json',
+    'sign.runtimeconfig.json',
+    'DotnetToolSettings.xml',
+    'Microsoft.Build.Framework.dll',
+    'Microsoft.Build.Tasks.Core.dll',
+    'Microsoft.Build.Utilities.Core.dll',
+    'Microsoft.NET.StringTools.dll',
+    'tools/SDK/x64/appxpackaging.dll',
+    'tools/SDK/x64/appxsip.dll',
+    'tools/SDK/x64/makeappx.exe',
+    'tools/SDK/x64/makepri.exe',
+    'tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest',
+    'tools/SDK/x64/Microsoft.Windows.Build.Appx.AppxSip.dll.manifest',
+    'tools/SDK/x64/Microsoft.Windows.Build.Appx.OpcServices.dll.manifest',
+    'tools/SDK/x64/Microsoft.Windows.Build.Signing.mssign32.dll.manifest',
+    'tools/SDK/x64/Microsoft.Windows.Build.Signing.wintrust.dll.manifest',
+    'tools/SDK/x64/mssign32.dll',
+    'tools/SDK/x64/NavSip.dll',
+    'tools/SDK/x64/opcservices.dll',
+    'tools/SDK/x64/SignTool.exe.manifest',
+    'tools/SDK/x64/wintrust.dll',
+    'tools/SDK/x64/wintrust.dll.ini',
+    'tools/SDK/x86/mage.exe'
+
+[string[]] $expectedEntryFullNames = ForEach ($targetFramework in $TargetFrameworks.Split(';'))
+{
+    ForEach ($relativePath in $expectedRelativePaths)
+    {
+        "tools/$targetFramework/any/$relativePath"
+    }
+}
 
 Try
 {
