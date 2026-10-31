@@ -22,6 +22,35 @@ dotnet tool install --tool-path . --prerelease sign
 
 To run Sign CLI, execute `sign` from the same directory.
 
+### Run without installing
+
+If you have the [.NET 10 SDK](https://dotnet.microsoft.com/download) or later, you can also run Sign CLI for a single command without installing it. `dnx` is shorthand for `dotnet tool execute`:
+
+```pwsh
+dnx sign --prerelease -- code -?
+```
+
+```pwsh
+dotnet tool execute sign --prerelease -- code -?
+```
+
+`--prerelease` makes `dnx` consider prerelease versions of Sign CLI, which is required while the tool is in preview.
+
+Pass `--` between the tool name and the tool's own arguments. Without it, `dnx` handles options such as `--help` itself instead of forwarding them to Sign CLI.
+
+This avoids the install step in hosted build environments:
+
+```yaml
+- pwsh: |
+    dnx sign --prerelease -- code artifact-signing `
+      "$(Pipeline.Workspace)/**/*.nupkg" `
+      --artifact-signing-endpoint "https://<region>.codesigning.azure.net" `
+      --artifact-signing-account "<account>" `
+      --artifact-signing-certificate-profile "<profile>" `
+      --azure-credential-type azure-cli
+  displayName: Sign packages
+```
+
 ## Design
 
 Given an initial file path or glob pattern, this tool recursively searches directories and containers to find signable files and containers.  For each signable artifact, the tool uses an implementation of [`System.Security.Cryptography.RSA`](https://learn.microsoft.com/dotnet/api/system.security.cryptography.rsa?view=net-8.0) that delegates the signing operation to Azure Key Vault.  The tool computes a digest (or hash) of the to-be-signed content and submits the digest --- not the original content --- to Azure Key Vault for digest signing.  The returned raw signature value is then incorporated in whatever signature format is appropriate for the file type.  Signable content is not sent to Azure Key Vault.
