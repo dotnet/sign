@@ -700,6 +700,87 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task Materialize_LayoutSpellingBindingPreservesPrimaryAndRetainedDefaultPaths()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "Payload.dll"), "old");
+            FileInfo output = new(Path.Combine(existing.DirectoryName!, "Renamed.manifest"));
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+            int bindings = 0;
+
+            result.Materialize(output, file =>
+            {
+                ++bindings;
+                Assert.Equal("payload.dll", file.Name);
+                return new FileInfo(Path.Combine(file.DirectoryName!, existing.Name));
+            });
+            FileInfo defaultOutput = new(Path.Combine(directory.FullPath, "default", primary.Name));
+            result.Materialize(defaultOutput);
+
+            Assert.Equal(1, bindings);
+            Assert.Equal("manifest", File.ReadAllText(output.FullName));
+            Assert.Equal("signed", File.ReadAllText(existing.FullName));
+            Assert.Equal("Payload.dll", Assert.Single(existing.Directory!.EnumerateFiles("*.dll")).Name);
+            Assert.Equal("payload.dll", Assert.Single(defaultOutput.Directory!.EnumerateFiles("*.dll")).Name);
+            Assert.Empty(existing.Directory.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Theory]
+        [InlineData("outside")]
+        [InlineData("directory")]
+        [InlineData("name")]
+        [InlineData("null")]
+        public async Task Materialize_InvalidLayoutSpellingBindingFailsBeforeAnyCopy(string kind)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            FileInfo output = new(Path.Combine(existing.DirectoryName!, primary.Name));
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+
+            Assert.Throws<InvalidOperationException>(() => result.Materialize(output, file => kind switch
+            {
+                "outside" => new FileInfo(Path.Combine(directory.FullPath, "escape", file.Name)),
+                "directory" => new FileInfo(Path.Combine(file.DirectoryName!, "sub", file.Name)),
+                "name" => new FileInfo(Path.Combine(file.DirectoryName!, "different.dll")),
+                _ => null!
+            }));
+
+            Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.False(File.Exists(output.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
+            Assert.Empty(existing.Directory.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Fact]
+        public async Task Materialize_BoundLayoutDestinationCannotCollideWithPrimary()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+
+            Assert.Throws<InvalidOperationException>(() => result.Materialize(existing,
+                file => new FileInfo(Path.Combine(file.DirectoryName!, "Payload.dll"))));
+
+            Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
+        }
+
+        [Fact]
         public async Task DisposeAsync_ExistingSnapshots_DeletesSnapshotsAndPreventsMaterialization()
         {
             using TestDirectory directory = new();

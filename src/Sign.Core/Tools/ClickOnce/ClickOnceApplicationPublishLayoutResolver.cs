@@ -12,6 +12,8 @@ namespace Sign.Core
         private readonly IClickOnceManifestReader _manifestReader;
         private readonly ClickOncePayloadResolver _payloadResolver;
 
+        internal IClickOnceManifestReader ManifestReader => _manifestReader;
+
         internal ClickOnceApplicationPublishLayoutResolver(
             IClickOnceManifestReader manifestReader,
             ClickOncePayloadResolver payloadResolver)

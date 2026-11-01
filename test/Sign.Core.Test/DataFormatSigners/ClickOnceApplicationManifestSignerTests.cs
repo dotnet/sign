@@ -14,7 +14,7 @@ using Sign.TestInfrastructure;
 
 namespace Sign.Core.Test
 {
-    public sealed class ClickOnceApplicationManifestSignerTests
+    public sealed partial class ClickOnceApplicationManifestSignerTests
     {
         [Theory]
         [InlineData(false, false)]
@@ -861,14 +861,15 @@ namespace Sign.Core.Test
 
             internal ClickOnceApplicationManifestSigner CreatePipeline(
                 IClickOnceManifestReader reader,
-                ClickOncePayloadResolver? resolver = null)
+                ClickOncePayloadResolver? resolver = null,
+                IClickOncePayloadSigningHandler? payloadHandler = null)
             {
                 return new ClickOnceApplicationManifestSigner(
                     new ClickOnceApplicationPublishLayoutResolver(
                         reader, resolver ?? new ClickOncePayloadResolver()),
                     new ClickOncePublishLayoutStager(Directories),
                     AggregatingSigner, new FileMatcher(), ManifestSigner,
-                    CertificateProvider, SignatureProvider, Logger);
+                    CertificateProvider, SignatureProvider, Logger, payloadHandler);
             }
 
             internal IApplicationManifest UseFakeManifest(string name, params string[] targets)
@@ -909,11 +910,13 @@ namespace Sign.Core.Test
                 FileInfo manifest,
                 FileInfo? output = null,
                 SignOptions? options = null,
-                ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads)
+                ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+                bool updateManifest = true,
+                ClickOnceApplicationSigningContext? context = null)
             {
                 return Pipeline.ExecuteAsync(
                     new SigningOperationPlan(SigningFile.Capture(manifest), output ?? manifest),
-                    options ?? Options(), Coordinator, policy);
+                    options ?? Options(), Coordinator, policy, updateManifest, context);
             }
 
             internal SignOptions Options(Matcher? matcher = null, Matcher? antiMatcher = null)

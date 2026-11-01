@@ -32,16 +32,32 @@ namespace Sign.Core
             _coordinator = coordinator;
         }
 
-        internal FileInfo Materialize(FileInfo destination)
+        internal FileInfo Materialize(
+            FileInfo destination,
+            Func<FileInfo, FileInfo>? bindLayoutDestination = null)
         {
             ArgumentNullException.ThrowIfNull(
                 destination,
                 nameof(destination));
             _coordinator.ThrowIfDisposed();
 
-            IReadOnlyList<Materialization> materializations =
-                CreateMaterializations(destination);
+            return Materialize(destination, CreateMaterializations(destination, bindLayoutDestination));
+        }
 
+        internal FileInfo MaterializePrimary(FileInfo destination)
+        {
+            ArgumentNullException.ThrowIfNull(destination, nameof(destination));
+            _coordinator.ThrowIfDisposed();
+
+            return Materialize(
+                destination,
+                new[] { new Materialization(_snapshots.Single(snapshot => snapshot.IsPrimary), destination) });
+        }
+
+        private static FileInfo Materialize(
+            FileInfo destination,
+            IReadOnlyList<Materialization> materializations)
+        {
             foreach (Materialization materialization in materializations)
             {
                 materialization.Destination.Directory!.Create();
@@ -87,7 +103,8 @@ namespace Sign.Core
         }
 
         private IReadOnlyList<Materialization> CreateMaterializations(
-            FileInfo destination)
+            FileInfo destination,
+            Func<FileInfo, FileInfo>? bindLayoutDestination)
         {
             string destinationRoot = destination.DirectoryName!;
             string containedRoot = PathContainment.GetFullDirectoryPath(
@@ -107,6 +124,19 @@ namespace Sign.Core
                     : GetContainedDestination(
                         containedRoot,
                         snapshot.RelativePath);
+
+                if (!snapshot.IsPrimary && bindLayoutDestination is not null)
+                {
+                    FileInfo bound = bindLayoutDestination(materializationDestination) ??
+                        throw new InvalidOperationException("A layout destination binding returned no file.");
+                    if (!string.Equals(bound.DirectoryName, materializationDestination.DirectoryName, StringComparison.Ordinal) ||
+                        !string.Equals(bound.Name, materializationDestination.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidOperationException(
+                            "A layout destination binding may change only the spelling of its validated filename.");
+                    }
+                    materializationDestination = bound;
+                }
 
                 if (!destinations.Add(
                     materializationDestination.FullName))
