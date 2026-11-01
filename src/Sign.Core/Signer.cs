@@ -81,7 +81,7 @@ namespace Sign.Core
                             return true;
                         }
 
-                        string[] candidate = [f.FullName];
+                            string[] candidate = [Path.GetRelativePath(baseDirectory.FullName, f.FullName)];
 
                         bool isIncluded = matcher is null
                             || matcher.Match(baseDirectory.FullName, candidate).HasMatches;

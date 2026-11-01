@@ -487,6 +487,141 @@ namespace Sign.Core.Test
             Assert.Equal(scriptHashBefore, SHA256.HashData(File.ReadAllBytes(script.FullName)));
         }
 
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_AndInputPathDiffersInCaseFromBaseDirectory_SignsTheFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+            FileInfo file = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+
+            File.Copy(thisAssemblyFile.FullName, file.FullName);
+
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            // Same file on disk, but the base directory part of the path is spelled in upper case.
+            string upperCaseBase = _temporaryDirectory.Directory.FullName.ToUpperInvariant();
+            FileInfo upperCaseInput = new(Path.Combine(upperCaseBase, file.Name));
+
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            int exitCode = await signer.SignAsync(
+                new[] { upperCaseInput },
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                _temporaryDirectory.Directory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // The input is the same file, so it must be signed rather than silently skipped.
+            await VerifyAuthenticodeSignedFileAsync(file);
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_AndSubdirectoryCaseDiffersFromPattern_SignsTheFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "sub"));
+
+            FileInfo file = new(Path.Combine(_temporaryDirectory.Directory.FullName, "sub", thisAssemblyFile.Name));
+
+            File.Copy(thisAssemblyFile.FullName, file.FullName);
+
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "sub/*.dll");
+
+            // Same file on disk, but the subdirectory is spelled in upper case.
+            FileInfo input = new(Path.Combine(_temporaryDirectory.Directory.FullName, "SUB", thisAssemblyFile.Name));
+
+            int exitCode = await SignWithFileListAsync(new[] { input }, fileList, _temporaryDirectory.Directory);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            await VerifyAuthenticodeSignedFileAsync(file);
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_AndInputIsOutsideBaseDirectory_DoesNotSignTheFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            DirectoryInfo baseDirectory = Directory.CreateDirectory(Path.Combine(_temporaryDirectory.Directory.FullName, "base"));
+
+            FileInfo outside = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+
+            File.Copy(thisAssemblyFile.FullName, outside.FullName);
+
+            FileInfo fileList = new(Path.Combine(baseDirectory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            byte[] hashBefore = SHA256.HashData(File.ReadAllBytes(outside.FullName));
+
+            int exitCode = await SignWithFileListAsync(new[] { outside }, fileList, baseDirectory);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            // The input is not under the base directory, so the file list does not select it.
+            Assert.Equal(hashBefore, SHA256.HashData(File.ReadAllBytes(outside.FullName)));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListExclusionDiffersInCase_ExcludesTheFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+
+            FileInfo file1 = new(Path.Combine(_temporaryDirectory.Directory.FullName, thisAssemblyFile.Name));
+            FileInfo file2 = new(Path.Combine(_temporaryDirectory.Directory.FullName, Path.ChangeExtension(thisAssemblyFile.Name, ".Copy.dll")));
+            var files = new[] { file1, file2 };
+
+            foreach (var file in files)
+            {
+                File.Copy(thisAssemblyFile.FullName, file.FullName);
+            }
+
+            // The exclusion is spelled in upper case, the file on disk is not.
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, $"**/*{Environment.NewLine}!{file2.Name.ToUpperInvariant()}");
+
+            byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
+
+            int exitCode = await SignWithFileListAsync(files, fileList, _temporaryDirectory.Directory);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            await VerifyAuthenticodeSignedFileAsync(file1);
+
+            Assert.Equal(file2HashBefore, SHA256.HashData(File.ReadAllBytes(file2.FullName)));
+        }
+
+        [Fact]
+        public async Task SignAsync_WhenFileListProvided_AndFileNameHasSpacesAndBrackets_SignsTheFile()
+        {
+            FileInfo thisAssemblyFile = new(typeof(SignerTests).Assembly.Location);
+            FileInfo file = new(Path.Combine(_temporaryDirectory.Directory.FullName, "my app [1] (copy).dll"));
+
+            File.Copy(thisAssemblyFile.FullName, file.FullName);
+
+            FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
+            File.WriteAllText(fileList.FullName, "**/*.dll");
+
+            int exitCode = await SignWithFileListAsync(new[] { file }, fileList, _temporaryDirectory.Directory);
+
+            Assert.Equal(ExitCode.Success, exitCode);
+
+            await VerifyAuthenticodeSignedFileAsync(file);
+        }
+
         [Theory]
         [InlineData("signed")]
         [InlineData("signed.v1")]
@@ -596,6 +731,28 @@ namespace Sign.Core.Test
                 security.RemoveAccessRule(denyList);
                 restricted.SetAccessControl(security);
             }
+        }
+
+        private async Task<int> SignWithFileListAsync(IReadOnlyList<FileInfo> files, FileInfo fileList, DirectoryInfo baseDirectory)
+        {
+            ServiceProvider serviceProvider = Create();
+            TestLogger<ISigner> logger = new();
+            Signer signer = new(serviceProvider, logger);
+
+            return await signer.SignAsync(
+                files,
+                outputFile: string.Empty,
+                fileList: fileList,
+                recurseContainers: true,
+                baseDirectory,
+                applicationName: "a",
+                publisherName: null,
+                description: "b",
+                new Uri("https://description.test"),
+                _certificatesFixture.TimestampServiceUrl,
+                maxConcurrency: 4,
+                HashAlgorithmName.SHA256,
+                HashAlgorithmName.SHA256);
         }
 
         private async Task SignAsync(TemporaryDirectory temporaryDirectory, FileInfo file, FileInfo outputFile)
