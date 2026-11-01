@@ -79,5 +79,10 @@ namespace Sign.Core
                 file.FullName,
                 TargetFrameworkVersion);
         }
+
+        public void Dispose()
+        {
+            Manifest.InputStream?.Dispose();
+        }
     }
 }

@@ -141,6 +141,36 @@ namespace Sign.Core {
             }
         }
 
+        internal static string ClickOnceApplicationManifestWrongType {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestWrongType", resourceCulture);
+            }
+        }
+
+        internal static string ClickOnceAssemblyIdentityReadFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceAssemblyIdentityReadFailed", resourceCulture);
+            }
+        }
+
+        internal static string ClickOnceApplicationManifestResolveFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestResolveFailed", resourceCulture);
+            }
+        }
+
+        internal static string ClickOnceApplicationManifestUpdateFailed {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestUpdateFailed", resourceCulture);
+            }
+        }
+
+        internal static string ClickOnceApplicationManifestReferenceMismatch {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestReferenceMismatch", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; references application manifest &apos;{1}&apos;, but the file does not exist..
         /// </summary>

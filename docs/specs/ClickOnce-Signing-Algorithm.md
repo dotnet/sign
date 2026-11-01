@@ -258,6 +258,14 @@ Apply the application-manifest flows below only to files identified as ClickOnce
 
 #### Explicit application-manifest input
 
+The internal `ClickOnceApplicationManifestSigner` implements this flow as a
+dormant, directly testable entry point. It reuses typed publish-layout resolution,
+safe staging, and invocation-scoped coordinated results. It is not registered as
+an `IDataFormatSigner` and does not change CLI selection or version 1.
+`SignPayloads` publishes only the signed manifest and selected, supported payloads;
+`UpdateManifestOnly` refreshes metadata but publishes only the signed manifest.
+Deployment-manifest orchestration and CLI options are separate rollout steps.
+
 1. Read the file using `ManifestReader.ReadManifest(...)`. If reading fails or the returned manifest is not an `ApplicationManifest`, fail the operation without signing the file.
 1. Ensure `Manifest.ReadOnly` is `false`.
 1. Identify each `AssemblyReference` and `FileReference` that represents a physical file published with the application. Look for its manifest target path relative to the application manifest's directory first; if that path does not exist, look for the same path with one additional `.deploy` suffix and record that suffix as mapping-added. Use these Sign CLI lookup rules directly for source discovery rather than calling `ApplicationManifest.ResolveFiles(...)`, whose lookup semantics do not account for file-extension mapping. A failed exact-path probe is not a diagnostic when the mapped candidate resolves the reference. Fail with a clear error if neither candidate locates a required file.
