@@ -222,7 +222,8 @@ namespace Sign.Core
                             file.File);
                     },
                     out bool ownsOperation);
-            SigningOperationResult result = await resultTask;
+            SigningOperationResult result =
+                await coordinator.WaitAsync(resultTask);
 
             if (!ownsOperation)
             {
@@ -282,7 +283,7 @@ namespace Sign.Core
             for (int i = 0; i < files.Count; ++i)
             {
                 SigningOperationResult result =
-                    await results[i].Result;
+                    await coordinator.WaitAsync(results[i].Result);
 
                 if (!results[i].OwnsOperation)
                 {

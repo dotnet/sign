@@ -9,6 +9,9 @@ namespace Sign.Core
         private readonly
             Dictionary<SigningSourceIdentity, OperationState>
             _operations = new();
+        private readonly
+            Dictionary<Task<SigningOperationResult>, OperationState>
+            _operationsByCompletion = new();
         private readonly object _gate = new();
         private readonly SigningOperationScope? _scope;
         private readonly TemporaryDirectory _snapshotDirectory;
@@ -105,7 +108,7 @@ namespace Sign.Core
                         "its scope.");
             }
 
-            OperationState candidate = new();
+            OperationState candidate = new(this);
             OperationState state;
 
             lock (_gate)
@@ -123,6 +126,7 @@ namespace Sign.Core
                 {
                     state = candidate;
                     _operations.Add(identity, state);
+                    _operationsByCompletion.Add(state.Completion, state);
                 }
             }
 
@@ -135,7 +139,183 @@ namespace Sign.Core
                     CreateSnapshot);
             }
 
-            return state.GetResultAsync();
+            return state.Completion;
+        }
+
+        // Returns only work that another caller already registered. This does
+        // not claim an identity or start an operation.
+        internal bool TryGetResult(
+            SigningSourceIdentity identity,
+            out Task<SigningOperationResult>? resultTask)
+        {
+            ArgumentNullException.ThrowIfNull(identity, nameof(identity));
+
+            lock (_gate)
+            {
+                ThrowIfDisposed();
+
+                if (_operations.TryGetValue(
+                    identity,
+                    out OperationState? state))
+                {
+                    resultTask = state.Completion;
+
+                    return true;
+                }
+
+                resultTask = null;
+
+                return false;
+            }
+        }
+
+        // Operation delegates must use this method when awaiting another
+        // coordinated result. Claims alone do not create dependencies.
+        internal Task<SigningOperationResult> WaitAsync(
+            Task<SigningOperationResult> resultTask)
+        {
+            ArgumentNullException.ThrowIfNull(
+                resultTask,
+                nameof(resultTask));
+
+            WaitRegistration? registration = RegisterWait(resultTask);
+
+            return registration is null
+                ? resultTask
+                : AwaitResultAsync(
+                    resultTask,
+                    registration);
+        }
+
+        // The alternative task is a progress milestone owned by the same
+        // operation as resultTask. The dependency lasts until either task
+        // completes.
+        internal Task<Task> WaitAsync(
+            Task<SigningOperationResult> resultTask,
+            Task alternativeTask)
+        {
+            ArgumentNullException.ThrowIfNull(
+                resultTask,
+                nameof(resultTask));
+            ArgumentNullException.ThrowIfNull(
+                alternativeTask,
+                nameof(alternativeTask));
+
+            WaitRegistration? registration =
+                RegisterWait(resultTask, alternativeTask);
+
+            return registration is null
+                ? Task.WhenAny(resultTask, alternativeTask)
+                : AwaitEitherAsync(
+                    resultTask,
+                    alternativeTask,
+                    registration);
+        }
+
+        private WaitRegistration? RegisterWait(
+                Task<SigningOperationResult> resultTask,
+                Task? alternativeTask = null)
+        {
+            OperationState? waitingState =
+                OperationState.ExecutingState;
+
+            if (waitingState is null)
+            {
+                return null;
+            }
+
+            if (!ReferenceEquals(waitingState.Coordinator, this))
+            {
+                throw new InvalidOperationException(
+                    message:
+                        "A signing operation cannot await work from " +
+                        "another coordinator.");
+            }
+
+            lock (_gate)
+            {
+                if (!_operationsByCompletion.TryGetValue(
+                    resultTask,
+                    out OperationState? awaitedState))
+                {
+                    throw new ArgumentException(
+                        message:
+                            "The result task does not belong to this " +
+                            "coordinator.",
+                        paramName: nameof(resultTask));
+                }
+
+                if (resultTask.IsCompleted ||
+                    alternativeTask?.IsCompleted == true)
+                {
+                    return null;
+                }
+
+                if (ReferenceEquals(waitingState, awaitedState))
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "A signing operation cannot await itself.");
+                }
+
+                WaitRegistration registration = new(
+                    waitingState,
+                    awaitedState,
+                    resultTask,
+                    alternativeTask);
+                waitingState.AddWait(registration);
+
+                if (awaitedState.Reaches(waitingState))
+                {
+                    waitingState.RemoveWait(registration);
+
+                    throw new InvalidOperationException(
+                        message:
+                            "A signing operation dependency cycle was " +
+                            "detected.");
+                }
+
+                return registration;
+            }
+        }
+
+        private async Task<SigningOperationResult> AwaitResultAsync(
+            Task<SigningOperationResult> resultTask,
+            WaitRegistration registration)
+        {
+            try
+            {
+                return await resultTask.ConfigureAwait(
+                    continueOnCapturedContext: false);
+            }
+            finally
+            {
+                lock (_gate)
+                {
+                    registration.Waiting.RemoveWait(registration);
+                }
+            }
+        }
+
+        private async Task<Task> AwaitEitherAsync(
+            Task<SigningOperationResult> resultTask,
+            Task alternativeTask,
+            WaitRegistration registration)
+        {
+            try
+            {
+                return await Task.WhenAny(
+                        resultTask,
+                        alternativeTask)
+                    .ConfigureAwait(continueOnCapturedContext: false);
+            }
+            finally
+            {
+                lock (_gate)
+                {
+                    registration.Waiting.RemoveWait(registration);
+                }
+            }
         }
 
         public ValueTask DisposeAsync()
@@ -316,6 +496,32 @@ namespace Sign.Core
             }
         }
 
+        private sealed class WaitRegistration
+        {
+            private readonly Task _resultTask;
+            private readonly Task? _alternativeTask;
+
+            internal WaitRegistration(
+                OperationState waiting,
+                OperationState awaited,
+                Task resultTask,
+                Task? alternativeTask)
+            {
+                Waiting = waiting;
+                Awaited = awaited;
+                _resultTask = resultTask;
+                _alternativeTask = alternativeTask;
+            }
+
+            internal OperationState Waiting { get; }
+
+            internal OperationState Awaited { get; }
+
+            internal bool IsCompleted =>
+                _resultTask.IsCompleted ||
+                _alternativeTask?.IsCompleted == true;
+        }
+
         private sealed class OperationState
         {
             private static readonly AsyncLocal<OperationState?>
@@ -323,28 +529,67 @@ namespace Sign.Core
             private readonly
                 TaskCompletionSource<SigningOperationResult> _completion =
                     new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly List<WaitRegistration> _waits = new();
+
+            internal OperationState(SigningOperationCoordinator coordinator)
+            {
+                Coordinator = coordinator;
+            }
 
             internal Task<SigningOperationResult> Completion =>
                 _completion.Task;
 
-            internal Task<SigningOperationResult> GetResultAsync()
+            internal SigningOperationCoordinator Coordinator { get; }
+
+            internal static OperationState? ExecutingState =>
+                s_executingState.Value;
+
+            internal void AddWait(WaitRegistration registration)
             {
-                if (Completion.IsCompleted)
+                _waits.Add(registration);
+            }
+
+            internal void RemoveWait(WaitRegistration registration)
+            {
+                _waits.Remove(registration);
+            }
+
+            internal bool Reaches(OperationState target)
+            {
+                HashSet<OperationState> visited = new();
+                Stack<OperationState> pending = new();
+                pending.Push(this);
+
+                while (pending.Count > 0)
                 {
-                    return Completion;
+                    OperationState state = pending.Pop();
+
+                    if (!visited.Add(state))
+                    {
+                        continue;
+                    }
+
+                    if (ReferenceEquals(state, target))
+                    {
+                        return true;
+                    }
+
+                    for (int i = state._waits.Count - 1; i >= 0; i--)
+                    {
+                        WaitRegistration registration = state._waits[i];
+
+                        if (registration.IsCompleted)
+                        {
+                            state._waits.RemoveAt(i);
+                        }
+                        else
+                        {
+                            pending.Push(registration.Awaited);
+                        }
+                    }
                 }
 
-                // This marker flows into child tasks. Until completion, any
-                // same-identity claim from the owner's context is rejected as
-                // self-await; delegates must not leave such work unawaited.
-                // Planning must prevent cycles between distinct operations.
-                if (ReferenceEquals(s_executingState.Value, this))
-                {
-                    throw new InvalidOperationException(
-                        message: "A signing operation cannot await itself.");
-                }
-
-                return Completion;
+                return false;
             }
 
             internal void Start(

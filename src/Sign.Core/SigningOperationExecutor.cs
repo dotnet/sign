@@ -59,9 +59,10 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             SigningOperationResult result =
-                await _coordinator.ExecuteArtifactAsync(
-                    plan.Source.SourceIdentity,
-                    () => ExecuteOwnerAsync(plan, options));
+                await _coordinator.WaitAsync(
+                    _coordinator.ExecuteArtifactAsync(
+                        plan.Source.SourceIdentity,
+                        () => ExecuteOwnerAsync(plan, options)));
 
             result.Materialize(plan.Output);
         }

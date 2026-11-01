@@ -350,7 +350,7 @@ namespace Sign.Core
                                             }
                                         });
                                 Task firstCompletion =
-                                    await Task.WhenAny(
+                                    await coordinator.WaitAsync(
                                         resultTask,
                                         signed.Task);
 
@@ -359,7 +359,8 @@ namespace Sign.Core
                                     resultTask))
                                 {
                                     completedDiscoveredResults.Add(
-                                        (await resultTask,
+                                        (await coordinator.WaitAsync(
+                                                resultTask),
                                             deploymentManifestFile.File));
                                 }
                                 else
@@ -399,7 +400,7 @@ namespace Sign.Core
                             Task<SigningOperationResult> resultTask
                             in pendingDiscoveredResults)
                         {
-                            await resultTask;
+                            await coordinator!.WaitAsync(resultTask);
                         }
                     }
                     catch (Exception exception)
@@ -476,7 +477,8 @@ namespace Sign.Core
                                 file.File);
                     },
                     out bool ownsOperation);
-            SigningOperationResult result = await resultTask;
+            SigningOperationResult result =
+                await coordinator.WaitAsync(resultTask);
 
             if (!ownsOperation)
             {
