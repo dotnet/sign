@@ -141,7 +141,9 @@ namespace Sign.Core.Test
             AggregatingSigner aggregatingSigner = CreateSigner();
 
             ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => aggregatingSigner.SignAsync(files: null!, _options));
+                () => aggregatingSigner.SignAsync(
+                    files: (IEnumerable<FileInfo>)null!,
+                    _options));
 
             Assert.Equal("files", exception.ParamName);
         }

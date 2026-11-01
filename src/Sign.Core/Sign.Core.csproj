@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AzureSign.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
     <!-- Redistribute the manifest utilities with Sign CLI instead of requiring an installed MSBuild instance. -->
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" />

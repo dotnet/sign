@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using AzureSign.Core;
-using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
@@ -114,54 +113,68 @@ namespace Sign.Core
             }
             else
             {
-                timestampConfiguration = new(options.TimestampService.AbsoluteUri, options.TimestampHashAlgorithm, TimeStampType.RFC3161);
+                timestampConfiguration = new(options.TimestampService.AbsoluteUri, options.TimestampHashAlgorithm);
             }
 
             using (X509Certificate2 certificate = await _certificateProvider.GetCertificateAsync())
             using (RSA rsa = await _signatureAlgorithmProvider.GetRsaAsync())
-            using (AuthenticodeKeyVaultSigner signer = new(
-                rsa,
-                certificate,
-                options.FileHashAlgorithm,
-                timestampConfiguration))
             {
-                // Partition files: STA-required files (.js, .vbs) are signed sequentially
-                // to avoid blocking ThreadPool threads (each STA call uses thread.Join()).
-                // Non-STA files are signed in parallel as before.
-                List<FileInfo> staFiles = new();
-                List<FileInfo> nonStaFiles = new();
+                X509Certificate2Collection additionalCertificates = await _certificateProvider.GetAdditionalCertificatesAsync();
 
-                foreach (FileInfo file in files)
+                try
                 {
-                    if (StaThreadExtensions.Contains(file.Extension))
+                    using AuthenticodeKeyVaultSigner signer = new(
+                        rsa,
+                        certificate,
+                        options.FileHashAlgorithm,
+                        timestampConfiguration,
+                        additionalCertificates);
+
+                    // Partition files: STA-required files (.js, .vbs) are signed sequentially
+                    // to avoid blocking ThreadPool threads (each STA call uses thread.Join()).
+                    // Non-STA files are signed in parallel as before.
+                    List<FileInfo> staFiles = new();
+                    List<FileInfo> nonStaFiles = new();
+
+                    foreach (FileInfo file in files)
                     {
-                        staFiles.Add(file);
+                        if (StaThreadExtensions.Contains(file.Extension))
+                        {
+                            staFiles.Add(file);
+                        }
+                        else
+                        {
+                            nonStaFiles.Add(file);
+                        }
                     }
-                    else
+
+                    foreach (FileInfo file in staFiles)
                     {
-                        nonStaFiles.Add(file);
+                        if (!await SignAsync(signer, file, options))
+                        {
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+                            throw new SigningException(message);
+                        }
+                    }
+
+                    await Parallel.ForEachAsync(nonStaFiles, async (file, state) =>
+                    {
+                        if (!await SignAsync(signer, file, options))
+                        {
+                            string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
+
+                            throw new SigningException(message);
+                        }
+                    });
+                }
+                finally
+                {
+                    foreach (X509Certificate2 additionalCertificate in additionalCertificates)
+                    {
+                        additionalCertificate.Dispose();
                     }
                 }
-
-                foreach (FileInfo file in staFiles)
-                {
-                    if (!await SignAsync(signer, file, options))
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
-
-                        throw new SigningException(message);
-                    }
-                }
-
-                await Parallel.ForEachAsync(nonStaFiles, async (file, state) =>
-                {
-                    if (!await SignAsync(signer, file, options))
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, file.FullName);
-
-                        throw new SigningException(message);
-                    }
-                });
             }
         }
 
@@ -248,7 +261,6 @@ namespace Sign.Core
                     file.FullName,
                     options.Description ?? string.Empty,
                     options.DescriptionUrl?.AbsoluteUri ?? string.Empty,
-                    pageHashing: null,
                     _logger);
             }
         }

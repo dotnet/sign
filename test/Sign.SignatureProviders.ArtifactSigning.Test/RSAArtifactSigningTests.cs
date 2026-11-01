@@ -2,16 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.Security.Cryptography;
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
 using NSubstitute;
 using Sign.SignatureProviders.ArtifactSigning;
+using System.Security.Cryptography;
 
 namespace Sign.SignatureProviders.KeyVault.Test
 {
-    public class RSATrustedSigningTests
+    public class RSAArtifactSigningTests
     {
         private static readonly string AccountName = "testAccount";
         private static readonly string CertificateProfileName = "testProfile";
@@ -160,6 +160,8 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 .StartSign(AccountName, CertificateProfileName, Arg.Any<SignRequest>(), null, null, null, default)
                 .Returns(operation);
 
+            _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithmName, padding).Returns(true);
+
             var result = rsa.SignHash(hash, hashAlgorithmName, padding);
 
             Assert.Same(signature, result);
@@ -172,6 +174,34 @@ namespace Sign.SignatureProviders.KeyVault.Test
                 null,
                 null,
                 default);
+        }
+
+        [Fact]
+        public void SignHash_WhenSignatureVerificationFails_Throws()
+        {
+            using RSAArtifactSigning rsa = new(_client, AccountName, CertificateProfileName, _rsaPublicKey);
+
+            byte[] hash = new byte[32];
+            byte[] signature = [1, 2, 3];
+            HashAlgorithmName hashAlgorithmName = HashAlgorithmName.SHA256;
+            RSASignaturePadding padding = RSASignaturePadding.Pkcs1;
+            Response<SignStatus> response = Response.FromValue(
+                new SignStatus(Guid.NewGuid(), Status.Succeeded, signature, []),
+                Substitute.For<Response>());
+            CertificateProfileSignOperation operation = Substitute.For<CertificateProfileSignOperation>();
+
+            operation.WaitForCompletion(default).Returns(response);
+
+            _client
+                .StartSign(AccountName, CertificateProfileName, Arg.Any<SignRequest>(), null, null, null, default)
+                .Returns(operation);
+
+            _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithmName, padding).Returns(false);
+
+            Assert.Throws<CryptographicException>(
+                () => rsa.SignHash(hash, hashAlgorithmName, padding));
+
+            _rsaPublicKey.Received(1).VerifyHash(hash, signature, hashAlgorithmName, padding);
         }
 
         [Fact]

@@ -19,5 +19,14 @@ namespace Sign.Core.Test
 
             return Task.CompletedTask;
         }
+
+        public Task SignAsync(
+            IEnumerable<SigningFile> files,
+            SignOptions options)
+        {
+            FilesSubmittedForSigning.AddRange(files.Select(file => file.File));
+
+            return Task.CompletedTask;
+        }
     }
 }
