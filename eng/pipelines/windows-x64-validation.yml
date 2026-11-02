@@ -1,0 +1,19 @@
+steps:
+- powershell: |
+    & "$(Build.SourcesDirectory)\eng\validation\ValidateWindowsArchitecture.ps1" `
+      -ExpectedArchitecture X64 -ValidationMode Product -Configuration $(_BuildConfig) `
+      -SourceRevisionId $(Build.SourceVersion) `
+      -PackageDirectory "$(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping" `
+      -PackagedToolOnly
+  displayName: Validate installed AMD64 tool package
+
+- task: PublishTestResults@2
+  displayName: Publish AMD64 packaged-tool test results
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '$(Build.SourcesDirectory)/artifacts/architecture-validation/**/TestResults/*.trx'
+    mergeTestResults: true
+    testRunTitle: sign packaged tool - AMD64
+    failTaskOnFailedTests: true
+    failTaskOnMissingResultsFile: true
+  condition: succeededOrFailed()

@@ -24,6 +24,7 @@ stages:
       enableMicrobuild: true
       jobs:
       - job: Windows
+        timeoutInMinutes: 120
         pool: # See https://helix.dot.net/ for VM names.
           name: NetCore-Public
           demands: ImageOverride -equals windows.vs2022.amd64.open
@@ -41,6 +42,8 @@ stages:
           name: Build
           displayName: Build and run tests
           condition: succeeded()
+        - template: /eng/pipelines/windows-x64-validation.yml
+        - template: /eng/pipelines/windows-arm64-validation.yml
         - task: PublishTestResults@2
           displayName: 'Publish test results'
           inputs:
