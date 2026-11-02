@@ -37,3 +37,28 @@ The following is supported:
 |`!bin/**`               | Exclude everything under `bin` directory   | excludes `bin/Debug/app.exe` |
 |`foo/\{bar\}.txt`       | Matches the literal file `foo/{bar}.txt`   | `foo/{bar}.txt`              |
 |`!**/obj/**`            | Exclude all files in any `obj` directory   | excludes `foo/obj/out.log`   |
+
+## ClickOnce version 2
+
+Input matching and implicit ClickOnce traversal are separate. With `--clickonce-signing-version 2`, passing a deployment manifest follows only its referenced application manifest and payloads. A broad input such as `"**/*"` can independently match files in other version directories; version 2 does not automatically exclude those inputs.
+
+Use `--file-list` (`-fl`) to select or exclude signing work. Without a file list, supported referenced payloads and applicable adjacent executables are selected for signing even when the only positional input is a deployment manifest. With a file list, ClickOnce payload and adjacent-executable filtering uses their physical published filenames (including a mapping-added `.deploy` suffix). All required referenced payloads must still be available for metadata refresh, even if excluded from signing.
+
+For example, to sign only the deployment-selected version while leaving one mapped third-party payload unsigned, place this file list at `C:\Signing\publish\current-version.txt`:
+
+```text
+**/*
+!**/ThirdParty.dll.deploy
+```
+
+After setting `$certificateFingerprint` as described in the [ClickOnce signing guide](clickonce-signing.md), specify only the deployment manifest:
+
+```powershell
+sign code certificate-store -cfp $certificateFingerprint -t http://timestamp.acs.microsoft.com --clickonce-signing-version 2 -b C:\Signing\publish -fl current-version.txt App.application
+```
+
+Manifest traversal follows only the deployment-selected version, and the file list leaves `ThirdParty.dll.deploy` unsigned while keeping it available for metadata refresh. Do not add a broad positional glob such as `"**/*"` when trying to protect old versions or excluded payloads: positional matches are independent ordinary inputs and can still be signed. Enumerate any additional ordinary inputs that should be signed.
+
+`--no-sign-clickonce-deps` and `--no-update-clickonce-manifest` require version 2 and limit implicit ClickOnce work, not normal user-matched inputs. A payload independently matched by a glob can still be signed through its ordinary signing path. To re-sign only manifests, specify just those manifests, rather than a broad glob.
+
+See the [ClickOnce signing guide](clickonce-signing.md) for complete signing and multi-version examples.
