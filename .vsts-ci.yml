@@ -110,12 +110,21 @@ extends:
             # https://github.com/Microsoft/binskim
             # YAML reference: https://eng.ms/docs/security-compliance-identity-and-management-scim/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/sdl-azdo-extension/binskim-build-task#v4
             - task: BinSkim@4
-              displayName: Run BinSkim
+              displayName: Run BinSkim (.NET 8)
               inputs:
                 InputType: Basic
                 Function: analyze
                 TargetPattern: binskimPattern
-                AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net*\publish\*.dll
+                AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net8.0\publish\*.dll
+                AnalyzeSymPath: 'SRV*https://symweb'
+              condition: succeededOrFailed()
+            - task: BinSkim@4
+              displayName: Run BinSkim (.NET 10)
+              inputs:
+                InputType: Basic
+                Function: analyze
+                TargetPattern: binskimPattern
+                AnalyzeTargetBinskim: $(Build.SourcesDirectory)\artifacts\bin\Sign.Cli\$(_BuildConfig)\net10.0\publish\*.dll
                 AnalyzeSymPath: 'SRV*https://symweb'
               condition: succeededOrFailed()
             - task: PublishTestResults@2
