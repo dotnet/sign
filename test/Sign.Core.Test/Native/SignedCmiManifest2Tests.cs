@@ -29,7 +29,7 @@ namespace Sign.Core.Test
         public void Sign_Never_GeneratesSha1MessageImprint()
         {
             using (X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate())
-            using (X509Certificate2 publicKeyCertificate = new(certificate.Export(X509ContentType.Cert)))
+            using (X509Certificate2 publicKeyCertificate = X509Certificate2.CreateFromPem(certificate.ExportCertificatePem()))
             using (RSA privateKey = certificate.GetRSAPrivateKey()!)
             {
                 XmlDocument manifest = new() { PreserveWhitespace = true };

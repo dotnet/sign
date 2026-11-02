@@ -111,7 +111,11 @@ namespace Sign.SignatureProviders.KeyVault
                     }
 
                     KeyVaultKeyIdentifier keyIdentifier = GetKeyIdentifier(certificate);
+#if NET9_0_OR_GREATER
+                    X509Certificate2 x509Certificate = X509CertificateLoader.LoadCertificate(certificate.Cer);
+#else
                     X509Certificate2 x509Certificate = new(certificate.Cer);
+#endif
 
                     _logger.LogTrace(Resources.FetchedCertificate, stopwatch.Elapsed.TotalMilliseconds);
                     _logger.LogTrace($"{Resources.CertificateDetails}{Environment.NewLine}{x509Certificate.ToString(verbose: true)}");
