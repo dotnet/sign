@@ -237,6 +237,50 @@ Apply the application-manifest flows below only to files identified as ClickOnce
 
 #### Deployment-manifest input
 
+The internal `ClickOnceDeploymentManifestSigner` is dormant and is not a
+registered signing format. Its application payload handler routes selected
+ClickOnce children from their original sources, never from a parent's private
+staging directory or through legacy deployment-directory discovery. Ordinary
+selected formats retain normal aggregation. Child primaries feed the validated
+hash destinations; only explicitly tracked child results join final publication
+after containment and reserved-path checks. Shared direct outputs can omit a
+redundant companion only when original source, selected route, destination,
+mapping role and completed coordinated result agree.
+
+Batch composition retains deployment-selected original application contexts
+before registering owners. Compatible contexts share an owner; conflicting
+source, destination or mapping provenance fails before signing or copying.
+Standalone application selections are provisional during this preflight.
+Original-source candidate reads are cached; routes retain their selecting
+application and context generation. A later authoritative deployment context
+removes superseded routes, but independently explicit or multiply supported
+children remain required. Only surviving contexts contribute validation failures
+and provenance conflicts. Candidate reads are not signing or publication, and
+may include a subsequently discarded route. Preflight visitation does not
+replace execution-time cycle detection.
+Context replacements wait for the current candidate frontier to settle. If
+competing replacements would remove one another's supporting deployment routes,
+preflight rejects the ambiguous application contexts before registering owners.
+An independent explicit or compatible shared authority prevents that ambiguity;
+ordinary manifest dependency cycles remain execution-time coordinator failures.
+An explicit application already published at the same destination by a
+deployment or another application root does not separately publish its nominal
+standalone payload layout. This requires the same original source and completed
+result, not just a matching destination; distinct explicit destinations remain.
+
+The optional invocation scheduler bounds runnable owners, preflight and
+publication work. Explicit manifest prerequisites are registered before graph
+work starts. Single, aggregate-all and owned-milestone ready-owner waits register their
+complete dependency set before releasing capacity and reacquire before work
+resumes. Existing unscoped coordinator waits are unchanged. Permits cover
+signing delegates, result snapshots and artifact cleanup; all owners finish
+before selected outputs publish serially. This avoids queued-prerequisite
+deadlocks without exempting manifest work from `maxConcurrency`. Updating
+in-place deployment outputs reuse the application flow's spelling-only
+destination binding. Neither dependency-skipping mode imports default-mode
+child outputs. CLI exposure and production registration remain a later rollout
+step.
+
 1. Read the file using [`ManifestReader.ReadManifest(...)`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.manifestreader.readmanifest?view=msbuild-17-netcore#microsoft-build-tasks-deployment-manifestutilities-manifestreader-readmanifest(system-io-stream-system-boolean)). If reading fails or the returned [`Manifest`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.manifest?view=msbuild-17-netcore) is not a [`DeployManifest`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.deploymanifest?view=msbuild-17-netcore), fail the operation without signing the file.
 1. Before resolving files, require exactly one assembly dependency and no file references. The sole assembly dependency must be [`DeployManifest.EntryPoint`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.deploymanifest.entrypoint?view=msbuild-17-netcore), must represent the application manifest, and must not be a prerequisite, optional, or resource-fallback dependency. Inspect the preserved manifest XML for resource-fallback attributes because `ManifestUtilities` does not expose or preserve them in its object model. Fail with a clear error and suggest `--clickonce-signing-version 2 --no-update-clickonce-manifest` if the reference structure does not satisfy these ClickOnce runtime requirements. This fail-fast validation also prevents `ManifestUtilities` or `mage.exe` from reordering or rewriting unsupported references before signing.
 1. Ensure [`Manifest.ReadOnly`](https://learn.microsoft.com/dotnet/api/microsoft.build.tasks.deployment.manifestutilities.manifest.readonly?view=msbuild-17-netcore) is `false` so the deployment manifest can be updated.

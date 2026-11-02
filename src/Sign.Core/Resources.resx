@@ -187,6 +187,14 @@
     <value>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</value>
     <comment>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</comment>
   </data>
+  <data name="ClickOnceDeploymentManifestAmbiguousApplicationContexts" xml:space="preserve">
+    <value>The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</value>
+    <comment>{0} is the sorted list of original application manifest paths with mutually invalidating context selections.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestConflictingApplicationContexts" xml:space="preserve">
+    <value>The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</value>
+    <comment>{0} is the original application manifest path; {1} is the sorted list of original deployment manifest paths.</comment>
+  </data>
   <data name="ClickOnceDeploymentManifestMissingEntryPoint" xml:space="preserve">
     <value>Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</value>
     <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</comment>

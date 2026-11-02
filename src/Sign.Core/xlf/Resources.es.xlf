@@ -87,6 +87,16 @@
         <target state="translated">El manifiesto de implementación '{0}' hace referencia al manifiesto de aplicación '{1}', pero el archivo no existe. Para firmar sin actualizar los metadatos del manifiesto de ClickOnce, use "--clickonce-signing-version 2 --no-update-clickonce-manifest".</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestAmbiguousApplicationContexts">
+        <source>The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</source>
+        <target state="new">The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</target>
+        <note>{0} is the sorted list of original application manifest paths with mutually invalidating context selections.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestConflictingApplicationContexts">
+        <source>The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</source>
+        <target state="new">The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</target>
+        <note>{0} is the original application manifest path; {1} is the sorted list of original deployment manifest paths.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
         <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
         <target state="translated">El manifiesto de implementación '{0}' hace referencia a la ruta de acceso de destino del manifiesto de la aplicación '{1}', que no se puede representar debajo del directorio de almacenamiento provisional. Para firmar sin actualizar los metadatos del manifiesto de ClickOnce, use "--clickonce-signing-version 2 --no-update-clickonce-manifest".</target>

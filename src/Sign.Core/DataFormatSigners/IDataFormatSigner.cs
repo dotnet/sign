@@ -11,6 +11,18 @@ namespace Sign.Core
         // Whether the staged file must keep its original file name, e.g. because
         // StageSigningDependencies reproduces the source directory around it.
         bool RequiresOriginalFileName => false;
+        bool RequiresOwnStaging => false;
+        int SigningOrder(FileInfo file) => 0;
+
+        // Manifest-driven signers return only the files they actually signed,
+        // owning their staging layout until the coordinator snapshots it.
+        Task<SigningOperationArtifact> SignOwnerArtifactAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            throw new NotSupportedException();
+        }
         bool CanSign(FileInfo file);
         Task SignAsync(IEnumerable<FileInfo> files, SignOptions options);
 
