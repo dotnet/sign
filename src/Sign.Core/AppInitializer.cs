@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Runtime.InteropServices;
+
 namespace Sign.Core
 {
     internal static class AppInitializer
@@ -11,7 +13,8 @@ namespace Sign.Core
             AppRootDirectoryLocator locator = new();
             DirectoryInfo appRootDirectory = locator.Directory;
 
-            string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", "x64");
+            Architecture architecture = RuntimeInformation.ProcessArchitecture;
+            string baseDirectory = Path.Combine(appRootDirectory.FullName, "tools", "SDK", WindowsArchitecture.GetSdkDirectoryName(architecture));
 
             //
             // Ensure we invoke wintrust!DllMain before we get too far.
@@ -26,7 +29,7 @@ namespace Sign.Core
 
             // This is here because we need to P/Invoke into clr.dll for _AxlPublicKeyBlobToPublicKeyToken.
             string windir = Environment.GetEnvironmentVariable("windir")!;
-            string netfxDir = Path.Combine(windir, "Microsoft.NET", "Framework64", "v4.0.30319");
+            string netfxDir = Path.Combine(windir, "Microsoft.NET", WindowsArchitecture.GetFrameworkDirectoryName(architecture), "v4.0.30319");
 
             AddEnvironmentPath(netfxDir);
         }

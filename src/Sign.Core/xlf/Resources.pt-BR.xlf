@@ -167,6 +167,11 @@
         <target state="translated">O diretório {path} ainda existe.</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
+      <trans-unit id="DynamicsBusinessCentralArm64NotSupported">
+        <source>Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</source>
+        <target state="new">Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</target>
+        <note>{Locked="NavSip.dll"} is a file name. {Locked=".app"} is a file extension.</note>
+      </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
         <target state="translated">Editando o trabalho do AppInstaller com {count} arquivos.</target>

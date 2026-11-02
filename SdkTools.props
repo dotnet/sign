@@ -10,27 +10,35 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\appxsip.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\appxpackaging.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\opcservices.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Signing.mssign32.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\Microsoft.Windows.Build.Signing.wintrust.dll.manifest" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\makeappx.exe" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\makepri.exe" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\mssign32.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini" />
-    <SdkFile64 Include="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\SignTool.exe.manifest" />
-    <SdkFile64 Include="$(PkgMicrosoft_Dynamics_BusinessCentral_Sip_Main)\x64\NavSip.dll" />
+    <SdkArchitecture Include="x64;arm64">
+      <Architecture>%(Identity)</Architecture>
+    </SdkArchitecture>
+
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\appxsip.dll')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\appxpackaging.dll')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\opcservices.dll')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\Microsoft.Windows.Build.Appx.AppxSip.dll.manifest')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\Microsoft.Windows.Build.Appx.OpcServices.dll.manifest')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\Microsoft.Windows.Build.Signing.mssign32.dll.manifest')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\Microsoft.Windows.Build.Signing.wintrust.dll.manifest')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\makeappx.exe')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\makepri.exe')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\mssign32.dll')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\wintrust.dll')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\wintrust.dll.ini')" />
+    <SdkFile Include="@(SdkArchitecture->'$(WindowsSDKBuildToolsBinVersionedFolder)\%(Identity)\SignTool.exe.manifest')" />
+
+    <!-- The Business Central SIP is only available for x64. -->
+    <SdkFile Include="$(PkgMicrosoft_Dynamics_BusinessCentral_Sip_Main)\x64\NavSip.dll">
+      <Architecture>x64</Architecture>
+    </SdkFile>
 
     <SdkFile86 Include="$(NetSdkBinDir)\mage.exe" />
   </ItemGroup>
 
   <Target Name="CopySdkFiles" AfterTargets="Build">
-    <Copy SourceFiles="@(SdkFile64)" DestinationFolder="$(OutputPath)\tools\SDK\x64" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(SdkFile)" DestinationFolder="$(OutputPath)\tools\SDK\%(SdkFile.Architecture)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="@(SdkFile86)" DestinationFolder="$(OutputPath)\tools\SDK\x86" SkipUnchangedFiles="true" />
   </Target>
 
@@ -44,9 +52,9 @@
   </Target>
 
   <ItemGroup>
-    <Content Include="@(SdkFile64)" Exclude="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini">
+    <Content Include="@(SdkFile)" Exclude="$(WindowsSDKBuildToolsBinVersionedFolder)\x64\wintrust.dll.ini">
       <Pack>true</Pack>
-      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\x64</PackagePath>
+      <PackagePath>tools\$(TargetFramework)\any\tools\SDK\%(Architecture)</PackagePath>
       <Visible>false</Visible>
     </Content>
     <Content Include="$(OutputPath)\tools\SDK\x64\wintrust.dll.ini">

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using Sign.Core;
 
 namespace Sign.Cli
@@ -12,7 +13,7 @@ namespace Sign.Cli
         {
             using (new TemporaryConsoleEncoding())
             {
-                if (!Environment.Is64BitProcess)
+                if (!OperatingSystem.IsWindows() || RuntimeInformation.ProcessArchitecture is not (Architecture.X64 or Architecture.Arm64))
                 {
                     Console.Error.WriteLine(Resources.x86NotSupported);
 
@@ -26,7 +27,7 @@ namespace Sign.Cli
                 // NavSip.dll has a dependency on this.
                 string vcRuntime140FilePath = Path.Combine(systemDirectoryPath, "vcruntime140.dll");
 
-                if (!File.Exists(vcRuntime140FilePath))
+                if (RuntimeInformation.ProcessArchitecture == Architecture.X64 && !File.Exists(vcRuntime140FilePath))
                 {
                     WriteWarning(Resources.MsvcrtNotDetected);
                 }
