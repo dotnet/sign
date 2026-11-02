@@ -101,16 +101,17 @@ try
             }
         }
 
-        $env:DOTNET_ROOT = Join-Path $repoRoot '.dotnet'
-        Set-Item -Path "env:DOTNET_ROOT_$($ExpectedArchitecture.ToUpperInvariant())" -Value $env:DOTNET_ROOT
-        $env:DOTNET_HOST_PATH = Join-Path $env:DOTNET_ROOT 'dotnet.exe'
-        $env:PATH = "$($env:DOTNET_ROOT);$($env:PATH)"
-        $env:DOTNET_MULTILEVEL_LOOKUP = '0'
-        $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
         $env:NUGET_PACKAGES = Join-Path $validationRoot 'packages'
-        $dotnet = $env:DOTNET_HOST_PATH
-        Invoke-Checked $dotnet @('--info')
+        $dotnet = Join-Path $repoRoot '.dotnet\dotnet.exe'
     }
+
+    $env:DOTNET_ROOT = Split-Path -Parent $dotnet
+    Set-Item -Path "env:DOTNET_ROOT_$($ExpectedArchitecture.ToUpperInvariant())" -Value $env:DOTNET_ROOT
+    $env:DOTNET_HOST_PATH = $dotnet
+    $env:PATH = "$($env:DOTNET_ROOT);$($env:PATH)"
+    $env:DOTNET_MULTILEVEL_LOOKUP = '0'
+    $env:DOTNET_CLI_TELEMETRY_OPTOUT = '1'
+    Invoke-Checked $dotnet @('--info')
 
     if ($ValidationMode -eq 'Infrastructure')
     {
