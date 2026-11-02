@@ -32,6 +32,11 @@
         <target state="translated">{fileName} hat die Ausgabe {output} zurückgegeben</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestChangedAfterClassification">
+        <source>ClickOnce application manifest '{0}' changed or became unreadable after classification. Signing cannot continue.</source>
+        <target state="new">ClickOnce application manifest '{0}' changed or became unreadable after classification. Signing cannot continue.</target>
+        <note>{NumberedPlaceholder="{0}"} is an input manifest file path.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestInvalidTargetPath">
         <source>Application manifest '{0}' contains invalid target path '{1}'.</source>
         <target state="translated">Das Anwendungsmanifest „{0}“ enthält den ungültigen Zielpfad „{1}“.</target>

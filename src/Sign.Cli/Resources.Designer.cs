@@ -61,6 +61,60 @@ namespace Sign.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ClickOnce signing algorithm. Allowed values are '1' (legacy) and '2' (manifest-driven). Defaults to 1. Other signing formats are unchanged..
+        /// </summary>
+        internal static string ClickOnceSigningVersionOptionDescription {
+            get {
+                return ResourceManager.GetString("ClickOnceSigningVersionOptionDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Update and sign only specified ClickOnce manifests, without signing dependent manifests or payloads. Requires --clickonce-signing-version 2. Cannot be combined with --no-update-clickonce-manifest..
+        /// </summary>
+        internal static string NoSignClickOnceDependenciesOptionDescription {
+            get {
+                return ResourceManager.GetString("NoSignClickOnceDependenciesOptionDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Sign specified ClickOnce manifests without resolving dependencies or updating file information. Requires --clickonce-signing-version 2. Cannot be combined with --no-sign-clickonce-deps..
+        /// </summary>
+        internal static string NoUpdateClickOnceManifestOptionDescription {
+            get {
+                return ResourceManager.GetString("NoUpdateClickOnceManifestOptionDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for --clickonce-signing-version. The value must be '1' or '2'..
+        /// </summary>
+        internal static string InvalidClickOnceSigningVersion {
+            get {
+                return ResourceManager.GetString("InvalidClickOnceSigningVersion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options require --clickonce-signing-version 2..
+        /// </summary>
+        internal static string ClickOnceDependencyOptionsRequireVersion2 {
+            get {
+                return ResourceManager.GetString("ClickOnceDependencyOptionsRequireVersion2", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options cannot be combined..
+        /// </summary>
+        internal static string ClickOnceDependencyOptionsCannotBeCombined {
+            get {
+                return ResourceManager.GetString("ClickOnceDependencyOptionsCannotBeCombined", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Application name (ClickOnce)..
         /// </summary>
         internal static string ApplicationNameOptionDescription {

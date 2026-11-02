@@ -17,6 +17,21 @@
         <target state="translated">Используйте хранилище сертификатов Windows или локальный файл сертификата.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ClickOnceDependencyOptionsCannotBeCombined">
+        <source>The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options cannot be combined.</source>
+        <target state="new">The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options cannot be combined.</target>
+        <note>{Locked="--no-sign-clickonce-deps", "--no-update-clickonce-manifest"} are option names.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDependencyOptionsRequireVersion2">
+        <source>The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options require --clickonce-signing-version 2.</source>
+        <target state="new">The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options require --clickonce-signing-version 2.</target>
+        <note>{Locked="--no-sign-clickonce-deps", "--no-update-clickonce-manifest", "--clickonce-signing-version", "2"} are option names and an option value.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceSigningVersionOptionDescription">
+        <source>ClickOnce signing algorithm. Allowed values are '1' (legacy) and '2' (manifest-driven). Defaults to 1. Other signing formats are unchanged.</source>
+        <target state="new">ClickOnce signing algorithm. Allowed values are '1' (legacy) and '2' (manifest-driven). Defaults to 1. Other signing formats are unchanged.</target>
+        <note>{Locked="ClickOnce", "1", "2"} are a technology name and option values.</note>
+      </trans-unit>
       <trans-unit id="ClientIdOptionDescription">
         <source>Client ID to authenticate to Azure.</source>
         <target state="translated">ИД клиента для проверки подлинности в Azure.</target>
@@ -76,6 +91,11 @@
         <source>Invalid value for {0}. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).</source>
         <target state="translated">Недопустимое значение для {0}. Значение должно быть отпечатком сертификата SHA-256, SHA-384 или SHA-512 (в шестнадцатеричном формате).</target>
         <note>{NumberedPlaceholder="{0}"} is the option name (e.g.:  --certificate-fingerprint).  {Locked="SHA-256", "SHA-384", "SHA-512"} are cryptographic hash algorithms.</note>
+      </trans-unit>
+      <trans-unit id="InvalidClickOnceSigningVersion">
+        <source>Invalid value for --clickonce-signing-version. The value must be '1' or '2'.</source>
+        <target state="new">Invalid value for --clickonce-signing-version. The value must be '1' or '2'.</target>
+        <note>{Locked="--clickonce-signing-version", "1", "2"} are an option name and option values.</note>
       </trans-unit>
       <trans-unit id="InvalidDigestValue">
         <source>Invalid value for {0}. The value must be 'sha256', 'sha384', or 'sha512'.</source>
@@ -141,6 +161,16 @@
         <source>No inputs found to sign.</source>
         <target state="translated">Не найдены входящие данные для подписи.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="NoSignClickOnceDependenciesOptionDescription">
+        <source>Update and sign only specified ClickOnce manifests, without signing dependent manifests or payloads. Requires --clickonce-signing-version 2. Cannot be combined with --no-update-clickonce-manifest.</source>
+        <target state="new">Update and sign only specified ClickOnce manifests, without signing dependent manifests or payloads. Requires --clickonce-signing-version 2. Cannot be combined with --no-update-clickonce-manifest.</target>
+        <note>{Locked="ClickOnce", "--clickonce-signing-version", "2", "--no-update-clickonce-manifest"} are a technology name, option names, and an option value.</note>
+      </trans-unit>
+      <trans-unit id="NoUpdateClickOnceManifestOptionDescription">
+        <source>Sign specified ClickOnce manifests without resolving dependencies or updating file information. Requires --clickonce-signing-version 2. Cannot be combined with --no-sign-clickonce-deps.</source>
+        <target state="new">Sign specified ClickOnce manifests without resolving dependencies or updating file information. Requires --clickonce-signing-version 2. Cannot be combined with --no-sign-clickonce-deps.</target>
+        <note>{Locked="ClickOnce", "--clickonce-signing-version", "2", "--no-sign-clickonce-deps"} are a technology name, option names, and an option value.</note>
       </trans-unit>
       <trans-unit id="OutputOptionDescription">
         <source>Output file or directory. If omitted, input files will be overwritten.</source>

@@ -10,6 +10,36 @@ namespace Sign.Core.Test
 {
     public class ServiceProviderTests
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData(1)]
+        [InlineData(2)]
+        public void CreateDefault_SelectsExactlyOneClickOnceAlgorithm(int? version)
+        {
+            using ServiceProvider provider = ServiceProvider.CreateDefault(addServices: services =>
+            {
+                services.AddSingleton<ISignatureAlgorithmProvider>(Substitute.For<ISignatureAlgorithmProvider>());
+                services.AddSingleton<ICertificateProvider>(Substitute.For<ICertificateProvider>());
+                if (version is not null)
+                {
+                    services.AddSingleton(new ClickOnceSigningConfiguration(version.Value));
+                }
+            });
+            IDataFormatSigner[] signers = provider.GetServices<IDataFormatSigner>().ToArray();
+
+            Assert.Equal(5, signers.Length);
+            IDataFormatSigner clickOnce = Assert.Single(signers,
+                signer => signer is ClickOnceSigner or ClickOnceVersion2Signer);
+            if (version == 2)
+            {
+                Assert.IsType<ClickOnceVersion2Signer>(clickOnce);
+            }
+            else
+            {
+                Assert.IsType<ClickOnceSigner>(clickOnce);
+            }
+        }
+
         [Fact]
         public void Constructor_WhenServiceProviderIsNull_Throws()
         {
