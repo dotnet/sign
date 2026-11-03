@@ -14,7 +14,7 @@
     <SelfContained>false</SelfContained>
     <ToolCommandName>sign</ToolCommandName>
     <!-- Clear RID inherited from Directory.Build.props so dotnet pack produces
-         tools/net8.0/any/ layout for cross-platform tool restore (issue #984). -->
+         tools/<TFM>/any/ layout for cross-platform tool restore (issue #984). -->
     <RuntimeIdentifier />
   </PropertyGroup>
 
@@ -39,7 +39,7 @@
       <ScriptFilePath Condition=" '$(ScriptFilePath)' == '' ">$(RepositoryRootDirectory)\scripts\VerifyNuGetPackage.ps1</ScriptFilePath>
     </PropertyGroup>
 
-    <Exec Command="$(PowerShellFilePath) -NonInteractive -NoProfile -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(ArtifactsShippingPackagesDir)' } &quot;" LogStandardErrorAsError="true" />
+    <Exec Command="$(PowerShellFilePath) -NonInteractive -NoProfile -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(ArtifactsShippingPackagesDir)' '$(TargetFrameworks)' } &quot;" LogStandardErrorAsError="true" />
   </Target>
 
   <ItemGroup>

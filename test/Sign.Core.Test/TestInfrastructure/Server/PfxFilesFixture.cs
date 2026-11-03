@@ -29,7 +29,11 @@ namespace Sign.Core.Test
                 new Tuple<int, HashAlgorithmName>(keySizeInBits, hashAlgorithmName),
                 tuple => CreateSelfIssuedCertificate(tuple.Item1, tuple.Item2));
 
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadPkcs12FromFile(file.FullName, password: null);
+#else
             return new X509Certificate2(file.FullName);
+#endif
         }
 
         public void Dispose()

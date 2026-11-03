@@ -142,6 +142,15 @@ namespace Sign.SignatureProviders.CertificateStore {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file..
+        /// </summary>
+        internal static string UnsupportedCertificateFileFormat {
+            get {
+                return ResourceManager.GetString("UnsupportedCertificateFileFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The certificate has an unsupported public key algorithm..
         /// </summary>
         internal static string UnsupportedPublicKeyAlgorithm {

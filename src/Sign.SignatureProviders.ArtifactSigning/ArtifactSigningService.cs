@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Sign.Core;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Sign.SignatureProviders.ArtifactSigning
@@ -76,10 +77,11 @@ namespace Sign.SignatureProviders.ArtifactSigning
                     using (response.Value)
                     {
                         byte[] rawData = new byte[response.Value.Length];
-                        response.Value.Read(rawData, 0, rawData.Length);
+                        await response.Value.ReadExactlyAsync(rawData, cancellationToken);
 
-                        X509Certificate2Collection collection = [];
-                        collection.Import(rawData);
+                        SignedCms signedCms = new();
+                        signedCms.Decode(rawData);
+                        X509Certificate2Collection collection = signedCms.Certificates;
 
                         // Find the leaf: the cert whose Subject is not any other cert's Issuer.
                         IEnumerable<string> issuers = collection.Cast<X509Certificate2>().Select(x => x.Issuer);
