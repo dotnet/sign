@@ -101,9 +101,6 @@ namespace Sign.Core
             }
         }
 
-        internal Task<IDisposable> AcquirePublicationLeaseAsync() =>
-            AcquireSchedulingLeaseAsync();
-
         // Results borrow coordinator-owned snapshots. ExecuteAsync is safe to
         // call concurrently with itself and DisposeAsync; new work is rejected
         // after disposal starts. Disposal awaits every published operation

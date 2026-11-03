@@ -759,13 +759,13 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task Scheduling_PublicationLease_IsBoundedIdempotentAndAwaitedByDisposal()
+        public async Task Scheduling_ExternalSchedulingLease_IsBoundedIdempotentAndAwaitedByDisposal()
         {
             using DirectoryServiceStub service = new();
             await using SigningOperationCoordinator coordinator = new(service);
             using IDisposable scheduling = coordinator.UseScheduling(1);
             IDisposable first = await coordinator.AcquireSchedulingLeaseAsync();
-            Task<IDisposable> secondTask = coordinator.AcquirePublicationLeaseAsync();
+            Task<IDisposable> secondTask = coordinator.AcquireSchedulingLeaseAsync();
             Task disposal = coordinator.DisposeAsync().AsTask();
             Assert.False(secondTask.IsCompleted);
             Assert.False(disposal.IsCompleted);
@@ -776,7 +776,7 @@ namespace Sign.Core.Test
             second.Dispose();
             await disposal.WaitAsync(Timeout);
             Assert.Throws<ObjectDisposedException>(
-                () => { _ = coordinator.AcquirePublicationLeaseAsync(); });
+                () => { _ = coordinator.AcquireSchedulingLeaseAsync(); });
         }
 
         [Fact]
