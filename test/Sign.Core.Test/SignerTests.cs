@@ -267,24 +267,7 @@ namespace Sign.Core.Test
 
             byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                files,
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(files, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -317,24 +300,7 @@ namespace Sign.Core.Test
             byte[] file1HashBefore = SHA256.HashData(File.ReadAllBytes(file1.FullName));
             byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                files,
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(files, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -362,24 +328,7 @@ namespace Sign.Core.Test
 
             byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                files,
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(files, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -399,24 +348,7 @@ namespace Sign.Core.Test
             FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
             File.WriteAllText(fileList.FullName, "**/*.dll");
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                new[] { file },
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(new[] { file }, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -445,24 +377,7 @@ namespace Sign.Core.Test
 
             byte[] file2HashBefore = SHA256.HashData(File.ReadAllBytes(file2.FullName));
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                files,
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(files, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -487,24 +402,7 @@ namespace Sign.Core.Test
 
             byte[] scriptHashBefore = SHA256.HashData(File.ReadAllBytes(script.FullName));
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                new[] { container, script },
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(new[] { container, script }, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -530,24 +428,7 @@ namespace Sign.Core.Test
             string upperCaseBase = _temporaryDirectory.Directory.FullName.ToUpperInvariant();
             FileInfo upperCaseInput = new(Path.Combine(upperCaseBase, file.Name));
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                new[] { upperCaseInput },
-                outputFile: string.Empty,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(new[] { upperCaseInput }, fileList, _temporaryDirectory.Directory);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -672,24 +553,7 @@ namespace Sign.Core.Test
             FileInfo fileList = new(Path.Combine(_temporaryDirectory.Directory.FullName, "filelist.txt"));
             File.WriteAllText(fileList.FullName, "sub/*.dll");
 
-            ServiceProvider serviceProvider = Create();
-            TestLogger<ISigner> logger = new();
-            Signer signer = new(serviceProvider, logger);
-
-            int exitCode = await signer.SignAsync(
-                files,
-                outputFile: outputDirectoryName,
-                fileList: fileList,
-                recurseContainers: true,
-                _temporaryDirectory.Directory,
-                applicationName: "a",
-                publisherName: null,
-                description: "b",
-                new Uri("https://description.test"),
-                _certificatesFixture.TimestampServiceUrl,
-                maxConcurrency: 4,
-                HashAlgorithmName.SHA256,
-                HashAlgorithmName.SHA256);
+            int exitCode = await SignWithFileListAsync(files, fileList, _temporaryDirectory.Directory, outputFile: outputDirectoryName);
 
             Assert.Equal(ExitCode.Success, exitCode);
 
@@ -729,24 +593,7 @@ namespace Sign.Core.Test
 
             try
             {
-                ServiceProvider serviceProvider = Create();
-                TestLogger<ISigner> logger = new();
-                Signer signer = new(serviceProvider, logger);
-
-                int exitCode = await signer.SignAsync(
-                    new[] { file },
-                    outputFile: null,
-                    fileList: fileList,
-                    recurseContainers: true,
-                    _temporaryDirectory.Directory,
-                    applicationName: "a",
-                    publisherName: null,
-                    description: "b",
-                    new Uri("https://description.test"),
-                    _certificatesFixture.TimestampServiceUrl,
-                    maxConcurrency: 4,
-                    HashAlgorithmName.SHA256,
-                    HashAlgorithmName.SHA256);
+                int exitCode = await SignWithFileListAsync(new[] { file }, fileList, _temporaryDirectory.Directory, outputFile: null);
 
                 Assert.Equal(ExitCode.Success, exitCode);
 
@@ -761,7 +608,7 @@ namespace Sign.Core.Test
             }
         }
 
-        private async Task<int> SignWithFileListAsync(IReadOnlyList<FileInfo> files, FileInfo fileList, DirectoryInfo baseDirectory)
+        private async Task<int> SignWithFileListAsync(IReadOnlyList<FileInfo> files, FileInfo fileList, DirectoryInfo baseDirectory, string? outputFile = "")
         {
             ServiceProvider serviceProvider = Create();
             TestLogger<ISigner> logger = new();
@@ -769,7 +616,7 @@ namespace Sign.Core.Test
 
             return await signer.SignAsync(
                 files,
-                outputFile: string.Empty,
+                outputFile: outputFile,
                 fileList: fileList,
                 recurseContainers: true,
                 baseDirectory,
