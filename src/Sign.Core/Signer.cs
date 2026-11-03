@@ -85,11 +85,45 @@ namespace Sign.Core
                     certificateVerifier.Verify(certificate);
                 }
 
+                // Plan the outputs from all of the inputs first, so that filtering by the
+                // file list below can never change where a remaining input is written.
                 IReadOnlyList<SigningOperationPlan> plans =
                     SigningOperationPlanner.Create(
                         inputFiles,
                         outputFile,
                         baseDirectory);
+
+                // Apply file-list filtering to standalone input files too,
+                // consistent with how container and ClickOnce contents are filtered.
+                // Only the given inputs are matched, in memory. The base directory is not scanned,
+                // so unrelated (for example unreadable) folders are never touched.
+                if (matcher is not null || antiMatcher is not null)
+                {
+                    IContainerProvider containerProvider = _serviceProvider.GetRequiredService<IContainerProvider>();
+
+                    plans = plans
+                        .Where(plan =>
+                        {
+                            // The file list applies to the contents of containers and ClickOnce
+                            // deployments, so those inputs are not filtered at the top level.
+                            if (IsContainerOrClickOnceDeployment(containerProvider, plan.Source.File))
+                            {
+                                return true;
+                            }
+
+                            // Match the path relative to the base directory, so that the result
+                            // does not depend on how the base directory part is cased.
+                            string[] candidate = [Path.GetRelativePath(baseDirectory.FullName, plan.Source.File.FullName)];
+
+                            bool isIncluded = matcher is null
+                                || matcher.Match(baseDirectory.FullName, candidate).HasMatches;
+                            bool isExcluded = antiMatcher is not null
+                                && antiMatcher.Match(baseDirectory.FullName, candidate).HasMatches;
+
+                            return isIncluded && !isExcluded;
+                        })
+                        .ToList();
+                }
 
                 await Parallel.ForEachAsync(plans, parallelOptions, async (plan, token) =>
                 {
@@ -123,6 +157,16 @@ namespace Sign.Core
             }
 
             return ExitCode.Success;
+        }
+
+        private static bool IsContainerOrClickOnceDeployment(IContainerProvider containerProvider, FileInfo file)
+        {
+            return containerProvider.IsAppxBundleContainer(file)
+                || containerProvider.IsAppxContainer(file)
+                || containerProvider.IsNuGetContainer(file)
+                || containerProvider.IsZipContainer(file)
+                || ".vsto".Equals(file.Extension, StringComparison.OrdinalIgnoreCase)
+                || ".application".Equals(file.Extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
