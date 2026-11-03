@@ -93,17 +93,19 @@ from another commit or package does not satisfy an exact-candidate gate.
       candidate version-1/version-2 paths without mutating unsigned inputs. A
       generic cryptographic exception is not a fixed diagnostic; do not claim
       this issue fixed without the required evidence.
-- [ ] **#765:** Sign without an explicit publisher name using a certificate
-      subject long enough to stress generated publisher/product data. Inspect
-      manifest values and diagnostics, perform isolated activation for baseline
-      and candidate paths, and run a short explicit-publisher control that must
-      activate. Do not claim this issue fixed without the required evidence.
+- **#765 (inherited, non-blocking limitation):** Version 1 and version 2 both
+  default the publisher name to the certificate subject, and version 2 adds no
+  publisher-name length warning or validation. Do not claim this issue fixed by
+  version 2. A long-subject reproduction, isolated activation, and a short
+  explicit-publisher control remain useful optional investigation, but are not
+  release gates solely because of #765.
 - [ ] **#842:** Trace the final implementation against the specification's goals
       and record every intentionally changed or unmet goal rather than treating
-      this as one behavioral reproduction.
+      this as one behavioral reproduction. Do not make completion depend on the
+      optional #765 investigation.
 - [ ] **#1049:** Mark complete only after every ancestry, build, test, CLI,
-      package, documentation, issue-disposition, and activation gate is
-      accepted.
+      package, documentation, required issue-disposition, and required activation
+      gate is accepted. The optional #765 investigation is not such a gate.
 
 ## Publication checklist
 

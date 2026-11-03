@@ -77,6 +77,8 @@ The commands explicitly use `-t http://timestamp.acs.microsoft.com`, the CLI's d
 
 For a local PFX workflow, add `-cf C:\Signing\certificate.pfx` and provide its password securely if needed; `-cfp` is still required to identify the certificate. For a machine-backed CSP private key, use the provider and key-container options documented by `sign code certificate-store --help`, including `-csp`, `-k`, and `-km` as applicable; a certificate installed only in `LocalMachine\My` is not selected by the fingerprint-only commands above. Do not embed private keys or passwords in source-controlled scripts. Azure Key Vault and Artifact Signing users should supply their provider's authentication/certificate options instead; consult `sign code azure-key-vault --help` or `sign code artifact-signing --help`. Version 2 does not relax certificate, key-access, timestamp, or machine prerequisites.
 
+When `--publisher-name` is omitted, both version 1 and version 2 use the certificate subject as the publisher name. Version 2 adds no publisher-name length warning or validation. Long generated publisher/product data can remain an activation limitation inherited from version 1; supply an appropriate explicit publisher name when the deployment environment requires one.
+
 ### Full version-2 signing
 
 Assume `C:\Signing\publish\App.application` references `Application Files\App_1_0_1_0\App.exe.manifest`, and all referenced payloads are present.
