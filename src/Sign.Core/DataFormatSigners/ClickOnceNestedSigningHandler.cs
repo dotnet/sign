@@ -88,10 +88,8 @@ namespace Sign.Core
                     continue;
                 }
                 outputs.Add(output);
-                parent?.AdditionalMapping.TryAdd(destination.FullName, child.IsMapped);
-                parent?.AdditionalOrigins.TryAdd(destination.FullName, (request.Source, child.RelativePath));
+                parent?.Companions.Add(new Companion(output, child.IsMapped, request.Source, child.RelativePath));
             }
-            parent?.AdditionalOutputs.AddRange(outputs);
             return new ClickOncePayloadSigningResult(result, outputs);
         }
 
@@ -125,8 +123,7 @@ namespace Sign.Core
                 foreach (FileInfo file in artifact.GetFiles().Where(file =>
                     !FileInfoComparer.Instance.Equals(file, artifact.PrimaryFile)))
                 {
-                    ClickOncePayloadSigningOutput? companion = operation.AdditionalOutputs.FirstOrDefault(output =>
-                        FileInfoComparer.Instance.Equals(output.Plan.Output, file));
+                    Companion? companion = operation.FindCompanion(file);
                     SigningFile source;
                     SigningOperationResult result;
                     bool mapped;
@@ -134,10 +131,11 @@ namespace Sign.Core
                     string? originRelativePath = null;
                     if (companion is not null)
                     {
-                        source = companion.Plan.Source;
-                        result = companion.Result;
-                        mapped = operation.AdditionalMapping[file.FullName];
-                        (publicationOrigin, originRelativePath) = operation.AdditionalOrigins[file.FullName];
+                        source = companion.Output.Plan.Source;
+                        result = companion.Output.Result;
+                        mapped = companion.IsMapped;
+                        publicationOrigin = companion.PublicationOrigin;
+                        originRelativePath = companion.OriginRelativePath;
                     }
                     else
                     {
@@ -182,11 +180,17 @@ namespace Sign.Core
         private sealed class ApplicationOperation
         {
             internal List<Route> Routes { get; } = new();
-            internal List<ClickOncePayloadSigningOutput> AdditionalOutputs { get; } = new();
-            internal Dictionary<string, bool> AdditionalMapping { get; } = new(StringComparer.OrdinalIgnoreCase);
-            internal Dictionary<string, (SigningFile Source, string RelativePath)> AdditionalOrigins { get; } =
-                new(StringComparer.OrdinalIgnoreCase);
+            internal List<Companion> Companions { get; } = new();
+
+            internal Companion? FindCompanion(FileInfo file) => Companions.FirstOrDefault(companion =>
+                FileInfoComparer.Instance.Equals(companion.Output.Plan.Output, file));
         }
+
+        private sealed record Companion(
+            ClickOncePayloadSigningOutput Output,
+            bool IsMapped,
+            SigningFile PublicationOrigin,
+            string OriginRelativePath);
 
         private sealed record Route(ClickOncePayloadSigningRequest Request, bool Supported);
     }

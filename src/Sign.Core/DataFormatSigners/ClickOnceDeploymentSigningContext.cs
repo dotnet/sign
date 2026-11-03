@@ -205,8 +205,6 @@ namespace Sign.Core
                                     .OrderBy(path => path, StringComparer.Ordinal))),
                                 authorities.SelectMany(authority => authority.Layout!.Diagnostics));
                         }
-                        first.Origins.Clear();
-                        first.Origins.AddRange(authorities.Select(authority => authority.Source.File.FullName));
                     }
                     if (application.Selected is not null)
                     {
@@ -498,13 +496,11 @@ namespace Sign.Core
                 Layout = layout;
                 Origin = origin;
                 Provenance = provenance;
-                Origins = new() { origin.File.FullName };
             }
 
             internal ResolvedClickOncePublishLayout Layout { get; }
             internal SigningFile Origin { get; }
             internal PayloadContext[] Provenance { get; }
-            internal List<string> Origins { get; }
         }
 
         internal sealed record PayloadContext(
