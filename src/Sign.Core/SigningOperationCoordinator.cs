@@ -182,7 +182,7 @@ namespace Sign.Core
 
             return registration is null
                 ? resultTask
-                : AwaitResultAsync(
+                : AwaitRegisteredAsync(
                     resultTask,
                     registration);
         }
@@ -206,9 +206,8 @@ namespace Sign.Core
 
             return registration is null
                 ? Task.WhenAny(resultTask, alternativeTask)
-                : AwaitEitherAsync(
-                    resultTask,
-                    alternativeTask,
+                : AwaitRegisteredAsync(
+                    Task.WhenAny(resultTask, alternativeTask),
                     registration);
         }
 
@@ -279,35 +278,14 @@ namespace Sign.Core
             }
         }
 
-        private async Task<SigningOperationResult> AwaitResultAsync(
-            Task<SigningOperationResult> resultTask,
+        private async Task<T> AwaitRegisteredAsync<T>(
+            Task<T> task,
             WaitRegistration registration)
         {
             try
             {
-                return await resultTask.ConfigureAwait(
+                return await task.ConfigureAwait(
                     continueOnCapturedContext: false);
-            }
-            finally
-            {
-                lock (_gate)
-                {
-                    registration.Waiting.RemoveWait(registration);
-                }
-            }
-        }
-
-        private async Task<Task> AwaitEitherAsync(
-            Task<SigningOperationResult> resultTask,
-            Task alternativeTask,
-            WaitRegistration registration)
-        {
-            try
-            {
-                return await Task.WhenAny(
-                        resultTask,
-                        alternativeTask)
-                    .ConfigureAwait(continueOnCapturedContext: false);
             }
             finally
             {
