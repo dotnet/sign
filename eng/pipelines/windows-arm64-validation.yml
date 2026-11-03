@@ -1,0 +1,74 @@
+parameters:
+- name: official
+  type: boolean
+  default: false
+- name: validationMode
+  type: string
+  default: Infrastructure
+  values:
+  - Infrastructure
+  - Product
+
+steps:
+- task: CopyFiles@2
+  displayName: Prepare ARM64 source payload
+  inputs:
+    SourceFolder: $(Build.SourcesDirectory)
+    Contents: |
+      Directory.Build.*
+      Directory.Packages.props
+      global.json
+      NuGet.Config
+      SdkTools.props
+      sign.sln
+      LICENSE.txt
+      THIRD-PARTY-NOTICES.txt
+      src\**
+      test\**
+      eng\**
+      scripts\**
+      !**\bin\**
+      !**\obj\**
+    TargetFolder: $(Build.SourcesDirectory)\artifacts\helix\windows-arm64\source
+    CleanTargetFolder: true
+
+- ${{ if eq(parameters.validationMode, 'Product') }}:
+  - task: CopyFiles@2
+    displayName: Prepare x64-built tool package for ARM64 validation
+    inputs:
+      SourceFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\Shipping
+      Contents: sign.*.nupkg
+      TargetFolder: $(Build.SourcesDirectory)\artifacts\helix\windows-arm64\package
+      CleanTargetFolder: true
+
+- powershell: |
+    & "$(Build.SourcesDirectory)\eng\common\msbuild.ps1" `
+      "$(Build.SourcesDirectory)\eng\common\helixpublish.proj" `
+      -ci -msbuildEngine dotnet /restore /t:Test `
+      /p:WaitForWorkItemCompletion=true /p:FailOnTestFailure=true `
+      /p:EnableAzurePipelinesReporter=true `
+      "/bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\WindowsArm64Helix.binlog"
+  ${{ if eq(parameters.validationMode, 'Infrastructure') }}:
+    displayName: Validate Windows ARM64 infrastructure on Helix
+  ${{ else }}:
+    displayName: Build and validate Windows ARM64 product on Helix
+  env:
+    ${{ if parameters.official }}:
+      HelixSource: official/sign
+      HelixTargetQueues: Windows.11.Arm64
+      HelixAccessToken: $(HelixApiAccessToken)
+    ${{ else }}:
+      HelixSource: pr/sign
+      HelixTargetQueues: Windows.11.Arm64.Open
+      Creator: dotnet-sign
+    HelixType: test/sign/windows-arm64/
+    HelixConfiguration: $(_BuildConfig)
+    WorkItemDirectory: $(Build.SourcesDirectory)\artifacts\helix\windows-arm64
+    WorkItemCommand: >-
+      powershell -NoProfile -ExecutionPolicy Bypass
+      -File source\eng\validation\ValidateWindowsArchitecture.ps1
+      -ExpectedArchitecture Arm64 -Configuration $(_BuildConfig)
+      -ValidationMode ${{ parameters.validationMode }}
+      -SourceRevisionId $(Build.SourceVersion)
+    WorkItemTimeout: '01:00:00'
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
