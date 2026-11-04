@@ -478,6 +478,29 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void CreateWorkItems_DuplicateOutput_FormsOneWorkItem()
+        {
+            FileInfo firstSource = new(@"C:\first\App.dll");
+            FileInfo secondSource = new(@"C:\second\App.dll");
+            FileInfo output = new(@"C:\signed\App.dll");
+            SigningOperationPlan first = new(
+                SigningFile.Capture(firstSource),
+                output);
+            SigningOperationPlan second = new(
+                SigningFile.Capture(secondSource),
+                new FileInfo(output.FullName.ToUpperInvariant()));
+
+            IReadOnlyList<IReadOnlyList<SigningOperationPlan>> workItems =
+                Signer.CreateWorkItems(
+                    new[] { first, second },
+                    requiresSequentialCoordination: _ => false);
+
+            IReadOnlyList<SigningOperationPlan> workItem =
+                Assert.Single(workItems);
+            Assert.Equal(new[] { first, second }, workItem);
+        }
+
+        [Fact]
         public async Task SignAsync_WithOutput_SignsInInputOrder()
         {
             FileInfo application = new(
@@ -1131,10 +1154,24 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(null)]
         [InlineData("signed")]
-        public async Task SignAsync_DuplicateInputs_SignsOnce(string? outputFile)
+        public async Task SignAsync_DuplicateInputsConcurrently_SignsOnce(
+            string? outputFile)
         {
             FileInfo input = CreateInput("App.dll");
-            FileInfo duplicate = new(input.FullName.ToUpperInvariant());
+            string unsignedContent =
+                new('x', 4 * 1024 * 1024);
+            long expectedLength =
+                unsignedContent.Length + "-signed".Length;
+            File.WriteAllText(
+                input.FullName,
+                unsignedContent);
+            FileInfo[] inputs = Enumerable
+                .Range(0, 32)
+                .Select(
+                    _ => new FileInfo(
+                        input.FullName.ToUpperInvariant()))
+                .Prepend(input)
+                .ToArray();
             IAggregatingDataFormatSigner aggregatingSigner =
                 Substitute.For<IAggregatingDataFormatSigner>();
             int signCount = 0;
@@ -1155,7 +1192,7 @@ namespace Sign.Core.Test
                 .Returns(
                     call =>
                     {
-                        ++signCount;
+                        Interlocked.Increment(ref signCount);
                         File.AppendAllText(
                             call.Arg<SigningFile>().File.FullName,
                             "-signed");
@@ -1163,26 +1200,27 @@ namespace Sign.Core.Test
                         return Task.CompletedTask;
                     });
 
-            // The duplicate is signed after the input completes, so it can
-            // reuse the result only if the result is retained.
             int exitCode = await SignAsync(
                 aggregatingSigner,
                 outputFile,
-                maxConcurrency: 1,
-                input,
-                duplicate);
+                maxConcurrency: inputs.Length,
+                inputs);
 
             Assert.Equal(ExitCode.Success, exitCode);
             Assert.Equal(expected: 1, actual: signCount);
+            FileInfo signedFile = new(
+                outputFile is null
+                    ? input.FullName
+                    : Path.Combine(
+                        _temporaryDirectory.Directory.FullName,
+                        outputFile,
+                        input.Name));
             Assert.Equal(
-                "App.dll-signed",
-                File.ReadAllText(
-                    outputFile is null
-                        ? input.FullName
-                        : Path.Combine(
-                            _temporaryDirectory.Directory.FullName,
-                            outputFile,
-                            input.Name)));
+                expectedLength,
+                signedFile.Length);
+            Assert.EndsWith(
+                "-signed",
+                File.ReadAllText(signedFile.FullName));
         }
 
         [Fact]

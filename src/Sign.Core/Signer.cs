@@ -378,9 +378,11 @@ namespace Sign.Core
         }
 
         // Work items are in input order; they are started in that order, but
-        // with concurrency above 1 they overlap. Inputs that require
-        // sequential coordination (ClickOnce) form one sequential work item
-        // per outermost such input directory, positioned at its first input.
+        // with concurrency above 1 they overlap. Non-ClickOnce inputs that
+        // publish to the same output form one sequential work item. Inputs
+        // that require sequential coordination (ClickOnce) form one
+        // sequential work item per outermost such input directory, positioned
+        // at its first input.
         // Directories are compared by path text only. A ClickOnce operation
         // waits on the deployment manifests it discovers in its directory
         // tree, so running inputs whose trees overlap concurrently can form a
@@ -391,6 +393,8 @@ namespace Sign.Core
                 Func<FileInfo, bool> requiresSequentialCoordination)
         {
             List<IReadOnlyList<SigningOperationPlan>> workItems = new();
+            Dictionary<string, List<SigningOperationPlan>> outputGroups =
+                new(StringComparer.OrdinalIgnoreCase);
             Dictionary<string, List<SigningOperationPlan>> sequentialGroups =
                 new(StringComparer.OrdinalIgnoreCase);
             List<string> sequentialDirectories = plans
@@ -406,7 +410,19 @@ namespace Sign.Core
             {
                 if (!requiresSequentialCoordination(plan.Source.File))
                 {
-                    workItems.Add(new[] { plan });
+                    string output = Path.GetFullPath(
+                        plan.Output.FullName);
+
+                    if (!outputGroups.TryGetValue(
+                        output,
+                        out List<SigningOperationPlan>? outputGroup))
+                    {
+                        outputGroup = new List<SigningOperationPlan>();
+                        outputGroups.Add(output, outputGroup);
+                        workItems.Add(outputGroup);
+                    }
+
+                    outputGroup.Add(plan);
 
                     continue;
                 }
