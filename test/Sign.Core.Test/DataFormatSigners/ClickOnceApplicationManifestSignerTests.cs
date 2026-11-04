@@ -791,7 +791,7 @@ namespace Sign.Core.Test
 
         private sealed class Harness : IAsyncDisposable
         {
-            internal DirectoryServiceStub Directories { get; } = new();
+            internal DirectoryServiceStub Directories { get; }
             internal DirectoryInfo Source { get; }
             internal SigningOperationCoordinator Coordinator { get; }
             internal IDataFormatSigner FormatSigner { get; } = Substitute.For<IDataFormatSigner>();
@@ -812,8 +812,9 @@ namespace Sign.Core.Test
             internal Action<FileInfo>? BeforeManifestSign { get; set; }
             private readonly ConcurrentQueue<RSA> _keys = new();
 
-            internal Harness()
+            internal Harness(Action<DirectoryInfo>? directoryCreated = null)
             {
+                Directories = new DirectoryServiceStub(directoryCreated);
                 Source = Directories.CreateTemporaryDirectory();
                 Coordinator = new SigningOperationCoordinator(Directories);
                 FormatSigner.CanSign(Arg.Any<FileInfo>()).Returns(

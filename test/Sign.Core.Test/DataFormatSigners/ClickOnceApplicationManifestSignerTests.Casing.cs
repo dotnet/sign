@@ -113,7 +113,11 @@ namespace Sign.Core.Test
         public async Task ExecuteAsync_CaseVariantCompanionsUseOneSpellingInSensitiveStage(
             bool lowerFirst, bool differentResults)
         {
-            await using Harness harness = new();
+            await using Harness harness = new(directory =>
+            {
+                Assert.Empty(directory.EnumerateFileSystemInfos());
+                Assert.True(EnableCaseSensitivity(directory));
+            });
             FileInfo child = harness.CreateFile("Child.application", "unsigned");
             FileInfo app = harness.CreateManifest("App.manifest", child.Name);
             string originalManifest = File.ReadAllText(app.FullName);
@@ -132,7 +136,6 @@ namespace Sign.Core.Test
                 Arg.Any<SigningOperationCoordinator>()).Returns(async call =>
                 {
                     ClickOncePayloadSigningRequest request = call.Arg<ClickOncePayloadSigningRequest>();
-                    Assert.True(EnableCaseSensitivity(request.StagingRoot));
                     FileInfo signedChild = harness.CreateFile(@"signed\Child.application", "signed child");
                     SigningOperationResult primary = await harness.Coordinator.WaitAsync(
                         harness.Coordinator.ExecuteAsync(request.Source.SourceIdentity,
