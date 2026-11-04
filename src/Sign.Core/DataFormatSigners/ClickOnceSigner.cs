@@ -124,20 +124,6 @@ namespace Sign.Core
 
                     // at this point contentFiles has all deploy files renamed
 
-                    // Inner files are now signed
-                    // now look for the manifest file and sign that if we have one
-
-                    FileInfo? manifestFile = filteredFiles.SingleOrDefault(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase));
-
-                    string fileArgs = $@"-update ""{manifestFile}"" {args}";
-
-                    if (manifestFile is not null && !await SignAsync(fileArgs, manifestFile, rsaPrivateKey, certificate, options))
-                    {
-                        string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
-
-                        throw new SigningException(message);
-                    }
-
                     string publisherParam = string.Empty;
 
                     if (string.IsNullOrEmpty(options.PublisherName))
@@ -152,7 +138,7 @@ namespace Sign.Core
                         publisherParam = $"-pub \"{options.PublisherName}\"";
                     }
 
-                    // Now sign deployment manifest files (.application/.vsto).
+                    // Now sign the deployment manifest files (.application/.vsto).
                     // Order by desending length to put the inner one first
                     List<FileInfo> deploymentManifestFiles = filteredFiles
                         .Where(f => ".vsto".Equals(f.Extension, StringComparison.OrdinalIgnoreCase) ||
@@ -164,7 +150,22 @@ namespace Sign.Core
 
                     foreach (FileInfo deploymentManifestFile in deploymentManifestFiles)
                     {
-                        fileArgs = $@"-update ""{deploymentManifestFile.FullName}"" {args} {publisherParam}";
+                        // The application manifest must be signed before the deployment manifest that references it.
+                        FileInfo? manifestFile = GetApplicationManifest(deploymentManifestFile, filteredFiles);
+
+                        if (manifestFile is not null)
+                        {
+                            string manifestArgs = $@"-update ""{manifestFile}"" {args}";
+
+                            if (!await SignAsync(manifestArgs, manifestFile, rsaPrivateKey, certificate, options))
+                            {
+                                string message = string.Format(CultureInfo.CurrentCulture, Resources.SigningFailed, manifestFile.FullName);
+
+                                throw new SigningException(message);
+                            }
+                        }
+
+                        string fileArgs = $@"-update ""{deploymentManifestFile.FullName}"" {args} {publisherParam}";
                         if (manifestFile is not null)
                         {
                             fileArgs += $@" -appm ""{manifestFile.FullName}""";
@@ -189,6 +190,41 @@ namespace Sign.Core
                     }
                 });
             }
+        }
+
+        /// <summary>
+        /// Finds the application manifest that belongs to a deployment manifest (.application/.vsto).
+        /// </summary>
+        /// <remarks>
+        /// A deployment manifest names its application manifest after the application assembly, for example
+        /// MyApp.application references MyApp.exe.manifest. A single directory can hold several ClickOnce
+        /// applications, each with its own application manifest, so the manifest is matched by name instead of
+        /// taking the only one that is present.
+        /// </remarks>
+        private FileInfo? GetApplicationManifest(FileInfo deploymentManifestFile, IEnumerable<FileInfo> files)
+        {
+            List<FileInfo> applicationManifests = files
+                .Where(f => ".manifest".Equals(f.Extension, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            string applicationName = Path.GetFileNameWithoutExtension(deploymentManifestFile.Name);
+            FileInfo? applicationManifest = applicationManifests.FirstOrDefault(
+                f => f.Name.StartsWith($"{applicationName}.", StringComparison.OrdinalIgnoreCase));
+
+            if (applicationManifest is null && applicationManifests.Count == 1)
+            {
+                // Exactly one application manifest is present, so it belongs to this deployment manifest.
+                applicationManifest = applicationManifests[0];
+            }
+
+            if (applicationManifest is null && applicationManifests.Count > 1)
+            {
+                Logger.LogWarning(
+                    "Multiple application manifests were found and none matches '{DeploymentManifest}'; no application manifest will be signed.",
+                    deploymentManifestFile.Name);
+            }
+
+            return applicationManifest;
         }
 
         private static void RemoveDeployExtension(List<FileInfo> deployFilesToSign, List<FileInfo> contentFiles)
