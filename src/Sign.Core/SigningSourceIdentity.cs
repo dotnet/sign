@@ -47,6 +47,53 @@ namespace Sign.Core
                 parent: parent);
         }
 
+        internal SigningSourceIdentity GetSibling(string relativePath)
+        {
+            string normalizedRelativePath =
+                NormalizeEntryPath(relativePath);
+
+            return IsContainerEntry
+                ? ContainerEntry(
+                    _parent!,
+                    CombineEntryPaths(
+                        Path.GetDirectoryName(_path.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar)),
+                        normalizedRelativePath))
+                : PhysicalFile(
+                    Path.Combine(
+                        Path.GetDirectoryName(_path)!,
+                        normalizedRelativePath.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar)));
+        }
+
+        // A container entry belongs to the physical file that contains it.
+        internal SigningSourceIdentity GetPhysicalRoot()
+        {
+            return _parent?.GetPhysicalRoot() ?? this;
+        }
+
+        internal string GetPhysicalPath()
+        {
+            return GetPhysicalRoot()._path;
+        }
+
+        // Compares path text, as Equals does, so every identity that
+        // GetSibling derives from the file is in its directory tree.
+        internal bool IsInDirectoryTreeOf(SigningSourceIdentity file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            string? directory = Path.GetDirectoryName(
+                file.GetPhysicalRoot()._path);
+
+            return directory is not null &&
+                PathContainment.IsContained(
+                    PathContainment.EnsureTrailingSeparator(directory),
+                    GetPhysicalRoot()._path);
+        }
+
         public bool Equals(SigningSourceIdentity? other)
         {
             if (ReferenceEquals(this, other))
@@ -143,6 +190,15 @@ namespace Sign.Core
             }
 
             return string.Join(separator: '/', values: segments);
+        }
+
+        private static string CombineEntryPaths(
+            string? directory,
+            string relativePath)
+        {
+            return string.IsNullOrEmpty(directory)
+                ? relativePath
+                : $"{directory.Replace('\\', '/')}/{relativePath}";
         }
     }
 }

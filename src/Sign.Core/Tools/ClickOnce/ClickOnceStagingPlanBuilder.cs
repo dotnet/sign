@@ -18,8 +18,8 @@ namespace Sign.Core
                 stagingDirectory,
                 nameof(stagingDirectory));
 
-            string rootPath = EnsureTrailingSeparator(
-                Path.GetFullPath(stagingDirectory.FullName));
+            string rootPath = PathContainment.GetFullDirectoryPath(
+                stagingDirectory.FullName);
             DestinationAllocator allocator = new(layout, rootPath);
             Dictionary<BaseReference, AllocatedStagingPlanEntry>
                 referenceDestinations =
@@ -223,7 +223,7 @@ namespace Sign.Core
                         basePath,
                         NormalizeSeparators(relativePath)));
 
-                return IsContained(rootPath, destinationPath)
+                return PathContainment.IsContained(rootPath, destinationPath)
                     ? destinationPath
                     : null;
             }
@@ -393,27 +393,13 @@ namespace Sign.Core
                 layout.Diagnostics);
         }
 
-        private static string EnsureTrailingSeparator(string path)
-        {
-            return Path.EndsInDirectorySeparator(path)
-                ? path
-                : $"{path}{Path.DirectorySeparatorChar}";
-        }
-
-        private static bool IsContained(string rootPath, string path)
-        {
-            return path.StartsWith(
-                rootPath,
-                StringComparison.OrdinalIgnoreCase);
-        }
-
         private static bool IsFileDirectoryCollision(string left, string right)
         {
             return right.StartsWith(
-                    EnsureTrailingSeparator(left),
+                    PathContainment.EnsureTrailingSeparator(left),
                     StringComparison.OrdinalIgnoreCase) ||
                 left.StartsWith(
-                    EnsureTrailingSeparator(right),
+                    PathContainment.EnsureTrailingSeparator(right),
                     StringComparison.OrdinalIgnoreCase);
         }
 
