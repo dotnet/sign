@@ -224,7 +224,7 @@ namespace Sign.Core
                                     $"The explicit payload operation for '{payload.Source.File.FullName}' was not registered before application signing.");
                             }
 
-                            SigningOperationResult result = await coordinator.WaitAsync(prerequisite!);
+                            SigningOperationResult result = await coordinator.WaitForReadyOwnerAsync(prerequisite!);
                             result.MaterializePrimary(payload.UpdateFile);
                         }
                     }
@@ -374,7 +374,7 @@ namespace Sign.Core
             _manifestSigner.Sign(file, certificate, rsa, options);
         }
 
-        private static bool PublishesBesideInput(DirectoryInfo sourceRoot, DirectoryInfo destinationRoot)
+        internal static bool PublishesBesideInput(DirectoryInfo sourceRoot, DirectoryInfo destinationRoot)
         {
             if (string.Equals(sourceRoot.FullName, destinationRoot.FullName, StringComparison.Ordinal))
             {
@@ -410,7 +410,7 @@ namespace Sign.Core
                 BindPathSpelling(destinationRoot, anchor).FullName, StringComparison.Ordinal);
         }
 
-        private static FileInfo BindExistingPublicationDestination(FileInfo destination, DirectoryInfo sourceRoot)
+        internal static FileInfo BindExistingPublicationDestination(FileInfo destination, DirectoryInfo sourceRoot)
         {
             try
             {
@@ -426,7 +426,7 @@ namespace Sign.Core
             return new FileInfo(Path.Combine(destination.DirectoryName!, existing.Name));
         }
 
-        private static FileInfo BindOriginalSource(FileInfo source, DirectoryInfo sourceRoot)
+        internal static FileInfo BindOriginalSource(FileInfo source, DirectoryInfo sourceRoot)
         {
             string root = PathContainment.GetFullDirectoryPath(sourceRoot.FullName);
             if (!PathContainment.IsContained(root, source.FullName))

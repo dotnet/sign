@@ -199,6 +199,24 @@ namespace Sign.Core {
         }
 
         /// <summary>
+        ///   Looks up a localized string describing mutually invalidating application-manifest context selections.
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestAmbiguousApplicationContexts {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestAmbiguousApplicationContexts", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string describing incompatible application-manifest source, destination, or file-mapping contexts.
+        /// </summary>
+        internal static string ClickOnceDeploymentManifestConflictingApplicationContexts {
+            get {
+                return ResourceManager.GetString("ClickOnceDeploymentManifestConflictingApplicationContexts", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Deployment manifest &apos;{0}&apos; does not identify an application manifest..
         /// </summary>
         internal static string ClickOnceDeploymentManifestMissingEntryPoint {
