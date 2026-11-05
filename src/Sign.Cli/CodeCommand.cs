@@ -19,6 +19,9 @@ namespace Sign.Cli
     {
         internal Option<string?> ApplicationNameOption { get; }
         internal Option<DirectoryInfo> BaseDirectoryOption { get; }
+        internal Option<int> ClickOnceSigningVersionOption { get; }
+        internal Option<bool> NoSignClickOnceDependenciesOption { get; }
+        internal Option<bool> NoUpdateClickOnceManifestOption { get; }
         internal Option<string> DescriptionOption { get; }
         internal Option<Uri?> DescriptionUrlOption { get; }
         internal Option<HashAlgorithmName> FileDigestOption { get; }
@@ -44,6 +47,24 @@ namespace Sign.Cli
                 CustomParser = ParseBaseDirectoryOption,
                 DefaultValueFactory = _ => new DirectoryInfo(Environment.CurrentDirectory),
                 Description = Resources.BaseDirectoryOptionDescription,
+                Recursive = true
+            };
+            ClickOnceSigningVersionOption = new Option<int>("--clickonce-signing-version")
+            {
+                Arity = ArgumentArity.ExactlyOne,
+                CustomParser = ParseClickOnceSigningVersion,
+                DefaultValueFactory = _ => 1,
+                Description = Resources.ClickOnceSigningVersionOptionDescription,
+                Recursive = true
+            };
+            NoSignClickOnceDependenciesOption = new Option<bool>("--no-sign-clickonce-deps")
+            {
+                Description = Resources.NoSignClickOnceDependenciesOptionDescription,
+                Recursive = true
+            };
+            NoUpdateClickOnceManifestOption = new Option<bool>("--no-update-clickonce-manifest")
+            {
+                Description = Resources.NoUpdateClickOnceManifestOptionDescription,
                 Recursive = true
             };
             DescriptionOption = new Option<string>("--description", "-d")
@@ -123,11 +144,65 @@ namespace Sign.Cli
             Options.Add(PublisherNameOption);
             Options.Add(FileListOption);
             Options.Add(RecurseContainersOption);
+            Options.Add(ClickOnceSigningVersionOption);
+            Options.Add(NoSignClickOnceDependenciesOption);
+            Options.Add(NoUpdateClickOnceManifestOption);
             Options.Add(FileDigestOption);
             Options.Add(TimestampUrlOption);
             Options.Add(TimestampDigestOption);
             Options.Add(MaxConcurrencyOption);
             Options.Add(VerbosityOption);
+            Validators.Add(ValidateClickOnceOptions);
+        }
+
+        internal void ValidateClickOnceOptions(CommandResult result)
+        {
+            // Conversion errors may not be attached until after command validation.
+            // Inspect version tokens without converting an arity-invalid option.
+            if (result.Errors.Any() ||
+                result.GetResult(ClickOnceSigningVersionOption)?.Errors.Any() == true ||
+                result.GetResult(NoSignClickOnceDependenciesOption)?.Errors.Any() == true ||
+                result.GetResult(NoUpdateClickOnceManifestOption)?.Errors.Any() == true)
+            {
+                return;
+            }
+            bool noSignDependencies = IsEnabled(NoSignClickOnceDependenciesOption);
+            bool noUpdateManifest = IsEnabled(NoUpdateClickOnceManifestOption);
+            if (noSignDependencies && noUpdateManifest)
+            {
+                result.AddError(Resources.ClickOnceDependencyOptionsCannotBeCombined);
+            }
+            else if (noSignDependencies || noUpdateManifest)
+            {
+                OptionResult? version = result.GetResult(ClickOnceSigningVersionOption);
+                if (version?.Tokens.Count != 1 || version.Tokens[0].Value != "2")
+                {
+                    result.AddError(Resources.ClickOnceDependencyOptionsRequireVersion2);
+                }
+            }
+
+            bool IsEnabled(Option<bool> option)
+            {
+                OptionResult? value = result.GetResult(option);
+                return value is { Implicit: false } &&
+                    (value.Tokens.Count == 0 ||
+                        value.Tokens.Count == 1 && bool.TryParse(value.Tokens[0].Value, out bool enabled) && enabled);
+            }
+        }
+
+        private static int ParseClickOnceSigningVersion(ArgumentResult result)
+        {
+            if (result.Tokens.Count == 1)
+            {
+                string value = result.Tokens[0].Value;
+                if (value == "1" || value == "2")
+                {
+                    return value == "1" ? 1 : 2;
+                }
+            }
+
+            result.AddError(Resources.InvalidClickOnceSigningVersion);
+            return default;
         }
 
         internal async Task<int> HandleAsync(ParseResult parseResult, IServiceProviderFactory serviceProviderFactory, ISignatureProvider signatureProvider, IEnumerable<string> filesArgument)
@@ -147,6 +222,11 @@ namespace Sign.Cli
             LogLevel verbosity = parseResult.GetValue(VerbosityOption);
             string? output = parseResult.GetValue(OutputOption);
             int maxConcurrency = parseResult.GetValue(MaxConcurrencyOption);
+            ClickOnceSigningConfiguration clickOnceConfiguration = new(
+                parseResult.GetValue(ClickOnceSigningVersionOption),
+                parseResult.GetValue(NoSignClickOnceDependenciesOption),
+                parseResult.GetValue(NoUpdateClickOnceManifestOption),
+                maxConcurrency);
 
             // Make sure this is rooted
             if (!Path.IsPathRooted(baseDirectory.FullName))
@@ -162,6 +242,7 @@ namespace Sign.Cli
                 verbosity,
                 addServices: (IServiceCollection services) =>
                 {
+                    services.AddSingleton(clickOnceConfiguration);
                     services.AddSingleton<ISignatureAlgorithmProvider>(
                         (IServiceProvider serviceProvider) => signatureProvider.GetSignatureAlgorithmProvider(serviceProvider));
                     services.AddSingleton<ICertificateProvider>(

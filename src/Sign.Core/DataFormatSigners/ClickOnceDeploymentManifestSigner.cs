@@ -29,8 +29,24 @@ namespace Sign.Core
             _services = services;
             _reader = reader ?? new ClickOnceManifestReader();
             _resolver = new(_reader, new ClickOncePayloadResolver());
-            _nested = new(this, _reader, _services.GetRequiredService<IAggregatingDataFormatSigner>());
+            _nested = new(this, _reader, _services.GetRequiredService<IAggregatingDataFormatSigner>(),
+                _services.GetRequiredService<ILogger<IDataFormatSigner>>());
         }
+
+        internal bool CanSign(SigningFile input) =>
+            input.File.Extension.Equals(".application", StringComparison.OrdinalIgnoreCase) ||
+            input.File.Extension.Equals(".vsto", StringComparison.OrdinalIgnoreCase) ||
+            (input.File.Extension.Equals(".manifest", StringComparison.OrdinalIgnoreCase) && _nested.IsApplication(input));
+
+        internal Task<SigningOperationArtifact> SignInputOwnerAsync(
+            SigningFile input,
+            SignOptions options,
+            SigningOperationCoordinator coordinator,
+            ClickOnceApplicationSigningPolicy policy,
+            bool updateManifest) =>
+            input.File.Extension.Equals(".manifest", StringComparison.OrdinalIgnoreCase)
+                ? _nested.SignApplicationOwnerAsync(input, options, coordinator, policy, updateManifest)
+                : SignOwnerAsync(input, options, coordinator, policy, updateManifest);
 
         internal async Task ExecuteAsync(
             SigningOperationPlan plan,
@@ -125,7 +141,8 @@ namespace Sign.Core
             SigningOperationCoordinator coordinator,
             int maxConcurrency,
             ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
-            bool updateManifest = true)
+            bool updateManifest = true,
+            bool insideOperation = false)
         {
             ArgumentNullException.ThrowIfNull(plans);
             ArgumentNullException.ThrowIfNull(options);
@@ -138,12 +155,12 @@ namespace Sign.Core
             {
                 throw new ArgumentOutOfRangeException(nameof(policy));
             }
-            using IDisposable scheduling = coordinator.UseScheduling(maxConcurrency);
+            using IDisposable? scheduling = insideOperation ? null : coordinator.UseScheduling(maxConcurrency);
             SigningOperationPlan[] applications;
             SigningOperationPlan[] deployments;
             HashSet<SigningSourceIdentity> supportedOrdinary;
             ClickOnceDeploymentSigningContext? preparedContext;
-            using (IDisposable preflight = await coordinator.AcquireSchedulingLeaseAsync())
+            using (IDisposable? preflight = insideOperation ? null : await coordinator.AcquireSchedulingLeaseAsync())
             {
                 plans = plans.Select(plan => updateManifest && (IsDeployment(plan) || IsApplication(plan))
                     ? new SigningOperationPlan(BindInput(plan.Source), plan.Output)
@@ -184,7 +201,7 @@ namespace Sign.Core
                         }
                     }
                 });
-                using (IDisposable ordinaryPublication = await coordinator.AcquireSchedulingLeaseAsync())
+                using (IDisposable? ordinaryPublication = insideOperation ? null : await coordinator.AcquireSchedulingLeaseAsync())
                 {
                     foreach (SigningOperationPlan plan in ordinaryPlans)
                     {
@@ -227,17 +244,17 @@ namespace Sign.Core
                 if (updateManifest)
                 {
                     deploymentReady.SetResult();
-                    await Task.WhenAll(applicationTasks.Concat(deploymentTasks).Select(coordinator.WaitAsync));
+                    await coordinator.WaitAllForReadyOwnerAsync(applicationTasks.Concat(deploymentTasks));
                 }
                 SigningOperationResult[] applicationResults =
-                    await Task.WhenAll(applicationTasks.Select(coordinator.WaitAsync));
+                    await coordinator.WaitAllForReadyOwnerAsync(applicationTasks);
                 if (!updateManifest)
                 {
                     deploymentTasks = RegisterDeployments();
                     deploymentReady.SetResult();
                 }
-                SigningOperationResult[] results = await Task.WhenAll(deploymentTasks.Select(coordinator.WaitAsync));
-                using IDisposable publication = await coordinator.AcquireSchedulingLeaseAsync();
+                SigningOperationResult[] results = await coordinator.WaitAllForReadyOwnerAsync(deploymentTasks);
+                using IDisposable? publication = insideOperation ? null : await coordinator.AcquireSchedulingLeaseAsync();
                 for (int index = 0; index < applications.Length; ++index)
                 {
                     if (updateManifest && policy == ClickOnceApplicationSigningPolicy.SignPayloads &&
@@ -266,8 +283,22 @@ namespace Sign.Core
                 _context.Value = previous;
             }
 
-            Task RunPhaseAsync(IEnumerable<SigningOperationPlan> phase, Func<SigningOperationPlan, Task> execute) =>
-                Parallel.ForEachAsync(phase, parallel, (plan, _) => new ValueTask(execute(plan)));
+            async Task RunPhaseAsync(IEnumerable<SigningOperationPlan> phase, Func<SigningOperationPlan, Task> execute)
+            {
+                if (insideOperation)
+                {
+                    // A nested batch shares one owner permit. Its ready waits
+                    // must not overlap; child owners retain scheduler parallelism.
+                    foreach (SigningOperationPlan plan in phase)
+                    {
+                        await execute(plan);
+                    }
+                }
+                else
+                {
+                    await Parallel.ForEachAsync(phase, parallel, (plan, _) => new ValueTask(execute(plan)));
+                }
+            }
 
             bool IsApplication(SigningOperationPlan plan)
             {
@@ -276,7 +307,7 @@ namespace Sign.Core
                 {
                     return false;
                 }
-                return _nested.IsApplication(file);
+                return _nested.IsApplication(plan.Source);
             }
             static bool IsDeployment(SigningOperationPlan plan) =>
                 plan.Source.File.Extension.Equals(".application", StringComparison.OrdinalIgnoreCase) ||

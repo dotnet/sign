@@ -3,7 +3,7 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Collections.Concurrent;
-using System.Xml;
+using Microsoft.Extensions.Logging;
 
 namespace Sign.Core
 {
@@ -12,45 +12,30 @@ namespace Sign.Core
     internal sealed class ClickOnceNestedSigningHandler : IClickOncePayloadSigningHandler
     {
         private readonly ClickOnceDeploymentManifestSigner _deployment;
-        private readonly IClickOnceManifestReader _reader;
         private readonly IAggregatingDataFormatSigner _ordinary;
         private readonly AsyncLocal<ApplicationOperation?> _application = new();
-        private readonly ConcurrentDictionary<string, Lazy<bool>> _applications = new(StringComparer.Ordinal);
+        private readonly ClickOnceApplicationManifestClassifier _applications;
         private readonly ConcurrentDictionary<SigningSourceIdentity, IReadOnlyList<ClickOnceGraphOutput>> _outputs = new();
 
         internal ClickOnceNestedSigningHandler(
             ClickOnceDeploymentManifestSigner deployment,
             IClickOnceManifestReader reader,
-            IAggregatingDataFormatSigner ordinary)
+            IAggregatingDataFormatSigner ordinary,
+            ILogger<IDataFormatSigner> logger)
         {
             _deployment = deployment;
-            _reader = reader;
             _ordinary = ordinary;
+            _applications = new(reader, logger);
         }
 
-        internal bool IsApplication(FileInfo source) =>
-            _applications.GetOrAdd(source.FullName, _ => new Lazy<bool>(() =>
-            {
-                try
-                {
-                    using FileStream stream = source.OpenRead();
-                    bool application = _reader.TryReadApplicationManifest(stream, out IApplicationManifest? manifest);
-                    manifest?.Dispose();
-                    return application;
-                }
-                catch (Exception exception) when (
-                    exception is IOException or UnauthorizedAccessException or InvalidOperationException or XmlException)
-                {
-                    return false;
-                }
-            })).Value;
+        internal bool IsApplication(SigningFile source) => _applications.IsApplication(source);
 
         public bool CanSign(ClickOncePayloadSigningRequest request, SignOptions options)
         {
             string extension = request.UpdateFile.Extension;
             bool handled = extension.Equals(".application", StringComparison.OrdinalIgnoreCase) ||
                 extension.Equals(".vsto", StringComparison.OrdinalIgnoreCase) ||
-                (extension.Equals(".manifest", StringComparison.OrdinalIgnoreCase) && IsApplication(request.Source.File));
+                (extension.Equals(".manifest", StringComparison.OrdinalIgnoreCase) && IsApplication(request.Source));
             _application.Value?.Routes.Add(new Route(request, handled || _ordinary.HasSigningWork(request.UpdateFile, options)));
             return handled;
         }
@@ -109,6 +94,7 @@ namespace Sign.Core
             SigningOperationArtifact? artifact = null;
             try
             {
+                _applications.Validate(input);
                 if (layout is null && updateManifest &&
                     _deployment.GetApplicationContext(input.SourceIdentity) is { } prepared)
                 {

@@ -40,6 +40,11 @@ namespace Sign.Cli
                 serviceProviderFactory);
 
             codeCommand.Subcommands.Add(artifactSigningCommand);
+
+            foreach (System.CommandLine.Command command in codeCommand.Subcommands)
+            {
+                command.Validators.Add(codeCommand.ValidateClickOnceOptions);
+            }
         }
     }
 }

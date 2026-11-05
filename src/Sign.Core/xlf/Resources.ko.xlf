@@ -32,6 +32,11 @@
         <target state="translated">{fileName}에서 출력 {output}을(를) 반환했습니다.</target>
         <note>{Placeholder="{fileName}"} is a file name, and {Placeholder="{output}"} is verbose output from a tool.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestChangedAfterClassification">
+        <source>ClickOnce application manifest '{0}' changed or became unreadable after classification. Signing cannot continue.</source>
+        <target state="new">ClickOnce application manifest '{0}' changed or became unreadable after classification. Signing cannot continue.</target>
+        <note>{NumberedPlaceholder="{0}"} is an input manifest file path.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestInvalidTargetPath">
         <source>Application manifest '{0}' contains invalid target path '{1}'.</source>
         <target state="translated">애플리케이션 매니페스트 '{0}'에 유효하지 않은 대상 경로 '{1}'이(가) 포함되어 있습니다.</target>

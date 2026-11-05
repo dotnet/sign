@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sign.Cli\Sign.Cli.csproj" />
+    <ProjectReference Include="..\Sign.TestInfrastructure\Sign.TestInfrastructure.csproj" />
   </ItemGroup>
 
 </Project>
