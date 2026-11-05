@@ -258,77 +258,6 @@ Apply the application-manifest flows below only to files identified as ClickOnce
 
 #### Explicit application-manifest input
 
-The internal `ClickOnceApplicationManifestSigner` implements this flow as a
-dormant, directly testable entry point. It reuses typed publish-layout resolution,
-safe staging, and invocation-scoped coordinated results. It is not registered as
-an `IDataFormatSigner` and does not change CLI selection or version 1.
-`SignPayloads` publishes only the signed manifest and selected, supported payloads;
-`UpdateManifestOnly` refreshes metadata but publishes only the signed manifest.
-Deployment-manifest orchestration and CLI options are separate rollout steps.
-Both updating policies apply a non-whitespace application-name override literally
-to the application's own assembly identity before serialization. Null, empty and
-whitespace names preserve the existing identity; referenced payload identities
-and unrelated metadata are not renamed. The no-update path never applies this
-override.
-
-The application owner also accepts an already resolved application-only layout
-and its original `SigningFile` origin, so deployment composition can retain the
-selected source, deployment-directory fallback, and mapping decisions without
-rediscovering files. Its optional internal payload handler receives the original
-source file, source identity and root, plus the exact staged update destination.
-The same handler determines capability and performs selected work; unclaimed
-formats retain the existing aggregating signer and batching behavior.
-After validating the layout and before copying payloads, the application flow
-binds each declared source to its unambiguous original filesystem spelling,
-including directory segments and any physical `.deploy` suffix. Matching and
-sibling source identities use that same binding; manifest target spelling is
-unchanged. The declared path must first open successfully, so binding does not
-broaden lookup in case-sensitive directories. Exact spellings remain distinct;
-different authoritative sources sharing a case-insensitive staging destination
-are rejected before copying. This is local source binding, not global comparer
-or archive-identity case-folding.
-When publishing alongside the original application, existing selected sibling
-destinations also retain their filesystem filename spelling. This prevents
-atomic replacement from changing the original ordinal container identity seen
-by a later application owner. Only filename spelling can be bound before the
-existing validated materialization writer; explicit primary naming, new
-destinations, out-of-place target naming and retained snapshot paths are unchanged.
-The true no-update path never invokes this layout binding.
-
-A composed payload returns borrowed coordinator results. Only its primary is
-materialized at the application's validated hash input. Any companion outputs
-must be explicitly named as source/output plans with their coordinated results.
-The existing staging planner validates these against the reserved application,
-payload, and suffix-update paths before any composed result is copied. Only the
-explicit companion primaries join the application's selective publication;
-snapshot siblings and entire temporary directories are never implicitly copied.
-Reusable case-only companion destinations sharing the same coordinated result
-retain the first destination spelling for both materialization and publication;
-different results at one destination fail before composed copying.
-Deployment traversal remains the composing handler's responsibility, not a new
-application or production registration policy.
-
-For `UpdateManifestOnly`, invocation orchestration supplies an immutable
-`ClickOnceApplicationSigningContext` containing the original identities of
-independently selected explicit payloads. Those operations must be registered
-before the consuming application starts. The application performs a nonclaiming
-coordinator lookup and dependency-aware wait for every referenced explicit
-payload, then materializes only its completed primary at the validated staged
-hash input before identity synchronization and metadata refresh. A promised but
-unregistered prerequisite fails explicitly instead of hashing stale bytes.
-Unselected references remain unchanged update inputs, and the application still
-publishes only its explicit manifest, never prerequisite companions. Neither the
-context nor the payload handler is used by the no-update path. Production
-invocation scheduling and CLI mapping remain later rollout responsibilities.
-
-The dormant `updateManifest: false` path reads and type-checks the explicit
-application manifest, signs an isolated single-file lifecycle copy of its
-original bytes, and publishes only that file. It performs no layout resolution,
-dependency staging or payload handling, identity synchronization, file-info
-update, or adapter serialization. This is distinct from `UpdateManifestOnly`.
-It preserves the source during out-of-place signing and leaves CLI mapping to
-the later exposure step.
-
 1. Read the file using `ManifestReader.ReadManifest(...)`. If reading fails or the returned manifest is not an `ApplicationManifest`, fail the operation without signing the file.
 1. Ensure `Manifest.ReadOnly` is `false`.
 1. Identify each `AssemblyReference` and `FileReference` that represents a physical file published with the application. Look for its manifest target path relative to the application manifest's directory first; if that path does not exist, look for the same path with one additional `.deploy` suffix and record that suffix as mapping-added. Use these Sign CLI lookup rules directly for source discovery rather than calling `ApplicationManifest.ResolveFiles(...)`, whose lookup semantics do not account for file-extension mapping. A failed exact-path probe is not a diagnostic when the mapped candidate resolves the reference. Fail with a clear error if neither candidate locates a required file.
@@ -349,10 +278,10 @@ When `--no-sign-clickonce-deps` is specified, Sign CLI will update and sign only
 1. If both a deployment manifest and its referenced application manifest are explicitly provided in the same invocation, update and sign the application manifest first, regardless of input order or parallel scheduling. The deployment-manifest operation must wait for the application-manifest operation to complete successfully before refreshing its entry-point metadata and signing. If the application-manifest operation fails, do not sign the deployment manifest.
 1. For each file provided by the user:
    - If the file has a `.vsto` or `.application` file extension, read it as a deployment manifest and call `DeployManifest.ResolveFiles(string[])` with the deployment manifest's directory. Call `DeployManifest.UpdateFileInfo("v4.5")` to refresh the entry-point reference's SHA-256 hash and size, ensure that the entry-point identity matches the referenced application manifest's current identity, then sign only the deployment manifest.
-   - If the file is a ClickOnce application manifest, follow the explicit application-manifest discovery, staging, resolution, and update steps above, but skip implicit payload signing and do not copy staged payloads back. If a referenced payload is independently selected by normal matching in this invocation, wait for its separate operation and consume its completed signed primary before identity synchronization and metadata refresh. Sign and copy back only the application manifest from this operation.
+   - If the file is a ClickOnce application manifest, follow the explicit application-manifest discovery, staging, resolution, and update steps above, but skip payload signing and do not copy staged payloads back. Sign and copy back only the application manifest.
    - For other file types, apply the standard signing logic.
 1. Complete each coordinated signing operation after its file is signed.
-1. Referenced manifests and payload files are discovered during the update process but are not implicitly signed. Independently matched files retain their normal signing and output operations.
+1. Referenced manifests and payload files are discovered during the update process but are not signed.
 1. The user is responsible for ensuring files are re-signed in the correct order (payload files first, then application manifest, then deployment manifest) if re-signing multiple manifests across separate invocations.
 
 ### With `--no-update-clickonce-manifest`
