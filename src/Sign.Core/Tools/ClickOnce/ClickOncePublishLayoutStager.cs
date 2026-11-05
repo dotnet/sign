@@ -12,6 +12,8 @@ namespace Sign.Core
         private readonly IDirectoryService _directoryService;
         private readonly ClickOnceStagingPlanBuilder _planBuilder;
 
+        internal IDirectoryService DirectoryService => _directoryService;
+
         internal ClickOncePublishLayoutStager(
             IDirectoryService directoryService)
             : this(directoryService, new ClickOnceStagingPlanBuilder())
@@ -34,7 +36,8 @@ namespace Sign.Core
         }
 
         internal ClickOnceStagingSession Stage(
-            ResolvedClickOncePublishLayout layout)
+            ResolvedClickOncePublishLayout layout,
+            Func<ResolvedClickOncePayload, FileInfo>? bindSource = null)
         {
             ArgumentNullException.ThrowIfNull(layout, nameof(layout));
 
@@ -46,6 +49,13 @@ namespace Sign.Core
                 ClickOnceStagingPlan plan = _planBuilder.Build(
                     layout,
                     temporaryDirectory.Directory);
+
+                if (bindSource is not null)
+                {
+                    Dictionary<ResolvedClickOncePayload, FileInfo> sources =
+                        layout.Application.Payloads.ToDictionary(payload => payload, bindSource);
+                    plan = _planBuilder.Build(layout, temporaryDirectory.Directory, sources);
+                }
 
                 CopyFiles(layout, plan);
 
@@ -79,6 +89,14 @@ namespace Sign.Core
 
                 throw;
             }
+        }
+
+        internal void ValidateAdditionalOutputs(
+            ResolvedClickOncePublishLayout layout,
+            ClickOnceStagingSession session,
+            IReadOnlyList<SigningOperationPlan> outputs)
+        {
+            _planBuilder.ValidateAdditionalOutputs(layout, session, outputs);
         }
 
         private static void CopyFiles(

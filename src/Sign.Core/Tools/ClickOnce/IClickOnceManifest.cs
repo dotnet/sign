@@ -6,7 +6,7 @@ using Microsoft.Build.Tasks.Deployment.ManifestUtilities;
 
 namespace Sign.Core
 {
-    internal interface IClickOnceManifest
+    internal interface IClickOnceManifest : IDisposable
     {
         AssemblyIdentity AssemblyIdentity { get; }
         AssemblyReferenceCollection AssemblyReferences { get; }

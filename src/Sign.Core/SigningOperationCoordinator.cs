@@ -380,14 +380,7 @@ namespace Sign.Core
 
                 string rootPath = PathContainment.GetFullDirectoryPath(
                     artifact.RootDirectory.FullName);
-                IReadOnlyList<FileInfo> files =
-                    artifact.IncludeSiblings
-                        ? artifact.RootDirectory
-                            .EnumerateFiles(
-                                "*",
-                                SearchOption.AllDirectories)
-                            .ToList()
-                        : new[] { artifact.PrimaryFile };
+                IReadOnlyList<FileInfo> files = artifact.GetFiles();
 
                 foreach (FileInfo file in files)
                 {
