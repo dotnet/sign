@@ -65,7 +65,7 @@ For full signing, keep the complete referenced publish layout available and pass
 
 The legacy deployment-only re-signing workflow, where referenced files are absent, remains available in version 1. Version 2 fails by default if the referenced application manifest is missing; use its sign-as-is option only when existing metadata is intentionally retained. Callers must maintain consistent payload/application/deployment references and use the same certificate for related manifests. Within one invocation, overlapping explicit and manifest-selected work is coordinated so each source signing operation has one owner and all waiters reuse its result or failure. That coordination is not persisted across commands, and signing is not transactional.
 
-See the [ClickOnce signing guide](docs/clickonce-signing.md) for complete options, filtering, `.deploy` mapping, VSTO archival-copy responsibilities, and practical examples.
+See the [ClickOnce signing guide](docs/clickonce-signing.md) for complete options, filtering, `.deploy` mapping, VSTO archival-copy responsibilities, and practical examples. Maintainers must also follow the [ClickOnce version 2 release-readiness gate](docs/clickonce-release-readiness.md): no package or release containing ClickOnce version 2 may be published until the implementation and documentation are fully integrated and every check in that gate passes.
 
 ## Best Practices
 

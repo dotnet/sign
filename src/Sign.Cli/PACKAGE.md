@@ -57,7 +57,7 @@ Normal user-matched non-ClickOnce inputs still follow their ordinary signing pat
 
 For re-signing across invocations, arrange payload/application/deployment order and use the same certificate for related manifests. When application and deployment manifests are both explicit inputs in one invocation, the application is processed first. Signing an application manifest as-is can invalidate deployment references. Version 2 preserves the VSTO-specific XML subtree in application manifests, but does not implicitly synchronize VSTO's archival deployment copy; copy the signed deployment manifest explicitly if parity is required.
 
-See the [ClickOnce signing guide](https://github.com/dotnet/sign/blob/main/docs/clickonce-signing.md) for examples and migration guidance.
+See the [ClickOnce signing guide](https://github.com/dotnet/sign/blob/main/docs/clickonce-signing.md) for examples and migration guidance. Maintainers: no package or release containing ClickOnce version 2 may be published until the implementation and documentation are fully integrated and every [release-readiness check](https://github.com/dotnet/sign/blob/main/docs/clickonce-release-readiness.md) passes.
 
 ## License
 
