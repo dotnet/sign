@@ -44,15 +44,15 @@ namespace Sign.Core.Test
         [Fact]
         public async Task ExecuteAsync_CaseOnlyCanonicalIdentities_SharesOwner()
         {
-            string root = Path.Combine(
-                Path.GetTempPath(),
-                "SigningOperationCoordinator");
+            using TestDirectory directory = new();
+            FileInfo source = directory.CreateFile(
+                relativePath: "Source.bin",
+                contents: "content");
             SigningSourceIdentity first =
-                SigningSourceIdentity.PhysicalFile(
-                    Path.Combine(root, "directory", "..", "Source.bin"));
+                SigningSourceIdentity.Capture(source);
             SigningSourceIdentity second =
                 SigningSourceIdentity.PhysicalFile(
-                    Path.Combine(root, "source.BIN"));
+                    Path.Combine(directory.FullPath, "source.BIN"));
 
             await AssertDistinctEqualIdentitiesShareOwnerAsync(first, second);
         }
@@ -77,18 +77,24 @@ namespace Sign.Core.Test
         [Fact]
         public async Task ExecuteAsync_EquivalentRecursiveIdentities_SharesOwner()
         {
+            using TestDirectory directory = new();
+            FileInfo bundle = directory.CreateFile(
+                relativePath: "bundle.appxbundle",
+                contents: "content");
             SigningSourceIdentity first =
                 SigningSourceIdentity.ContainerEntry(
                     SigningSourceIdentity.ContainerEntry(
                         parent: SigningSourceIdentity.PhysicalFile(
-                            path: @"C:\bundle.appxbundle"),
+                            path: bundle.FullName),
                         entryPath: "application.appx"),
                     entryPath: "payload/file.dll");
             SigningSourceIdentity second =
                 SigningSourceIdentity.ContainerEntry(
                     SigningSourceIdentity.ContainerEntry(
                         parent: SigningSourceIdentity.PhysicalFile(
-                            path: @"c:\BUNDLE.appxbundle"),
+                            path: Path.Combine(
+                                directory.FullPath,
+                                "BUNDLE.APPXBUNDLE")),
                         entryPath: @".\application.appx"),
                     entryPath: @"payload\child\..\file.dll");
 
@@ -136,6 +142,60 @@ namespace Sign.Core.Test
             Assert.Same(first, second);
             Assert.Equal(expected: 1, actual: ownerCount);
             Assert.Single(snapshotDirectory.EnumerateFiles());
+        }
+
+        [Fact]
+        public async Task CompleteScope_WhenLastPotentialConsumerCompletes_ReleasesSnapshot()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            SigningOperationScope sourceScope =
+                CreateScope(@"C:\publish\First.dll");
+            SigningOperationScope clickOnceScope =
+                CreateScope(@"C:\publish\App.application");
+            await using SigningOperationCoordinator coordinator =
+                new(
+                    directoryService,
+                    scope: CreateScope(
+                        @"C:\publish\First.dll",
+                        @"C:\publish\App.application"),
+                    potentialConsumerScopes:
+                        new[] { sourceScope, clickOnceScope });
+            FileInfo artifact = directory.CreateFile(
+                relativePath: "signed.bin",
+                contents: "signed content");
+            SigningOperationResult result =
+                await coordinator.ExecuteAsync(
+                    SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\publish\First.dll"),
+                    () => Task.FromResult(artifact));
+            DirectoryInfo snapshotDirectory =
+                Assert.Single(directoryService.Directories);
+
+            coordinator.CompleteScope(sourceScope);
+
+            Assert.Single(
+                snapshotDirectory.EnumerateFileSystemInfos());
+            Assert.Equal(
+                "signed content",
+                File.ReadAllText(
+                    result.Materialize(
+                            new FileInfo(
+                                Path.Combine(
+                                    directory.FullPath,
+                                    "first.bin")))
+                        .FullName));
+
+            coordinator.CompleteScope(clickOnceScope);
+
+            Assert.Empty(
+                snapshotDirectory.EnumerateFileSystemInfos());
+            Assert.Throws<ObjectDisposedException>(
+                () => result.Materialize(
+                    new FileInfo(
+                        Path.Combine(
+                            directory.FullPath,
+                            "second.bin"))));
         }
 
         [Fact]
@@ -559,6 +619,65 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task ExecuteArtifactAsync_LayoutUsedByMultipleOutputs_MaterializesAllFiles()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo primary = directory.CreateFile(
+                Path.Combine("owner", "signed.application"),
+                "signed manifest");
+            FileInfo dependency = directory.CreateFile(
+                Path.Combine(
+                    "owner",
+                    "Application Files",
+                    "payload.dll.deploy"),
+                "signed payload");
+
+            SigningOperationResult result =
+                await coordinator.ExecuteArtifactAsync(
+                    CreateIdentity(),
+                    () => Task.FromResult(
+                        SigningOperationArtifact.Layout(
+                            primary,
+                            primary.Directory!)));
+            FileInfo first = result.Materialize(
+                new FileInfo(
+                    Path.Combine(
+                        directory.FullPath,
+                        "first",
+                        "app.application")));
+            FileInfo second = result.Materialize(
+                new FileInfo(
+                    Path.Combine(
+                        directory.FullPath,
+                        "second",
+                        "renamed.application")));
+
+            Assert.Equal(
+                "signed manifest",
+                File.ReadAllText(first.FullName));
+            Assert.Equal(
+                "signed manifest",
+                File.ReadAllText(second.FullName));
+            Assert.Equal(
+                "signed payload",
+                File.ReadAllText(
+                    Path.Combine(
+                        first.DirectoryName!,
+                        "Application Files",
+                        dependency.Name)));
+            Assert.Equal(
+                "signed payload",
+                File.ReadAllText(
+                    Path.Combine(
+                        second.DirectoryName!,
+                        "Application Files",
+                        dependency.Name)));
+        }
+
+        [Fact]
         public async Task ExecuteAsync_OwnerArtifactDeleted_ResultStillMaterializes()
         {
             using TestDirectory directory = new();
@@ -748,15 +867,16 @@ namespace Sign.Core.Test
 
             async Task<FileInfo> RunOwnerAsync()
             {
-                await coordinator.ExecuteAsync(
-                    nestedIdentity,
-                    async () =>
-                    {
-                        nestedEntered.SetResult();
-                        await releaseNested.Task;
+                await coordinator.WaitAsync(
+                    coordinator.ExecuteAsync(
+                        nestedIdentity,
+                        async () =>
+                        {
+                            nestedEntered.SetResult();
+                            await releaseNested.Task;
 
-                        return nestedArtifact;
-                    });
+                            return nestedArtifact;
+                        }));
                 nestedCompleted.SetResult();
                 await releaseOwner.Task;
 
@@ -1032,7 +1152,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task ExecuteAsync_DirectSelfAwaitAfterAwait_Throws()
+        public async Task WaitAsync_DirectSelfAwaitAfterAwait_Throws()
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
@@ -1046,13 +1166,14 @@ namespace Sign.Core.Test
             async Task<FileInfo> OperateAsync()
             {
                 await Task.Yield();
-                await coordinator.ExecuteAsync(
-                    identity,
-                    () =>
-                    {
-                        nestedOperationRan = true;
-                        return Task.FromResult(artifact);
-                    });
+                await coordinator.WaitAsync(
+                    coordinator.ExecuteAsync(
+                        identity,
+                        () =>
+                        {
+                            nestedOperationRan = true;
+                            return Task.FromResult(artifact);
+                        }));
 
                 return artifact;
             }
@@ -1067,6 +1188,570 @@ namespace Sign.Core.Test
                 "A signing operation cannot await itself.",
                 exception.Message);
             Assert.False(nestedOperationRan);
+        }
+
+        [Fact]
+        public async Task WaitAsync_NestedDependencyCycle_FaultsAllOperations()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            SigningSourceIdentity firstIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\first.bin");
+            SigningSourceIdentity secondIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\second.bin");
+            Task<SigningOperationResult>? secondTask = null;
+            bool duplicateFirstOperationRan = false;
+
+            async Task<FileInfo> RunFirstAsync()
+            {
+                secondTask = coordinator.ExecuteAsync(
+                    secondIdentity,
+                    async () =>
+                    {
+                        Task<SigningOperationResult> duplicateFirst =
+                            coordinator.ExecuteAsync(
+                                firstIdentity,
+                                () =>
+                                {
+                                    duplicateFirstOperationRan = true;
+
+                                    return Task.FromResult(firstArtifact);
+                                });
+                        _ = await coordinator.WaitAsync(duplicateFirst);
+
+                        return secondArtifact;
+                    });
+                _ = await coordinator.WaitAsync(secondTask);
+
+                return firstArtifact;
+            }
+
+            Task<SigningOperationResult> firstTask =
+                coordinator.ExecuteAsync(
+                    firstIdentity,
+                    RunFirstAsync);
+            InvalidOperationException firstException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => firstTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+            Task<SigningOperationResult> actualSecondTask =
+                Assert.IsType<Task<SigningOperationResult>>(secondTask);
+
+            InvalidOperationException secondException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => actualSecondTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Equal(
+                "A signing operation dependency cycle was detected.",
+                firstException.Message);
+            Assert.Same(firstException, secondException);
+            Assert.False(duplicateFirstOperationRan);
+
+            InvalidOperationException waiterException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => coordinator.ExecuteAsync(
+                        firstIdentity,
+                        () => throw new InvalidOperationException()));
+
+            Assert.Same(firstException, waiterException);
+            await coordinator.DisposeAsync().AsTask().WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+        }
+
+        [Fact]
+        public async Task WaitAsync_IndependentDependencyCycle_FaultsAllOperations()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            SigningSourceIdentity firstIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\first.bin");
+            SigningSourceIdentity secondIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\second.bin");
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<SigningOperationResult>? firstTask = null;
+            Task<SigningOperationResult>? secondTask = null;
+
+            async Task<FileInfo> RunFirstAsync()
+            {
+                await release.Task;
+                _ = await coordinator.WaitAsync(secondTask!);
+
+                return firstArtifact;
+            }
+
+            async Task<FileInfo> RunSecondAsync()
+            {
+                await release.Task;
+                _ = await coordinator.WaitAsync(firstTask!);
+
+                return secondArtifact;
+            }
+
+            firstTask = coordinator.ExecuteAsync(
+                firstIdentity,
+                RunFirstAsync);
+            secondTask = coordinator.ExecuteAsync(
+                secondIdentity,
+                RunSecondAsync);
+            release.SetResult();
+
+            InvalidOperationException firstException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => firstTask!.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+            InvalidOperationException secondException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => secondTask!.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Equal(
+                "A signing operation dependency cycle was detected.",
+                firstException.Message);
+            Assert.Same(firstException, secondException);
+
+            InvalidOperationException waiterException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => coordinator.ExecuteAsync(
+                        secondIdentity,
+                        () => throw new InvalidOperationException()));
+
+            Assert.Same(firstException, waiterException);
+            await coordinator.DisposeAsync().AsTask().WaitAsync(
+                timeout: TimeSpan.FromSeconds(value: 5));
+        }
+
+        [Fact]
+        public async Task WaitAsync_MilestoneDependencyCycle_FaultsAllOperations()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            SigningSourceIdentity firstIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\first.bin");
+            SigningSourceIdentity secondIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\second.bin");
+            TaskCompletionSource milestone = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<SigningOperationResult>? secondTask = null;
+
+            async Task<FileInfo> RunFirstAsync()
+            {
+                secondTask = coordinator.ExecuteAsync(
+                    secondIdentity,
+                    async () =>
+                    {
+                        Task<SigningOperationResult> duplicateFirst =
+                            coordinator.ExecuteAsync(
+                                firstIdentity,
+                                () => Task.FromResult(firstArtifact));
+                        _ = await coordinator.WaitAsync(duplicateFirst);
+
+                        return secondArtifact;
+                    });
+                _ = await coordinator.WaitAsync(
+                    secondTask,
+                    milestone.Task);
+
+                return firstArtifact;
+            }
+
+            Task<SigningOperationResult> firstTask =
+                coordinator.ExecuteAsync(
+                    firstIdentity,
+                    RunFirstAsync);
+            InvalidOperationException firstException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => firstTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+            Task<SigningOperationResult> actualSecondTask =
+                Assert.IsType<Task<SigningOperationResult>>(secondTask);
+            InvalidOperationException secondException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => actualSecondTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Equal(
+                "A signing operation dependency cycle was detected.",
+                firstException.Message);
+            Assert.Same(firstException, secondException);
+        }
+
+        [Fact]
+        public async Task WaitAsync_MilestoneCompletesBeforeReverseWait_Completes()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo ownerArtifact = directory.CreateFile(
+                relativePath: "owner.bin");
+            FileInfo childArtifact = directory.CreateFile(
+                relativePath: "child.bin");
+            SigningSourceIdentity ownerIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\owner.bin");
+            SigningSourceIdentity childIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\child.bin");
+            TaskCompletionSource milestone = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource releaseChild = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<SigningOperationResult>? ownerTask = null;
+            Task<SigningOperationResult>? childTask = null;
+            System.Reflection.FieldInfo gateField =
+                typeof(SigningOperationCoordinator).GetField(
+                    "_gate",
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic)!;
+            object gate = gateField.GetValue(coordinator)!;
+
+            async Task<FileInfo> RunOwnerAsync()
+            {
+                childTask = coordinator.ExecuteAsync(
+                    childIdentity,
+                    async () =>
+                    {
+                        await releaseChild.Task;
+                        Task<SigningOperationResult> ownerWait;
+
+                        lock (gate)
+                        {
+                            milestone.SetResult();
+                            ownerWait = coordinator.WaitAsync(ownerTask!);
+                        }
+
+                        _ = await ownerWait;
+                        return childArtifact;
+                    });
+                Task completed = await coordinator.WaitAsync(
+                    childTask,
+                    milestone.Task);
+
+                Assert.Same(milestone.Task, completed);
+
+                return ownerArtifact;
+            }
+
+            ownerTask = coordinator.ExecuteAsync(
+                ownerIdentity,
+                RunOwnerAsync);
+            Task<SigningOperationResult> actualChildTask =
+                Assert.IsType<Task<SigningOperationResult>>(childTask);
+
+            releaseChild.SetResult();
+
+            await Task.WhenAll(
+                    ownerTask,
+                    actualChildTask)
+                .WaitAsync(timeout: TimeSpan.FromSeconds(value: 5));
+        }
+
+        [Fact]
+        public async Task WaitAsync_CrossCoordinatorWaits_FaultBothOperations()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub firstDirectoryService = new();
+            using DirectoryServiceStub secondDirectoryService = new();
+            await using SigningOperationCoordinator firstCoordinator =
+                new(directoryService: firstDirectoryService);
+            await using SigningOperationCoordinator secondCoordinator =
+                new(directoryService: secondDirectoryService);
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            SigningSourceIdentity firstIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\first.bin");
+            SigningSourceIdentity secondIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\second.bin");
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<SigningOperationResult>? firstTask = null;
+            Task<SigningOperationResult>? secondTask = null;
+
+            firstTask = firstCoordinator.ExecuteAsync(
+                firstIdentity,
+                async () =>
+                {
+                    await release.Task;
+                    _ = await secondCoordinator.WaitAsync(secondTask!);
+
+                    return firstArtifact;
+                });
+            secondTask = secondCoordinator.ExecuteAsync(
+                secondIdentity,
+                async () =>
+                {
+                    await release.Task;
+                    _ = await firstCoordinator.WaitAsync(firstTask);
+
+                    return secondArtifact;
+                });
+
+            release.SetResult();
+
+            InvalidOperationException firstException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => firstTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+            InvalidOperationException secondException =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => secondTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Equal(
+                "A signing operation cannot await work from another " +
+                "coordinator.",
+                firstException.Message);
+            Assert.Equal(firstException.Message, secondException.Message);
+        }
+
+        [Fact]
+        public async Task WaitAsync_CompletedCrossCoordinatorResult_Throws()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub firstDirectoryService = new();
+            using DirectoryServiceStub secondDirectoryService = new();
+            await using SigningOperationCoordinator firstCoordinator =
+                new(directoryService: firstDirectoryService);
+            await using SigningOperationCoordinator secondCoordinator =
+                new(directoryService: secondDirectoryService);
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            Task<SigningOperationResult> firstTask =
+                firstCoordinator.ExecuteAsync(
+                    SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\first.bin"),
+                    () => Task.FromResult(firstArtifact));
+            _ = await firstTask;
+
+            Task<SigningOperationResult> secondTask =
+                secondCoordinator.ExecuteAsync(
+                    SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\second.bin"),
+                    async () =>
+                    {
+                        _ = await firstCoordinator.WaitAsync(firstTask);
+
+                        return secondArtifact;
+                    });
+            InvalidOperationException exception =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => secondTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Equal(
+                "A signing operation cannot await work from another " +
+                "coordinator.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task WaitAsync_CompletedForeignResultTask_Throws()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub firstDirectoryService = new();
+            using DirectoryServiceStub secondDirectoryService = new();
+            await using SigningOperationCoordinator firstCoordinator =
+                new(directoryService: firstDirectoryService);
+            await using SigningOperationCoordinator secondCoordinator =
+                new(directoryService: secondDirectoryService);
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            Task<SigningOperationResult> firstTask =
+                firstCoordinator.ExecuteAsync(
+                    SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\first.bin"),
+                    () => Task.FromResult(firstArtifact));
+            _ = await firstTask;
+
+            Task<SigningOperationResult> secondTask =
+                secondCoordinator.ExecuteAsync(
+                    SigningSourceIdentity.PhysicalFile(
+                        path: @"C:\second.bin"),
+                    async () =>
+                    {
+                        _ = await secondCoordinator.WaitAsync(firstTask);
+
+                        return secondArtifact;
+                    });
+            ArgumentException exception =
+                await Assert.ThrowsAsync<ArgumentException>(
+                    () => secondTask.WaitAsync(
+                        timeout: TimeSpan.FromSeconds(value: 5)));
+
+            Assert.Equal("resultTask", exception.ParamName);
+            Assert.Equal(
+                "The result task does not belong to this coordinator. " +
+                "(Parameter 'resultTask')",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task WaitAsync_ChildWaitsForNonWaitingOwner_Completes()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo ownerArtifact = directory.CreateFile(
+                relativePath: "owner.bin");
+            FileInfo childArtifact = directory.CreateFile(
+                relativePath: "child.bin");
+            SigningSourceIdentity ownerIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\owner.bin");
+            SigningSourceIdentity childIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\child.bin");
+            TaskCompletionSource allowChildWait = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource releaseOwner = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<SigningOperationResult>? ownerTask = null;
+            Task<SigningOperationResult>? childTask = null;
+
+            async Task<FileInfo> RunOwnerAsync()
+            {
+                childTask = coordinator.ExecuteAsync(
+                    childIdentity,
+                    async () =>
+                    {
+                        await allowChildWait.Task;
+                        _ = await coordinator.WaitAsync(ownerTask!);
+
+                        return childArtifact;
+                    });
+                await releaseOwner.Task;
+
+                return ownerArtifact;
+            }
+
+            ownerTask = coordinator.ExecuteAsync(
+                ownerIdentity,
+                RunOwnerAsync);
+            Task<SigningOperationResult> actualChildTask =
+                Assert.IsType<Task<SigningOperationResult>>(childTask);
+
+            allowChildWait.SetResult();
+            releaseOwner.SetResult();
+
+            SigningOperationResult owner =
+                await ownerTask.WaitAsync(
+                    timeout: TimeSpan.FromSeconds(value: 5));
+            SigningOperationResult child =
+                await actualChildTask.WaitAsync(
+                    timeout: TimeSpan.FromSeconds(value: 5));
+
+            Assert.NotNull(owner);
+            Assert.NotNull(child);
+        }
+
+        [Fact]
+        public async Task WaitAsync_SharedPrerequisite_CompletesOnce()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo prerequisiteArtifact = directory.CreateFile(
+                relativePath: "prerequisite.bin");
+            FileInfo firstArtifact = directory.CreateFile(
+                relativePath: "first.bin");
+            FileInfo secondArtifact = directory.CreateFile(
+                relativePath: "second.bin");
+            SigningSourceIdentity prerequisiteIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\prerequisite.bin");
+            SigningSourceIdentity firstIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\first.bin");
+            SigningSourceIdentity secondIdentity =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\second.bin");
+            TaskCompletionSource releasePrerequisite = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            int prerequisiteOperationCount = 0;
+
+            async Task<FileInfo> RunPrerequisiteAsync()
+            {
+                ++prerequisiteOperationCount;
+                await releasePrerequisite.Task;
+
+                return prerequisiteArtifact;
+            }
+
+            Task<SigningOperationResult> prerequisiteTask =
+                coordinator.ExecuteAsync(
+                    prerequisiteIdentity,
+                    RunPrerequisiteAsync);
+            Task<SigningOperationResult> firstTask =
+                coordinator.ExecuteAsync(
+                    firstIdentity,
+                    async () =>
+                    {
+                        _ = await coordinator.WaitAsync(
+                            coordinator.ExecuteAsync(
+                                prerequisiteIdentity,
+                                RunPrerequisiteAsync));
+
+                        return firstArtifact;
+                    });
+            Task<SigningOperationResult> secondTask =
+                coordinator.ExecuteAsync(
+                    secondIdentity,
+                    async () =>
+                    {
+                        _ = await coordinator.WaitAsync(
+                            coordinator.ExecuteAsync(
+                                prerequisiteIdentity,
+                                RunPrerequisiteAsync));
+
+                        return secondArtifact;
+                    });
+
+            releasePrerequisite.SetResult();
+            await Task.WhenAll(
+                    prerequisiteTask,
+                    firstTask,
+                    secondTask)
+                .WaitAsync(timeout: TimeSpan.FromSeconds(value: 5));
+
+            Assert.Equal(
+                expected: 1,
+                actual: prerequisiteOperationCount);
         }
 
         [Fact]
@@ -1161,6 +1846,123 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task ExecuteArtifactAsync_WhenOwnerStarts_ReturnsOwnershipSynchronously()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact =
+                directory.CreateFile(relativePath: "artifact.bin");
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            bool invoked = false;
+
+            Task<SigningOperationResult> resultTask =
+                coordinator.ExecuteArtifactAsync(
+                    SigningSourceIdentity.Capture(artifact),
+                    async () =>
+                    {
+                        invoked = true;
+                        await release.Task;
+
+                        return SigningOperationArtifact.Single(artifact);
+                    },
+                    out bool ownsOperation);
+            Task<SigningOperationResult> waiterTask =
+                coordinator.ExecuteArtifactAsync(
+                    SigningSourceIdentity.Capture(artifact),
+                    () => throw new InvalidOperationException(),
+                    out bool waiterOwnsOperation);
+
+            Assert.True(invoked);
+            Assert.True(ownsOperation);
+            Assert.False(waiterOwnsOperation);
+            Assert.False(resultTask.IsCompleted);
+            Assert.False(waiterTask.IsCompleted);
+
+            release.SetResult();
+            SigningOperationResult[] results =
+                await Task.WhenAll(resultTask, waiterTask)
+                    .WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Same(results[0], results[1]);
+        }
+
+        [Fact]
+        public async Task TryGetResult_RegisteredIdentity_ReturnsExistingWork()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact =
+                directory.CreateFile(relativePath: "artifact.bin");
+            SigningSourceIdentity identity =
+                SigningSourceIdentity.Capture(artifact);
+            TaskCompletionSource release = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            int operationCount = 0;
+
+            Task<SigningOperationResult> owner =
+                coordinator.ExecuteAsync(
+                    identity,
+                    async () =>
+                    {
+                        ++operationCount;
+                        await release.Task;
+
+                        return artifact;
+                    });
+
+            bool found = coordinator.TryGetResult(
+                identity,
+                out Task<SigningOperationResult>? existing);
+
+            Assert.True(found);
+            Assert.Same(owner, existing);
+            Assert.Equal(expected: 1, actual: operationCount);
+
+            release.SetResult();
+            SigningOperationResult[] results = await Task.WhenAll(
+                    owner,
+                    existing!)
+                .WaitAsync(timeout: TimeSpan.FromSeconds(value: 5));
+
+            Assert.Same(results[0], results[1]);
+            Assert.Equal(expected: 1, actual: operationCount);
+        }
+
+        [Fact]
+        public async Task TryGetResult_UnregisteredIdentity_ReturnsFalse()
+        {
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+
+            bool found = coordinator.TryGetResult(
+                CreateIdentity(),
+                out Task<SigningOperationResult>? resultTask);
+
+            Assert.False(found);
+            Assert.Null(resultTask);
+        }
+
+        [Fact]
+        public async Task TryGetResult_AfterDispose_Throws()
+        {
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            await coordinator.DisposeAsync();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => coordinator.TryGetResult(
+                    CreateIdentity(),
+                    out _));
+        }
+
+        [Fact]
         public async Task ExecuteAsync_SingleSlotPrerequisite_StartsInline()
         {
             using TestDirectory directory = new();
@@ -1187,16 +1989,17 @@ namespace Sign.Core.Test
                 try
                 {
                     SigningOperationResult prerequisite =
-                        await coordinator.ExecuteAsync(
-                            prerequisiteIdentity,
-                            () =>
-                            {
-                                prerequisiteRanWhileSlotHeld =
-                                    slots.CurrentCount == 0;
+                        await coordinator.WaitAsync(
+                            coordinator.ExecuteAsync(
+                                prerequisiteIdentity,
+                                () =>
+                                {
+                                    prerequisiteRanWhileSlotHeld =
+                                        slots.CurrentCount == 0;
 
-                                return Task.FromResult(
-                                    prerequisiteArtifact);
-                            });
+                                    return Task.FromResult(
+                                        prerequisiteArtifact);
+                                }));
 
                     FileInfo materialized =
                         prerequisite.Materialize(
@@ -1260,9 +2063,10 @@ namespace Sign.Core.Test
 
                 try
                 {
-                    await coordinator.ExecuteAsync(
-                        prerequisiteIdentity,
-                        () => Task.FromException<FileInfo>(expected));
+                    await coordinator.WaitAsync(
+                        coordinator.ExecuteAsync(
+                            prerequisiteIdentity,
+                            () => Task.FromException<FileInfo>(expected)));
                     dependentPostAwaitRan = true;
 
                     return dependentArtifact;
@@ -1365,6 +2169,148 @@ namespace Sign.Core.Test
             Assert.Equal(expected: 1, actual: ownerCount);
             Assert.False(secondDelegateInvoked);
             Assert.Same(results[0], results[1]);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_IdentityOutsideScope_ThrowsWithoutInvokingOperation()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            FileInfo scopedSource = directory.CreateFile(
+                relativePath: @"publish\App.exe",
+                contents: "content");
+            string publishDirectory =
+                Path.GetDirectoryName(scopedSource.FullName)!;
+            await using SigningOperationCoordinator coordinator = new(
+                directoryService: directoryService,
+                scope: CreateScope(scopedSource.FullName));
+            FileInfo artifact = directory.CreateFile(
+                relativePath: "signed.bin");
+            int invocationCount = 0;
+
+            Task<FileInfo> OperateAsync()
+            {
+                ++invocationCount;
+
+                return Task.FromResult(artifact);
+            }
+
+            InvalidOperationException exception =
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => coordinator.ExecuteAsync(
+                        SigningSourceIdentity.PhysicalFile(
+                            path: Path.Combine(
+                                publishDirectory,
+                                "App.dll")),
+                        OperateAsync));
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => coordinator.ExecuteAsync(
+                    SigningSourceIdentity.ContainerEntry(
+                        parent: SigningSourceIdentity.PhysicalFile(
+                            path: Path.Combine(
+                                publishDirectory,
+                                "other.zip")),
+                        entryPath: "App.exe"),
+                    OperateAsync));
+
+            Assert.Equal(
+                "A signing operation requested a file outside its scope.",
+                exception.Message);
+            Assert.Equal(expected: 0, actual: invocationCount);
+
+            SigningOperationResult result = await coordinator.ExecuteAsync(
+                SigningSourceIdentity.PhysicalFile(
+                    path: Path.Combine(
+                        publishDirectory,
+                        "app.EXE")),
+                OperateAsync);
+
+            Assert.NotNull(result);
+            Assert.Equal(expected: 1, actual: invocationCount);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_IdentitiesInScope_InvokeOperations()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(
+                directoryService: directoryService,
+                scope: CreateScope(@"C:\publish\App.application"));
+            FileInfo artifact = directory.CreateFile(
+                relativePath: "signed.bin");
+            SigningSourceIdentity application =
+                SigningSourceIdentity.PhysicalFile(
+                    path: @"C:\publish\App.application");
+            SigningSourceIdentity[] identities =
+            [
+                application,
+                application.GetSibling(@"Application Files\App.exe"),
+                SigningSourceIdentity.ContainerEntry(
+                    parent: application.GetSibling("container.zip"),
+                    entryPath: "App.exe"),
+            ];
+            int invocationCount = 0;
+
+            foreach (SigningSourceIdentity identity in identities)
+            {
+                await coordinator.ExecuteAsync(
+                    identity,
+                    () =>
+                    {
+                        ++invocationCount;
+
+                        return Task.FromResult(artifact);
+                    });
+            }
+
+            Assert.Equal(
+                expected: identities.Length,
+                actual: invocationCount);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithoutScope_AcceptsAnyIdentity()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService: directoryService);
+            FileInfo artifact = directory.CreateFile(
+                relativePath: "signed.bin");
+            SigningSourceIdentity[] identities =
+            [
+                SigningSourceIdentity.PhysicalFile(path: @"C:\first.bin"),
+                SigningSourceIdentity.PhysicalFile(path: @"D:\second.bin"),
+            ];
+
+            foreach (SigningSourceIdentity identity in identities)
+            {
+                await coordinator.ExecuteAsync(
+                    identity,
+                    () => Task.FromResult(artifact));
+            }
+        }
+
+        private static SigningOperationScope CreateScope(
+            params string[] paths)
+        {
+            return SigningOperationScope.Create(
+                paths
+                    .Select(
+                        path =>
+                        {
+                            FileInfo file = new(path);
+
+                            return new SigningOperationPlan(
+                                SigningFile.Capture(file),
+                                file);
+                        })
+                    .ToList(),
+                requiresSequentialCoordination: candidate => string.Equals(
+                    candidate.Extension,
+                    ".application",
+                    StringComparison.OrdinalIgnoreCase));
         }
 
         private static SigningSourceIdentity CreateIdentity()

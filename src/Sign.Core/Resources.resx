@@ -292,6 +292,9 @@
     <value>SignAsync called for {filePath}. Using {localFilePath} locally.</value>
     <comment>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</comment>
   </data>
+  <data name="SignedArtifactUnavailable" xml:space="preserve">
+    <value>The signed artifact is unavailable.</value>
+  </data>
   <data name="SigningAttempt" xml:space="preserve">
     <value>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</value>
     <comment>{Placeholder="{attempt}", "{maxAttempts}"} are numbers representing the current attempt (as a number) and the maximum allowed attempts (as a number).  {Placeholder="{seconds}"} is a decimal number representing the number of seconds elapsed, and "s" is the unit abbreviation for seconds.</comment>
