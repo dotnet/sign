@@ -244,4 +244,28 @@
   <data name="TrustedSigningCommandObsolete" xml:space="preserve">
     <value>The trusted-signing command is obsolete. Use the artifact-signing command instead.</value>
   </data>
+  <data name="ClickOnceSigningVersionOptionDescription" xml:space="preserve">
+    <value>ClickOnce signing algorithm. Allowed values are '1' (legacy) and '2' (manifest-driven). Defaults to 1. Other signing formats are unchanged.</value>
+    <comment>{Locked="ClickOnce", "1", "2"} are a technology name and option values.</comment>
+  </data>
+  <data name="NoSignClickOnceDependenciesOptionDescription" xml:space="preserve">
+    <value>Update and sign only specified ClickOnce manifests, without signing dependent manifests or payloads. Requires --clickonce-signing-version 2. Cannot be combined with --no-update-clickonce-manifest.</value>
+    <comment>{Locked="ClickOnce", "--clickonce-signing-version", "2", "--no-update-clickonce-manifest"} are a technology name, option names, and an option value.</comment>
+  </data>
+  <data name="NoUpdateClickOnceManifestOptionDescription" xml:space="preserve">
+    <value>Sign specified ClickOnce manifests without resolving dependencies or updating file information. Requires --clickonce-signing-version 2. Cannot be combined with --no-sign-clickonce-deps.</value>
+    <comment>{Locked="ClickOnce", "--clickonce-signing-version", "2", "--no-sign-clickonce-deps"} are a technology name, option names, and an option value.</comment>
+  </data>
+  <data name="InvalidClickOnceSigningVersion" xml:space="preserve">
+    <value>Invalid value for --clickonce-signing-version. The value must be '1' or '2'.</value>
+    <comment>{Locked="--clickonce-signing-version", "1", "2"} are an option name and option values.</comment>
+  </data>
+  <data name="ClickOnceDependencyOptionsRequireVersion2" xml:space="preserve">
+    <value>The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options require --clickonce-signing-version 2.</value>
+    <comment>{Locked="--no-sign-clickonce-deps", "--no-update-clickonce-manifest", "--clickonce-signing-version", "2"} are option names and an option value.</comment>
+  </data>
+  <data name="ClickOnceDependencyOptionsCannotBeCombined" xml:space="preserve">
+    <value>The '--no-sign-clickonce-deps' and '--no-update-clickonce-manifest' options cannot be combined.</value>
+    <comment>{Locked="--no-sign-clickonce-deps", "--no-update-clickonce-manifest"} are option names.</comment>
+  </data>
 </root>
