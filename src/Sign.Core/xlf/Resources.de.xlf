@@ -87,6 +87,16 @@
         <target state="translated">Das Bereitstellungsmanifest „{0}“ verweist auf das Anwendungsmanifest „{1}“, die Datei ist jedoch nicht vorhanden. Verwenden Sie zum Signieren ohne Aktualisierung der ClickOnce-Manifestmetadaten „--clickonce-signing-version 2 --no-update-clickonce-manifest“.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestAmbiguousApplicationContexts">
+        <source>The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</source>
+        <target state="new">The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</target>
+        <note>{0} is the sorted list of original application manifest paths with mutually invalidating context selections.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestConflictingApplicationContexts">
+        <source>The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</source>
+        <target state="new">The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</target>
+        <note>{0} is the original application manifest path; {1} is the sorted list of original deployment manifest paths.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
         <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
         <target state="translated">Das Bereitstellungsmanifest „{0}“ verweist auf den Zielpfad des Anwendungsmanifests „{1}“, der nicht im Stagingverzeichnis dargestellt werden kann. Verwenden Sie zum Signieren ohne Aktualisierung der ClickOnce-Manifestmetadaten „--clickonce-signing-version 2 --no-update-clickonce-manifest“.</target>
@@ -141,6 +151,16 @@
         <source>File '{0}' is not a deployment manifest.</source>
         <target state="translated">Die Datei „{0}“ ist kein Bereitstellungsmanifest.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceOwnershipCollision">
+        <source>Output '{0}' for input '{1}' conflicts with owner '{2}' of signing source '{3}'. Choose a separate output directory or remove the overlapping input.</source>
+        <target state="new">Output '{0}' for input '{1}' conflicts with owner '{2}' of signing source '{3}'. Choose a separate output directory or remove the overlapping input.</target>
+        <note>{0} is the conflicting destination; {1} is the explicit input owner; {2} is the source owner or ClickOnce publisher; {3} is the protected or published source.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceReadOnlySource">
+        <source>Cannot modify or sign read-only ClickOnce source '{0}'. Remove its read-only attribute before signing.</source>
+        <target state="new">Cannot modify or sign read-only ClickOnce source '{0}'. Remove its read-only attribute before signing.</target>
+        <note>{NumberedPlaceholder="{0}"} is the original source file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>

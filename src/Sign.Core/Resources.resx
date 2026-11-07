@@ -187,6 +187,14 @@
     <value>Failed to access launcher candidate '{0}' associated with deployment manifest '{1}'.</value>
     <comment>{NumberedPlaceholder="{0}"} is the absolute launcher candidate path. {NumberedPlaceholder="{1}"} is a deployment manifest file path.</comment>
   </data>
+  <data name="ClickOnceDeploymentManifestAmbiguousApplicationContexts" xml:space="preserve">
+    <value>The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</value>
+    <comment>{0} is the sorted list of original application manifest paths with mutually invalidating context selections.</comment>
+  </data>
+  <data name="ClickOnceDeploymentManifestConflictingApplicationContexts" xml:space="preserve">
+    <value>The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</value>
+    <comment>{0} is the original application manifest path; {1} is the sorted list of original deployment manifest paths.</comment>
+  </data>
   <data name="ClickOnceDeploymentManifestMissingEntryPoint" xml:space="preserve">
     <value>Deployment manifest '{0}' does not identify an application manifest. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</value>
     <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path.</comment>
@@ -222,6 +230,14 @@
   <data name="ClickOnceDeploymentManifestWrongType" xml:space="preserve">
     <value>File '{0}' is not a deployment manifest.</value>
     <comment>{NumberedPlaceholder="{0}"} is a file path.</comment>
+  </data>
+  <data name="ClickOnceReadOnlySource" xml:space="preserve">
+    <value>Cannot modify or sign read-only ClickOnce source '{0}'. Remove its read-only attribute before signing.</value>
+    <comment>{NumberedPlaceholder="{0}"} is the original source file path.</comment>
+  </data>
+  <data name="ClickOnceOwnershipCollision" xml:space="preserve">
+    <value>Output '{0}' for input '{1}' conflicts with owner '{2}' of signing source '{3}'. Choose a separate output directory or remove the overlapping input.</value>
+    <comment>{0} is the conflicting destination; {1} is the explicit input owner; {2} is the source owner or ClickOnce publisher; {3} is the protected or published source.</comment>
   </data>
   <data name="ClickOnceStagingCopyFailed" xml:space="preserve">
     <value>Failed to prepare file '{0}' for the signing operation.</value>
