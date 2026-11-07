@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+
 namespace Sign.Core
 {
     internal sealed class SigningSourceIdentity :
@@ -32,7 +35,7 @@ namespace Sign.Core
             ArgumentException.ThrowIfNullOrWhiteSpace(path, nameof(path));
 
             return new SigningSourceIdentity(
-                path: Path.GetFullPath(path),
+                path: GetCanonicalPhysicalPath(path),
                 parent: null);
         }
 
@@ -45,6 +48,53 @@ namespace Sign.Core
             return new SigningSourceIdentity(
                 path: NormalizeEntryPath(entryPath),
                 parent: parent);
+        }
+
+        internal SigningSourceIdentity GetSibling(string relativePath)
+        {
+            string normalizedRelativePath =
+                NormalizeEntryPath(relativePath);
+
+            return IsContainerEntry
+                ? ContainerEntry(
+                    _parent!,
+                    CombineEntryPaths(
+                        Path.GetDirectoryName(_path.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar)),
+                        normalizedRelativePath))
+                : PhysicalFile(
+                    Path.Combine(
+                        Path.GetDirectoryName(_path)!,
+                        normalizedRelativePath.Replace(
+                            '/',
+                            Path.DirectorySeparatorChar)));
+        }
+
+        // A container entry belongs to the physical file that contains it.
+        internal SigningSourceIdentity GetPhysicalRoot()
+        {
+            return _parent?.GetPhysicalRoot() ?? this;
+        }
+
+        internal string GetPhysicalPath()
+        {
+            return GetPhysicalRoot()._path;
+        }
+
+        // Compares path text, as Equals does, so every identity that
+        // GetSibling derives from the file is in its directory tree.
+        internal bool IsInDirectoryTreeOf(SigningSourceIdentity file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            string? directory = Path.GetDirectoryName(
+                file.GetPhysicalRoot()._path);
+
+            return directory is not null &&
+                PathContainment.IsContained(
+                    PathContainment.EnsureTrailingSeparator(directory),
+                    GetPhysicalRoot()._path);
         }
 
         public bool Equals(SigningSourceIdentity? other)
@@ -66,7 +116,7 @@ namespace Sign.Core
                 return string.Equals(
                     a: _path,
                     b: other._path,
-                    comparisonType: StringComparison.OrdinalIgnoreCase);
+                    comparisonType: StringComparison.Ordinal);
             }
 
             return
@@ -88,7 +138,80 @@ namespace Sign.Core
                 ? HashCode.Combine(
                     _parent,
                     StringComparer.Ordinal.GetHashCode(_path))
-                : StringComparer.OrdinalIgnoreCase.GetHashCode(_path);
+                : StringComparer.Ordinal.GetHashCode(_path);
+        }
+
+        private static string GetCanonicalPhysicalPath(string path)
+        {
+            string fullPath = Path.GetFullPath(path);
+
+            try
+            {
+                using SafeFileHandle handle = File.OpenHandle(
+                    fullPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
+
+                StringBuilder buffer = new(capacity: 512);
+                uint length = Kernel32.GetFinalPathNameByHandleW(
+                    handle,
+                    buffer,
+                    checked((uint)buffer.Capacity),
+                    dwFlags: 0);
+
+                if (length == 0)
+                {
+                    return fullPath;
+                }
+
+                if (length >= checked((uint)buffer.Capacity))
+                {
+                    buffer = new StringBuilder(
+                        capacity: checked((int)length));
+                    length = Kernel32.GetFinalPathNameByHandleW(
+                        handle,
+                        buffer,
+                        checked((uint)buffer.Capacity),
+                        dwFlags: 0);
+
+                    if (length == 0 ||
+                        length >= checked((uint)buffer.Capacity))
+                    {
+                        return fullPath;
+                    }
+                }
+
+                return RemoveExtendedPathPrefix(buffer.ToString());
+            }
+            catch (Exception exception) when (
+                exception is IOException or
+                UnauthorizedAccessException or
+                NotSupportedException)
+            {
+                // If the file cannot be opened, preserve its exact path
+                // spelling rather than assuming a case-only alias.
+                return fullPath;
+            }
+        }
+
+        private static string RemoveExtendedPathPrefix(string path)
+        {
+            const string extendedPrefix = @"\\?\";
+            const string extendedUncPrefix = @"\\?\UNC\";
+
+            if (path.StartsWith(
+                extendedUncPrefix,
+                StringComparison.Ordinal))
+            {
+                return $@"\\{path[extendedUncPrefix.Length..]}";
+            }
+
+            return path.StartsWith(
+                extendedPrefix,
+                StringComparison.Ordinal)
+                    ? path[extendedPrefix.Length..]
+                    : path;
         }
 
         private static string NormalizeEntryPath(string entryPath)
@@ -143,6 +266,15 @@ namespace Sign.Core
             }
 
             return string.Join(separator: '/', values: segments);
+        }
+
+        private static string CombineEntryPaths(
+            string? directory,
+            string relativePath)
+        {
+            return string.IsNullOrEmpty(directory)
+                ? relativePath
+                : $"{directory.Replace('\\', '/')}/{relativePath}";
         }
     }
 }

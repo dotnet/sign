@@ -6,8 +6,23 @@ namespace Sign.Core
 {
     internal interface IDataFormatSigner
     {
+        bool RequiresSequentialCoordination => false;
+
+        // Whether the staged file must keep its original file name, e.g. because
+        // StageSigningDependencies reproduces the source directory around it.
+        bool RequiresOriginalFileName => false;
         bool CanSign(FileInfo file);
         Task SignAsync(IEnumerable<FileInfo> files, SignOptions options);
+
+        // Signs one coordinated container or sequentially coordinated file while preserving its source
+        // identity. Other coordinated files are signed in batches through SignAsync(IEnumerable<FileInfo>, ...).
+        Task SignAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            return SignAsync(new[] { file.File }, options);
+        }
 
         // Some signature mechanisms (e.g. ClickOnce) require extra files alongside the file being signed.
         // We can't rely on the user specifying everything (and inputs are signed in parallel, so doing so
@@ -16,16 +31,6 @@ namespace Sign.Core
         void StageSigningDependencies(
             FileInfo source,
             DirectoryInfo stagingDirectory,
-            SignOptions options)
-        {
-        }
-
-        // Copies the file's signed dependencies from staging to the output directory. The signing lifecycle
-        // publishes the file itself after this returns, so the signed file wins if a result shares its
-        // destination. Don't copy the file here or depend on it being present in the output directory.
-        void CopySigningResults(
-            FileInfo stagedFile,
-            DirectoryInfo outputDirectory,
             SignOptions options)
         {
         }

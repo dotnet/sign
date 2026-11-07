@@ -9,17 +9,42 @@ namespace Sign.Core
         private readonly
             Dictionary<SigningSourceIdentity, OperationState>
             _operations = new();
+        private readonly
+            Dictionary<Task<SigningOperationResult>, OperationState>
+            _operationsByCompletion = new();
         private readonly object _gate = new();
+        private readonly HashSet<SigningOperationScope>?
+            _remainingScopes;
+        private readonly SigningOperationScope? _scope;
         private readonly TemporaryDirectory _snapshotDirectory;
         private Task? _disposal;
 
+        // A scoped coordinator serves one connected group of plans and
+        // rejects requests outside the group's combined scope.
         internal SigningOperationCoordinator(
-            IDirectoryService directoryService)
+            IDirectoryService directoryService,
+            SigningOperationScope? scope = null,
+            IReadOnlyCollection<SigningOperationScope>?
+                potentialConsumerScopes = null)
         {
             ArgumentNullException.ThrowIfNull(
                 directoryService,
                 nameof(directoryService));
 
+            if (potentialConsumerScopes is not null && scope is null)
+            {
+                throw new ArgumentException(
+                    message:
+                        "Potential consumer scopes require a combined " +
+                        "coordinator scope.",
+                    paramName: nameof(potentialConsumerScopes));
+            }
+
+            _scope = scope;
+            _remainingScopes = potentialConsumerScopes is null
+                ? null
+                : new HashSet<SigningOperationScope>(
+                    potentialConsumerScopes);
             _snapshotDirectory = new TemporaryDirectory(directoryService);
         }
 
@@ -35,10 +60,72 @@ namespace Sign.Core
             SigningSourceIdentity identity,
             Func<Task<FileInfo>> operation)
         {
+            ArgumentNullException.ThrowIfNull(operation, nameof(operation));
+
+            return ExecuteArtifactAsync(
+                identity,
+                ExecuteOperationAsync);
+
+            async Task<SigningOperationArtifact> ExecuteOperationAsync()
+            {
+                Task<FileInfo> operationTask = operation();
+
+                if (operationTask is null)
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "The signing operation returned no task.");
+                }
+
+                FileInfo artifact =
+                    await operationTask.ConfigureAwait(
+                        continueOnCapturedContext: false);
+
+                if (artifact is null)
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "The signing operation returned no artifact.");
+                }
+
+                return SigningOperationArtifact.Single(artifact);
+            }
+        }
+
+        // A claiming caller's operation is invoked before this method
+        // returns, so callers can learn synchronously which identities they
+        // own.
+        internal Task<SigningOperationResult> ExecuteArtifactAsync(
+            SigningSourceIdentity identity,
+            Func<Task<SigningOperationArtifact>> operation)
+        {
+            return ExecuteArtifactAsync(
+                identity,
+                operation,
+                out _);
+        }
+
+        // Reports ownership synchronously because a claiming caller's
+        // operation is invoked before this method returns.
+        internal Task<SigningOperationResult> ExecuteArtifactAsync(
+            SigningSourceIdentity identity,
+            Func<Task<SigningOperationArtifact>> operation,
+            out bool ownsOperation)
+        {
             ArgumentNullException.ThrowIfNull(identity, nameof(identity));
             ArgumentNullException.ThrowIfNull(operation, nameof(operation));
 
-            OperationState candidate = new();
+            // A request outside the scope means the plan was wrongly found
+            // isolated: another plan might need the same result.
+            if (_scope is not null && !_scope.Contains(identity))
+            {
+                throw new InvalidOperationException(
+                    message:
+                        "A signing operation requested a file outside " +
+                        "its scope.");
+            }
+
+            OperationState candidate = new(this);
             OperationState state;
 
             lock (_gate)
@@ -56,17 +143,245 @@ namespace Sign.Core
                 {
                     state = candidate;
                     _operations.Add(identity, state);
+                    _operationsByCompletion.Add(state.Completion, state);
                 }
             }
 
-            if (ReferenceEquals(state, candidate))
+            ownsOperation = ReferenceEquals(state, candidate);
+
+            if (ownsOperation)
             {
                 state.Start(
                     operation,
                     CreateSnapshot);
             }
 
-            return state.GetResultAsync();
+            return state.Completion;
+        }
+
+        // A scope can make no more requests after its plan completes.
+        // Completed snapshots are released once no unfinished scope could
+        // request their identity.
+        internal void CompleteScope(SigningOperationScope scope)
+        {
+            ArgumentNullException.ThrowIfNull(scope, nameof(scope));
+
+            lock (_gate)
+            {
+                ThrowIfDisposed();
+
+                if (_remainingScopes is null ||
+                    !_remainingScopes.Remove(scope))
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "The signing operation scope was not active.");
+                }
+
+                List<Exception>? cleanupExceptions = null;
+
+                foreach (
+                    KeyValuePair<SigningSourceIdentity, OperationState>
+                    operation in _operations.ToArray())
+                {
+                    if (!operation.Value.Completion.IsCompleted ||
+                        _remainingScopes.Any(
+                            remainingScope =>
+                                remainingScope.Contains(operation.Key)))
+                    {
+                        continue;
+                    }
+
+                    _operations.Remove(operation.Key);
+                    _operationsByCompletion.Remove(
+                        operation.Value.Completion);
+
+                    if (!operation.Value.Completion
+                        .IsCompletedSuccessfully)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        operation.Value.Completion.Result
+                            .ReleaseSnapshot();
+                    }
+                    catch (Exception exception) when (
+                        exception is IOException or
+                        UnauthorizedAccessException)
+                    {
+                        cleanupExceptions ??= new List<Exception>();
+                        cleanupExceptions.Add(exception);
+                    }
+                }
+
+                if (cleanupExceptions?.Count == 1)
+                {
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo
+                        .Capture(cleanupExceptions[0])
+                        .Throw();
+                }
+
+                if (cleanupExceptions?.Count > 1)
+                {
+                    throw new AggregateException(cleanupExceptions);
+                }
+            }
+        }
+
+        // Returns only work that another caller already registered. This does
+        // not claim an identity or start an operation.
+        internal bool TryGetResult(
+            SigningSourceIdentity identity,
+            out Task<SigningOperationResult>? resultTask)
+        {
+            ArgumentNullException.ThrowIfNull(identity, nameof(identity));
+
+            lock (_gate)
+            {
+                ThrowIfDisposed();
+
+                if (_operations.TryGetValue(
+                    identity,
+                    out OperationState? state))
+                {
+                    resultTask = state.Completion;
+
+                    return true;
+                }
+
+                resultTask = null;
+
+                return false;
+            }
+        }
+
+        // Operation delegates must use this method when awaiting another
+        // coordinated result. Claims alone do not create dependencies.
+        internal Task<SigningOperationResult> WaitAsync(
+            Task<SigningOperationResult> resultTask)
+        {
+            ArgumentNullException.ThrowIfNull(
+                resultTask,
+                nameof(resultTask));
+
+            WaitRegistration? registration = RegisterWait(resultTask);
+
+            return registration is null
+                ? resultTask
+                : AwaitRegisteredAsync(
+                    resultTask,
+                    registration);
+        }
+
+        // The alternative task is a progress milestone owned by the same
+        // operation as resultTask. The dependency lasts until either task
+        // completes.
+        internal Task<Task> WaitAsync(
+            Task<SigningOperationResult> resultTask,
+            Task alternativeTask)
+        {
+            ArgumentNullException.ThrowIfNull(
+                resultTask,
+                nameof(resultTask));
+            ArgumentNullException.ThrowIfNull(
+                alternativeTask,
+                nameof(alternativeTask));
+
+            WaitRegistration? registration =
+                RegisterWait(resultTask, alternativeTask);
+
+            return registration is null
+                ? Task.WhenAny(resultTask, alternativeTask)
+                : AwaitRegisteredAsync(
+                    Task.WhenAny(resultTask, alternativeTask),
+                    registration);
+        }
+
+        private WaitRegistration? RegisterWait(
+                Task<SigningOperationResult> resultTask,
+                Task? alternativeTask = null)
+        {
+            OperationState? waitingState =
+                OperationState.ExecutingState;
+
+            if (waitingState is null)
+            {
+                return null;
+            }
+
+            if (!ReferenceEquals(waitingState.Coordinator, this))
+            {
+                throw new InvalidOperationException(
+                    message:
+                        "A signing operation cannot await work from " +
+                        "another coordinator.");
+            }
+
+            lock (_gate)
+            {
+                if (!_operationsByCompletion.TryGetValue(
+                    resultTask,
+                    out OperationState? awaitedState))
+                {
+                    throw new ArgumentException(
+                        message:
+                            "The result task does not belong to this " +
+                            "coordinator.",
+                        paramName: nameof(resultTask));
+                }
+
+                if (resultTask.IsCompleted ||
+                    alternativeTask?.IsCompleted == true)
+                {
+                    return null;
+                }
+
+                if (ReferenceEquals(waitingState, awaitedState))
+                {
+                    throw new InvalidOperationException(
+                        message:
+                            "A signing operation cannot await itself.");
+                }
+
+                WaitRegistration registration = new(
+                    waitingState,
+                    awaitedState,
+                    resultTask,
+                    alternativeTask);
+                waitingState.AddWait(registration);
+
+                if (awaitedState.Reaches(waitingState))
+                {
+                    waitingState.RemoveWait(registration);
+
+                    throw new InvalidOperationException(
+                        message:
+                            "A signing operation dependency cycle was " +
+                            "detected.");
+                }
+
+                return registration;
+            }
+        }
+
+        private async Task<T> AwaitRegisteredAsync<T>(
+            Task<T> task,
+            WaitRegistration registration)
+        {
+            try
+            {
+                return await task.ConfigureAwait(
+                    continueOnCapturedContext: false);
+            }
+            finally
+            {
+                lock (_gate)
+                {
+                    registration.Waiting.RemoveWait(registration);
+                }
+            }
         }
 
         public ValueTask DisposeAsync()
@@ -112,7 +427,8 @@ namespace Sign.Core
             }
         }
 
-        private SigningOperationResult CreateSnapshot(FileInfo artifact)
+        private SigningOperationResult CreateSnapshot(
+            SigningOperationArtifact artifact)
         {
             if (artifact is null)
             {
@@ -120,19 +436,93 @@ namespace Sign.Core
                     message: "The signing operation returned no artifact.");
             }
 
-            FileInfo snapshot = new(
+            DirectoryInfo snapshotDirectory = new(
                 Path.Combine(
                     _snapshotDirectory.Directory.FullName,
                     $"{Guid.NewGuid():N}"));
+            List<SigningOperationResult.SnapshotFile> snapshots = new();
 
             try
             {
-                File.Copy(
-                    sourceFileName: artifact.FullName,
-                    destFileName: snapshot.FullName);
+                _snapshotDirectory.Directory.Refresh();
+
+                if (!_snapshotDirectory.Directory.Exists)
+                {
+                    throw new DirectoryNotFoundException(
+                        _snapshotDirectory.Directory.FullName);
+                }
+
+                artifact.PrimaryFile.Refresh();
+
+                if (!artifact.PrimaryFile.Exists)
+                {
+                    throw new InvalidOperationException(
+                        message: Resources.SignedArtifactUnavailable,
+                        innerException: new FileNotFoundException(
+                            message:
+                                "The primary signing artifact does " +
+                                "not exist.",
+                            fileName:
+                                artifact.PrimaryFile.FullName));
+                }
+
+                string rootPath = PathContainment.GetFullDirectoryPath(
+                    artifact.RootDirectory.FullName);
+                IReadOnlyList<FileInfo> files =
+                    artifact.IncludeSiblings
+                        ? artifact.RootDirectory
+                            .EnumerateFiles(
+                                "*",
+                                SearchOption.AllDirectories)
+                            .ToList()
+                        : new[] { artifact.PrimaryFile };
+
+                foreach (FileInfo file in files)
+                {
+                    string sourcePath = Path.GetFullPath(file.FullName);
+
+                    if (!PathContainment.IsContained(rootPath, sourcePath))
+                    {
+                        throw new InvalidOperationException(
+                            message:
+                                "A signing operation artifact escapes " +
+                                "its root directory.");
+                    }
+
+                    string relativePath = Path.GetRelativePath(
+                        artifact.RootDirectory.FullName,
+                        sourcePath);
+                    FileInfo snapshot = artifact.IncludeSiblings
+                        ? new FileInfo(
+                            Path.Combine(
+                                snapshotDirectory.FullName,
+                                relativePath))
+                        : new FileInfo(
+                            snapshotDirectory.FullName);
+
+                    if (artifact.IncludeSiblings)
+                    {
+                        snapshot.Directory!.Create();
+                    }
+                    File.Copy(
+                        sourceFileName: sourcePath,
+                        destFileName: snapshot.FullName);
+                    snapshots.Add(
+                        new SigningOperationResult.SnapshotFile(
+                            snapshot,
+                            relativePath,
+                            isPrimary: string.Equals(
+                                sourcePath,
+                                Path.GetFullPath(
+                                    artifact.PrimaryFile.FullName),
+                                StringComparison.OrdinalIgnoreCase)));
+                }
 
                 return new SigningOperationResult(
-                    snapshot: snapshot,
+                    snapshots,
+                    artifact.IncludeSiblings
+                        ? snapshotDirectory
+                        : new FileInfo(snapshotDirectory.FullName),
                     coordinator: this);
             }
             catch (Exception exception) when (
@@ -142,15 +532,22 @@ namespace Sign.Core
                 bool artifactIsUnavailable =
                     exception is FileNotFoundException ||
                     (exception is DirectoryNotFoundException &&
-                        !File.Exists(artifact.FullName));
+                        !File.Exists(
+                            artifact.PrimaryFile.FullName));
                 Exception primaryException =
                     artifactIsUnavailable
                         ? new InvalidOperationException(
-                            message: "The signed artifact is unavailable.",
+                            message:
+                                Resources.SignedArtifactUnavailable,
                             innerException: exception)
                         : exception;
                 Exception? cleanupException =
-                    SigningOperationFile.TryDelete(snapshot);
+                    artifact.IncludeSiblings
+                        ? SigningOperationDirectory.TryDelete(
+                            snapshotDirectory)
+                        : SigningOperationFile.TryDelete(
+                            new FileInfo(
+                                snapshotDirectory.FullName));
 
                 if (cleanupException is not null)
                 {
@@ -168,6 +565,32 @@ namespace Sign.Core
             }
         }
 
+        private sealed class WaitRegistration
+        {
+            private readonly Task _resultTask;
+            private readonly Task? _alternativeTask;
+
+            internal WaitRegistration(
+                OperationState waiting,
+                OperationState awaited,
+                Task resultTask,
+                Task? alternativeTask)
+            {
+                Waiting = waiting;
+                Awaited = awaited;
+                _resultTask = resultTask;
+                _alternativeTask = alternativeTask;
+            }
+
+            internal OperationState Waiting { get; }
+
+            internal OperationState Awaited { get; }
+
+            internal bool IsCompleted =>
+                _resultTask.IsCompleted ||
+                _alternativeTask?.IsCompleted == true;
+        }
+
         private sealed class OperationState
         {
             private static readonly AsyncLocal<OperationState?>
@@ -175,33 +598,73 @@ namespace Sign.Core
             private readonly
                 TaskCompletionSource<SigningOperationResult> _completion =
                     new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly List<WaitRegistration> _waits = new();
+
+            internal OperationState(SigningOperationCoordinator coordinator)
+            {
+                Coordinator = coordinator;
+            }
 
             internal Task<SigningOperationResult> Completion =>
                 _completion.Task;
 
-            internal Task<SigningOperationResult> GetResultAsync()
+            internal SigningOperationCoordinator Coordinator { get; }
+
+            internal static OperationState? ExecutingState =>
+                s_executingState.Value;
+
+            internal void AddWait(WaitRegistration registration)
             {
-                if (Completion.IsCompleted)
+                _waits.Add(registration);
+            }
+
+            internal void RemoveWait(WaitRegistration registration)
+            {
+                _waits.Remove(registration);
+            }
+
+            internal bool Reaches(OperationState target)
+            {
+                HashSet<OperationState> visited = new();
+                Stack<OperationState> pending = new();
+                pending.Push(this);
+
+                while (pending.Count > 0)
                 {
-                    return Completion;
+                    OperationState state = pending.Pop();
+
+                    if (!visited.Add(state))
+                    {
+                        continue;
+                    }
+
+                    if (ReferenceEquals(state, target))
+                    {
+                        return true;
+                    }
+
+                    for (int i = state._waits.Count - 1; i >= 0; i--)
+                    {
+                        WaitRegistration registration = state._waits[i];
+
+                        if (registration.IsCompleted)
+                        {
+                            state._waits.RemoveAt(i);
+                        }
+                        else
+                        {
+                            pending.Push(registration.Awaited);
+                        }
+                    }
                 }
 
-                // This marker flows into child tasks. Until completion, any
-                // same-identity claim from the owner's context is rejected as
-                // self-await; delegates must not leave such work unawaited.
-                // Planning must prevent cycles between distinct operations.
-                if (ReferenceEquals(s_executingState.Value, this))
-                {
-                    throw new InvalidOperationException(
-                        message: "A signing operation cannot await itself.");
-                }
-
-                return Completion;
+                return false;
             }
 
             internal void Start(
-                Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot)
+                Func<Task<SigningOperationArtifact>> operation,
+                Func<SigningOperationArtifact, SigningOperationResult>
+                    snapshot)
             {
                 _ = RunAsync(
                     operation,
@@ -209,10 +672,11 @@ namespace Sign.Core
             }
 
             private async Task RunAsync(
-                Func<Task<FileInfo>> operation,
-                Func<FileInfo, SigningOperationResult> snapshot)
+                Func<Task<SigningOperationArtifact>> operation,
+                Func<SigningOperationArtifact, SigningOperationResult>
+                    snapshot)
             {
-                Task<FileInfo> operationTask;
+                Task<SigningOperationArtifact> operationTask;
                 OperationState? previousState = s_executingState.Value;
                 s_executingState.Value = this;
 
@@ -245,10 +709,11 @@ namespace Sign.Core
 
                 try
                 {
-                    FileInfo artifact =
+                    using SigningOperationArtifact artifact =
                         await operationTask.ConfigureAwait(
                             continueOnCapturedContext: false);
-                    SigningOperationResult result = snapshot(artifact);
+                    SigningOperationResult result =
+                        snapshot(artifact);
                     _completion.TrySetResult(result);
                 }
                 catch (Exception exception)
@@ -259,9 +724,33 @@ namespace Sign.Core
 
             private void PublishException(Exception exception)
             {
-                // Fault rather than cancel the task so all waiters observe the
-                // same OperationCanceledException instance.
+                // Fault even for cancellation exceptions so every waiter
+                // observes the same original exception instance.
                 _completion.TrySetException(exception);
+            }
+        }
+
+        internal static class SigningOperationDirectory
+        {
+            internal static Exception? TryDelete(DirectoryInfo directory)
+            {
+                try
+                {
+                    directory.Delete(recursive: true);
+
+                    return null;
+                }
+                catch (Exception exception) when (
+                    exception is DirectoryNotFoundException)
+                {
+                    return null;
+                }
+                catch (Exception exception) when (
+                    exception is IOException or
+                    UnauthorizedAccessException)
+                {
+                    return exception;
+                }
             }
         }
     }

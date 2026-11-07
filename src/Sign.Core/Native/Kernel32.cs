@@ -4,6 +4,8 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
 
 namespace Sign.Core
 {
@@ -32,6 +34,13 @@ namespace Sign.Core
 
         [DllImport("kernel32.dll", PreserveSig = true)]
         public static extern void ReleaseActCtx(IntPtr hActCtx);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern uint GetFinalPathNameByHandleW(
+            SafeFileHandle hFile,
+            StringBuilder lpszFilePath,
+            uint cchFilePath,
+            uint dwFlags);
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Unicode)]
         public struct ACTCTX
