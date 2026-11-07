@@ -146,7 +146,8 @@ namespace Sign.Core
                         Resources.ClickOnceApplicationManifestRequiredFileNotFound,
                         applicationManifestFile.FullName,
                         targetPath),
-                    diagnostics);
+                    diagnostics,
+                    isMissingPayload: true);
             }
 
             return payloads;
