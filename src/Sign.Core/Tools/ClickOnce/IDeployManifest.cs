@@ -8,5 +8,6 @@ namespace Sign.Core
     {
         bool HasUnsupportedResourceFallback { get; }
         bool MapFileExtensions { get; }
+        void ApplySigningOptions(SignOptions options, string defaultPublisher);
     }
 }

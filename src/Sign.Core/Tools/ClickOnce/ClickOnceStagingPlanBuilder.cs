@@ -128,8 +128,14 @@ namespace Sign.Core
             string rootPath = PathContainment.GetFullDirectoryPath(session.Directory.FullName);
             DestinationAllocator allocator = new(layout, rootPath);
             List<AllocatedStagingPlanEntry> entries = new();
-            foreach (ClickOnceStagedFile file in session.Payloads.Values
-                .Append(session.ApplicationManifest))
+            IEnumerable<ClickOnceStagedFile> reservedFiles = session.Payloads.Values
+                .Append(session.ApplicationManifest)
+                .Concat(session.AdjacentExecutables.Values);
+            if (session.DeploymentManifest is not null)
+            {
+                reservedFiles = reservedFiles.Append(session.DeploymentManifest);
+            }
+            foreach (ClickOnceStagedFile file in reservedFiles)
             {
                 entries.Add(allocator.Allocate(
                     rootPath,

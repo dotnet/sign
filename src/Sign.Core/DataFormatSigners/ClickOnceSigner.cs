@@ -330,6 +330,16 @@ namespace Sign.Core
                                                 await
                                                     SignDeploymentManifestAsync();
                                                 signed.TrySetResult();
+                                                if (coordinator.IsSchedulingEnabled)
+                                                {
+                                                    if (!coordinator.TryGetResult(file.SourceIdentity,
+                                                        out Task<SigningOperationResult>? parentResult))
+                                                    {
+                                                        throw new InvalidOperationException(
+                                                            "A discovered deployment has no registered layout owner.");
+                                                    }
+                                                    await coordinator.WaitForReadyOwnerAsync(parentResult!, layoutReady.Task);
+                                                }
                                                 await layoutReady.Task;
 
                                                 return
@@ -350,7 +360,7 @@ namespace Sign.Core
                                             }
                                         });
                                 Task firstCompletion =
-                                    await coordinator.WaitAsync(
+                                    await coordinator.WaitForReadyOwnerAsync(
                                         resultTask,
                                         signed.Task);
 
@@ -359,7 +369,7 @@ namespace Sign.Core
                                     resultTask))
                                 {
                                     completedDiscoveredResults.Add(
-                                        (await coordinator.WaitAsync(
+                                        (await coordinator.WaitForReadyOwnerAsync(
                                                 resultTask),
                                             deploymentManifestFile.File));
                                 }
@@ -400,7 +410,7 @@ namespace Sign.Core
                             Task<SigningOperationResult> resultTask
                             in pendingDiscoveredResults)
                         {
-                            await coordinator!.WaitAsync(resultTask);
+                            await coordinator!.WaitForReadyOwnerAsync(resultTask);
                         }
                     }
                     catch (Exception exception)
@@ -478,7 +488,7 @@ namespace Sign.Core
                     },
                     out bool ownsOperation);
             SigningOperationResult result =
-                await coordinator.WaitAsync(resultTask);
+                await coordinator.WaitForReadyOwnerAsync(resultTask);
 
             if (!ownsOperation)
             {
