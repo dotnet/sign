@@ -199,6 +199,72 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public async Task CompleteScope_WithManySharedOperations_VisitsOnlyIndexedOperations()
+        {
+            const int OperationCount = 1_000;
+            string[] sourcePaths = Enumerable
+                .Range(0, OperationCount)
+                .Select(index => $@"C:\publish\File-{index:D4}.dll")
+                .ToArray();
+            SigningOperationScope[] sourceScopes = sourcePaths
+                .Select(path => CreateScope(path))
+                .ToArray();
+            SigningOperationScope clickOnceScope =
+                CreateScope(@"C:\publish\App.application");
+            SigningOperationScope combinedScope = CreateScope(
+                sourcePaths
+                    .Append(@"C:\publish\App.application")
+                    .ToArray());
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(
+                    directoryService,
+                    combinedScope,
+                    sourceScopes.Append(clickOnceScope).ToArray());
+            InvalidOperationException expected = new("Expected failure.");
+            List<Task<SigningOperationResult>> operationTasks =
+                new(OperationCount);
+
+            foreach (string sourcePath in sourcePaths)
+            {
+                operationTasks.Add(
+                    coordinator.ExecuteAsync(
+                        SigningSourceIdentity.PhysicalFile(sourcePath),
+                        () => Task.FromException<FileInfo>(expected)));
+            }
+
+            foreach (
+                Task<SigningOperationResult> operationTask
+                in operationTasks)
+            {
+                InvalidOperationException actual =
+                    await Assert.ThrowsAsync<InvalidOperationException>(
+                        () => operationTask);
+                Assert.Same(expected, actual);
+            }
+
+            int completionOperationCount = 0;
+
+            foreach (SigningOperationScope sourceScope in sourceScopes)
+            {
+                coordinator.CompleteScope(
+                    sourceScope,
+                    out int scopeOperationCount);
+                completionOperationCount += scopeOperationCount;
+            }
+
+            coordinator.CompleteScope(
+                clickOnceScope,
+                out int clickOnceOperationCount);
+            completionOperationCount += clickOnceOperationCount;
+
+            Assert.Equal(OperationCount, clickOnceOperationCount);
+            Assert.Equal(
+                OperationCount * 2,
+                completionOperationCount);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_SimultaneousEntry_InvokesOneOwner()
         {
             using TestDirectory directory = new();
