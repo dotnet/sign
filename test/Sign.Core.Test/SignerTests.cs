@@ -505,7 +505,10 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(@"C:\App.application", @"C:\publish\App.application")]
         [InlineData(@"C:\publish\App.application", @"C:\App.application")]
-        public void CreateWorkItems_ClickOnceInputAtDriveRootAndNested_FormOneWorkItem(
+        [InlineData(
+            @"\\server\share\App.application",
+            @"\\server\share\publish\App.application")]
+        public void CreateWorkItems_WhenClickOnceInputsAreAtRootAndNested_FormsOneWorkItem(
             string firstPath,
             string secondPath)
         {
@@ -529,6 +532,64 @@ namespace Sign.Core.Test
                     SigningFile.Capture(file),
                     file);
             }
+        }
+
+        [Fact]
+        public void CreateWorkItems_WhenSequentialInputsUseIndependentDirectories_PerformsLinearContainmentChecks()
+        {
+            const int PlanCount = 10_000;
+            List<SigningOperationPlan> plans = Enumerable
+                .Range(0, PlanCount)
+                .Select(
+                    index =>
+                    {
+                        FileInfo file = new(
+                            $@"C:\publish-{index:D5}\App.application");
+
+                        return new SigningOperationPlan(
+                            SigningFile.Capture(file),
+                            file);
+                    })
+                .ToList();
+
+            IReadOnlyList<IReadOnlyList<SigningOperationPlan>> workItems =
+                Signer.CreateWorkItems(
+                    plans,
+                    requiresSequentialCoordination: _ => true,
+                    out int directoryOperationCount);
+
+            Assert.Equal(PlanCount, workItems.Count);
+            Assert.Equal(PlanCount - 1, directoryOperationCount);
+        }
+
+        [Fact]
+        public void CreateWorkItems_WhenSequentialInputsUseNestedDirectories_PerformsLinearContainmentChecks()
+        {
+            const int PlanCount = 1_000;
+            string directory = @"C:\publish";
+            List<SigningOperationPlan> plans = new(PlanCount);
+
+            for (int index = 0; index < PlanCount; ++index)
+            {
+                FileInfo file = new(
+                    Path.Combine(directory, "App.application"));
+                plans.Add(
+                    new SigningOperationPlan(
+                        SigningFile.Capture(file),
+                        file));
+                directory = Path.Combine(directory, $"nested-{index:D4}");
+            }
+
+            IReadOnlyList<IReadOnlyList<SigningOperationPlan>> workItems =
+                Signer.CreateWorkItems(
+                    plans,
+                    requiresSequentialCoordination: _ => true,
+                    out int directoryOperationCount);
+
+            IReadOnlyList<SigningOperationPlan> workItem =
+                Assert.Single(workItems);
+            Assert.Equal(plans, workItem);
+            Assert.Equal(PlanCount - 1, directoryOperationCount);
         }
 
         [Fact]
