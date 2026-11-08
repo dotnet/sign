@@ -57,7 +57,7 @@ After setting `$certificateFingerprint` as described in the [ClickOnce signing g
 sign code certificate-store -cfp $certificateFingerprint -t http://timestamp.acs.microsoft.com --clickonce-signing-version 2 -b C:\Signing\publish -fl current-version.txt App.application
 ```
 
-Manifest traversal follows only the deployment-selected version, and the file list leaves `ThirdParty.dll.deploy` unsigned while keeping it available for metadata refresh. Do not add a broad positional glob such as `"**/*"` when trying to protect old versions or excluded payloads: positional matches are independent ordinary inputs and can still be signed. Enumerate any additional ordinary inputs that should be signed.
+Manifest traversal follows only the deployment-selected version, and the file list leaves `ThirdParty.dll.deploy` unsigned while keeping it available for metadata refresh. Do not add a broad positional glob such as `"**/*"` when the goal is to limit signing to the deployment-selected version. Positional matches that survive the file list become explicit inputs, so allowed files and application manifests in older version directories can add signing work outside the deployment-selected graph. File-list exclusions still apply to both explicit standalone inputs and manifest-selected payloads, so `ThirdParty.dll.deploy` remains unsigned in this example. Enumerate any additional ordinary inputs that should be signed.
 
 `--no-sign-clickonce-deps` and `--no-update-clickonce-manifest` require version 2 and limit implicit ClickOnce work, not normal user-matched inputs. A payload independently matched by a glob can still be signed through its ordinary signing path. To re-sign only manifests, specify just those manifests, rather than a broad glob.
 
