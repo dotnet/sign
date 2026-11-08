@@ -4,7 +4,6 @@
 
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace Sign.Core
@@ -22,7 +21,10 @@ namespace Sign.Core
 
         private static string Key(string path)
         {
-            string fullPath = CanonicalizeDirectory(Path.GetFullPath(path));
+            string fullPath = Path.GetFullPath(path);
+            fullPath = fullPath.StartsWith(@"\\?\UNC\", StringComparison.Ordinal)
+                ? @"\\" + fullPath[8..]
+                : fullPath.StartsWith(@"\\?\", StringComparison.Ordinal) ? fullPath[4..] : fullPath;
             string root = Path.GetPathRoot(fullPath)!;
             string current = root;
             string key = root.ToUpperInvariant();
@@ -59,45 +61,6 @@ namespace Sign.Core
                 current = Path.Combine(current, segment);
             }
             return key;
-        }
-
-        private static string CanonicalizeDirectory(string path)
-        {
-            DirectoryInfo? directory = new FileInfo(path).Directory;
-            while (directory is not null)
-            {
-                using SafeFileHandle handle = CreateFile(directory.FullName, 0x80,
-                    FileShare.ReadWrite | FileShare.Delete, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero);
-                if (handle.IsInvalid)
-                {
-                    int error = Marshal.GetLastWin32Error();
-                    if (error is not (2 or 3))
-                    {
-                        throw new IOException($"Cannot inspect ClickOnce destination directory '{directory.FullName}'.",
-                            new Win32Exception(error));
-                    }
-                    directory = directory.Parent;
-                    continue;
-                }
-                StringBuilder buffer = new(512);
-                uint length = Kernel32.GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Capacity, 0);
-                if (length >= buffer.Capacity)
-                {
-                    buffer = new StringBuilder(checked((int)length + 1));
-                    length = Kernel32.GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Capacity, 0);
-                }
-                if (length == 0 || length >= buffer.Capacity)
-                {
-                    throw new IOException($"Cannot resolve ClickOnce destination directory '{directory.FullName}'.",
-                        new Win32Exception(Marshal.GetLastWin32Error()));
-                }
-                string canonical = buffer.ToString();
-                canonical = canonical.StartsWith(@"\\?\UNC\", StringComparison.Ordinal)
-                    ? @"\\" + canonical[8..]
-                    : canonical.StartsWith(@"\\?\", StringComparison.Ordinal) ? canonical[4..] : canonical;
-                return Path.Combine(canonical, Path.GetRelativePath(directory.FullName, path));
-            }
-            return path;
         }
 
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
