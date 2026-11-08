@@ -74,6 +74,56 @@ namespace Sign.Core.Test
         }
 
         [RequiresCaseSensitiveDirectoryTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteAsync_WhenResolvedStagingPathDiffersOnlyByCase_RejectsBeforeSigningOrMetadataUpdate(
+            bool parentDirectory)
+        {
+            await using Harness harness = new(directory =>
+            {
+                Assert.Empty(directory.EnumerateFileSystemInfos());
+                Assert.True(EnableCaseSensitivity(directory));
+            });
+            FileInfo payload = harness.CreateFile(@"lib\payload.dll", "unsigned");
+            FileInfo app = harness.CreateManifest("App.manifest", @"lib\payload.dll");
+            string originalManifest = File.ReadAllText(app.FullName);
+            FileInfo output = new(Path.Combine(harness.Source.FullName, "out", app.Name));
+            IApplicationManifest fake = harness.UseFakeManifest("App.manifest", @"lib\payload.dll");
+            string? expectedPath = null;
+            harness.AfterResolve = references =>
+            {
+                BaseReference reference = Assert.Single(references);
+                FileInfo expected = new(reference.SourcePath);
+                expectedPath = expected.FullName;
+                FileInfo alternate = new(parentDirectory
+                    ? Path.Combine(expected.Directory!.Parent!.FullName, "Lib", expected.Name)
+                    : Path.Combine(expected.Directory!.FullName, "Payload.dll"));
+                alternate.Directory!.Create();
+                File.WriteAllText(alternate.FullName, "different unsigned bytes");
+                Assert.NotEqual(expected.FullName, alternate.FullName);
+                Assert.Equal(expected.FullName, alternate.FullName, ignoreCase: true);
+                Assert.Equal("unsigned", File.ReadAllText(expected.FullName));
+                Assert.Equal("different unsigned bytes", File.ReadAllText(alternate.FullName));
+                reference.ResolvedPath = alternate.FullName;
+            };
+
+            Exception? failure = await Record.ExceptionAsync(() => harness.ExecuteAsync(app, output));
+
+            Assert.NotNull(expectedPath);
+            SigningException exception = Assert.IsType<SigningException>(failure);
+            Assert.Contains(app.FullName, exception.Message, StringComparison.Ordinal);
+            Assert.Contains(expectedPath, exception.Message, StringComparison.Ordinal);
+            fake.DidNotReceive().SynchronizeAssemblyIdentities();
+            fake.DidNotReceive().UpdateFileInfo();
+            Assert.Empty(harness.PayloadCalls);
+            Assert.Empty(harness.ManifestCalls);
+            Assert.Equal(originalManifest, File.ReadAllText(app.FullName));
+            Assert.Equal("unsigned", File.ReadAllText(payload.FullName));
+            Assert.False(File.Exists(output.FullName));
+            AssertNoStagingDirectories(harness);
+        }
+
+        [RequiresCaseSensitiveDirectoryTheory]
         [InlineData(0)]
         [InlineData(1)]
         public async Task SignOwnerAsync_WhenCaseSensitivePayloadCollidesWithPrimary_RejectsBeforeCopying(int mode)
