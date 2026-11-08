@@ -12,6 +12,18 @@ namespace Sign.Core
         private readonly
             Dictionary<Task<SigningOperationResult>, OperationState>
             _operationsByCompletion = new();
+        private readonly Dictionary<
+            SigningSourceIdentity,
+            HashSet<SigningOperationScope>>?
+            _consumerScopesByFile;
+        private readonly Dictionary<
+            string,
+            HashSet<SigningOperationScope>>?
+            _consumerScopesByDirectory;
+        private readonly Dictionary<
+            SigningOperationScope,
+            HashSet<OperationState>>?
+            _operationsByConsumerScope;
         private readonly object _gate = new();
         private readonly HashSet<SigningOperationScope>?
             _remainingScopes;
@@ -45,6 +57,48 @@ namespace Sign.Core
                 ? null
                 : new HashSet<SigningOperationScope>(
                     potentialConsumerScopes);
+
+            if (potentialConsumerScopes is not null)
+            {
+                _consumerScopesByFile = new();
+                _consumerScopesByDirectory =
+                    new(StringComparer.OrdinalIgnoreCase);
+                _operationsByConsumerScope = new();
+
+                foreach (
+                    SigningOperationScope potentialConsumerScope
+                    in potentialConsumerScopes)
+                {
+                    _operationsByConsumerScope.TryAdd(
+                        potentialConsumerScope,
+                        new HashSet<OperationState>());
+
+                    foreach (
+                        SigningSourceIdentity file
+                        in potentialConsumerScope.Files)
+                    {
+                        AddConsumerScope(
+                            _consumerScopesByFile,
+                            file,
+                            potentialConsumerScope);
+                    }
+
+                    foreach (
+                        SigningSourceIdentity directoryTree
+                        in potentialConsumerScope.DirectoryTrees)
+                    {
+                        string directory =
+                            PathContainment.GetFullDirectoryPath(
+                                Path.GetDirectoryName(
+                                    directoryTree.GetPhysicalPath())!);
+                        AddConsumerScope(
+                            _consumerScopesByDirectory,
+                            directory,
+                            potentialConsumerScope);
+                    }
+                }
+            }
+
             _snapshotDirectory = new TemporaryDirectory(directoryService);
         }
 
@@ -125,7 +179,7 @@ namespace Sign.Core
                         "its scope.");
             }
 
-            OperationState candidate = new(this);
+            OperationState candidate = new(this, identity);
             OperationState state;
 
             lock (_gate)
@@ -144,6 +198,21 @@ namespace Sign.Core
                     state = candidate;
                     _operations.Add(identity, state);
                     _operationsByCompletion.Add(state.Completion, state);
+
+                    if (_remainingScopes is not null)
+                    {
+                        foreach (
+                            SigningOperationScope consumerScope
+                            in GetConsumerScopes(identity))
+                        {
+                            if (_remainingScopes.Contains(consumerScope))
+                            {
+                                state.AddPotentialConsumer();
+                                _operationsByConsumerScope![consumerScope]
+                                    .Add(state);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -164,7 +233,16 @@ namespace Sign.Core
         // request their identity.
         internal void CompleteScope(SigningOperationScope scope)
         {
+            CompleteScope(scope, out _);
+        }
+
+        internal void CompleteScope(
+            SigningOperationScope scope,
+            out int operationCount)
+        {
             ArgumentNullException.ThrowIfNull(scope, nameof(scope));
+            List<SigningOperationResult>? resultsToRelease = null;
+            operationCount = 0;
 
             lock (_gate)
             {
@@ -178,55 +256,64 @@ namespace Sign.Core
                             "The signing operation scope was not active.");
                 }
 
-                List<Exception>? cleanupExceptions = null;
+                HashSet<OperationState> operations =
+                    _operationsByConsumerScope![scope];
+                _operationsByConsumerScope.Remove(scope);
+                operationCount = operations.Count;
 
-                foreach (
-                    KeyValuePair<SigningSourceIdentity, OperationState>
-                    operation in _operations.ToArray())
+                foreach (OperationState operation in operations)
                 {
-                    if (!operation.Value.Completion.IsCompleted ||
-                        _remainingScopes.Any(
-                            remainingScope =>
-                                remainingScope.Contains(operation.Key)))
+                    if (operation.CompletePotentialConsumer() != 0 ||
+                        !operation.Completion.IsCompleted)
                     {
                         continue;
                     }
 
-                    _operations.Remove(operation.Key);
+                    _operations.Remove(operation.Identity);
                     _operationsByCompletion.Remove(
-                        operation.Value.Completion);
+                        operation.Completion);
 
-                    if (!operation.Value.Completion
-                        .IsCompletedSuccessfully)
+                    if (!operation.Completion.IsCompletedSuccessfully)
                     {
                         continue;
                     }
 
-                    try
-                    {
-                        operation.Value.Completion.Result
-                            .ReleaseSnapshot();
-                    }
-                    catch (Exception exception) when (
-                        exception is IOException or
-                        UnauthorizedAccessException)
-                    {
-                        cleanupExceptions ??= new List<Exception>();
-                        cleanupExceptions.Add(exception);
-                    }
+                    resultsToRelease ??=
+                        new List<SigningOperationResult>();
+                    resultsToRelease.Add(operation.Completion.Result);
                 }
+            }
 
-                if (cleanupExceptions?.Count == 1)
-                {
-                    System.Runtime.ExceptionServices.ExceptionDispatchInfo
-                        .Capture(cleanupExceptions[0])
-                        .Throw();
-                }
+            List<Exception>? cleanupExceptions = null;
 
-                if (cleanupExceptions?.Count > 1)
+            foreach (
+                SigningOperationResult result
+                in resultsToRelease ?? Enumerable.Empty<
+                    SigningOperationResult>())
+            {
+                try
                 {
-                    throw new AggregateException(cleanupExceptions);
+                    result.ReleaseSnapshot();
                 }
+                catch (Exception exception) when (
+                    exception is IOException or
+                    UnauthorizedAccessException)
+                {
+                    cleanupExceptions ??= new List<Exception>();
+                    cleanupExceptions.Add(exception);
+                }
+            }
+
+            if (cleanupExceptions?.Count == 1)
+            {
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo
+                    .Capture(cleanupExceptions[0])
+                    .Throw();
+            }
+
+            if (cleanupExceptions?.Count > 1)
+            {
+                throw new AggregateException(cleanupExceptions);
             }
         }
 
@@ -427,6 +514,67 @@ namespace Sign.Core
             }
         }
 
+        private IReadOnlySet<SigningOperationScope> GetConsumerScopes(
+            SigningSourceIdentity identity)
+        {
+            HashSet<SigningOperationScope> scopes = new();
+            SigningSourceIdentity physicalRoot = identity.GetPhysicalRoot();
+
+            if (_consumerScopesByFile!.TryGetValue(
+                physicalRoot,
+                out HashSet<SigningOperationScope>? fileScopes))
+            {
+                scopes.UnionWith(fileScopes);
+            }
+
+            string directory = PathContainment.GetFullDirectoryPath(
+                Path.GetDirectoryName(physicalRoot.GetPhysicalPath())!);
+
+            while (true)
+            {
+                if (_consumerScopesByDirectory!.TryGetValue(
+                    directory,
+                    out HashSet<SigningOperationScope>? directoryScopes))
+                {
+                    scopes.UnionWith(directoryScopes);
+                }
+
+                string root = PathContainment.GetFullDirectoryPath(
+                    Path.GetPathRoot(directory)!);
+
+                if (string.Equals(
+                    directory,
+                    root,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                directory = PathContainment.GetFullDirectoryPath(
+                    Path.GetDirectoryName(
+                        Path.TrimEndingDirectorySeparator(directory))!);
+            }
+
+            return scopes;
+        }
+
+        private static void AddConsumerScope<TKey>(
+            Dictionary<TKey, HashSet<SigningOperationScope>> scopesByKey,
+            TKey key,
+            SigningOperationScope scope)
+            where TKey : notnull
+        {
+            if (!scopesByKey.TryGetValue(
+                key,
+                out HashSet<SigningOperationScope>? scopes))
+            {
+                scopes = new HashSet<SigningOperationScope>();
+                scopesByKey.Add(key, scopes);
+            }
+
+            scopes.Add(scope);
+        }
+
         private SigningOperationResult CreateSnapshot(
             SigningOperationArtifact artifact)
         {
@@ -600,9 +748,14 @@ namespace Sign.Core
                     new(TaskCreationOptions.RunContinuationsAsynchronously);
             private readonly List<WaitRegistration> _waits = new();
 
-            internal OperationState(SigningOperationCoordinator coordinator)
+            private int _potentialConsumerCount;
+
+            internal OperationState(
+                SigningOperationCoordinator coordinator,
+                SigningSourceIdentity identity)
             {
                 Coordinator = coordinator;
+                Identity = identity;
             }
 
             internal Task<SigningOperationResult> Completion =>
@@ -610,8 +763,20 @@ namespace Sign.Core
 
             internal SigningOperationCoordinator Coordinator { get; }
 
+            internal SigningSourceIdentity Identity { get; }
+
             internal static OperationState? ExecutingState =>
                 s_executingState.Value;
+
+            internal void AddPotentialConsumer()
+            {
+                ++_potentialConsumerCount;
+            }
+
+            internal int CompletePotentialConsumer()
+            {
+                return --_potentialConsumerCount;
+            }
 
             internal void AddWait(WaitRegistration registration)
             {

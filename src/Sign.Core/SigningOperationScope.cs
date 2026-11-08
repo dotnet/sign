@@ -23,6 +23,11 @@ namespace Sign.Core
             _directoryTrees = directoryTrees;
         }
 
+        internal IReadOnlyList<SigningSourceIdentity> DirectoryTrees =>
+            _directoryTrees;
+
+        internal IReadOnlySet<SigningSourceIdentity> Files => _files;
+
         internal static SigningOperationScope Create(
             SigningOperationPlan plan,
             Func<FileInfo, bool> requiresSequentialCoordination)
