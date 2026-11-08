@@ -417,6 +417,18 @@ namespace Sign.Core
                 IReadOnlyList<SigningOperationPlan> plans,
                 Func<FileInfo, bool> requiresSequentialCoordination)
         {
+            return CreateWorkItems(
+                plans,
+                requiresSequentialCoordination,
+                out _);
+        }
+
+        internal static IReadOnlyList<IReadOnlyList<SigningOperationPlan>>
+            CreateWorkItems(
+                IReadOnlyList<SigningOperationPlan> plans,
+                Func<FileInfo, bool> requiresSequentialCoordination,
+                out int directoryOperationCount)
+        {
             List<IReadOnlyList<SigningOperationPlan>> workItems = new();
             Dictionary<string, List<SigningOperationPlan>> outputGroups =
                 new(StringComparer.OrdinalIgnoreCase);
@@ -430,6 +442,10 @@ namespace Sign.Core
                         plan.Source.File.DirectoryName!))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
+            Dictionary<string, string> outermostRoots =
+                CreateOutermostRoots(
+                    sequentialDirectories,
+                    out directoryOperationCount);
 
             foreach (SigningOperationPlan plan in plans)
             {
@@ -454,12 +470,7 @@ namespace Sign.Core
 
                 string directory = PathContainment.GetFullDirectoryPath(
                     plan.Source.File.DirectoryName!);
-                string root = sequentialDirectories
-                    .Where(
-                        candidate => PathContainment.IsContained(
-                            candidate,
-                            directory))
-                    .MinBy(candidate => candidate.Length)!;
+                string root = outermostRoots[directory];
 
                 if (!sequentialGroups.TryGetValue(
                     root,
@@ -474,6 +485,41 @@ namespace Sign.Core
             }
 
             return workItems;
+        }
+
+        private static Dictionary<string, string> CreateOutermostRoots(
+            List<string> directories,
+            out int operationCount)
+        {
+            directories.Sort(StringComparer.OrdinalIgnoreCase);
+
+            Dictionary<string, string> roots =
+                new(directories.Count, StringComparer.OrdinalIgnoreCase);
+            string? root = null;
+            operationCount = 0;
+
+            foreach (string directory in directories)
+            {
+                if (root is null ||
+                    !IsContained(root, directory, ref operationCount))
+                {
+                    root = directory;
+                }
+
+                roots.Add(directory, root);
+            }
+
+            return roots;
+
+            static bool IsContained(
+                string root,
+                string directory,
+                ref int operationCount)
+            {
+                ++operationCount;
+
+                return PathContainment.IsContained(root, directory);
+            }
         }
     }
 }
