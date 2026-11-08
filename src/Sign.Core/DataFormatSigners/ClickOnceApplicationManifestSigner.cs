@@ -475,7 +475,7 @@ namespace Sign.Core
                 string? resolvedPath = payload.File.ManifestReference!.ResolvedPath;
                 string expectedPath = payload.UpdateFile.FullName;
                 if (string.IsNullOrWhiteSpace(resolvedPath) ||
-                    !string.Equals(resolvedPath, expectedPath, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(resolvedPath, expectedPath, StringComparison.Ordinal) ||
                     !PathContainment.IsContained(root, resolvedPath) ||
                     !File.Exists(expectedPath) ||
                     (payload.File.FileInfoUpdateFile is not null &&
