@@ -23,6 +23,7 @@ namespace Sign.Core
         private readonly ISignatureAlgorithmProvider _signatureAlgorithmProvider;
         private readonly ILogger<IDataFormatSigner> _logger;
         private readonly IClickOncePayloadSigningHandler? _payloadHandler;
+        private readonly Action<SigningFile>? _observeSource;
 
         internal ClickOnceApplicationManifestSigner(
             ClickOnceApplicationPublishLayoutResolver resolver,
@@ -33,7 +34,8 @@ namespace Sign.Core
             ICertificateProvider certificateProvider,
             ISignatureAlgorithmProvider signatureAlgorithmProvider,
             ILogger<IDataFormatSigner> logger,
-            IClickOncePayloadSigningHandler? payloadHandler = null)
+            IClickOncePayloadSigningHandler? payloadHandler = null,
+            Action<SigningFile>? observeSource = null)
         {
             ArgumentNullException.ThrowIfNull(resolver, nameof(resolver));
             ArgumentNullException.ThrowIfNull(stager, nameof(stager));
@@ -53,6 +55,7 @@ namespace Sign.Core
             _signatureAlgorithmProvider = signatureAlgorithmProvider;
             _logger = logger;
             _payloadHandler = payloadHandler;
+            _observeSource = observeSource;
         }
 
         internal async Task ExecuteAsync(
@@ -176,6 +179,11 @@ namespace Sign.Core
                             sourceRoot,
                             session.Directory,
                             pair.Value))).ToArray();
+                _observeSource?.Invoke(input);
+                foreach (StagedPayload payload in payloads)
+                {
+                    _observeSource?.Invoke(payload.Source);
+                }
                 ClickOnceReadOnlyGuard.ValidateModification(input.File, session.ApplicationManifest.Destination);
 
                 StagedPayload[] selected;
