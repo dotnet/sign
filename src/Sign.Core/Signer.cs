@@ -287,7 +287,7 @@ namespace Sign.Core
             }
         }
 
-        private sealed class SigningOperationGroupExecution
+        internal sealed class SigningOperationGroupExecution
         {
             private readonly IDirectoryService _directoryService;
             private readonly object _gate = new();
@@ -379,9 +379,8 @@ namespace Sign.Core
 
                     coordinator = _coordinator;
                     isLastPlan = --_remainingPlanCount == 0;
+                    coordinator?.CompleteScope(scope);
                 }
-
-                coordinator?.CompleteScope(scope);
 
                 return isLastPlan
                     ? DisposeAsync(dispose)
