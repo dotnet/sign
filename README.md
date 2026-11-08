@@ -11,6 +11,9 @@ You can find the latest version of Sign CLI on [NuGet.org](https://www.nuget.org
 - An up-to-date x64-based version of Windows currently in [mainstream support](https://learn.microsoft.com/lifecycle/products/)
 - [.NET 8 SDK or later](https://dotnet.microsoft.com/download)
 - [Microsoft Visual C++ 14 runtime](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+- For ClickOnce and VSTO signing: a recent, ideally the latest, [.NET Framework](https://dotnet.microsoft.com/download/dotnet-framework)
+
+The Sign CLI package includes the MSBuild manifest-utility assemblies used for ClickOnce version 2; a separate Visual Studio or MSBuild installation is not required. These packaged assemblies are required at run time: if they are removed, version-2 operations fail rather than falling back to another MSBuild installation or cache.
 
 Sign CLI targets .NET 8 and .NET 10 and supports .NET 9 through runtime roll-forward.
 **Support for .NET 8 and .NET 9 will be removed shortly after [their end of support on November 10, 2026](https://dotnet.microsoft.com/platform/support/policy/dotnet-core).**
@@ -47,29 +50,20 @@ While the current version is limited to RSA and Azure Key Vault, it is desirable
 
 - `.msi`, `.msp`, `.msm`, `.cab`, `.dll`, `.exe`, `.appx`, `.appxbundle`, `.msix`, `.msixbundle`, `.sys`, `.vxd`, `.ps1`, `.psm1`, and any portable executable (PE) file (via [AzureSignTool](https://github.com/vcsjones/AzureSignTool))
 - `.vsix`
-- ClickOnce `.application` and `.vsto` (via `Mage`). Notes below.
+- ClickOnce `.application` and VSTO `.vsto` deployment manifests; opt-in version 2 also supports explicit ClickOnce application `.manifest` inputs. Unrelated side-by-side/fusion `.manifest` files are not ClickOnce inputs. See below.
 - `.nupkg`
 
 ## ClickOnce
-There are a couple of possibilities for signing ClickOnce packages.
 
-Generally you will want to sign an entire package and all its contents i.e. the deployment manifest (`.application` or `.vsto`),
-application manifest (`.exe.manifest` or `.dll.manifest`) and the underlying `.exe` and `.dll` files themselves.
-To do this, ensure that the entire contents of the package are available (i.e. the whole `publish` folder from your build) and pass
-the deployment manifest as the file to sign - the rest of the files will be detected and signed in the proper order automatically.
+Omitting `--clickonce-signing-version` selects **version 1**, the legacy algorithm with recursive directory discovery and Mage-based metadata orchestration. Explicit `--clickonce-signing-version 1` keeps that behavior. Neither choice emits a migration or deprecation warning during the initial rollout. Specify the option at most once; repeated occurrences are invalid even when the values match.
 
-You can also re-sign just the deployment manifest in case you want to e.g. change the Deployment URL but leave the rest of the contents the
-same. To do this, pass the deployment manifest as the file to sign as in the case above, but just don't have the rest of the files
-present on-disk alongside it. This tool will detect that they're missing and just update the signature on the deployment manifest.
-Note that this is strictly for re-signing an already-signed deployment manifest - you cannot have a signed deployment manifest that
-points to an un-signed application manifest. You must also take care to sign all manifests with the same certificate otherwise the application
-will not install.
+**Version 2 is opt-in** with `--clickonce-signing-version 2`. It follows the deployment manifest's referenced application version, signs selected supported payloads, refreshes and signs the application manifest, then refreshes and signs the deployment manifest. It uses manifest APIs rather than the legacy Mage orchestration; other signing formats are unchanged. Independently glob-matched files in other versions still follow their normal signing path unless excluded.
 
-You should also use the `filter` parameter with the file list to sign, something like this:
-```
-**/ProjectAddIn1.*
-**/setup.exe
-```
+For full signing, keep the complete referenced publish layout available and pass the deployment manifest. For version-2 re-signing, use `--no-sign-clickonce-deps` to update and sign only specified ClickOnce manifests, or `--no-update-clickonce-manifest` to sign them as-is without needing referenced files. These options are mutually exclusive, require explicit version 2, and do not disable ordinary signing of user-matched non-ClickOnce inputs. None of the three options has a short alias.
+
+The legacy deployment-only re-signing workflow, where referenced files are absent, remains available in version 1. Version 2 fails by default if the referenced application manifest is missing; use its sign-as-is option only when existing metadata is intentionally retained. Callers must maintain consistent payload/application/deployment references and use the same certificate for related manifests. Within one invocation, overlapping explicit and manifest-selected work is coordinated so each source signing operation has one owner and all waiters reuse its result or failure. That coordination is not persisted across commands, and signing is not transactional.
+
+See the [ClickOnce signing guide](docs/clickonce-signing.md) for complete options, filtering, `.deploy` mapping, VSTO archival-copy responsibilities, and practical examples.
 
 ## Best Practices
 
