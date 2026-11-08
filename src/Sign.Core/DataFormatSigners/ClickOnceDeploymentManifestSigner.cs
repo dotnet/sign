@@ -48,6 +48,7 @@ namespace Sign.Core
             }
             using IDisposable scheduling = coordinator.UseScheduling(1);
             ClickOnceDeploymentSigningContext? preparedContext;
+            SigningFile[] protectedSources;
             using (IDisposable preflight = await coordinator.AcquireSchedulingLeaseAsync())
             {
                 if (updateManifest)
@@ -57,7 +58,7 @@ namespace Sign.Core
                 preparedContext = updateManifest
                     ? PrepareContext(new[] { plan }, Array.Empty<SigningFile>(), options, policy)
                     : null;
-                ValidateInvocationSources(new[] { plan }, preparedContext);
+                protectedSources = ValidateInvocationSources(new[] { plan }, preparedContext);
             }
             using ClickOnceDeploymentSigningContext? prepared = preparedContext;
             ClickOnceDeploymentSigningContext? previous = _context.Value;
@@ -70,7 +71,7 @@ namespace Sign.Core
                 using IDisposable publication = await coordinator.AcquireSchedulingLeaseAsync();
                 ValidateInvocationPublications(new[] { plan }, new[] { plan },
                     new Dictionary<SigningSourceIdentity, SigningOperationResult> { [plan.Source.SourceIdentity] = result },
-                    updateManifest, policy);
+                    updateManifest, policy, protectedSources);
                 Publish(result, plan, updateManifest);
             }
             finally
@@ -96,6 +97,7 @@ namespace Sign.Core
             }
             using IDisposable scheduling = coordinator.UseScheduling(1);
             ClickOnceDeploymentSigningContext? preparedContext;
+            SigningFile[] protectedSources;
             using (IDisposable preflight = await coordinator.AcquireSchedulingLeaseAsync())
             {
                 if (updateManifest)
@@ -105,7 +107,7 @@ namespace Sign.Core
                 preparedContext = updateManifest
                     ? PrepareContext(Array.Empty<SigningOperationPlan>(), new[] { plan.Source }, options, policy)
                     : null;
-                ValidateInvocationSources(new[] { plan }, preparedContext);
+                protectedSources = ValidateInvocationSources(new[] { plan }, preparedContext);
             }
             using ClickOnceDeploymentSigningContext? prepared = preparedContext;
             ClickOnceDeploymentSigningContext? previous = _context.Value;
@@ -118,7 +120,7 @@ namespace Sign.Core
                 using IDisposable publication = await coordinator.AcquireSchedulingLeaseAsync();
                 ValidateInvocationPublications(new[] { plan }, new[] { plan },
                     new Dictionary<SigningSourceIdentity, SigningOperationResult> { [plan.Source.SourceIdentity] = result },
-                    updateManifest, policy);
+                    updateManifest, policy, protectedSources);
                 Publish(result, plan, updateManifest);
             }
             finally
@@ -151,6 +153,7 @@ namespace Sign.Core
             SigningOperationPlan[] deployments;
             HashSet<SigningSourceIdentity> supportedOrdinary;
             ClickOnceDeploymentSigningContext? preparedContext;
+            SigningFile[] protectedSources;
             using (IDisposable preflight = await coordinator.AcquireSchedulingLeaseAsync())
             {
                 plans = plans.Select(plan => updateManifest && (IsDeployment(plan) || IsApplication(plan))
@@ -167,7 +170,7 @@ namespace Sign.Core
                         applications.Select(plan => plan.Source).ToArray(),
                         options, policy)
                     : null;
-                ValidateInvocationSources(plans, preparedContext, supportedOrdinary);
+                protectedSources = ValidateInvocationSources(plans, preparedContext, supportedOrdinary);
             }
             using ClickOnceDeploymentSigningContext? prepared = preparedContext;
             ParallelOptions parallel = new() { MaxDegreeOfParallelism = maxConcurrency };
@@ -247,7 +250,7 @@ namespace Sign.Core
                     explicitResults[deployments[index].Source.SourceIdentity] = results[index];
                 }
                 ValidateInvocationPublications(plans, applications.Concat(deployments),
-                    explicitResults, updateManifest, policy);
+                    explicitResults, updateManifest, policy, protectedSources);
                 // No final destination is written until every graph owner has
                 // produced its authoritative publication provenance.
                 foreach (SigningOperationPlan plan in ordinaryPlans)
@@ -352,9 +355,10 @@ namespace Sign.Core
                 _services.GetRequiredService<IManifestSigner>(),
                 _services.GetRequiredService<ICertificateProvider>(),
                 _services.GetRequiredService<ISignatureAlgorithmProvider>(),
-                _services.GetRequiredService<ILogger<IDataFormatSigner>>(), _nested);
+                _services.GetRequiredService<ILogger<IDataFormatSigner>>(), _nested,
+                source => _context.Value?.TrackSource(source));
 
-        private void ValidateInvocationSources(
+        private SigningFile[] ValidateInvocationSources(
             IReadOnlyList<SigningOperationPlan> plans,
             ClickOnceDeploymentSigningContext? context,
             IReadOnlySet<SigningSourceIdentity>? signedPrerequisites = null)
@@ -362,13 +366,14 @@ namespace Sign.Core
             try
             {
                 SigningFile[] graphSources = context?.GetSources().ToArray() ?? Array.Empty<SigningFile>();
-                ClickOnceInvocationPreflight.ValidateSources(plans,
-                    plans.Select(plan => plan.Source).Concat(graphSources));
+                SigningFile[] sources = plans.Select(plan => plan.Source).Concat(graphSources).ToArray();
+                ClickOnceInvocationPreflight.ValidateSources(plans, sources);
                 foreach (SigningFile source in graphSources.Where(source =>
                     signedPrerequisites?.Contains(source.SourceIdentity) == true))
                 {
                     ClickOnceReadOnlyGuard.ValidateModification(source.File, source.File);
                 }
+                return sources;
             }
             catch (SigningException exception)
             {
@@ -407,14 +412,16 @@ namespace Sign.Core
             IEnumerable<SigningOperationPlan> manifests,
             IReadOnlyDictionary<SigningSourceIdentity, SigningOperationResult> explicitResults,
             bool updateManifest,
-            ClickOnceApplicationSigningPolicy policy)
+            ClickOnceApplicationSigningPolicy policy,
+            IReadOnlyList<SigningFile> protectedSources)
         {
             try
             {
                 ClickOnceInvocationPreflight.ValidatePublications(plans,
                     manifests.SelectMany(plan => PublicationClaims(
                         plan, explicitResults[plan.Source.SourceIdentity], updateManifest, policy)),
-                    explicitResults);
+                    explicitResults, protectedSources.Concat(
+                        _context.Value?.GetExecutionSources() ?? Array.Empty<SigningFile>()));
             }
             catch (SigningException exception)
             {
@@ -508,8 +515,17 @@ namespace Sign.Core
             ClickOnceApplicationSigningPolicy policy)
         {
             bool signDependencies = policy == ClickOnceApplicationSigningPolicy.SignPayloads;
-            ResolvedClickOncePublishLayout layout = _context.Value?.GetDeployment(input.SourceIdentity) ??
+            ClickOnceDeploymentSigningContext? context = _context.Value;
+            ResolvedClickOncePublishLayout? preparedLayout = context?.GetDeployment(input.SourceIdentity);
+            ResolvedClickOncePublishLayout layout = preparedLayout ??
                 _resolver.Resolve(input.File, resolvePayloads: signDependencies);
+            if (preparedLayout is null && context is not null)
+            {
+                foreach (SigningFile source in ClickOnceDeploymentSigningContext.GetLayoutSources(input, layout))
+                {
+                    context.TrackSource(source);
+                }
+            }
             using IDeployManifest deployment = layout.Deployment!.Manifest;
             using IApplicationManifest application = layout.Application.Manifest;
             ILogger<IDataFormatSigner> logger = _services.GetRequiredService<ILogger<IDataFormatSigner>>();
