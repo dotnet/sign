@@ -308,9 +308,8 @@ namespace Sign.Core
                     candidates[index].Scope));
             }
 
-            directoryOperationCount = operationCount;
-
-            return groups.Values
+            IReadOnlyList<SigningOperationGroup> operationGroups =
+                groups.Values
                 .Select(
                     group =>
                     {
@@ -329,10 +328,14 @@ namespace Sign.Core
                             groupPlans,
                             Combine(
                                 group.Select(
-                                    candidate => candidate.Scope)),
+                                    candidate => candidate.Scope),
+                                ref operationCount),
                             scopesByPlan);
                     })
                 .ToList();
+            directoryOperationCount = operationCount;
+
+            return operationGroups;
         }
 
         private static int FindFirstPathAtOrAfter(
@@ -393,10 +396,12 @@ namespace Sign.Core
         }
 
         private static SigningOperationScope Combine(
-            IEnumerable<SigningOperationScope> scopes)
+            IEnumerable<SigningOperationScope> scopes,
+            ref int operationCount)
         {
             HashSet<SigningSourceIdentity> files = new();
             List<SigningSourceIdentity> directoryTrees = new();
+            HashSet<SigningSourceIdentity> directoryTreeSet = new();
 
             foreach (SigningOperationScope scope in scopes)
             {
@@ -406,7 +411,9 @@ namespace Sign.Core
                     SigningSourceIdentity directoryTree
                     in scope._directoryTrees)
                 {
-                    if (!directoryTrees.Contains(directoryTree))
+                    ++operationCount;
+
+                    if (directoryTreeSet.Add(directoryTree))
                     {
                         directoryTrees.Add(directoryTree);
                     }
