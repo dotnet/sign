@@ -277,8 +277,8 @@ namespace Sign.Core.Test
             Assert.Equal(plans, group.Plans);
             Assert.InRange(
                 directoryOperationCount,
-                low: PlanCount,
-                high: PlanCount + 64);
+                low: PlanCount * 2,
+                high: (PlanCount * 2) + 64);
         }
 
         [Fact]
@@ -308,8 +308,8 @@ namespace Sign.Core.Test
             Assert.Equal(plans, group.Plans);
             Assert.InRange(
                 directoryOperationCount,
-                low: PlanCount,
-                high: PlanCount * 32);
+                low: PlanCount * 2,
+                high: PlanCount * 33);
         }
 
         [Fact]
