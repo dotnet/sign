@@ -20,7 +20,7 @@ The options are available on `sign code` and its signing-provider subcommands. N
 
 | Option | Behavior |
 |---|---|
-| `--clickonce-signing-version 1|2` | Accepts only the literal value `1` or `2`; omission selects `1`. Specify it at most once: every repeated occurrence is invalid, even when the values match. |
+| `--clickonce-signing-version 1\|2` | Accepts only the literal value `1` or `2`; omission selects `1`. Specify it at most once: every repeated occurrence is invalid, even when the values match. |
 | `--no-sign-clickonce-deps` | Requires effective version 2. Updates and signs only explicitly specified ClickOnce manifests. It may discover referenced files for metadata refresh, but does not implicitly sign dependent manifests or payloads. |
 | `--no-update-clickonce-manifest` | Requires effective version 2. Signs specified ClickOnce manifests as-is without dependency resolution or file-information updates. Referenced files need not be available; the caller owns consistency with related manifests. |
 
@@ -77,7 +77,7 @@ The commands explicitly use `-t http://timestamp.acs.microsoft.com`, the CLI's d
 
 For a local PFX workflow, add `-cf C:\Signing\certificate.pfx` and provide its password securely if needed; `-cfp` is still required to identify the certificate. For a machine-backed CSP private key, use the provider and key-container options documented by `sign code certificate-store --help`, including `-csp`, `-k`, and `-km` as applicable; a certificate installed only in `LocalMachine\My` is not selected by the fingerprint-only commands above. Do not embed private keys or passwords in source-controlled scripts. Azure Key Vault and Artifact Signing users should supply their provider's authentication/certificate options instead; consult `sign code azure-key-vault --help` or `sign code artifact-signing --help`. Version 2 does not relax certificate, key-access, timestamp, or machine prerequisites.
 
-When `--publisher-name` is omitted, both version 1 and version 2 use the certificate subject as the publisher name. Version 2 adds no publisher-name length warning or validation. Long generated publisher/product data can remain an activation limitation inherited from version 1; supply an appropriate explicit publisher name when the deployment environment requires one.
+In version 1 and version 2 modes that update manifest metadata, omitting `--publisher-name` uses the certificate subject as the publisher name; supply an appropriate explicit publisher name when the deployment environment requires one. Version 2 adds no publisher-name length warning or validation. Long generated publisher/product data can remain an activation limitation inherited from version 1. Version 2 `--no-update-clickonce-manifest` instead preserves the existing publisher metadata and does not apply `--publisher-name`.
 
 ### Full version-2 signing
 
@@ -114,7 +114,7 @@ The full-signing command above implicitly follows only `App_1_0_1_0`. To leave a
 sign code certificate-store -cfp $certificateFingerprint -t http://timestamp.acs.microsoft.com --clickonce-signing-version 2 -b C:\Signing\publish -fl current-version.txt App.application
 ```
 
-Manifest traversal does not select `App_1_0_0_0`, and the file list excludes the mapped third-party payload from implicit signing. Keep that payload available: its current hash/size still goes into refreshed application metadata. Do not add a broad positional glob such as `"**/*"` to this command when trying to protect old versions or excluded payloads; positional matches are independent ordinary inputs and can still be signed. Enumerate any additional ordinary inputs that should be signed. See [file globbing](file-globbing.md).
+Manifest traversal does not select `App_1_0_0_0`, and the file list excludes the mapped third-party payload from implicit signing. Keep that payload available: its current hash/size still goes into refreshed application metadata. Do not add a broad positional glob such as `"**/*"` when the goal is to limit signing to the deployment-selected version. Positional matches that survive the file list become explicit inputs, so allowed files and application manifests in older version directories can add signing work outside the deployment-selected graph. File-list exclusions still apply to both explicit standalone inputs and manifest-selected payloads, so `ThirdParty.dll.deploy` remains unsigned in this example. Enumerate any additional ordinary inputs that should be signed. See [file globbing](file-globbing.md).
 
 ### Explicit application-manifest signing
 
