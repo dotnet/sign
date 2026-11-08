@@ -104,9 +104,10 @@ namespace Sign.Core
 
         // Results borrow coordinator-owned snapshots. ExecuteAsync is safe to
         // call concurrently with itself and DisposeAsync; new work is rejected
-        // after disposal starts. Disposal awaits every published operation
-        // before deleting snapshots; concurrent and repeated DisposeAsync
-        // calls share that disposal and its outcome. Signing operations are
+        // after disposal starts. Disposal awaits every operation, including
+        // artifact-owner cleanup, before deleting snapshots; concurrent and
+        // repeated DisposeAsync calls share that disposal and its outcome.
+        // Signing operations are
         // not cancellable, so disposal waits for the slowest in-flight
         // operation. Callers must finish their own materializations before
         // disposal, and operation delegates must not dispose the coordinator.
@@ -867,11 +868,13 @@ namespace Sign.Core
 
                 try
                 {
-                    using SigningOperationArtifact artifact =
+                    SigningOperationResult result;
+                    using (SigningOperationArtifact artifact =
                         await operationTask.ConfigureAwait(
-                            continueOnCapturedContext: false);
-                    SigningOperationResult result =
-                        snapshot(artifact);
+                            continueOnCapturedContext: false))
+                    {
+                        result = snapshot(artifact);
+                    }
                     _completion.TrySetResult(result);
                 }
                 catch (Exception exception)

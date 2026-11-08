@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using NSubstitute;
+
 namespace Sign.Core.Test
 {
     public class SigningOperationCoordinatorTests
@@ -682,6 +684,134 @@ namespace Sign.Core.Test
                 file => Assert.Equal(
                     "signed content",
                     File.ReadAllText(file.FullName)));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteArtifactAsync_WhenOwnerDisposalIsBlocked_DelaysCompletionUntilDisposalFinishes(
+            bool disposeCoordinator)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo artifact = directory.CreateFile("signed.bin", "signed content");
+            SigningSourceIdentity identity = CreateIdentity();
+            TimeSpan timeout = TimeSpan.FromSeconds(10);
+            TaskCompletionSource<SigningOperationArtifact> ready = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource disposalEntered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource disposalFinished = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            using ManualResetEventSlim releaseDisposal = new();
+            IDisposable owner = Substitute.For<IDisposable>();
+            owner.When(disposable => disposable.Dispose()).Do(_ =>
+            {
+                disposalEntered.SetResult();
+                try
+                {
+                    if (!releaseDisposal.Wait(timeout))
+                    {
+                        throw new TimeoutException("Artifact-owner disposal was not released.");
+                    }
+                    artifact.Delete();
+                }
+                finally
+                {
+                    disposalFinished.SetResult();
+                }
+            });
+            Task<SigningOperationResult>[] requests =
+            [
+                coordinator.ExecuteArtifactAsync(identity, () => ready.Task),
+                coordinator.ExecuteArtifactAsync(identity, () => throw new InvalidOperationException())
+            ];
+            DirectoryInfo snapshotDirectory = Assert.Single(directoryService.Directories);
+            Task? coordinatorDisposal = null;
+
+            ready.SetResult(SigningOperationArtifact.OwnedSingle(artifact, owner));
+            try
+            {
+                await disposalEntered.Task.WaitAsync(timeout);
+                if (disposeCoordinator)
+                {
+                    coordinatorDisposal = coordinator.DisposeAsync().AsTask();
+                }
+
+                Assert.All(requests, request => Assert.False(request.IsCompleted));
+                if (coordinatorDisposal is not null)
+                {
+                    Assert.False(coordinatorDisposal.IsCompleted);
+                }
+                snapshotDirectory.Refresh();
+                Assert.True(snapshotDirectory.Exists);
+            }
+            finally
+            {
+                releaseDisposal.Set();
+                await disposalFinished.Task.WaitAsync(timeout);
+            }
+
+            SigningOperationResult[] results = await Task.WhenAll(requests).WaitAsync(timeout);
+            Assert.Same(results[0], results[1]);
+            Assert.False(File.Exists(artifact.FullName));
+            owner.Received(1).Dispose();
+            if (coordinatorDisposal is not null)
+            {
+                await coordinatorDisposal.WaitAsync(timeout);
+                snapshotDirectory.Refresh();
+                Assert.False(snapshotDirectory.Exists);
+            }
+            else
+            {
+                FileInfo output = results[0].Materialize(
+                    new FileInfo(Path.Combine(directory.FullPath, "output.bin")));
+                Assert.Equal("signed content", File.ReadAllText(output.FullName));
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteArtifactAsync_WhenOwnerDisposalThrows_SharesOriginalFault(
+            bool cancellation)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo artifact = directory.CreateFile("signed.bin", "signed content");
+            SigningSourceIdentity identity = CreateIdentity();
+            TimeSpan timeout = TimeSpan.FromSeconds(10);
+            Exception expected = cancellation
+                ? new OperationCanceledException("Artifact-owner disposal failed.")
+                : new IOException("Artifact-owner disposal failed.");
+            TaskCompletionSource<SigningOperationArtifact> ready = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            IDisposable owner = Substitute.For<IDisposable>();
+            owner.When(disposable => disposable.Dispose()).Do(_ => throw expected);
+            Task<SigningOperationResult>[] requests =
+            [
+                coordinator.ExecuteArtifactAsync(identity, () => ready.Task),
+                coordinator.ExecuteArtifactAsync(identity, () => throw new InvalidOperationException())
+            ];
+
+            ready.SetResult(SigningOperationArtifact.OwnedSingle(artifact, owner));
+            foreach (Task<SigningOperationResult> request in requests)
+            {
+                Exception? actual = await Record.ExceptionAsync(() => request.WaitAsync(timeout));
+                Assert.Same(expected, actual);
+                Assert.True(request.IsFaulted);
+                Assert.False(request.IsCanceled);
+            }
+
+            Task<SigningOperationResult> later = coordinator.ExecuteArtifactAsync(
+                identity, () => throw new InvalidOperationException());
+            Exception? laterException = await Record.ExceptionAsync(() => later.WaitAsync(timeout));
+            Assert.Same(expected, laterException);
+            owner.Received(1).Dispose();
         }
 
         [Fact]
