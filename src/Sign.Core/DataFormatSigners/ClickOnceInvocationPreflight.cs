@@ -14,6 +14,13 @@ namespace Sign.Core
         {
             ILookup<string, SigningFile> inputs = sources.ToLookup(
                 source => source.File.FullName, ClickOnceDestinationComparer.Instance);
+            ValidateSources(plans, inputs);
+        }
+
+        private static void ValidateSources(
+            IReadOnlyList<SigningOperationPlan> plans,
+            ILookup<string, SigningFile> inputs)
+        {
             foreach (SigningOperationPlan plan in plans)
             {
                 foreach (SigningFile source in inputs[plan.Output.FullName])
@@ -29,13 +36,24 @@ namespace Sign.Core
         internal static void ValidatePublications(
             IReadOnlyList<SigningOperationPlan> plans,
             IEnumerable<ClickOncePublicationClaim> publications,
-            IReadOnlyDictionary<SigningSourceIdentity, SigningOperationResult> explicitResults)
+            IReadOnlyDictionary<SigningSourceIdentity, SigningOperationResult> explicitResults,
+            IEnumerable<SigningFile> sources)
         {
+            ILookup<string, SigningFile> inputs = sources.ToLookup(
+                source => source.File.FullName, ClickOnceDestinationComparer.Instance);
+            ValidateSources(plans, inputs);
             ILookup<string, SigningOperationPlan> outputs = plans.ToLookup(
                 plan => plan.Output.FullName, ClickOnceDestinationComparer.Instance);
             Dictionary<string, ClickOncePublicationClaim> graphOutputs = new(ClickOnceDestinationComparer.Instance);
             foreach (ClickOncePublicationClaim claim in publications)
             {
+                foreach (SigningFile source in inputs[claim.Destination.FullName])
+                {
+                    if (!claim.Source.SourceIdentity.Equals(source.SourceIdentity))
+                    {
+                        throw Conflict(claim.Destination, source, claim.Publisher, claim.Source);
+                    }
+                }
                 if (graphOutputs.TryGetValue(claim.Destination.FullName, out ClickOncePublicationClaim? existing))
                 {
                     if (!existing.Source.SourceIdentity.Equals(claim.Source.SourceIdentity) ||

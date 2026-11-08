@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 
@@ -13,6 +14,11 @@ namespace Sign.Core
         private readonly Dictionary<SigningSourceIdentity, ApplicationContext> _applications = new();
         private readonly List<IApplicationManifest> _standaloneManifests = new();
         private readonly List<ResolvedClickOncePublishLayout> _deploymentLayouts = new();
+        private readonly ConcurrentQueue<SigningFile> _executionSources = new();
+
+        internal void TrackSource(SigningFile source) => _executionSources.Enqueue(source);
+
+        internal IReadOnlyList<SigningFile> GetExecutionSources() => _executionSources.ToArray();
 
         internal static ClickOnceDeploymentSigningContext Create(
             IReadOnlyList<SigningOperationPlan> deployments,
@@ -444,28 +450,29 @@ namespace Sign.Core
             foreach ((SigningSourceIdentity identity, ResolvedClickOncePublishLayout layout) in _deployments)
             {
                 SigningFile deployment = new(layout.Deployment!.Source, identity);
-                foreach (SigningFile source in Sources(deployment, layout))
+                foreach (SigningFile source in GetLayoutSources(deployment, layout))
                 {
                     yield return source;
                 }
             }
             foreach (ApplicationContext application in _applications.Values)
             {
-                foreach (SigningFile source in Sources(application.Origin, application.Layout))
+                foreach (SigningFile source in GetLayoutSources(application.Origin, application.Layout))
                 {
                     yield return source;
                 }
             }
-
-            static IEnumerable<SigningFile> Sources(SigningFile origin, ResolvedClickOncePublishLayout layout) =>
-                layout.Application.Payloads.Select(payload => payload.Source)
-                    .Concat(layout.AdjacentExecutables.Select(executable => executable.Source))
-                    .Append(layout.Application.Source)
-                    .Concat(layout.Deployment is null ? Array.Empty<FileInfo>() : new[] { layout.Deployment.Source })
-                    .Select(file => origin.GetSibling(
-                        ClickOnceApplicationManifestSigner.BindOriginalSource(file, origin.File.Directory!),
-                        origin.File.Directory!));
         }
+
+        internal static IEnumerable<SigningFile> GetLayoutSources(
+            SigningFile origin, ResolvedClickOncePublishLayout layout) =>
+            layout.Application.Payloads.Select(payload => payload.Source)
+                .Concat(layout.AdjacentExecutables.Select(executable => executable.Source))
+                .Append(layout.Application.Source)
+                .Concat(layout.Deployment is null ? Array.Empty<FileInfo>() : new[] { layout.Deployment.Source })
+                .Select(file => origin.GetSibling(
+                    ClickOnceApplicationManifestSigner.BindOriginalSource(file, origin.File.Directory!),
+                    origin.File.Directory!));
 
         public void Dispose()
         {
