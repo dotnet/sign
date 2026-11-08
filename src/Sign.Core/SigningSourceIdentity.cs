@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
-using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace Sign.Core
@@ -143,7 +142,8 @@ namespace Sign.Core
 
         private static string GetCanonicalPhysicalPath(string path)
         {
-            string fullPath = Path.GetFullPath(path);
+            string fullPath = RemoveExtendedPathPrefix(
+                Path.GetFullPath(path));
 
             try
             {
@@ -153,36 +153,7 @@ namespace Sign.Core
                     FileAccess.Read,
                     FileShare.ReadWrite | FileShare.Delete);
 
-                StringBuilder buffer = new(capacity: 512);
-                uint length = Kernel32.GetFinalPathNameByHandleW(
-                    handle,
-                    buffer,
-                    checked((uint)buffer.Capacity),
-                    dwFlags: 0);
-
-                if (length == 0)
-                {
-                    return fullPath;
-                }
-
-                if (length >= checked((uint)buffer.Capacity))
-                {
-                    buffer = new StringBuilder(
-                        capacity: checked((int)length));
-                    length = Kernel32.GetFinalPathNameByHandleW(
-                        handle,
-                        buffer,
-                        checked((uint)buffer.Capacity),
-                        dwFlags: 0);
-
-                    if (length == 0 ||
-                        length >= checked((uint)buffer.Capacity))
-                    {
-                        return fullPath;
-                    }
-                }
-
-                return RemoveExtendedPathPrefix(buffer.ToString());
+                return ResolvePathSpelling(fullPath);
             }
             catch (Exception exception) when (
                 exception is IOException or
@@ -212,6 +183,91 @@ namespace Sign.Core
                 StringComparison.Ordinal)
                     ? path[extendedPrefix.Length..]
                     : path;
+        }
+
+        private static string ResolvePathSpelling(string fullPath)
+        {
+            string? root = Path.GetPathRoot(fullPath);
+
+            if (root is null)
+            {
+                return fullPath;
+            }
+
+            string resolvedPath = root;
+            string[] segments = fullPath[root.Length..].Split(
+                new[]
+                {
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar
+                },
+                StringSplitOptions.RemoveEmptyEntries);
+            EnumerationOptions options = new()
+            {
+                AttributesToSkip = 0,
+                IgnoreInaccessible = false,
+                MatchCasing = MatchCasing.PlatformDefault,
+                MatchType = MatchType.Simple,
+                RecurseSubdirectories = false,
+                ReturnSpecialDirectories = false
+            };
+
+            foreach (string segment in segments)
+            {
+                FileSystemInfo? match = FindEntry(
+                    new DirectoryInfo(resolvedPath),
+                    segment,
+                    options);
+
+                if (match is null)
+                {
+                    return fullPath;
+                }
+
+                resolvedPath = Path.Combine(
+                    resolvedPath,
+                    match.Name);
+            }
+
+            return resolvedPath;
+        }
+
+        private static FileSystemInfo? FindEntry(
+            DirectoryInfo directory,
+            string name,
+            EnumerationOptions options)
+        {
+            FileSystemInfo? caseInsensitiveMatch = null;
+
+            foreach (
+                FileSystemInfo entry
+                in directory.EnumerateFileSystemInfos(name, options))
+            {
+                if (string.Equals(
+                    entry.Name,
+                    name,
+                    StringComparison.Ordinal))
+                {
+                    return entry;
+                }
+
+                if (!string.Equals(
+                    entry.Name,
+                    name,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (caseInsensitiveMatch is not null)
+                {
+                    return null;
+                }
+
+                caseInsensitiveMatch = entry;
+            }
+
+            return caseInsensitiveMatch;
         }
 
         private static string NormalizeEntryPath(string entryPath)

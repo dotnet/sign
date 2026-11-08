@@ -61,6 +61,82 @@ namespace Sign.Core.Test
             Assert.Equal(left.GetHashCode(), right.GetHashCode());
         }
 
+        [Fact]
+        public void PhysicalFile_ExistingCaseOnlyParentAndFileAlias_IsEqual()
+        {
+            using TestDirectory directory = new();
+            FileInfo file = directory.CreateFile(
+                relativePath: Path.Combine(
+                    "Parent",
+                    "File.bin"),
+                contents: "content");
+            SigningSourceIdentity left =
+                SigningSourceIdentity.Capture(file);
+            SigningSourceIdentity right =
+                SigningSourceIdentity.PhysicalFile(
+                    Path.Combine(
+                        directory.FullPath,
+                        "PARENT",
+                        "FILE.BIN"));
+
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+        }
+
+        [Fact]
+        public void PhysicalFile_ExistingFullPathCaseOnlyAlias_IsEqual()
+        {
+            using TestDirectory directory = new();
+            FileInfo file = directory.CreateFile(
+                relativePath: Path.Combine(
+                    "Parent",
+                    "File.bin"),
+                contents: "content");
+            SigningSourceIdentity left =
+                SigningSourceIdentity.Capture(file);
+            SigningSourceIdentity right =
+                SigningSourceIdentity.PhysicalFile(
+                    file.FullName.ToUpperInvariant());
+
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+        }
+
+        [Fact]
+        public void PhysicalFile_ExtendedPathAlias_IsEqual()
+        {
+            using TestDirectory directory = new();
+            FileInfo file = directory.CreateFile(
+                relativePath: "File.bin",
+                contents: "content");
+            SigningSourceIdentity left =
+                SigningSourceIdentity.Capture(file);
+            SigningSourceIdentity right =
+                SigningSourceIdentity.PhysicalFile(
+                    $@"\\?\{file.FullName}");
+
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+        }
+
+        [Fact]
+        public void PhysicalFile_MissingCaseOnlyPathVariant_IsNotEqual()
+        {
+            using TestDirectory directory = new();
+            SigningSourceIdentity left =
+                SigningSourceIdentity.PhysicalFile(
+                    Path.Combine(
+                        directory.FullPath,
+                        "File.bin"));
+            SigningSourceIdentity right =
+                SigningSourceIdentity.PhysicalFile(
+                    Path.Combine(
+                        directory.FullPath,
+                        "FILE.BIN"));
+
+            Assert.NotEqual(left, right);
+        }
+
         [RequiresCaseSensitiveDirectoryFact]
         public void PhysicalFile_ExistingCaseOnlyDistinctFiles_AreNotEqual()
         {
@@ -79,6 +155,54 @@ namespace Sign.Core.Test
                 SigningSourceIdentity.Capture(upper);
             SigningSourceIdentity right =
                 SigningSourceIdentity.Capture(lower);
+
+            Assert.NotEqual(left, right);
+        }
+
+        [RequiresCaseSensitiveDirectoryFact]
+        public void PhysicalFile_ExistingCaseOnlyDistinctParents_AreNotEqual()
+        {
+            using TestDirectory directory = new();
+            DirectoryInfo root = new(directory.FullPath);
+
+            Assert.True(
+                CaseSensitiveDirectory.TryEnable(root));
+            FileInfo upper = directory.CreateFile(
+                relativePath: Path.Combine(
+                    "Parent",
+                    "File.bin"),
+                contents: "upper");
+            FileInfo lower = directory.CreateFile(
+                relativePath: Path.Combine(
+                    "parent",
+                    "File.bin"),
+                contents: "lower");
+            SigningSourceIdentity left =
+                SigningSourceIdentity.Capture(upper);
+            SigningSourceIdentity right =
+                SigningSourceIdentity.Capture(lower);
+
+            Assert.NotEqual(left, right);
+        }
+
+        [Fact]
+        public void PhysicalFile_LockedCaseOnlyPathVariant_IsNotEqual()
+        {
+            using TestDirectory directory = new();
+            FileInfo file = directory.CreateFile(
+                relativePath: "File.bin",
+                contents: "content");
+            using FileStream stream = file.Open(
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.None);
+            SigningSourceIdentity left =
+                SigningSourceIdentity.Capture(file);
+            SigningSourceIdentity right =
+                SigningSourceIdentity.PhysicalFile(
+                    Path.Combine(
+                        directory.FullPath,
+                        "FILE.BIN"));
 
             Assert.NotEqual(left, right);
         }
