@@ -100,5 +100,95 @@ namespace Sign.Core.Test
                 "The collection cannot contain a null element.",
                 exception.Message);
         }
+
+        [Fact]
+        public void Create_MultipleInputsOutsideBaseDirectory_MapsRelativeToOutputDirectory()
+        {
+            using TestDirectory baseDirectory = new();
+            using TestDirectory outsideDirectory = new();
+            FileInfo inside = new(
+                Path.Combine(baseDirectory.FullPath, "inside.dll"));
+            FileInfo outside = new(
+                Path.Combine(outsideDirectory.FullPath, "outside.dll"));
+            string outputDirectory = Path.Combine(
+                baseDirectory.FullPath,
+                "signed");
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { inside, outside },
+                    "signed",
+                    new DirectoryInfo(baseDirectory.FullPath));
+
+            // Matches upstream, which maps the output outside the output
+            // directory.
+            Assert.Equal(
+                Path.GetFullPath(
+                    Path.Combine(
+                        outputDirectory,
+                        Path.GetRelativePath(
+                            baseDirectory.FullPath,
+                            outside.FullName))),
+                plans[1].Output.FullName);
+        }
+
+        [Fact]
+        public void Create_MultipleInputsOnDifferentDrive_MapsToSource()
+        {
+            using TestDirectory directory = new();
+            string baseRoot = Path.GetPathRoot(directory.FullPath)!;
+            char otherDrive = char.ToUpperInvariant(baseRoot[0]) == 'C'
+                ? 'D'
+                : 'C';
+            FileInfo inside = new(
+                Path.Combine(directory.FullPath, "inside.dll"));
+            FileInfo crossDrive = new(
+                $@"{otherDrive}:\outside.dll");
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { inside, crossDrive },
+                    "signed",
+                    new DirectoryInfo(directory.FullPath));
+
+            // Matches upstream: the relative path is rooted, so it replaces
+            // the output directory.
+            Assert.Equal(
+                crossDrive.FullName,
+                plans[1].Output.FullName);
+        }
+
+        [Fact]
+        public void Create_MultipleInputsUnderBaseDirectory_StayUnderOutputRoot()
+        {
+            using TestDirectory directory = new();
+            DirectoryInfo baseDirectory =
+                new(directory.FullPath);
+            string output = Path.Combine(
+                directory.FullPath,
+                "signed");
+            FileInfo first = new(
+                Path.Combine(directory.FullPath, "first.dll"));
+            FileInfo second = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "nested",
+                    "second.dll"));
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { first, second },
+                    output,
+                    baseDirectory);
+            string outputRoot =
+                $"{Path.GetFullPath(output)}{Path.DirectorySeparatorChar}";
+
+            Assert.All(
+                plans,
+                plan => Assert.StartsWith(
+                    outputRoot,
+                    plan.Output.FullName,
+                    StringComparison.OrdinalIgnoreCase));
+        }
     }
 }
