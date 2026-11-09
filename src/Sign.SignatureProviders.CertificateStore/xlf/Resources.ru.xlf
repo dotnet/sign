@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedCertificateFileFormat">
         <source>Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</source>
-        <target state="new">Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</target>
+        <target state="translated">Формат файла сертификата '{0}' не поддерживается. Используйте сертификат X.509, файл PKCS#12 (PFX) или PKCS#7.</target>
         <note>{NumberedPlaceholder="{0}"} is a certificate file format name.</note>
       </trans-unit>
       <trans-unit id="UnsupportedPublicKeyAlgorithm">
