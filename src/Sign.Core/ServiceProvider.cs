@@ -71,7 +71,13 @@ namespace Sign.Core
             services.AddSingleton<IFileMetadataService, FileMetadataService>();
             services.AddSingleton<IDirectoryService, DirectoryService>();
             services.AddSingleton<IDataFormatSigner, AzureSignToolSigner>();
-            services.AddSingleton<IDataFormatSigner, ClickOnceSigner>();
+            services.AddSingleton(new ClickOnceSigningConfiguration());
+            services.AddSingleton(provider => new ClickOnceVersion2Signer(
+                provider.GetRequiredService<ClickOnceSigningConfiguration>(), provider));
+            services.AddSingleton<IDataFormatSigner>(provider =>
+                provider.GetRequiredService<ClickOnceSigningConfiguration>().Version == 1
+                    ? ActivatorUtilities.CreateInstance<ClickOnceSigner>(provider)
+                    : provider.GetRequiredService<ClickOnceVersion2Signer>());
             services.AddSingleton<IDataFormatSigner, VsixSigner>();
             services.AddSingleton<IDataFormatSigner, NuGetSigner>();
             services.AddSingleton<IDataFormatSigner, AppInstallerServiceSigner>();

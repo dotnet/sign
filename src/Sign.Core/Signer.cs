@@ -127,6 +127,20 @@ namespace Sign.Core
                         .ToList();
                 }
 
+                if (_serviceProvider.GetService<ClickOnceSigningConfiguration>() is { Version: 2 })
+                {
+                    SigningOperationCoordinator coordinator = new(directoryService);
+                    try
+                    {
+                        await _serviceProvider.GetRequiredService<ClickOnceVersion2Signer>()
+                            .ExecuteAsync(plans, signOptions, coordinator);
+                    }
+                    finally
+                    {
+                        await DisposeCoordinatorAsync(coordinator);
+                    }
+                    return ExitCode.Success;
+                }
                 IReadOnlyList<IReadOnlyList<SigningOperationPlan>>
                     workItems = CreateWorkItems(
                         plans,
