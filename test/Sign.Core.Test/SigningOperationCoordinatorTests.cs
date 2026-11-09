@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE.txt file in the project root for more information.
 
+using NSubstitute;
+
 namespace Sign.Core.Test
 {
     public class SigningOperationCoordinatorTests
@@ -684,6 +686,134 @@ namespace Sign.Core.Test
                     File.ReadAllText(file.FullName)));
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteArtifactAsync_WhenOwnerDisposalIsBlocked_DelaysCompletionUntilDisposalFinishes(
+            bool disposeCoordinator)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo artifact = directory.CreateFile("signed.bin", "signed content");
+            SigningSourceIdentity identity = CreateIdentity();
+            TimeSpan timeout = TimeSpan.FromSeconds(10);
+            TaskCompletionSource<SigningOperationArtifact> ready = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource disposalEntered = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource disposalFinished = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            using ManualResetEventSlim releaseDisposal = new();
+            IDisposable owner = Substitute.For<IDisposable>();
+            owner.When(disposable => disposable.Dispose()).Do(_ =>
+            {
+                disposalEntered.SetResult();
+                try
+                {
+                    if (!releaseDisposal.Wait(timeout))
+                    {
+                        throw new TimeoutException("Artifact-owner disposal was not released.");
+                    }
+                    artifact.Delete();
+                }
+                finally
+                {
+                    disposalFinished.SetResult();
+                }
+            });
+            Task<SigningOperationResult>[] requests =
+            [
+                coordinator.ExecuteArtifactAsync(identity, () => ready.Task),
+                coordinator.ExecuteArtifactAsync(identity, () => throw new InvalidOperationException())
+            ];
+            DirectoryInfo snapshotDirectory = Assert.Single(directoryService.Directories);
+            Task? coordinatorDisposal = null;
+
+            ready.SetResult(SigningOperationArtifact.OwnedSingle(artifact, owner));
+            try
+            {
+                await disposalEntered.Task.WaitAsync(timeout);
+                if (disposeCoordinator)
+                {
+                    coordinatorDisposal = coordinator.DisposeAsync().AsTask();
+                }
+
+                Assert.All(requests, request => Assert.False(request.IsCompleted));
+                if (coordinatorDisposal is not null)
+                {
+                    Assert.False(coordinatorDisposal.IsCompleted);
+                }
+                snapshotDirectory.Refresh();
+                Assert.True(snapshotDirectory.Exists);
+            }
+            finally
+            {
+                releaseDisposal.Set();
+                await disposalFinished.Task.WaitAsync(timeout);
+            }
+
+            SigningOperationResult[] results = await Task.WhenAll(requests).WaitAsync(timeout);
+            Assert.Same(results[0], results[1]);
+            Assert.False(File.Exists(artifact.FullName));
+            owner.Received(1).Dispose();
+            if (coordinatorDisposal is not null)
+            {
+                await coordinatorDisposal.WaitAsync(timeout);
+                snapshotDirectory.Refresh();
+                Assert.False(snapshotDirectory.Exists);
+            }
+            else
+            {
+                FileInfo output = results[0].Materialize(
+                    new FileInfo(Path.Combine(directory.FullPath, "output.bin")));
+                Assert.Equal("signed content", File.ReadAllText(output.FullName));
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ExecuteArtifactAsync_WhenOwnerDisposalThrows_SharesOriginalFault(
+            bool cancellation)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator =
+                new(directoryService);
+            FileInfo artifact = directory.CreateFile("signed.bin", "signed content");
+            SigningSourceIdentity identity = CreateIdentity();
+            TimeSpan timeout = TimeSpan.FromSeconds(10);
+            Exception expected = cancellation
+                ? new OperationCanceledException("Artifact-owner disposal failed.")
+                : new IOException("Artifact-owner disposal failed.");
+            TaskCompletionSource<SigningOperationArtifact> ready = new(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            IDisposable owner = Substitute.For<IDisposable>();
+            owner.When(disposable => disposable.Dispose()).Do(_ => throw expected);
+            Task<SigningOperationResult>[] requests =
+            [
+                coordinator.ExecuteArtifactAsync(identity, () => ready.Task),
+                coordinator.ExecuteArtifactAsync(identity, () => throw new InvalidOperationException())
+            ];
+
+            ready.SetResult(SigningOperationArtifact.OwnedSingle(artifact, owner));
+            foreach (Task<SigningOperationResult> request in requests)
+            {
+                Exception? actual = await Record.ExceptionAsync(() => request.WaitAsync(timeout));
+                Assert.Same(expected, actual);
+                Assert.True(request.IsFaulted);
+                Assert.False(request.IsCanceled);
+            }
+
+            Task<SigningOperationResult> later = coordinator.ExecuteArtifactAsync(
+                identity, () => throw new InvalidOperationException());
+            Exception? laterException = await Record.ExceptionAsync(() => later.WaitAsync(timeout));
+            Assert.Same(expected, laterException);
+            owner.Received(1).Dispose();
+        }
+
         [Fact]
         public async Task ExecuteArtifactAsync_LayoutUsedByMultipleOutputs_MaterializesAllFiles()
         {
@@ -823,6 +953,87 @@ namespace Sign.Core.Test
                 File.ReadAllText(materialized.FullName));
             Assert.Empty(
                 destination.Directory!.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Fact]
+        public async Task Materialize_WhenLayoutSpellingIsBound_PreservesPrimaryAndDefaultMaterializationPaths()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "Payload.dll"), "old");
+            FileInfo output = new(Path.Combine(existing.DirectoryName!, "Renamed.manifest"));
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+            int bindings = 0;
+
+            result.Materialize(output, file =>
+            {
+                ++bindings;
+                Assert.Equal("payload.dll", file.Name);
+                return new FileInfo(Path.Combine(file.DirectoryName!, existing.Name));
+            });
+            FileInfo defaultOutput = new(Path.Combine(directory.FullPath, "default", primary.Name));
+            result.Materialize(defaultOutput);
+
+            Assert.Equal(1, bindings);
+            Assert.Equal("manifest", File.ReadAllText(output.FullName));
+            Assert.Equal("signed", File.ReadAllText(existing.FullName));
+            Assert.Equal("Payload.dll", Assert.Single(existing.Directory!.EnumerateFiles("*.dll")).Name);
+            Assert.Equal("payload.dll", Assert.Single(defaultOutput.Directory!.EnumerateFiles("*.dll")).Name);
+            Assert.Empty(existing.Directory.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Theory]
+        [InlineData("outside")]
+        [InlineData("directory")]
+        [InlineData("name")]
+        [InlineData("null")]
+        public async Task Materialize_WhenLayoutSpellingBindingIsInvalid_RejectsBeforeAnyCopy(string kind)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            FileInfo output = new(Path.Combine(existing.DirectoryName!, primary.Name));
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+
+            Assert.Throws<InvalidOperationException>(() => result.Materialize(output, file => kind switch
+            {
+                "outside" => new FileInfo(Path.Combine(directory.FullPath, "escape", file.Name)),
+                "directory" => new FileInfo(Path.Combine(file.DirectoryName!, "sub", file.Name)),
+                "name" => new FileInfo(Path.Combine(file.DirectoryName!, "different.dll")),
+                _ => null!
+            }));
+
+            Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.False(File.Exists(output.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
+            Assert.Empty(existing.Directory.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Fact]
+        public async Task Materialize_WhenBoundLayoutDestinationCollidesWithPrimary_RejectsWithoutCopying()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+
+            Assert.Throws<InvalidOperationException>(() => result.Materialize(existing,
+                file => new FileInfo(Path.Combine(file.DirectoryName!, "Payload.dll"))));
+
+            Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
         }
 
         [Fact]

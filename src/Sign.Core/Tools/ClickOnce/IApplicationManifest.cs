@@ -6,5 +6,6 @@ namespace Sign.Core
 {
     internal interface IApplicationManifest : IClickOnceManifest
     {
+        void SynchronizeAssemblyIdentities();
     }
 }
