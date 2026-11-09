@@ -160,7 +160,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path to a file containing include/exclude patterns for standalone inputs and container or ClickOnce contents. Positional file inputs are still required..
+        ///   Looks up a localized string similar to Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. Example line: **/*.dll. File arguments are still required..
         /// </summary>
         internal static string FileListOptionDescription {
             get {

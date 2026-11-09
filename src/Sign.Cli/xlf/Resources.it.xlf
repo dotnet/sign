@@ -58,7 +58,7 @@
         <note>{Locked="sha256", "sha384", "sha512"} are cryptographic hash algorithm names and should not be localized.</note>
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
-        <source>Path to a file containing include/exclude patterns for standalone inputs and container or ClickOnce contents. Positional file inputs are still required.</source>
+        <source>Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. Example line: **/*.dll. File arguments are still required.</source>
         <target state="needs-review-translation">Percorso del file contenente i percorsi dei file da firmare o escludere dalla firma.</target>
         <note />
       </trans-unit>
