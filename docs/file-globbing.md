@@ -6,7 +6,18 @@ Standalone patterns are relative to the working directory or `--base-directory` 
 
 ## Standalone Files
 
-Suppose `C:\build` contains `myapp.exe`, `my.first.dll`, `my.second.dll`, and `other.dll`. Create `C:\build\sign-list.txt`:
+Create `sign-list.txt` alongside the binaries:
+
+```text
+C:\build\
+|-- myapp.exe
+|-- my.first.dll
+|-- my.second.dll
+|-- other.dll
+`-- sign-list.txt
+```
+
+Add these patterns to `sign-list.txt`:
 
 ```text
 myapp.exe
