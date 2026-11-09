@@ -820,6 +820,54 @@ namespace Sign.Core.Test
                 File.ReadAllText(owned.FullName));
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task SignAsync_CoordinatedOwnStagingOwnerAndWaiter_MaterializesSelectedFiles(bool includePayload)
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo owner = directory.CreateFile(Path.Combine("owner", "App.application"), "unsigned");
+            FileInfo waiter = directory.CreateFile(Path.Combine("waiter", "App.application"), "unsigned");
+            FileInfo stagedManifest = directory.CreateFile(Path.Combine("staged", "App.application"), "signed manifest");
+            FileInfo stagedPayload = directory.CreateFile(Path.Combine("staged", "payload.dll"), "signed payload");
+            directory.CreateFile(Path.Combine("staged", "excluded.dll"), "staged only");
+            foreach (FileInfo file in new[] { owner, waiter })
+            {
+                directory.CreateFile(Path.Combine(file.Directory!.Name, "payload.dll"), "unsigned payload");
+                directory.CreateFile(Path.Combine(file.Directory.Name, "excluded.dll"), "excluded");
+            }
+            SigningSourceIdentity identity = SigningSourceIdentity.Capture(owner);
+            IDataFormatSigner signer = Substitute.For<IDataFormatSigner>();
+            IDisposable stagingOwner = Substitute.For<IDisposable>();
+            signer.RequiresSequentialCoordination.Returns(true);
+            signer.RequiresOwnStaging.Returns(true);
+            signer.CanSign(Arg.Any<FileInfo>()).Returns(true);
+            signer.SignOwnerArtifactAsync(Arg.Any<SigningFile>(), _options, coordinator)
+                .Returns(_ => Task.FromResult(includePayload
+                    ? SigningOperationArtifact.OwnedLayout(
+                        stagedManifest, stagedManifest.Directory!,
+                        new[] { stagedManifest, stagedPayload }, stagingOwner)
+                    : SigningOperationArtifact.OwnedSingle(stagedManifest, stagingOwner)));
+            AggregatingSigner aggregatingSigner = CreateSigner(signer);
+
+            await aggregatingSigner.SignAsync(
+                new[] { new SigningFile(owner, identity), new SigningFile(waiter, identity) },
+                _options, coordinator);
+
+            foreach (FileInfo file in new[] { owner, waiter })
+            {
+                Assert.Equal("signed manifest", File.ReadAllText(file.FullName));
+                Assert.Equal(includePayload ? "signed payload" : "unsigned payload",
+                    File.ReadAllText(Path.Combine(file.DirectoryName!, "payload.dll")));
+                Assert.Equal("excluded", File.ReadAllText(Path.Combine(file.DirectoryName!, "excluded.dll")));
+            }
+            await signer.Received(1).SignOwnerArtifactAsync(Arg.Any<SigningFile>(), _options, coordinator);
+            await signer.DidNotReceive().SignAsync(Arg.Any<SigningFile>(), _options, coordinator);
+            stagingOwner.Received(1).Dispose();
+        }
+
         [Fact]
         public async Task SignAsync_CoordinatedBatchFails_FaultsEveryOwnedFile()
         {

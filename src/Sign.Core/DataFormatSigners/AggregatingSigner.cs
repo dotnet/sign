@@ -57,6 +57,26 @@ namespace Sign.Core
             };
         }
 
+        public bool IsOwnStagingRequired(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file);
+            return _signers.Any(signer => signer.RequiresOwnStaging && signer.CanSign(file));
+        }
+
+        public int SigningOrder(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file);
+            return _signers.Where(signer => signer.RequiresSequentialCoordination && signer.CanSign(file))
+                .Select(signer => signer.SigningOrder(file)).DefaultIfEmpty().Min();
+        }
+
+        public Task<SigningOperationArtifact> SignOwnerArtifactAsync(
+            SigningFile file,
+            SignOptions options,
+            SigningOperationCoordinator coordinator) =>
+            GetSigners(file.File).Single(signer => signer.RequiresOwnStaging)
+                .SignOwnerArtifactAsync(file, options, coordinator);
+
         public bool HasSigningWork(FileInfo file, SignOptions options)
         {
             ArgumentNullException.ThrowIfNull(file, nameof(file));
@@ -107,12 +127,43 @@ namespace Sign.Core
                     .Select(file => file.SourceIdentity)
                     .ToHashSet();
 
-            await Task.WhenAll(
-                containerFiles.Select(
-                    file => SignCoordinatedAsync(
-                        file,
-                        options,
-                        coordinator)));
+            if (coordinator.IsSchedulingEnabled)
+            {
+                List<(SigningFile File, Task<SigningOperationResult> Result, bool Materialize)> containers = new();
+                foreach (SigningFile file in containerFiles)
+                {
+                    bool ownStaging = IsOwnStagingRequired(file.File);
+                    Task<SigningOperationResult> result = coordinator.ExecuteArtifactAsync(
+                        file.SourceIdentity, async () =>
+                        {
+                            if (ownStaging)
+                            {
+                                return await SignOwnerArtifactAsync(file, options, coordinator);
+                            }
+                            await SignOwnerCoreAsync(file, options, coordinator);
+                            return SigningOperationArtifact.Single(file.File);
+                        }, out bool ownsOperation);
+                    containers.Add((file, result, !ownsOperation || ownStaging));
+                }
+                SigningOperationResult[] completed = await coordinator.WaitAllForReadyOwnerAsync(
+                    containers.Select(container => container.Result));
+                for (int index = 0; index < containers.Count; ++index)
+                {
+                    if (containers[index].Materialize)
+                    {
+                        completed[index].Materialize(containers[index].File.File);
+                    }
+                }
+            }
+            else
+            {
+                await Task.WhenAll(
+                    containerFiles.Select(
+                        file => SignCoordinatedAsync(
+                            file,
+                            options,
+                            coordinator)));
+            }
 
             // Ordinary files precede sequential (ClickOnce) files because
             // ClickOnce manifests hash the payload bytes present when they
@@ -130,7 +181,7 @@ namespace Sign.Core
                 options,
                 coordinator);
 
-            foreach (SigningFile file in sequentialFiles)
+            foreach (SigningFile file in sequentialFiles.OrderBy(file => SigningOrder(file.File)))
             {
                 await SignCoordinatedAsync(
                     file,
@@ -208,11 +259,18 @@ namespace Sign.Core
             SignOptions options,
             SigningOperationCoordinator coordinator)
         {
+            bool materializeOwner = false;
             Task<SigningOperationResult> resultTask =
                 coordinator.ExecuteArtifactAsync(
                     file.SourceIdentity,
                     async () =>
                     {
+                        if (IsOwnStagingRequired(file.File))
+                        {
+                            materializeOwner = true;
+                            return await SignOwnerArtifactAsync(file, options, coordinator);
+                        }
+
                         await SignOwnerCoreAsync(
                             file,
                             options,
@@ -223,9 +281,9 @@ namespace Sign.Core
                     },
                     out bool ownsOperation);
             SigningOperationResult result =
-                await coordinator.WaitAsync(resultTask);
+                await coordinator.WaitForReadyOwnerAsync(resultTask);
 
-            if (!ownsOperation)
+            if (!ownsOperation || materializeOwner)
             {
                 result.Materialize(file.File);
             }
@@ -244,6 +302,31 @@ namespace Sign.Core
         {
             if (files.Count == 0)
             {
+                return;
+            }
+
+            if (coordinator.IsSchedulingEnabled)
+            {
+                List<(Task<SigningOperationResult> Result, bool OwnsOperation)> scheduled = new();
+                foreach (SigningFile file in files)
+                {
+                    Task<SigningOperationResult> result = coordinator.ExecuteArtifactAsync(
+                        file.SourceIdentity, async () =>
+                        {
+                            await SignWithSignersAsync(new[] { file }, options);
+                            return SigningOperationArtifact.Single(file.File);
+                        }, out bool ownsOperation);
+                    scheduled.Add((result, ownsOperation));
+                }
+                SigningOperationResult[] completed = await coordinator.WaitAllForReadyOwnerAsync(
+                    scheduled.Select(operation => operation.Result));
+                for (int index = 0; index < files.Count; ++index)
+                {
+                    if (!scheduled[index].OwnsOperation)
+                    {
+                        completed[index].Materialize(files[index].File);
+                    }
+                }
                 return;
             }
 
@@ -283,7 +366,7 @@ namespace Sign.Core
             for (int i = 0; i < files.Count; ++i)
             {
                 SigningOperationResult result =
-                    await coordinator.WaitAsync(results[i].Result);
+                    await coordinator.WaitForReadyOwnerAsync(results[i].Result);
 
                 if (!results[i].OwnsOperation)
                 {
@@ -345,8 +428,8 @@ namespace Sign.Core
             SigningOperationCoordinator? coordinator)
         {
             List<SigningFile> archives = (from file in files
-                                       where _containerProvider.IsZipContainer(file.File) || _containerProvider.IsNuGetContainer(file.File)
-                                       select file).ToList();
+                                          where _containerProvider.IsZipContainer(file.File) || _containerProvider.IsNuGetContainer(file.File)
+                                          select file).ToList();
 
             await ProcessContainersAsync(
                 archives,
@@ -357,8 +440,8 @@ namespace Sign.Core
                 coordinator,
                 saveWhenEmpty: false);
             List<SigningFile> appxs = (from file in files
-                                    where _containerProvider.IsAppxContainer(file.File)
-                                    select file).ToList();
+                                       where _containerProvider.IsAppxContainer(file.File)
+                                       select file).ToList();
 
             await ProcessContainersAsync(
                 appxs,
@@ -370,8 +453,8 @@ namespace Sign.Core
                 saveWhenEmpty: true);
 
             List<SigningFile> bundles = (from file in files
-                                      where _containerProvider.IsAppxBundleContainer(file.File)
-                                      select file).ToList();
+                                         where _containerProvider.IsAppxBundleContainer(file.File)
+                                         select file).ToList();
 
             Matcher appxBundleFileMatcher = _matcherFactory.Create();
 
