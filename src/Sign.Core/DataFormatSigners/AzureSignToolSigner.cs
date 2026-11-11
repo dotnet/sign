@@ -5,6 +5,7 @@
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -103,6 +104,8 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
+            ValidatePlatformSupport(files, RuntimeInformation.ProcessArchitecture);
+
             _logger.LogInformation(Resources.AzureSignToolSignatureProviderSigning, files.Count());
 
             TimeStampConfiguration timestampConfiguration;
@@ -174,6 +177,19 @@ namespace Sign.Core
                     {
                         additionalCertificate.Dispose();
                     }
+                }
+            }
+        }
+
+        internal static void ValidatePlatformSupport(IEnumerable<FileInfo> files, Architecture architecture)
+        {
+            if (architecture == Architecture.Arm64)
+            {
+                DynamicsBusinessCentralAppFileType businessCentralFileType = new();
+
+                if (files.Any(businessCentralFileType.IsMatch))
+                {
+                    throw new PlatformNotSupportedException(Resources.DynamicsBusinessCentralArm64NotSupported);
                 }
             }
         }
