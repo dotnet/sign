@@ -189,7 +189,7 @@
       </trans-unit>
       <trans-unit id="x86NotSupported">
         <source>Only Windows x64 and ARM64 are supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</source>
-        <target state="needs-review-translation">Obecnie obsługiwany jest tylko system Windows x64. Zobacz stronę https://github.com/dotnet/sign/issues/474 odnośnie pomocy technicznej systemu Windows x86.</target>
+        <target state="new">Only Windows x64 and ARM64 are supported at this time. See https://github.com/dotnet/sign/issues/474 regarding Windows x86 support.</target>
         <note />
       </trans-unit>
     </body>
