@@ -14,13 +14,13 @@ namespace Sign.Core
         private readonly
             IReadOnlyDictionary<BaseReference, string?> _originalResolvedPaths;
         private readonly IReadOnlyList<MappedFile> _mappedFiles;
-        private readonly TemporaryDirectory _temporaryDirectory;
+        private readonly ClickOnceStagingDirectory _temporaryDirectory;
         private bool _disposed;
         private bool _manifestFileInfoUpdateActive;
 
         internal ClickOnceStagingSession(
             IReadOnlyList<ClickOnceManifestDiagnostic> diagnostics,
-            TemporaryDirectory temporaryDirectory,
+            ClickOnceStagingDirectory temporaryDirectory,
             ClickOnceStagedFile? deploymentManifest,
             ClickOnceStagedFile applicationManifest,
             IReadOnlyDictionary<

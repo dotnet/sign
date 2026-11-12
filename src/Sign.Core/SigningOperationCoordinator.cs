@@ -29,6 +29,8 @@ namespace Sign.Core
             _remainingScopes;
         private readonly SigningOperationScope? _scope;
         private readonly TemporaryDirectory _snapshotDirectory;
+        private readonly AsyncLocal<OwnerScheduler?> _scheduler = new();
+        private readonly List<Task> _externalWork = new();
         private Task? _disposal;
 
         // A scoped coordinator serves one connected group of plans and
@@ -102,6 +104,74 @@ namespace Sign.Core
             _snapshotDirectory = new TemporaryDirectory(directoryService);
         }
 
+        internal bool IsSchedulingEnabled => _scheduler.Value is not null;
+
+        // Scheduling is invocation-local and flows through queued delegates.
+        // Identity ownership (including out bool ownsOperation) is established
+        // synchronously. A scheduled delegate starts only after acquiring its
+        // own permit, which may be after ExecuteArtifactAsync returns.
+        internal IDisposable UseScheduling(int maxConcurrency)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxConcurrency);
+
+            lock (_gate)
+            {
+                ThrowIfDisposed();
+
+                if (_scheduler.Value is not null)
+                {
+                    throw new InvalidOperationException(
+                        "Scheduling scopes cannot overlap on one coordinator.");
+                }
+
+                _scheduler.Value = new OwnerScheduler(maxConcurrency);
+            }
+
+            return new SchedulingScope(_scheduler);
+        }
+
+        // Use only outside operation delegates, for preflight or publication.
+        // Do not start or await owners while holding this lease. Disposal
+        // also waits for these leases.
+        internal Task<IDisposable> AcquireSchedulingLeaseAsync()
+        {
+            OperationState? executingState = OperationState.ExecutingState;
+
+            if (executingState is not null && !executingState.Completion.IsCompleted)
+            {
+                throw new InvalidOperationException(
+                    "External scheduling leases cannot be acquired inside an operation.");
+            }
+
+            TaskCompletionSource completion =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+            OwnerScheduler? scheduler = _scheduler.Value;
+
+            lock (_gate)
+            {
+                ThrowIfDisposed();
+                _externalWork.Add(completion.Task);
+            }
+
+            return AcquireAsync();
+
+            async Task<IDisposable> AcquireAsync()
+            {
+                try
+                {
+                    IDisposable? permit = scheduler is null
+                        ? null
+                        : await scheduler.AcquireAsync().ConfigureAwait(false);
+                    return new ExternalWorkLease(permit, completion);
+                }
+                catch
+                {
+                    completion.TrySetResult();
+                    throw;
+                }
+            }
+        }
+
         // Results borrow coordinator-owned snapshots. ExecuteAsync is safe to
         // call concurrently with itself and DisposeAsync; new work is rejected
         // after disposal starts. Disposal awaits every operation, including
@@ -147,9 +217,8 @@ namespace Sign.Core
             }
         }
 
-        // A claiming caller's operation is invoked before this method
-        // returns, so callers can learn synchronously which identities they
-        // own.
+        // Unscheduled delegates start inline. Scheduled claims still report
+        // ownership synchronously, even when their delegates queue.
         internal Task<SigningOperationResult> ExecuteArtifactAsync(
             SigningSourceIdentity identity,
             Func<Task<SigningOperationArtifact>> operation)
@@ -160,8 +229,7 @@ namespace Sign.Core
                 out _);
         }
 
-        // Reports ownership synchronously because a claiming caller's
-        // operation is invoked before this method returns.
+        // Reports ownership synchronously, independently of scheduling.
         internal Task<SigningOperationResult> ExecuteArtifactAsync(
             SigningSourceIdentity identity,
             Func<Task<SigningOperationArtifact>> operation,
@@ -180,7 +248,7 @@ namespace Sign.Core
                         "its scope.");
             }
 
-            OperationState candidate = new(this, identity);
+            OperationState candidate = new(this, identity, _scheduler.Value);
             OperationState state;
 
             lock (_gate)
@@ -387,6 +455,156 @@ namespace Sign.Core
                     registration);
         }
 
+        // These APIs express one actual suspension boundary. Await the
+        // returned task before doing further owner work. Do not overlap them
+        // within an owner: use the all form for concurrent prerequisite waits.
+        internal Task<SigningOperationResult> WaitForReadyOwnerAsync(
+            Task<SigningOperationResult> resultTask)
+        {
+            ArgumentNullException.ThrowIfNull(resultTask);
+
+            if (OperationState.ExecutingState?.Scheduler is null)
+            {
+                return WaitAsync(resultTask);
+            }
+
+            ReadyWaitScope scope = BeginReadyWait(new[] { resultTask });
+            return AwaitReadyAsync(resultTask, scope);
+        }
+
+        internal Task<Task> WaitForReadyOwnerAsync(
+            Task<SigningOperationResult> resultTask,
+            Task alternativeTask)
+        {
+            ArgumentNullException.ThrowIfNull(resultTask);
+            ArgumentNullException.ThrowIfNull(alternativeTask);
+
+            if (OperationState.ExecutingState?.Scheduler is null)
+            {
+                return WaitAsync(resultTask, alternativeTask);
+            }
+
+            ReadyWaitScope scope = BeginReadyWait(
+                new[] { resultTask }, alternativeTask);
+            return AwaitReadyAsync(
+                Task.WhenAny(resultTask, alternativeTask), scope);
+        }
+
+        internal Task<SigningOperationResult[]> WaitAllForReadyOwnerAsync(
+            IEnumerable<Task<SigningOperationResult>> results)
+        {
+            Task<SigningOperationResult>[] tasks = GetWaitTasks(results);
+            ReadyWaitScope scope = BeginReadyWait(tasks);
+            return AwaitReadyAsync(Task.WhenAll(tasks), scope);
+        }
+
+        private static Task<SigningOperationResult>[] GetWaitTasks(
+            IEnumerable<Task<SigningOperationResult>> results)
+        {
+            ArgumentNullException.ThrowIfNull(results);
+            Task<SigningOperationResult>[] tasks = results.ToArray();
+
+            if (tasks.Any(task => task is null))
+            {
+                throw new ArgumentException(
+                    "Result tasks cannot be null.", nameof(results));
+            }
+
+            return tasks;
+        }
+
+        private ReadyWaitScope BeginReadyWait(
+            Task<SigningOperationResult>[] tasks,
+            Task? alternativeTask = null)
+        {
+            OperationState? state = OperationState.ExecutingState;
+            ReadyWaitScope scope = new(state);
+
+            lock (_gate)
+            {
+                // A captured ExecutionContext can outlive its operation.
+                // Such callers no longer have an owner permit to suspend.
+                bool scheduled = state?.Scheduler is not null &&
+                    (state.Permit is not null || state.ReadyWait is not null);
+
+                if (scheduled && state!.ReadyWait is not null)
+                {
+                    throw new InvalidOperationException(
+                        "Ready-owner wait scopes cannot overlap. " +
+                        "Use an aggregate-aware wait.");
+                }
+
+                try
+                {
+                    foreach (Task<SigningOperationResult> task in tasks)
+                    {
+                        WaitRegistration? registration =
+                            RegisterWait(task, alternativeTask);
+
+                        if (registration is not null)
+                        {
+                            scope.Registrations.Add(registration);
+                        }
+                    }
+                }
+                catch
+                {
+                    foreach (WaitRegistration registration in scope.Registrations)
+                    {
+                        registration.Waiting.RemoveWait(registration);
+                    }
+
+                    throw;
+                }
+
+                if (scheduled && scope.Registrations.Count > 0)
+                {
+                    state!.ReadyWait = scope;
+                    scope.IsSuspended = true;
+                    state.ReleasePermit();
+                }
+            }
+
+            return scope;
+        }
+
+        private async Task<T> AwaitReadyAsync<T>(
+            Task<T> task,
+            ReadyWaitScope scope)
+        {
+            try
+            {
+                return await task.ConfigureAwait(false);
+            }
+            finally
+            {
+                // Drop edges at the actual progress boundary, before queuing
+                // runnable work. A reacquiring owner is no longer dependent.
+                lock (_gate)
+                {
+                    foreach (WaitRegistration registration in scope.Registrations)
+                    {
+                        registration.Waiting.RemoveWait(registration);
+                    }
+                }
+
+                if (scope.IsSuspended)
+                {
+                    OperationState state = scope.State!;
+                    IDisposable permit = await state.Scheduler!.AcquireAsync()
+                        .ConfigureAwait(false);
+
+                    lock (_gate)
+                    {
+                        state.Permit = permit;
+                        state.ReadyWait = null;
+                    }
+                }
+
+                scope.Completion.TrySetResult();
+            }
+        }
+
         private WaitRegistration? RegisterWait(
                 Task<SigningOperationResult> resultTask,
                 Task? alternativeTask = null)
@@ -479,13 +697,16 @@ namespace Sign.Core
             lock (_gate)
             {
                 disposal = _disposal ??= DisposeCoreAsync(
-                    _operations.Values.ToArray());
+                    _operations.Values.ToArray(),
+                    _externalWork.ToArray());
             }
 
             return new ValueTask(disposal);
         }
 
-        private async Task DisposeCoreAsync(OperationState[] states)
+        private async Task DisposeCoreAsync(
+            OperationState[] states,
+            Task[] externalWork)
         {
             // Leave _gate before waiting or deleting snapshots.
             await Task.Yield();
@@ -503,6 +724,7 @@ namespace Sign.Core
                 }
             }
 
+            await Task.WhenAll(externalWork).ConfigureAwait(false);
             _snapshotDirectory.Dispose();
         }
 
@@ -707,6 +929,94 @@ namespace Sign.Core
             }
         }
 
+        private sealed class OwnerScheduler
+        {
+            private readonly SemaphoreSlim _permits;
+
+            internal OwnerScheduler(int maxConcurrency)
+            {
+                _permits = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+            }
+
+            internal async Task<IDisposable> AcquireAsync()
+            {
+                await _permits.WaitAsync().ConfigureAwait(false);
+                return new Permit(_permits);
+            }
+
+            private sealed class Permit : IDisposable
+            {
+                private SemaphoreSlim? _permits;
+
+                internal Permit(SemaphoreSlim permits) => _permits = permits;
+
+                public void Dispose() =>
+                    Interlocked.Exchange(ref _permits, null)?.Release();
+            }
+        }
+
+        private sealed class SchedulingScope : IDisposable
+        {
+            private AsyncLocal<OwnerScheduler?>? _scheduler;
+
+            internal SchedulingScope(AsyncLocal<OwnerScheduler?> scheduler) =>
+                _scheduler = scheduler;
+
+            public void Dispose()
+            {
+                AsyncLocal<OwnerScheduler?>? scheduler =
+                    Interlocked.Exchange(ref _scheduler, null);
+
+                if (scheduler is not null)
+                {
+                    scheduler.Value = null;
+                }
+            }
+        }
+
+        private sealed class ExternalWorkLease : IDisposable
+        {
+            private readonly IDisposable? _permit;
+            private TaskCompletionSource? _completion;
+
+            internal ExternalWorkLease(
+                IDisposable? permit,
+                TaskCompletionSource completion)
+            {
+                _permit = permit;
+                _completion = completion;
+            }
+
+            public void Dispose()
+            {
+                TaskCompletionSource? completion =
+                    Interlocked.Exchange(ref _completion, null);
+
+                if (completion is not null)
+                {
+                    try
+                    {
+                        _permit?.Dispose();
+                    }
+                    finally
+                    {
+                        completion.TrySetResult();
+                    }
+                }
+            }
+        }
+
+        private sealed class ReadyWaitScope
+        {
+            internal ReadyWaitScope(OperationState? state) => State = state;
+
+            internal OperationState? State { get; }
+            internal List<WaitRegistration> Registrations { get; } = new();
+            internal TaskCompletionSource Completion { get; } =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+            internal bool IsSuspended { get; set; }
+        }
+
         private sealed class WaitRegistration
         {
             private readonly Task _resultTask;
@@ -746,11 +1056,17 @@ namespace Sign.Core
 
             internal OperationState(
                 SigningOperationCoordinator coordinator,
-                SigningSourceIdentity identity)
+                SigningSourceIdentity identity,
+                OwnerScheduler? scheduler)
             {
                 Coordinator = coordinator;
                 Identity = identity;
+                Scheduler = scheduler;
             }
+
+            internal OwnerScheduler? Scheduler { get; }
+            internal IDisposable? Permit { get; set; }
+            internal ReadyWaitScope? ReadyWait { get; set; }
 
             internal Task<SigningOperationResult> Completion =>
                 _completion.Task;
@@ -825,9 +1141,89 @@ namespace Sign.Core
                 Func<SigningOperationArtifact, SigningOperationResult>
                     snapshot)
             {
-                _ = RunAsync(
-                    operation,
-                    snapshot);
+                _ = Scheduler is null
+                    ? RunAsync(operation, snapshot)
+                    : RunScheduledAsync(operation, snapshot);
+            }
+
+            internal void ReleasePermit()
+            {
+                Permit?.Dispose();
+                Permit = null;
+            }
+
+            private async Task EnsureReadyAsync()
+            {
+                Task? readiness;
+
+                lock (Coordinator._gate)
+                {
+                    readiness = ReadyWait?.Completion.Task;
+                }
+
+                if (readiness is not null)
+                {
+                    await readiness.ConfigureAwait(false);
+                }
+            }
+
+            private async Task RunScheduledAsync(
+                Func<Task<SigningOperationArtifact>> operation,
+                Func<SigningOperationArtifact, SigningOperationResult> snapshot)
+            {
+                Permit = await Scheduler!.AcquireAsync().ConfigureAwait(false);
+                OperationState? previousState = s_executingState.Value;
+                s_executingState.Value = this;
+                SigningOperationArtifact? artifact = null;
+                SigningOperationResult? result = null;
+                Exception? failure = null;
+
+                try
+                {
+                    Task<SigningOperationArtifact> operationTask = operation()
+                        ?? throw new InvalidOperationException(
+                            "The signing operation returned no task.");
+                    artifact = await operationTask.ConfigureAwait(false);
+                    await EnsureReadyAsync().ConfigureAwait(false);
+                    result = snapshot(artifact);
+                }
+                catch (Exception exception)
+                {
+                    failure = exception;
+                }
+                finally
+                {
+                    // Even an unawaited aware wait must restore ownership
+                    // before coordinator cleanup can run.
+                    await EnsureReadyAsync().ConfigureAwait(false);
+
+                    try
+                    {
+                        artifact?.Dispose();
+                    }
+                    catch (Exception exception)
+                    {
+                        failure = exception;
+                    }
+                    finally
+                    {
+                        lock (Coordinator._gate)
+                        {
+                            ReleasePermit();
+                        }
+
+                        s_executingState.Value = previousState;
+                    }
+                }
+
+                if (failure is not null)
+                {
+                    PublishException(failure);
+                }
+                else
+                {
+                    _completion.TrySetResult(result!);
+                }
             }
 
             private async Task RunAsync(

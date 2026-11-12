@@ -41,7 +41,7 @@ namespace Sign.Core
         {
             ArgumentNullException.ThrowIfNull(layout, nameof(layout));
 
-            TemporaryDirectory temporaryDirectory =
+            ClickOnceStagingDirectory temporaryDirectory =
                 new(_directoryService);
 
             try
@@ -57,7 +57,7 @@ namespace Sign.Core
                     plan = _planBuilder.Build(layout, temporaryDirectory.Directory, sources);
                 }
 
-                CopyFiles(layout, plan);
+                CopyFiles(layout, plan, temporaryDirectory);
 
                 Dictionary<BaseReference, string?> originalResolvedPaths =
                     BindManifestReferences(plan);
@@ -101,7 +101,8 @@ namespace Sign.Core
 
         private static void CopyFiles(
             ResolvedClickOncePublishLayout layout,
-            ClickOnceStagingPlan plan)
+            ClickOnceStagingPlan plan,
+            ClickOnceStagingDirectory directory)
         {
             HashSet<string> copiedDestinations =
                 new(StringComparer.OrdinalIgnoreCase);
@@ -120,9 +121,7 @@ namespace Sign.Core
                     }
 
                     entry.Destination.Directory!.Create();
-                    entry.Source.CopyTo(
-                        entry.Destination.FullName,
-                        overwrite: false);
+                    directory.Copy(entry.Source, entry.Destination);
                 }
             }
             catch (Exception exception) when (
