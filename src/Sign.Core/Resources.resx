@@ -155,6 +155,26 @@
     <value>Application manifest '{0}' references required file '{1}', but it could not be found.</value>
     <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</comment>
   </data>
+  <data name="ClickOnceApplicationManifestWrongType" xml:space="preserve">
+    <value>File '{0}' is not a ClickOnce application manifest.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an input manifest file path.</comment>
+  </data>
+  <data name="ClickOnceAssemblyIdentityReadFailed" xml:space="preserve">
+    <value>Failed to read the assembly identity of staged payload '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is a staged payload file path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestResolveFailed" xml:space="preserve">
+    <value>Failed to resolve files referenced by application manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestUpdateFailed" xml:space="preserve">
+    <value>Failed to update file information in application manifest '{0}'.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path.</comment>
+  </data>
+  <data name="ClickOnceApplicationManifestReferenceMismatch" xml:space="preserve">
+    <value>Application manifest '{0}' reference '{1}' must resolve to the staged file '{2}', which must exist inside staging.</value>
+    <comment>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a manifest target path. {NumberedPlaceholder="{2}"} is the required staged path.</comment>
+  </data>
   <data name="ClickOnceDeploymentManifestApplicationManifestNotFound" xml:space="preserve">
     <value>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</value>
     <comment>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</comment>
