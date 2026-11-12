@@ -27,7 +27,7 @@ namespace Sign.Core
             ClickOnceApplicationPublishLayoutResolver applicationResolver,
             bool signDependencies,
             Func<FileInfo, DirectoryInfo, bool> isSelected,
-            Func<FileInfo, bool> isApplication,
+            Func<SigningFile, bool> isApplication,
             Action<int>? observeIteration = null)
         {
             ClickOnceDeploymentSigningContext context = new();
@@ -287,7 +287,7 @@ namespace Sign.Core
                         bool deployment = extension.Equals(".application", StringComparison.OrdinalIgnoreCase) ||
                             extension.Equals(".vsto", StringComparison.OrdinalIgnoreCase);
                         if (deployment || extension.Equals(".manifest", StringComparison.OrdinalIgnoreCase) &&
-                            isApplication(source))
+                            isApplication(origin.GetSibling(source, origin.File.Directory!)))
                         {
                             yield return (origin.GetSibling(source, origin.File.Directory!), deployment);
                         }
