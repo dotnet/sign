@@ -44,8 +44,8 @@ namespace Sign.Core
         {
             IAggregatingDataFormatSigner signer = _serviceProvider.GetRequiredService<IAggregatingDataFormatSigner>();
             IDirectoryService directoryService = _serviceProvider.GetRequiredService<IDirectoryService>();
-            SigningOperationExecutor operationExecutor =
-                new(signer, directoryService, _logger);
+            IReadOnlyList<SigningOperationGroupExecution> groupExecutions =
+                Array.Empty<SigningOperationGroupExecution>();
             ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxConcurrency };
 
             Matcher? matcher = null;
@@ -125,35 +125,138 @@ namespace Sign.Core
                         .ToList();
                 }
 
-                await Parallel.ForEachAsync(plans, parallelOptions, async (plan, token) =>
+                IReadOnlyList<IReadOnlyList<SigningOperationPlan>>
+                    workItems = CreateWorkItems(
+                        plans,
+                        signer.IsSequentialCoordinationRequired);
+                IReadOnlyList<SigningOperationGroup>
+                    operationGroups = SigningOperationScope.CreateGroups(
+                        plans,
+                        signer.IsSequentialCoordinationRequired);
+                groupExecutions = operationGroups
+                    .Select(
+                        group => new SigningOperationGroupExecution(
+                            group,
+                            signer,
+                            directoryService,
+                            _logger))
+                    .ToList();
+                IReadOnlyDictionary<
+                    SigningOperationPlan,
+                    SigningOperationGroupExecution> groupsByPlan =
+                        groupExecutions
+                            .SelectMany(
+                                execution => execution.Plans.Select(
+                                    plan => (plan, execution)))
+                            .ToDictionary(
+                                pair => pair.plan,
+                                pair => pair.execution);
+
+                async ValueTask ExecuteWorkItemAsync(
+                    IReadOnlyList<SigningOperationPlan> workItem,
+                    CancellationToken token)
                 {
-                    Stopwatch sw = Stopwatch.StartNew();
+                    foreach (SigningOperationPlan plan in workItem)
+                    {
+                        Stopwatch sw = Stopwatch.StartNew();
 
-                    _logger.LogInformation(
-                        Resources.SubmittingFileForSigning,
-                        plan.Source.File.FullName);
+                        _logger.LogInformation(
+                            Resources.SubmittingFileForSigning,
+                            plan.Source.File.FullName);
 
-                    await operationExecutor.ExecuteAsync(
-                        plan,
-                        signOptions);
+                        SigningOperationGroupExecution execution =
+                            groupsByPlan[plan];
 
-                    _logger.LogInformation(Resources.SigningSucceededWithTimeElapsed, sw.ElapsedMilliseconds);
-                });
+                        try
+                        {
+                            await execution.ExecuteAsync(
+                                plan,
+                                signOptions);
+                        }
+                        finally
+                        {
+                            await execution.CompletePlanAsync(
+                                plan,
+                                DisposeCoordinatorAsync);
+                        }
+
+                        _logger.LogInformation(
+                            Resources.SigningSucceededWithTimeElapsed,
+                            sw.ElapsedMilliseconds);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(outputFile))
+                {
+                    // ClickOnce stages its layout from the source directory
+                    // and hashes whatever bytes it finds there. When signing
+                    // in place, every input that does not require sequential
+                    // coordination must therefore finish signing before any
+                    // input that does (ClickOnce) stages its layout. With an
+                    // output location, signed results never reach the source
+                    // directory, so work items are instead started in input
+                    // order (with concurrency above 1 they overlap), except
+                    // for inputs without signing work.
+                    await Parallel.ForEachAsync(
+                        workItems.Where(
+                            workItem => !signer.IsSequentialCoordinationRequired(
+                                workItem[0].Source.File)),
+                        parallelOptions,
+                        ExecuteWorkItemAsync);
+                    await Parallel.ForEachAsync(
+                        workItems.Where(
+                            workItem => signer.IsSequentialCoordinationRequired(
+                                workItem[0].Source.File)),
+                        parallelOptions,
+                        ExecuteWorkItemAsync);
+                }
+                else
+                {
+                    // An input without signing work is copied unchanged, but
+                    // its output can be a file that another input signs,
+                    // such as a ClickOnce application manifest. Copies are
+                    // therefore written before any signed results.
+                    ILookup<bool, IReadOnlyList<SigningOperationPlan>>
+                        workItemsBySigningWork = workItems.ToLookup(
+                            workItem => workItem.Any(
+                                plan => signer.HasSigningWork(
+                                    plan.Source.File,
+                                    signOptions)));
+
+                    await Parallel.ForEachAsync(
+                        workItemsBySigningWork[false],
+                        parallelOptions,
+                        ExecuteWorkItemAsync);
+                    await Parallel.ForEachAsync(
+                        workItemsBySigningWork[true],
+                        parallelOptions,
+                        ExecuteWorkItemAsync);
+                }
             }
             catch (AuthenticationException e)
             {
                 _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
-            catch (SigningException)
+            catch (SigningException e)
             {
-                _logger.LogError(Resources.SigningFailedAfterAllAttempts);
+                _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
             }
             catch (Exception e)
             {
                 _logger.LogError(e, e.Message);
                 return ExitCode.Failed;
+            }
+            finally
+            {
+                foreach (
+                    SigningOperationGroupExecution execution
+                    in groupExecutions)
+                {
+                    await execution.DisposeAsync(
+                        DisposeCoordinatorAsync);
+                }
             }
 
             return ExitCode.Success;
@@ -167,6 +270,256 @@ namespace Sign.Core
                 || containerProvider.IsZipContainer(file)
                 || ".vsto".Equals(file.Extension, StringComparison.OrdinalIgnoreCase)
                 || ".application".Equals(file.Extension, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private async Task DisposeCoordinatorAsync(
+            SigningOperationCoordinator coordinator)
+        {
+            try
+            {
+                await coordinator.DisposeAsync();
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(
+                    exception,
+                    exception.Message);
+            }
+        }
+
+        internal sealed class SigningOperationGroupExecution
+        {
+            private readonly IDirectoryService _directoryService;
+            private readonly object _gate = new();
+            private readonly SigningOperationGroup _group;
+            private readonly ILogger<ISigner> _logger;
+            private readonly HashSet<SigningOperationScope>
+                _remainingScopes;
+            private readonly IAggregatingDataFormatSigner _signer;
+            private SigningOperationCoordinator? _coordinator;
+            private Task? _disposal;
+            private SigningOperationExecutor? _executor;
+            private int _remainingPlanCount;
+
+            internal SigningOperationGroupExecution(
+                SigningOperationGroup group,
+                IAggregatingDataFormatSigner signer,
+                IDirectoryService directoryService,
+                ILogger<ISigner> logger)
+            {
+                ArgumentNullException.ThrowIfNull(group, nameof(group));
+
+                _group = group;
+                _signer = signer;
+                _directoryService = directoryService;
+                _logger = logger;
+                _remainingScopes = new HashSet<SigningOperationScope>(
+                    group.PlanScopes);
+                _remainingPlanCount = group.Plans.Count;
+            }
+
+            internal IReadOnlyList<SigningOperationPlan> Plans =>
+                _group.Plans;
+
+            internal async Task ExecuteAsync(
+                SigningOperationPlan plan,
+                SignOptions options)
+            {
+                ArgumentNullException.ThrowIfNull(plan, nameof(plan));
+                ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+                if (!_signer.HasSigningWork(plan.Source.File, options))
+                {
+                    SigningOperationExecutor.CopyWithoutSigning(plan);
+
+                    return;
+                }
+
+                await GetExecutor().ExecuteSigningAsync(plan, options);
+            }
+
+            private SigningOperationExecutor GetExecutor()
+            {
+                lock (_gate)
+                {
+                    if (_executor is null)
+                    {
+                        _coordinator = new SigningOperationCoordinator(
+                            _directoryService,
+                            _group.Scope,
+                            _remainingScopes.ToArray());
+                        _executor = new SigningOperationExecutor(
+                            _signer,
+                            _directoryService,
+                            _logger,
+                            _coordinator);
+                    }
+
+                    return _executor;
+                }
+            }
+
+            internal Task CompletePlanAsync(
+                SigningOperationPlan plan,
+                Func<SigningOperationCoordinator, Task> dispose)
+            {
+                SigningOperationScope scope = _group.GetScope(plan);
+                SigningOperationCoordinator? coordinator;
+                bool isLastPlan;
+
+                lock (_gate)
+                {
+                    if (!_remainingScopes.Remove(scope))
+                    {
+                        throw new InvalidOperationException(
+                            message:
+                                "The signing operation plan was already " +
+                                "completed.");
+                    }
+
+                    coordinator = _coordinator;
+                    isLastPlan = --_remainingPlanCount == 0;
+                    coordinator?.CompleteScope(scope);
+                }
+
+                return isLastPlan
+                    ? DisposeAsync(dispose)
+                    : Task.CompletedTask;
+            }
+
+            internal Task DisposeAsync(
+                Func<SigningOperationCoordinator, Task> dispose)
+            {
+                lock (_gate)
+                {
+                    if (_coordinator is null)
+                    {
+                        return Task.CompletedTask;
+                    }
+
+                    return _disposal ??= dispose(_coordinator);
+                }
+            }
+        }
+
+        // Work items are in input order; they are started in that order, but
+        // with concurrency above 1 they overlap. Non-ClickOnce inputs that
+        // publish to the same output form one sequential work item. Inputs
+        // that require sequential coordination (ClickOnce) form one
+        // sequential work item per outermost such input directory, positioned
+        // at its first input.
+        // Directories are compared by path text only. A ClickOnce operation
+        // waits on the deployment manifests it discovers in its directory
+        // tree, so running inputs whose trees overlap concurrently can form a
+        // wait cycle.
+        internal static IReadOnlyList<IReadOnlyList<SigningOperationPlan>>
+            CreateWorkItems(
+                IReadOnlyList<SigningOperationPlan> plans,
+                Func<FileInfo, bool> requiresSequentialCoordination)
+        {
+            return CreateWorkItems(
+                plans,
+                requiresSequentialCoordination,
+                out _);
+        }
+
+        internal static IReadOnlyList<IReadOnlyList<SigningOperationPlan>>
+            CreateWorkItems(
+                IReadOnlyList<SigningOperationPlan> plans,
+                Func<FileInfo, bool> requiresSequentialCoordination,
+                out int directoryOperationCount)
+        {
+            List<IReadOnlyList<SigningOperationPlan>> workItems = new();
+            Dictionary<string, List<SigningOperationPlan>> outputGroups =
+                new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, List<SigningOperationPlan>> sequentialGroups =
+                new(StringComparer.OrdinalIgnoreCase);
+            List<string> sequentialDirectories = plans
+                .Where(
+                    plan => requiresSequentialCoordination(plan.Source.File))
+                .Select(
+                    plan => PathContainment.GetFullDirectoryPath(
+                        plan.Source.File.DirectoryName!))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            Dictionary<string, string> outermostRoots =
+                CreateOutermostRoots(
+                    sequentialDirectories,
+                    out directoryOperationCount);
+
+            foreach (SigningOperationPlan plan in plans)
+            {
+                if (!requiresSequentialCoordination(plan.Source.File))
+                {
+                    string output = Path.GetFullPath(
+                        plan.Output.FullName);
+
+                    if (!outputGroups.TryGetValue(
+                        output,
+                        out List<SigningOperationPlan>? outputGroup))
+                    {
+                        outputGroup = new List<SigningOperationPlan>();
+                        outputGroups.Add(output, outputGroup);
+                        workItems.Add(outputGroup);
+                    }
+
+                    outputGroup.Add(plan);
+
+                    continue;
+                }
+
+                string directory = PathContainment.GetFullDirectoryPath(
+                    plan.Source.File.DirectoryName!);
+                string root = outermostRoots[directory];
+
+                if (!sequentialGroups.TryGetValue(
+                    root,
+                    out List<SigningOperationPlan>? group))
+                {
+                    group = new List<SigningOperationPlan>();
+                    sequentialGroups.Add(root, group);
+                    workItems.Add(group);
+                }
+
+                group.Add(plan);
+            }
+
+            return workItems;
+        }
+
+        private static Dictionary<string, string> CreateOutermostRoots(
+            List<string> directories,
+            out int operationCount)
+        {
+            directories.Sort(StringComparer.OrdinalIgnoreCase);
+
+            Dictionary<string, string> roots =
+                new(directories.Count, StringComparer.OrdinalIgnoreCase);
+            string? root = null;
+            operationCount = 0;
+
+            foreach (string directory in directories)
+            {
+                if (root is null ||
+                    !IsContained(root, directory, ref operationCount))
+                {
+                    root = directory;
+                }
+
+                roots.Add(directory, root);
+            }
+
+            return roots;
+
+            static bool IsContained(
+                string root,
+                string directory,
+                ref int operationCount)
+            {
+                ++operationCount;
+
+                return PathContainment.IsContained(root, directory);
+            }
         }
     }
 }
