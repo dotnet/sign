@@ -125,8 +125,8 @@
     <comment>{Locked="PFX", "P7B", "CER"} are file extensions.</comment>
   </data>
   <data name="CertificateFingerprintOptionDescription" xml:space="preserve">
-    <value>SHA fingerprint used to identify a certificate.</value>
-    <comment>{Locked="SHA"} is a cryptographic algorithm.</comment>
+    <value>SHA fingerprint used to identify a certificate. Required unless --certificate-file is provided and contains a single certificate.</value>
+    <comment>{Locked="SHA"} is a cryptographic algorithm. {Locked="--certificate-file"} is a command line option.</comment>
   </data>
   <data name="CertificatePasswordOptionDescription" xml:space="preserve">
     <value>Password for certificate file.</value>
@@ -137,6 +137,10 @@
   </data>
   <data name="KeyContainerOptionDescription" xml:space="preserve">
     <value>Private key container name.</value>
+  </data>
+  <data name="MissingCertificateFingerprintError" xml:space="preserve">
+    <value>Certificate fingerprint missing. Use --certificate-fingerprint to specify a certificate fingerprint, or use --certificate-file to provide a certificate file.</value>
+    <comment>{Locked="--certificate-fingerprint", "--certificate-file"} are command line options.</comment>
   </data>
   <data name="MissingCspError" xml:space="preserve">
     <value>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</value>
