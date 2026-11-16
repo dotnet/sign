@@ -87,7 +87,21 @@ If ($packageFilePaths.Count -ne 1)
     'tools/SDK/x64/SignTool.exe.manifest',
     'tools/SDK/x64/wintrust.dll',
     'tools/SDK/x64/wintrust.dll.ini',
-    'tools/SDK/x86/mage.exe'
+    'tools/SDK/x86/mage.exe',
+    'tools/SDK/arm64/appxpackaging.dll',
+    'tools/SDK/arm64/appxsip.dll',
+    'tools/SDK/arm64/makeappx.exe',
+    'tools/SDK/arm64/makepri.exe',
+    'tools/SDK/arm64/Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest',
+    'tools/SDK/arm64/Microsoft.Windows.Build.Appx.AppxSip.dll.manifest',
+    'tools/SDK/arm64/Microsoft.Windows.Build.Appx.OpcServices.dll.manifest',
+    'tools/SDK/arm64/Microsoft.Windows.Build.Signing.mssign32.dll.manifest',
+    'tools/SDK/arm64/Microsoft.Windows.Build.Signing.wintrust.dll.manifest',
+    'tools/SDK/arm64/mssign32.dll',
+    'tools/SDK/arm64/opcservices.dll',
+    'tools/SDK/arm64/SignTool.exe.manifest',
+    'tools/SDK/arm64/wintrust.dll',
+    'tools/SDK/arm64/wintrust.dll.ini'
 
 [string[]] $expectedEntryFullNames = ForEach ($targetFramework in $TargetFrameworks.Split(';'))
 {

@@ -4,7 +4,7 @@ parameters:
   default: false
 - name: validationMode
   type: string
-  default: Infrastructure
+  default: Product
   values:
   - Infrastructure
   - Product

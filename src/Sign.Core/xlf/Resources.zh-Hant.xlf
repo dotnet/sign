@@ -167,6 +167,11 @@
         <target state="translated">目錄 {path} 仍然存在。</target>
         <note>{Placeholder="{path}"} is a directory path.</note>
       </trans-unit>
+      <trans-unit id="DynamicsBusinessCentralArm64NotSupported">
+        <source>Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</source>
+        <target state="new">Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</target>
+        <note>{Locked="NavSip.dll"} is a file name. {Locked=".app"} is a file extension.</note>
+      </trans-unit>
       <trans-unit id="EditingAppInstaller">
         <source>Editing AppInstaller job with {count} files.</source>
         <target state="translated">正在編輯具有 {count} 個檔案的 AppInstaller 工作。</target>
