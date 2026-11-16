@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="DynamicsBusinessCentralArm64NotSupported">
         <source>Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</source>
-        <target state="new">Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</target>
+        <target state="translated">Podpisywanie plików .app usługi Dynamics Business Central wymaga systemu Windows x64, ponieważ NavSip.dll nie jest dostępny dla architektury ARM64.</target>
         <note>{Locked="NavSip.dll"} is a file name. {Locked=".app"} is a file extension.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
