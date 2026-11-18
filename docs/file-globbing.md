@@ -107,13 +107,12 @@ For example, to sign this app without signing `ThirdParty.dll.deploy`:
 
 ```text
 C:\publish\
-|-- MyApp.application
+|-- MyApp.application    <- deployment manifest named in the command
 |-- setup.exe
 |-- clickonce-list.txt
 `-- Application Files\
     `-- MyApp_1_0_0_0\
-        |-- MyApp.application
-        |-- MyApp.exe.manifest
+        |-- MyApp.exe.manifest    <- application manifest for this version
         |-- MyApp.exe.deploy
         |-- MyApp.Core.dll.deploy
         `-- ThirdParty.dll.deploy
