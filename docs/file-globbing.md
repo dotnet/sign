@@ -24,7 +24,7 @@ myapp.exe
 my.*.dll
 ```
 
-In the commands below, replace the certificate path and `<SHA256_FINGERPRINT>` with your certificate's values. The `certificate-store` command requires `-cfp` even with `-cf`.
+In the commands below, replace the sample certificate path and `<SHA256_FINGERPRINT>` with the actual path and fingerprint. The `certificate-store` command requires `-cfp` even with `-cf`.
 
 ```powershell
 sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' `
@@ -41,9 +41,9 @@ Keep patterns such as `'*'` in quotes.
 
 ### Paths and Folders
 
-For files like the EXE and DLLs above, paths and patterns **inside the file passed to `--file-list`** are relative to the working directory (or base directory, if used). You can change the base directory using `--base-directory` or `-b`.
+For files like the EXE and DLLs above, paths and patterns **inside the file passed to `--file-list`** are relative to the working directory (or base directory, if used). Set a different base directory with `--base-directory` or `-b`.
 
-The path you give `--file-list` can be a full path or a path relative to that same directory. Where you store that file does not change where its patterns start. Files outside the working or base directory do not match those patterns.
+The path passed to `--file-list` can be a full path or a path relative to that same directory. The location of that file does not change where its patterns start. Files outside the working or base directory do not match those patterns.
 
 ## Packages and ZIP Files
 
@@ -73,7 +73,7 @@ outer.zip
         `-- app.dll
 ```
 
-When signing `outer.zip`, put both lines in the file you pass to `--file-list`:
+When signing `outer.zip`, put both lines in the file passed to `--file-list`:
 
 ```text
 inner.zip
@@ -95,7 +95,7 @@ Those patterns still filter the files inside `inner.msix`.
 
 ## ClickOnce Deployments
 
-When you give `sign` a ClickOnce `.application` or `.vsto` file, it looks in that file's folder. Use `--file-list` to narrow down what gets signed.
+When the command names a ClickOnce `.application` or `.vsto` file, `sign` looks in that file's folder. Use `--file-list` to narrow down what gets signed.
 
 For example, to sign `setup.exe` without signing `MyApp.application`:
 
@@ -113,7 +113,7 @@ Use `*.application` or `*.vsto` to match the deployment file itself: `sign` chec
 
 ## Existing Commands
 
-The `--file-list` option now also filters files outside packages, even files named in the command. If you used it only for package contents, add patterns for any other files you still want signed. Commands without `--file-list` work as before.
+The `--file-list` option now also filters files outside packages, even files named in the command. For a command that used `--file-list` only for package contents, add patterns for any other files that still need signing. Commands without `--file-list` work as before.
 
 Skipping some files does not change where the other files are written.
 
