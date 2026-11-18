@@ -101,23 +101,42 @@ With `--recurse-containers false`, `sign` signs the bundle without opening or si
 
 ## ClickOnce Deployments
 
-When the command names a ClickOnce `.application` or `.vsto` file, `sign` looks in that file's folder. Use `--file-list` to narrow down what gets signed.
+Name the `.application` or `.vsto` file at the end of the command. `sign` looks in that file's folder even if the file itself is not signed. The patterns in the text file passed to `--file-list` start in that folder and narrow down which app files and manifests get signed.
 
-For example, to sign `setup.exe` without signing `MyApp.application`:
+For example, to sign this app without signing `ThirdParty.dll.deploy`:
 
 ```text
-C:\release\
-|-- clickonce-list.txt      <- pass this path to --file-list
-`-- publish\
-    |-- MyApp.application   <- put this path at the end of the command
-    `-- setup.exe
+C:\publish\
+|-- MyApp.application
+|-- setup.exe
+|-- clickonce-list.txt
+`-- Application Files\
+    `-- MyApp_1_0_0_0\
+        |-- MyApp.application
+        |-- MyApp.exe.manifest
+        |-- MyApp.exe.deploy
+        |-- MyApp.Core.dll.deploy
+        `-- ThirdParty.dll.deploy
 ```
 
-Put just `setup.exe` in `clickonce-list.txt` to match `publish\setup.exe`.
+Create `C:\publish\clickonce-list.txt` with these patterns:
 
-Patterns also apply to `.manifest` files. A file named `MyApp.Core.dll.deploy` matches `**/*.dll.deploy`, not `**/*.dll`.
+```text
+**/*
+!**/ThirdParty.dll.deploy
+```
 
-Use `*.application` or `*.vsto` to match the deployment file itself: `sign` checks a copy with a temporary name. Unsigned files may still be copied with the app.
+```powershell
+sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' `
+  --base-directory 'C:\publish' --file-list 'clickonce-list.txt' 'MyApp.application'
+```
+
+This signs `setup.exe`, the manifests, and the other `.deploy` files shown above. With `--output`, files skipped for signing, such as `ThirdParty.dll.deploy`, can still be copied to the output.
+
+- **Include the manifests when signing app files.** If the manifests are not updated, the app may fail to install.
+- **Use a wildcard for the top-level deployment file.** In the text file passed to `--file-list`, `*.application` or `*.vsto` matches the copy with a temporary name. The exact file name does not.
+- **Match the `.deploy` name.** `**/*.dll.deploy` matches `MyApp.Core.dll.deploy`, but `**/*.dll` does not.
+- **Match only one version's `.manifest` file.** Matching more than one `.manifest` file for a deployment causes signing to fail.
 
 ## File List Format
 
