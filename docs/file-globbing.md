@@ -2,7 +2,7 @@
 
 The `code` signing command supports the `--file-list` or `-fl` option. This option specifies a file that contains paths of files to sign or to exclude from signing.
 
-The command still needs file names or a quoted pattern such as `'*'`. The list only filters those files; it does not add more files.
+The command still needs file names or a quoted pattern such as `'*'`. Use `--file-list` to narrow down what gets signed, not to add files to the command.
 
 ## Sign EXE and DLL Files
 
@@ -31,19 +31,19 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\build' --file-list 'sign-list.txt' '*'
 ```
 
-Here, `-cf` names the certificate, `--file-list` names the text list, and the final `'*'` selects files from `C:\build`.
+Here, `-cf` names the certificate and the final `'*'` finds files in `C:\build`. `--file-list 'sign-list.txt'` tells `sign` to read the patterns from `sign-list.txt`.
 
 This signs `myapp.exe`, `my.first.dll`, and `my.second.dll`. It leaves `other.dll` unchanged.
 
-Replace only the final `'*'` with `'myapp.exe'` to sign just that file. The list will not add the DLLs. Leaving out the file name or pattern is an error.
+Replace only the final `'*'` with `'myapp.exe'` to sign just that file, even though `sign-list.txt` contains a pattern for DLLs. Leaving out the file name or pattern is an error.
 
 Keep patterns such as `'*'` in quotes.
 
 ### Paths and Folders
 
-Paths **inside the list** are relative to the working directory (or base directory, if used). You can change the base directory using `--base-directory` or `-b`.
+For files like the EXE and DLLs above, paths and patterns **inside the file passed to `--file-list`** are relative to the working directory (or base directory, if used). You can change the base directory using `--base-directory` or `-b`.
 
-The list file itself can have a full path or a path relative to that same directory. Its location does not change where the patterns start. Files outside that directory do not match the list.
+The path you give `--file-list` can be a full path or a path relative to that same directory. Where you store that file does not change where its patterns start. Files outside the working or base directory do not match those patterns.
 
 ## Packages and ZIP Files
 
@@ -58,9 +58,9 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\packages' --file-list 'package-sign-list.txt' 'MyPackage.nupkg'
 ```
 
-This signs matching DLLs, then saves and signs `MyPackage.nupkg`. The package name need not be in the list. Excluding a package or ZIP chosen in the command does not skip it.
+This signs matching DLLs, then saves and signs `MyPackage.nupkg`. The package name need not be in `package-sign-list.txt`. If the command selects a package or ZIP, an exclusion in the file passed to `--file-list` does not skip it.
 
-The tool looks inside packages by default (`--recurse-containers true`). Paths start inside each package, and files that do not match stay there. For ZIP files, matching files are signed and saved back into the ZIP; the ZIP itself is not signed.
+The tool looks inside packages by default (`--recurse-containers true`). Paths in the file passed to `--file-list` start at the root of each package, and files that do not match stay there. For ZIP files, matching files are signed and saved back into the ZIP; the ZIP itself is not signed.
 
 ### Packages Inside Packages
 
@@ -73,7 +73,7 @@ outer.zip
         `-- app.dll
 ```
 
-Include both the inner ZIP and the files you want to sign:
+When signing `outer.zip`, put both lines in the file you pass to `--file-list`:
 
 ```text
 inner.zip
@@ -84,30 +84,30 @@ The first line lets the tool open `inner.zip`; the second selects the DLL inside
 
 ### APPX/MSIX Bundles
 
-With `--recurse-containers` enabled (the default), a bundle's inner `.appx` and `.msix` packages are still signed even when excluded by the list. For example, this does not skip `inner.msix`:
+With `--recurse-containers` enabled (the default), a bundle's inner `.appx` and `.msix` packages are still signed even if the file passed to `--file-list` excludes them. For example, putting these lines in that file does not skip `inner.msix`:
 
 ```text
 **/*
 !inner.msix
 ```
 
-The list still filters the files inside `inner.msix`.
+Those patterns still filter the files inside `inner.msix`.
 
 ## ClickOnce Deployments
 
-The tool still handles a selected ClickOnce `.application` or `.vsto` file even if its name is excluded. That does not guarantee its manifest is signed: the list still filters files and manifests, starting in the selected file's folder. Excluded files may still be copied to update the manifests.
+The tool still handles a selected ClickOnce `.application` or `.vsto` file even if the file passed to `--file-list` excludes its name. That does not guarantee its manifest is signed: the patterns still filter files and manifests, starting in the selected file's folder. Excluded files may still be copied to update the manifests.
 
 ## Existing Commands
 
-The list now also filters files outside packages, even files named in the command. If your list was written only for package contents, add patterns for any other files you still want signed. Commands without `--file-list` work as before.
+The `--file-list` option now also filters files outside packages, even files named in the command. If you used it only for package contents, add patterns for any other files you still want signed. Commands without `--file-list` work as before.
 
 Skipping some files does not change where the other files are written.
 
 ## File List Format
 
-You can provide a list of string patterns (one pattern per line) which describe files to include or exclude, or literal file paths. Filtering uses globbing, and supports advanced features such as brace expansion and negation.
+In the file passed to `--file-list`, use one pattern or literal file path per line to include or exclude files. Filtering uses globbing, and supports advanced features such as brace expansion and negation.
 
-When the list is used to select files, exclusions (`!`) win regardless of line order. An empty or exclusion-only list does not mean "include everything." To include everything except test DLLs:
+Exclusions (`!`) win regardless of line order. If `--file-list` points to an empty file or one with only exclusions, that does not mean "include everything." To include everything except test DLLs:
 
 ```text
 **/*
