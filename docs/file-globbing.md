@@ -1,8 +1,8 @@
 # File List Filtering and Globbing
 
-Positional file paths or quoted globs select the inputs. `--file-list` (`-fl`) filters standalone inputs with one include/exclude pattern per line. It does not add inputs or replace the required file arguments.
+**File arguments choose the files to consider. `--file-list` (`-fl`) narrows that selection; it cannot add files.**
 
-Standalone patterns are relative to the working directory or `--base-directory` (`-b`), not the file-list file's location. The list file itself can have an absolute or base-relative path. Standalone files outside the base directory do not match these patterns.
+The example below uses individual `.exe` and `.dll` files. Packages and ClickOnce deployments are covered separately afterward.
 
 ## Standalone Files
 
@@ -24,6 +24,16 @@ myapp.exe
 my.*.dll
 ```
 
+The same list produces different results depending on the file argument:
+
+| File argument | Result |
+|---|---|
+| `'*'` | Signs `myapp.exe`, `my.first.dll`, and `my.second.dll`; leaves `other.dll` unchanged. |
+| `'myapp.exe'` | Signs only `myapp.exe`. The list cannot add the DLLs. |
+| No file argument | Error: file arguments are still required, even with `--file-list`. |
+
+For example, the first row uses this complete command.
+
 In the commands below, replace the certificate path and `<SHA256_FINGERPRINT>` with your certificate's values. The certificate-store provider requires `-cfp` even with `-cf`.
 
 ```powershell
@@ -31,7 +41,15 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\build' --file-list 'sign-list.txt' '*'
 ```
 
-This signs the three `my...` binaries and leaves `other.dll` unchanged. Replacing `'*'` with `'myapp.exe'` selects only the executable; the list does not add the DLLs. Quote glob arguments so `sign` receives the patterns.
+Quote glob arguments so `sign` receives the patterns rather than relying on the shell to expand them.
+
+### Paths and Folders
+
+In the command above, `--base-directory 'C:\build'` tells `sign` where to look. Without `--base-directory` (`-b`), it uses the current working directory.
+
+* Patterns inside the list are relative to that folder, **not** to the folder containing the list.
+* The list file's own path can be absolute or relative to that same folder.
+* Standalone files outside that folder do not match these patterns.
 
 ## Containers and ClickOnce
 
@@ -49,6 +67,8 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
 This signs matching DLLs, then repacks and signs the NuGet package. The package name need not match the list. Selected top-level containers are not removed by inclusion or exclusion patterns.
 
 With container recursion enabled (the default), content patterns are relative to each container root. Unmatched entries remain in the package. Plain ZIP archives are repacked after matching contents are signed, but are not themselves cryptographically signed.
+
+### ClickOnce Deployments
 
 ClickOnce `.application` and `.vsto` inputs remain selected for deployment processing. The list filters payloads and manifests relative to the deployment input's directory; retaining the input does not guarantee its manifest is signed. Dependencies can still be copied for manifest processing even when excluded from signing.
 
