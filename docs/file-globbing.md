@@ -95,7 +95,9 @@ Those patterns still filter the files inside `inner.msix`.
 
 ## ClickOnce Deployments
 
-The tool still handles a selected ClickOnce `.application` or `.vsto` file even if the file passed to `--file-list` excludes its name. That does not guarantee its manifest is signed: the patterns still filter files and manifests, starting in the selected file's folder. Excluded files may still be copied to update the manifests.
+Say `MyApp.application` and `setup.exe` are in the same folder. Name `MyApp.application` at the end of the command and put only `setup.exe` in the text file you give to `--file-list`. `sign` uses `MyApp.application` to decide where to look, but signs only `setup.exe`.
+
+Paths in that text file are relative to the folder containing the `.application` or `.vsto` file. The patterns apply to `.manifest` files too. To match the `.application` or `.vsto` file itself, use `*.application` or `*.vsto`: `sign` checks a copy with a temporary name. Files you skip signing may still be copied with the app.
 
 ## Existing Commands
 
