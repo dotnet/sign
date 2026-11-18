@@ -51,7 +51,7 @@ In the command above, `--base-directory 'C:\build'` tells `sign` where to look. 
 * The list file's own path can be absolute or relative to that same folder.
 * Standalone files outside that folder do not match these patterns.
 
-## Containers and ClickOnce
+## Packages and ZIP Files
 
 For `C:\packages\MyPackage.nupkg`, create `C:\packages\package-sign-list.txt`:
 
@@ -64,11 +64,42 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\packages' --file-list 'package-sign-list.txt' 'MyPackage.nupkg'
 ```
 
-This signs matching DLLs, then repacks and signs the NuGet package. The package name need not match the list. Selected top-level containers are not removed by inclusion or exclusion patterns.
+This signs matching DLLs, then repacks and signs `MyPackage.nupkg`. The list does not have to include the package name. It also cannot exclude a package or ZIP chosen by a file argument.
 
-With container recursion enabled (the default), content patterns are relative to each container root. Unmatched entries remain in the package. Plain ZIP archives are repacked after matching contents are signed, but are not themselves cryptographically signed.
+With recursion enabled (the default), the list selects files inside NuGet packages, APPX/MSIX packages, and ZIP files. Paths start at each package's root. Unmatched files remain inside. A plain ZIP is repacked after its matching contents are signed, but the ZIP itself is not signed.
 
-### ClickOnce Deployments
+### Packages Inside Packages
+
+To sign `app.dll` in this ZIP layout:
+
+```text
+outer.zip
+`-- inner.zip
+    `-- lib
+        `-- app.dll
+```
+
+Include both the inner ZIP and the files you want to sign:
+
+```text
+inner.zip
+lib/**/*.dll
+```
+
+The first line lets the tool open `inner.zip`; the second selects the DLL inside it. With only `lib/**/*.dll`, the tool does not open `inner.zip`.
+
+### APPX/MSIX Bundles
+
+Bundles work differently. With recursion enabled, the tool still opens and signs `inner.msix` inside a bundle with this list:
+
+```text
+**/*
+!inner.msix
+```
+
+Excluding the inner package does not skip it. The list still filters the files inside that package.
+
+## ClickOnce Deployments
 
 ClickOnce `.application` and `.vsto` inputs remain selected for deployment processing. The list filters payloads and manifests relative to the deployment input's directory; retaining the input does not guarantee its manifest is signed. Dependencies can still be copied for manifest processing even when excluded from signing.
 
@@ -82,24 +113,25 @@ Output destinations are planned before filtering, so filtering does not move ret
 
 You can provide a list of string patterns (one pattern per line) which describe files to include or exclude, or literal file paths. Filtering uses globbing, and supports advanced features such as brace expansion and negation.
 
-Exclusions (`!`) win regardless of line order. An empty or exclusion-only list does not implicitly include all files. To include everything except test DLLs:
+When the list is used to select files, exclusions (`!`) win regardless of line order. An empty or exclusion-only list does not mean "include everything." To include everything except test DLLs:
 
 ```text
 **/*
 !**/*.Tests.dll
 ```
 
-The top-level container and ClickOnce processing exceptions above still apply.
+The package, bundle, and ClickOnce rules above still apply.
 
 The following is supported:
 
-* Standard globbing: `*`, `?`, `**` wildcards.
+* Standard globbing: `*` and `**` wildcards.
 * Brace expansion: `{a,b}` expands to both `a` and `b`.
   - Nested braces also work: `a{b,c{d,e}f}g` expands to `abg` `acdfg` `acefg`
 * Numeric ranges: `{1..3}` expands to `1`, `2`, `3`.
 * Negation: Patterns starting with `!` exclude files matching that pattern.
 * Escaping: Use `\{`, `\}`, or `\!` to treat these characters literally.
 
+The `?` wildcard is not supported: `file?.txt` does not match `file1.txt`.
 
 ## Pattern Examples
 
