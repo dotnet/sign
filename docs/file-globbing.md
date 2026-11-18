@@ -119,14 +119,6 @@ Patterns also apply to `.manifest` files. A file named `MyApp.Core.dll.deploy` m
 
 Use `*.application` or `*.vsto` to match the deployment file itself: `sign` checks a copy with a temporary name. Unsigned files may still be copied with the app.
 
-## Existing Commands
-
-Builds that include [#1076](https://github.com/dotnet/sign/pull/1076) use `--file-list` to filter standalone files, even files named in the command. The [0.9.1-beta.26552.4 release](https://github.com/dotnet/sign/releases/tag/v0.9.1-beta.26552.4) does not include this change.
-
-For a command that used `--file-list` only for package contents, add patterns for any standalone files that still need signing. Commands without `--file-list` work as before.
-
-Skipping some files does not change where the other files are written.
-
 ## File List Format
 
 In the file passed to `--file-list`, use one pattern or literal file path per line to include or exclude files. Filtering uses globbing, and supports advanced features such as brace expansion and negation.
