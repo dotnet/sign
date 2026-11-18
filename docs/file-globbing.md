@@ -132,10 +132,12 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
 
 This signs `setup.exe`, the manifests, and the other `.deploy` files shown above. With `--output`, files skipped for signing, such as `ThirdParty.dll.deploy`, can still be copied to the output.
 
-- **Include the manifests when signing app files.** If the manifests are not updated, the app may fail to install.
-- **Use a wildcard for the top-level deployment file.** In the text file passed to `--file-list`, `*.application` or `*.vsto` matches the copy with a temporary name. The exact file name does not.
-- **Match the `.deploy` name.** `**/*.dll.deploy` matches `MyApp.Core.dll.deploy`, but `**/*.dll` does not.
-- **Match only one version's `.manifest` file.** Matching more than one `.manifest` file for a deployment causes signing to fail.
+When writing patterns in `clickonce-list.txt`:
+
+- **Keep the manifests in sync.** Signing only `MyApp.Core.dll.deploy` can leave the old DLL hash in `MyApp.exe.manifest`, causing the install to fail. For this layout, add `**/MyApp.exe.manifest` and `*.application` too, so `sign` updates the application manifest first, then the deployment manifest.
+- **Use a wildcard for the top-level deployment manifest.** The command names `MyApp.application`, but `sign` checks a temporary copy such as `j4d9x2ka.application`. `*.application` matches that copy; `MyApp.application` does not. Use `*.vsto` for a `.vsto` deployment.
+- **Match the `.deploy` suffix.** `**/*.dll.deploy` matches `MyApp.Core.dll.deploy`; `**/*.dll` does not. `sign` checks the name before temporarily removing `.deploy`.
+- **Match at most one `.manifest` file per deployment.** If `**/*.manifest` matches files in two version folders, signing fails. Match the intended version instead, for example `Application Files/MyApp_1_0_0_0/MyApp.exe.manifest`. The `.application` or `.vsto` manifest does not count.
 
 ## File List Format
 
