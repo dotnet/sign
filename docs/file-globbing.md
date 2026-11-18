@@ -1,8 +1,8 @@
 # File List Filtering and Globbing
 
-**File arguments choose the files to consider. `--file-list` (`-fl`) narrows that selection; it cannot add files.**
+**`<file(s)>` chooses the files to consider. `--file-list` (`-fl`) narrows that selection; it cannot add files.**
 
-The example below uses individual `.exe` and `.dll` files. Packages and ClickOnce deployments are covered separately afterward.
+The `<file(s)>` input in CLI help means file paths or quoted patterns supplied without an option name. The example below uses `.exe` and `.dll` files; package and ClickOnce rules follow.
 
 ## Standalone Files
 
@@ -24,22 +24,20 @@ myapp.exe
 my.*.dll
 ```
 
-The same list produces different results depending on the file argument:
-
-| File argument | Result |
-|---|---|
-| `'*'` | Signs `myapp.exe`, `my.first.dll`, and `my.second.dll`; leaves `other.dll` unchanged. |
-| `'myapp.exe'` | Signs only `myapp.exe`. The list cannot add the DLLs. |
-| No file argument | Error: file arguments are still required, even with `--file-list`. |
-
-For example, the first row uses this complete command.
-
 In the commands below, replace the certificate path and `<SHA256_FINGERPRINT>` with your certificate's values. The certificate-store provider requires `-cfp` even with `-cf`.
 
 ```powershell
 sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' `
   --base-directory 'C:\build' --file-list 'sign-list.txt' '*'
 ```
+
+Here, **the final `'*'` supplies `<file(s)>`**, the files to sign. It is separate from the pattern file (`--file-list`) and the certificate file (`-cf`/`--certificate-file`). Keep the options unchanged and change only `<file(s)>`:
+
+| Files to sign (`<file(s)>`) | Result |
+|---|---|
+| `'*'` | Signs `myapp.exe`, `my.first.dll`, and `my.second.dll`; leaves `other.dll` unchanged. |
+| `'myapp.exe'` | Signs only `myapp.exe`. The list cannot add the DLLs. |
+| Omitted | Error: `<file(s)>` is required, even with `--file-list`. |
 
 Quote glob arguments so `sign` receives the patterns rather than relying on the shell to expand them.
 
@@ -64,7 +62,7 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\packages' --file-list 'package-sign-list.txt' 'MyPackage.nupkg'
 ```
 
-This signs matching DLLs, then repacks and signs `MyPackage.nupkg`. The list does not have to include the package name. It also cannot exclude a package or ZIP chosen by a file argument.
+This signs matching DLLs, then repacks and signs `MyPackage.nupkg`. The list does not have to include the package name. It also cannot exclude a package or ZIP selected by `<file(s)>`.
 
 With recursion enabled (the default), the list selects files inside NuGet packages, APPX/MSIX packages, and ZIP files. Paths start at each package's root. Unmatched files remain inside. A plain ZIP is repacked after its matching contents are signed, but the ZIP itself is not signed.
 
