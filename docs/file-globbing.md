@@ -95,6 +95,10 @@ Those patterns still filter the files inside `inner.msix`.
 
 ## ClickOnce Deployments
 
+When you give `sign` a ClickOnce `.application` or `.vsto` file, it looks in that file's folder. Use `--file-list` to narrow down what gets signed.
+
+For example, to sign `setup.exe` without signing `MyApp.application`:
+
 ```text
 C:\release\
 |-- clickonce-list.txt      <- pass this path to --file-list
@@ -103,7 +107,7 @@ C:\release\
     `-- setup.exe
 ```
 
-If `clickonce-list.txt` contains just `setup.exe`, only `setup.exe` is signed. Patterns start in `publish\` and also apply to `.manifest` files.
+Put just `setup.exe` in `clickonce-list.txt`. Patterns start in `publish\` and also apply to `.manifest` files.
 
 Use `*.application` or `*.vsto` to match the deployment file itself: `sign` checks a copy with a temporary name. Unsigned files may still be copied with the app.
 
