@@ -1,12 +1,12 @@
 # File List Filtering and Globbing
 
-**`<file(s)>` chooses the files to consider. `--file-list` (`-fl`) narrows that selection; it cannot add files.**
+The `code` signing command supports the `--file-list` or `-fl` option. This option specifies a file that contains paths of files to sign or to exclude from signing.
 
-The `<file(s)>` input in CLI help means file paths or quoted patterns supplied without an option name. The example below uses `.exe` and `.dll` files; package and ClickOnce rules follow.
+The command still needs file names or a quoted pattern such as `'*'`. The list only filters those files; it does not add more files.
 
-## Standalone Files
+## Sign EXE and DLL Files
 
-Create `sign-list.txt` alongside the binaries:
+Create `sign-list.txt` alongside these files:
 
 ```text
 C:\build\
@@ -24,30 +24,26 @@ myapp.exe
 my.*.dll
 ```
 
-In the commands below, replace the certificate path and `<SHA256_FINGERPRINT>` with your certificate's values. The certificate-store provider requires `-cfp` even with `-cf`.
+In the commands below, replace the certificate path and `<SHA256_FINGERPRINT>` with your certificate's values. The `certificate-store` command requires `-cfp` even with `-cf`.
 
 ```powershell
 sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' `
   --base-directory 'C:\build' --file-list 'sign-list.txt' '*'
 ```
 
-Here, **the final `'*'` supplies `<file(s)>`**, the files to sign. It is separate from the pattern file (`--file-list`) and the certificate file (`-cf`/`--certificate-file`). Keep the options unchanged and change only `<file(s)>`:
+Here, `-cf` names the certificate, `--file-list` names the text list, and the final `'*'` selects files from `C:\build`.
 
-| Files to sign (`<file(s)>`) | Result |
-|---|---|
-| `'*'` | Signs `myapp.exe`, `my.first.dll`, and `my.second.dll`; leaves `other.dll` unchanged. |
-| `'myapp.exe'` | Signs only `myapp.exe`. The list cannot add the DLLs. |
-| Omitted | Error: `<file(s)>` is required, even with `--file-list`. |
+This signs `myapp.exe`, `my.first.dll`, and `my.second.dll`. It leaves `other.dll` unchanged.
 
-Quote glob arguments so `sign` receives the patterns rather than relying on the shell to expand them.
+Replace only the final `'*'` with `'myapp.exe'` to sign just that file. The list will not add the DLLs. Leaving out the file name or pattern is an error.
+
+Keep patterns such as `'*'` in quotes.
 
 ### Paths and Folders
 
-In the command above, `--base-directory 'C:\build'` tells `sign` where to look. Without `--base-directory` (`-b`), it uses the current working directory.
+Paths **inside the list** are relative to the working directory (or base directory, if used). You can change the base directory using `--base-directory` or `-b`.
 
-* Patterns inside the list are relative to that folder, **not** to the folder containing the list.
-* The list file's own path can be absolute or relative to that same folder.
-* Standalone files outside that folder do not match these patterns.
+The list file itself can have a full path or a path relative to that same directory. Its location does not change where the patterns start. Files outside that directory do not match the list.
 
 ## Packages and ZIP Files
 
@@ -62,9 +58,9 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\packages' --file-list 'package-sign-list.txt' 'MyPackage.nupkg'
 ```
 
-This signs matching DLLs, then repacks and signs `MyPackage.nupkg`. The list does not have to include the package name. It also cannot exclude a package or ZIP selected by `<file(s)>`.
+This signs matching DLLs, then saves and signs `MyPackage.nupkg`. The package name need not be in the list. Excluding a package or ZIP chosen in the command does not skip it.
 
-With recursion enabled (the default), the list selects files inside NuGet packages, APPX/MSIX packages, and ZIP files. Paths start at each package's root. Unmatched files remain inside. A plain ZIP is repacked after its matching contents are signed, but the ZIP itself is not signed.
+The tool looks inside packages by default (`--recurse-containers true`). Paths start inside each package, and files that do not match stay there. For ZIP files, matching files are signed and saved back into the ZIP; the ZIP itself is not signed.
 
 ### Packages Inside Packages
 
@@ -88,24 +84,24 @@ The first line lets the tool open `inner.zip`; the second selects the DLL inside
 
 ### APPX/MSIX Bundles
 
-Bundles work differently. With recursion enabled, the tool still opens and signs `inner.msix` inside a bundle with this list:
+With `--recurse-containers` enabled (the default), a bundle's inner `.appx` and `.msix` packages are still signed even when excluded by the list. For example, this does not skip `inner.msix`:
 
 ```text
 **/*
 !inner.msix
 ```
 
-Excluding the inner package does not skip it. The list still filters the files inside that package.
+The list still filters the files inside `inner.msix`.
 
 ## ClickOnce Deployments
 
-ClickOnce `.application` and `.vsto` inputs remain selected for deployment processing. The list filters payloads and manifests relative to the deployment input's directory; retaining the input does not guarantee its manifest is signed. Dependencies can still be copied for manifest processing even when excluded from signing.
+The tool still handles a selected ClickOnce `.application` or `.vsto` file even if its name is excluded. That does not guarantee its manifest is signed: the list still filters files and manifests, starting in the selected file's folder. Excluded files may still be copied to update the manifests.
 
 ## Existing Commands
 
-Since #1076, lists also filter standalone inputs, including explicitly named files. If a command previously used a list only for package contents, add patterns for standalone files that must still be signed. Without `--file-list`, selection is unchanged.
+The list now also filters files outside packages, even files named in the command. If your list was written only for package contents, add patterns for any other files you still want signed. Commands without `--file-list` work as before.
 
-Output destinations are planned before filtering, so filtering does not move retained outputs.
+Skipping some files does not change where the other files are written.
 
 ## File List Format
 
