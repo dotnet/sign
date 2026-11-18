@@ -2,7 +2,7 @@
 
 The `code` signing command supports the `--file-list` or `-fl` option. This option specifies a file that contains paths of files to sign or to exclude from signing.
 
-The command still needs file names or a quoted pattern such as `'*'`. Use `--file-list` to narrow down what gets signed, not to add files to the command.
+The file names or quoted patterns at the end of the command tell `sign` which files to look at. At least one name or pattern is required. The text file passed to `--file-list` narrows down what gets signed; it cannot add files.
 
 ## Sign EXE and DLL Files
 
@@ -31,7 +31,7 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
   --base-directory 'C:\build' --file-list 'sign-list.txt' '*'
 ```
 
-Here, `-cf` names the certificate and the final `'*'` finds files in `C:\build`. `--file-list 'sign-list.txt'` tells `sign` to read the patterns from `sign-list.txt`.
+Here, `-cf` names the certificate. The final `'*'` finds files directly in `C:\build`; `'**/*'` would also look in subfolders. `--file-list 'sign-list.txt'` tells `sign` to read the patterns from `sign-list.txt`.
 
 This signs `myapp.exe`, `my.first.dll`, and `my.second.dll`. It leaves `other.dll` unchanged.
 
@@ -39,11 +39,15 @@ Replace only the final `'*'` with `'myapp.exe'` to sign just that file, even tho
 
 Keep patterns such as `'*'` in quotes.
 
-### Paths and Folders
+## Where Patterns Start
 
-For files like the EXE and DLLs above, paths and patterns **inside the file passed to `--file-list`** are relative to the working directory (or base directory, if used). Set a different base directory with `--base-directory` or `-b`.
+Patterns in the text file passed to `--file-list` start in different folders:
 
-The path passed to `--file-list` can be a full path or a path relative to that same directory. The location of that file does not change where its patterns start. Files outside the working or base directory do not match those patterns.
+- **Standalone files (such as EXEs and DLLs):** the working directory, or the folder set with `--base-directory` (`-b`). Standalone files outside that folder do not match.
+- **Package contents:** the root of each package that `sign` opens, including packages inside other packages.
+- **ClickOnce files:** the folder containing the `.application` or `.vsto` file named in the command.
+
+The path passed to `--file-list` can be a full path or a path relative to the working directory (or base directory, if set). The location of the text file does not change where its patterns start.
 
 ## Packages and ZIP Files
 
@@ -60,7 +64,7 @@ sign code certificate-store -cf 'C:\certs\test.pfx' -cfp '<SHA256_FINGERPRINT>' 
 
 This signs matching DLLs, then saves and signs `MyPackage.nupkg`. The package name need not be in `package-sign-list.txt`. If the command selects a package or ZIP, an exclusion in the file passed to `--file-list` does not skip it.
 
-The tool looks inside packages by default (`--recurse-containers true`). Paths in the file passed to `--file-list` start at the root of each package, and files that do not match stay there. For ZIP files, matching files are signed and saved back into the ZIP; the ZIP itself is not signed.
+The tool looks inside packages by default (`--recurse-containers true`). Files that do not match stay in the package. For ZIP files, matching files are signed and saved back into the ZIP; the ZIP itself is not signed.
 
 ### Packages Inside Packages
 
@@ -93,6 +97,8 @@ With `--recurse-containers` enabled (the default), a bundle's inner `.appx` and 
 
 Those patterns still filter the files inside `inner.msix`.
 
+With `--recurse-containers false`, `sign` signs the bundle without opening or signing the packages inside it.
+
 ## ClickOnce Deployments
 
 When the command names a ClickOnce `.application` or `.vsto` file, `sign` looks in that file's folder. Use `--file-list` to narrow down what gets signed.
@@ -107,13 +113,17 @@ C:\release\
     `-- setup.exe
 ```
 
-Put just `setup.exe` in `clickonce-list.txt`. Patterns start in `publish\` and also apply to `.manifest` files.
+Put just `setup.exe` in `clickonce-list.txt` to match `publish\setup.exe`.
+
+Patterns also apply to `.manifest` files. A file named `MyApp.Core.dll.deploy` matches `**/*.dll.deploy`, not `**/*.dll`.
 
 Use `*.application` or `*.vsto` to match the deployment file itself: `sign` checks a copy with a temporary name. Unsigned files may still be copied with the app.
 
 ## Existing Commands
 
-The `--file-list` option now also filters files outside packages, even files named in the command. For a command that used `--file-list` only for package contents, add patterns for any other files that still need signing. Commands without `--file-list` work as before.
+Builds that include [#1076](https://github.com/dotnet/sign/pull/1076) use `--file-list` to filter standalone files, even files named in the command. The [0.9.1-beta.26552.4 release](https://github.com/dotnet/sign/releases/tag/v0.9.1-beta.26552.4) does not include this change.
+
+For a command that used `--file-list` only for package contents, add patterns for any standalone files that still need signing. Commands without `--file-list` work as before.
 
 Skipping some files does not change where the other files are written.
 
