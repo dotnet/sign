@@ -66,7 +66,7 @@ This signs matching DLLs, then saves and signs `MyPackage.nupkg`. The package na
 
 The tool looks inside packages by default (`--recurse-containers true`). Files that do not match stay in the package. For ZIP files, matching files are signed and saved back into the ZIP; the ZIP itself is not signed.
 
-### Packages Inside Packages
+### Nested ZIP Files
 
 To sign `app.dll` in this ZIP layout:
 
