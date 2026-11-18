@@ -66,12 +66,14 @@ extends:
           enableTelemetry: true
           jobs:
           - job: Windows
+            timeoutInMinutes: 120
             pool: # See https://helix.dot.net/ for VM names.
               name: NetCore1ESPool-Internal
               demands: ImageOverride -equals windows.vs2022.amd64
             variables:
             # Only enable publishing in official builds.
             - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              - group: DotNet-HelixApi-Access
               - name: _SignType
                 value: real
               - name: _OfficialBuildArgs
@@ -102,6 +104,10 @@ extends:
             - task: CodeQL3000Finalize@0
               displayName: Finalize CodeQL
               condition: and(succeeded(), eq(variables['Codeql.Enabled'], 'true'))
+            - template: /eng/pipelines/windows-x64-validation.yml
+            - template: /eng/pipelines/windows-arm64-validation.yml
+              parameters:
+                official: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
             # Guardian requires npm.
             - task: NodeTool@0
               inputs:
