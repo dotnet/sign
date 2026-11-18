@@ -581,5 +581,14 @@ namespace Sign.Core {
                 return ResourceManager.GetString("VSIXSignToolUnsupportedAlgorithm", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64..
+        /// </summary>
+        internal static string DynamicsBusinessCentralArm64NotSupported {
+            get {
+                return ResourceManager.GetString("DynamicsBusinessCentralArm64NotSupported", resourceCulture);
+            }
+        }
     }
 }

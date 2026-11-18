@@ -25,7 +25,7 @@ Platform | NuGet CLI | dotnet CLI | Sign CLI
 -- | -- | -- | --
 Windows x86 | ✔️ | ✔️ | ❌
 Windows x64 | ✔️ | ✔️ | ✔️
-Windows ARM64 | ❌ | ✔️ | ❌
+Windows ARM64 | ❌ | ✔️ | ✔️
 Linux | ❌ | ✔️* | ❌
 macOS | ❌ | ✔️* | ❌
 

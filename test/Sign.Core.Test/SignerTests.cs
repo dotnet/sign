@@ -146,7 +146,7 @@ namespace Sign.Core.Test
             await VerifyMsixBundleFileAsync(outputFile, _temporaryDirectory);
         }
 
-        [Fact]
+        [RequiresX64Fact]
         public async Task SignAsync_WhenFileIsApp_Signs()
         {
             FileInfo file = TestAssets.GetTestAsset(_temporaryDirectory.Directory, "EmptyExtension.app");
