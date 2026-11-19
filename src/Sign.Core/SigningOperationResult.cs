@@ -211,8 +211,10 @@ namespace Sign.Core
                 destinationRoot);
             List<Materialization> materializations =
                 new(_snapshots.Count);
+            StringComparer destinationComparer =
+                StringComparer.OrdinalIgnoreCase;
             HashSet<string> destinations =
-                new(StringComparer.OrdinalIgnoreCase);
+                new(destinationComparer);
 
             foreach (
                 SnapshotFile snapshot
@@ -224,6 +226,14 @@ namespace Sign.Core
                     : GetContainedDestination(
                         containedRoot,
                         snapshot.RelativePath);
+
+                if (!snapshot.IsPrimary &&
+                    destinationComparer.Equals(
+                        materializationDestination.FullName,
+                        destination.FullName))
+                {
+                    continue;
+                }
 
                 if (!destinations.Add(
                     materializationDestination.FullName))

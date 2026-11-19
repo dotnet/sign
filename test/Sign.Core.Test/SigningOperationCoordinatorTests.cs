@@ -685,7 +685,7 @@ namespace Sign.Core.Test
         }
 
         [Fact]
-        public async Task ExecuteArtifactAsync_LayoutUsedByMultipleOutputs_MaterializesAllFiles()
+        public async Task ExecuteArtifactAsync_LayoutUsedByMultipleOutputs_MaterializesNonConflictingFiles()
         {
             using TestDirectory directory = new();
             using DirectoryServiceStub directoryService = new();
@@ -700,6 +700,11 @@ namespace Sign.Core.Test
                     "Application Files",
                     "payload.dll.deploy"),
                 "signed payload");
+            FileInfo previousOutput = directory.CreateFile(
+                Path.Combine(
+                    "owner",
+                    "renamed.application"),
+                "previous output");
 
             SigningOperationResult result =
                 await coordinator.ExecuteArtifactAsync(
@@ -727,6 +732,12 @@ namespace Sign.Core.Test
             Assert.Equal(
                 "signed manifest",
                 File.ReadAllText(second.FullName));
+            Assert.Equal(
+                "previous output",
+                File.ReadAllText(
+                    Path.Combine(
+                        first.DirectoryName!,
+                        previousOutput.Name)));
             Assert.Equal(
                 "signed payload",
                 File.ReadAllText(

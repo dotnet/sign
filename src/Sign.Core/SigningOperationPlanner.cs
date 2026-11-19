@@ -30,11 +30,13 @@ namespace Sign.Core
                         paramName: nameof(inputFiles));
                 }
 
+                SigningFile source = SigningFile.Capture(input);
+
                 plans.Add(
                     new SigningOperationPlan(
-                        SigningFile.Capture(input),
+                        source,
                         GetOutput(
-                            input,
+                            source,
                             inputFiles.Count,
                             output,
                             baseDirectory)));
@@ -44,11 +46,13 @@ namespace Sign.Core
         }
 
         private static FileInfo GetOutput(
-            FileInfo input,
+            SigningFile source,
             int inputCount,
             string? output,
             DirectoryInfo baseDirectory)
         {
+            FileInfo input = source.File;
+
             if (inputCount == 1 &&
                 !string.IsNullOrWhiteSpace(output))
             {
@@ -64,7 +68,8 @@ namespace Sign.Core
 
             if (string.IsNullOrWhiteSpace(output))
             {
-                return new FileInfo(input.FullName);
+                return new FileInfo(
+                    source.SourceIdentity.GetPhysicalPath());
             }
 
             string relativePath = Path.GetRelativePath(

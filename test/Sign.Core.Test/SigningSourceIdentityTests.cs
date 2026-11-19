@@ -103,6 +103,29 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void PhysicalFile_ExistingDriveLetterCaseAlias_IsEqual()
+        {
+            using TestDirectory directory = new();
+            FileInfo file = directory.CreateFile(
+                relativePath: "File.bin",
+                contents: "content");
+            string path = file.FullName;
+            char aliasDriveLetter = char.IsUpper(path[0])
+                ? char.ToLowerInvariant(path[0])
+                : char.ToUpperInvariant(path[0]);
+            string aliasPath = $"{aliasDriveLetter}{path[1..]}";
+
+            SigningSourceIdentity left =
+                SigningSourceIdentity.Capture(file);
+            SigningSourceIdentity right =
+                SigningSourceIdentity.PhysicalFile(aliasPath);
+
+            Assert.True(File.Exists(aliasPath));
+            Assert.Equal(left, right);
+            Assert.Equal(left.GetHashCode(), right.GetHashCode());
+        }
+
+        [Fact]
         public void PhysicalFile_ExtendedPathAlias_IsEqual()
         {
             using TestDirectory directory = new();

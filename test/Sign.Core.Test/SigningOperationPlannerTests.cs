@@ -49,6 +49,29 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void Create_WhenInPlaceInputUsesCaseAlias_UsesExistingPathSpelling()
+        {
+            using TestDirectory directory = new();
+            FileInfo input = directory.CreateFile(
+                relativePath: "Input.dll",
+                contents: "content");
+            FileInfo alias = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "input.dll"));
+
+            SigningOperationPlan plan = Assert.Single(
+                SigningOperationPlanner.Create(
+                    new[] { alias },
+                    output: null,
+                    new DirectoryInfo(directory.FullPath)));
+
+            Assert.Equal(
+                input.FullName,
+                plan.Output.FullName);
+        }
+
+        [Fact]
         public void Create_MultipleInputs_PreservesRelativePaths()
         {
             using TestDirectory directory = new();

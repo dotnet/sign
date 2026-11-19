@@ -1408,7 +1408,8 @@ namespace Sign.Core.Test
                 .Range(0, 32)
                 .Select(
                     _ => new FileInfo(
-                        input.FullName.ToUpperInvariant()))
+                        char.ToLowerInvariant(input.FullName[0]) +
+                            input.FullName[1..]))
                 .Prepend(input)
                 .ToArray();
             IAggregatingDataFormatSigner aggregatingSigner =
@@ -1684,7 +1685,10 @@ namespace Sign.Core.Test
                 outputFile,
                 maxConcurrency: 2,
                 application,
-                payload,
+                new FileInfo(
+                    Path.Combine(
+                        publish.FullName,
+                        "payload.exe")),
                 otherApplication);
 
             Assert.Equal(ExitCode.Success, exitCode);

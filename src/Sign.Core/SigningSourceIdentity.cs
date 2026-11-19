@@ -194,6 +194,13 @@ namespace Sign.Core
                 return fullPath;
             }
 
+            if (root.Length >= 2 &&
+                root[0] is >= 'a' and <= 'z' &&
+                root[1] == Path.VolumeSeparatorChar)
+            {
+                root = $"{char.ToUpperInvariant(root[0])}{root[1..]}";
+            }
+
             string resolvedPath = root;
             string[] segments = fullPath[root.Length..].Split(
                 new[]
