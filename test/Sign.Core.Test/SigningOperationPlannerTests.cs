@@ -49,6 +49,55 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void Create_WhenSingleInputUsesCaseAliasAndOutputIsDirectory_UsesExistingPathSpelling()
+        {
+            using TestDirectory directory = new();
+            FileInfo input = directory.CreateFile(
+                relativePath: "Input.dll",
+                contents: "content");
+            FileInfo alias = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "input.dll"));
+
+            SigningOperationPlan plan = Assert.Single(
+                SigningOperationPlanner.Create(
+                    new[] { alias },
+                    "signed",
+                    new DirectoryInfo(directory.FullPath)));
+
+            Assert.Equal(
+                Path.Combine(
+                    directory.FullPath,
+                    "signed",
+                    input.Name),
+                plan.Output.FullName);
+        }
+
+        [Fact]
+        public void Create_WhenInPlaceInputUsesCaseAlias_UsesExistingPathSpelling()
+        {
+            using TestDirectory directory = new();
+            FileInfo input = directory.CreateFile(
+                relativePath: "Input.dll",
+                contents: "content");
+            FileInfo alias = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "input.dll"));
+
+            SigningOperationPlan plan = Assert.Single(
+                SigningOperationPlanner.Create(
+                    new[] { alias },
+                    output: null,
+                    new DirectoryInfo(directory.FullPath)));
+
+            Assert.Equal(
+                input.FullName,
+                plan.Output.FullName);
+        }
+
+        [Fact]
         public void Create_MultipleInputs_PreservesRelativePaths()
         {
             using TestDirectory directory = new();
@@ -84,6 +133,38 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void Create_WhenMultipleInputsUseCaseAlias_UsesExistingRelativePathSpelling()
+        {
+            using TestDirectory directory = new();
+            FileInfo first = new(
+                Path.Combine(directory.FullPath, "first.dll"));
+            FileInfo second = directory.CreateFile(
+                relativePath: Path.Combine(
+                    "Nested",
+                    "Second.dll"),
+                contents: "content");
+            FileInfo alias = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "nested",
+                    "second.dll"));
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { first, alias },
+                    "signed",
+                    new DirectoryInfo(directory.FullPath));
+
+            Assert.Equal(
+                Path.Combine(
+                    directory.FullPath,
+                    "signed",
+                    "Nested",
+                    second.Name),
+                plans[1].Output.FullName);
+        }
+
+        [Fact]
         public void Create_WhenInputFilesContainsNull_Throws()
         {
             using TestDirectory directory = new();
@@ -99,6 +180,96 @@ namespace Sign.Core.Test
             Assert.StartsWith(
                 "The collection cannot contain a null element.",
                 exception.Message);
+        }
+
+        [Fact]
+        public void Create_MultipleInputsOutsideBaseDirectory_MapsRelativeToOutputDirectory()
+        {
+            using TestDirectory baseDirectory = new();
+            using TestDirectory outsideDirectory = new();
+            FileInfo inside = new(
+                Path.Combine(baseDirectory.FullPath, "inside.dll"));
+            FileInfo outside = new(
+                Path.Combine(outsideDirectory.FullPath, "outside.dll"));
+            string outputDirectory = Path.Combine(
+                baseDirectory.FullPath,
+                "signed");
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { inside, outside },
+                    "signed",
+                    new DirectoryInfo(baseDirectory.FullPath));
+
+            // Matches upstream, which maps the output outside the output
+            // directory.
+            Assert.Equal(
+                Path.GetFullPath(
+                    Path.Combine(
+                        outputDirectory,
+                        Path.GetRelativePath(
+                            baseDirectory.FullPath,
+                            outside.FullName))),
+                plans[1].Output.FullName);
+        }
+
+        [Fact]
+        public void Create_MultipleInputsOnDifferentDrive_MapsToSource()
+        {
+            using TestDirectory directory = new();
+            string baseRoot = Path.GetPathRoot(directory.FullPath)!;
+            char otherDrive = char.ToUpperInvariant(baseRoot[0]) == 'C'
+                ? 'D'
+                : 'C';
+            FileInfo inside = new(
+                Path.Combine(directory.FullPath, "inside.dll"));
+            FileInfo crossDrive = new(
+                $@"{otherDrive}:\outside.dll");
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { inside, crossDrive },
+                    "signed",
+                    new DirectoryInfo(directory.FullPath));
+
+            // Matches upstream: the relative path is rooted, so it replaces
+            // the output directory.
+            Assert.Equal(
+                crossDrive.FullName,
+                plans[1].Output.FullName);
+        }
+
+        [Fact]
+        public void Create_MultipleInputsUnderBaseDirectory_StayUnderOutputRoot()
+        {
+            using TestDirectory directory = new();
+            DirectoryInfo baseDirectory =
+                new(directory.FullPath);
+            string output = Path.Combine(
+                directory.FullPath,
+                "signed");
+            FileInfo first = new(
+                Path.Combine(directory.FullPath, "first.dll"));
+            FileInfo second = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "nested",
+                    "second.dll"));
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { first, second },
+                    output,
+                    baseDirectory);
+            string outputRoot =
+                $"{Path.GetFullPath(output)}{Path.DirectorySeparatorChar}";
+
+            Assert.All(
+                plans,
+                plan => Assert.StartsWith(
+                    outputRoot,
+                    plan.Output.FullName,
+                    StringComparison.OrdinalIgnoreCase));
         }
     }
 }
