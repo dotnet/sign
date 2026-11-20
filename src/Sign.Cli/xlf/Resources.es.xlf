@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</source>
-        <target state="needs-review-translation">Ruta de acceso al archivo que contiene las rutas de acceso de los archivos que se van a firmar o que se van a excluir de la firma.</target>
+        <target state="new">Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</target>
         <note />
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">

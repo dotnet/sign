@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</source>
-        <target state="needs-review-translation">Pfad zur Datei mit Pfaden von Dateien, die signiert oder von der Signierung ausgeschlossen werden sollen.</target>
+        <target state="new">Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</target>
         <note />
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">

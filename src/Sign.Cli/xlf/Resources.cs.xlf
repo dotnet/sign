@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</source>
-        <target state="needs-review-translation">Cesta k souboru obsahujícímu cesty k souborům, které se mají podepsat nebo vyloučit z podepisování.</target>
+        <target state="new">Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</target>
         <note />
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
