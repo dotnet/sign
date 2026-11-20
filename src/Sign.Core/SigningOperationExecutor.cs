@@ -55,16 +55,22 @@ namespace Sign.Core
             SigningOperationPlan plan,
             SignOptions options)
         {
+            SigningOperationResult result = await ExecuteSigningResultAsync(plan, options);
+            result.Materialize(plan.Output);
+        }
+
+        internal async Task<SigningOperationResult> ExecuteSigningResultAsync(
+            SigningOperationPlan plan,
+            SignOptions options)
+        {
             ArgumentNullException.ThrowIfNull(plan, nameof(plan));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-            SigningOperationResult result =
-                await _coordinator.WaitAsync(
+            return await _coordinator.WaitForReadyOwnerAsync(
                     _coordinator.ExecuteArtifactAsync(
                         plan.Source.SourceIdentity,
                         () => ExecuteOwnerAsync(plan, options)));
 
-            result.Materialize(plan.Output);
         }
 
         internal static void CopyWithoutSigning(SigningOperationPlan plan)
@@ -169,6 +175,12 @@ namespace Sign.Core
             SigningOperationPlan plan,
             SignOptions options)
         {
+            if (_signer.IsOwnStagingRequired(plan.Source.File))
+            {
+                return await _signer.SignOwnerArtifactAsync(
+                    plan.Source, options, _coordinator);
+            }
+
             SigningOperationStage stage = Stage(plan, options);
 
             try

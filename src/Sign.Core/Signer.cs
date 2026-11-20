@@ -91,7 +91,9 @@ namespace Sign.Core
                     SigningOperationPlanner.Create(
                         inputFiles,
                         outputFile,
-                        baseDirectory);
+                        baseDirectory)
+                    .OrderBy(plan => signer.SigningOrder(plan.Source.File))
+                    .ToArray();
 
                 // Apply file-list filtering to standalone input files too,
                 // consistent with how container and ClickOnce contents are filtered.
