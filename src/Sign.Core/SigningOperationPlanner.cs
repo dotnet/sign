@@ -63,7 +63,10 @@ namespace Sign.Core
                 return Path.HasExtension(output)
                     ? new FileInfo(outputPath)
                     : new FileInfo(
-                        Path.Combine(outputPath, input.Name));
+                        Path.Combine(
+                            outputPath,
+                            Path.GetFileName(
+                                source.SourceIdentity.GetPhysicalPath())));
             }
 
             if (string.IsNullOrWhiteSpace(output))
@@ -74,7 +77,7 @@ namespace Sign.Core
 
             string relativePath = Path.GetRelativePath(
                 baseDirectory.FullName,
-                input.FullName);
+                source.SourceIdentity.GetPhysicalPath());
             string outputDirectory = ExpandPath(
                 baseDirectory,
                 output);

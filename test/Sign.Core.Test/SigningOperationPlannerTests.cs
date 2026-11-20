@@ -49,6 +49,32 @@ namespace Sign.Core.Test
         }
 
         [Fact]
+        public void Create_WhenSingleInputUsesCaseAliasAndOutputIsDirectory_UsesExistingPathSpelling()
+        {
+            using TestDirectory directory = new();
+            FileInfo input = directory.CreateFile(
+                relativePath: "Input.dll",
+                contents: "content");
+            FileInfo alias = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "input.dll"));
+
+            SigningOperationPlan plan = Assert.Single(
+                SigningOperationPlanner.Create(
+                    new[] { alias },
+                    "signed",
+                    new DirectoryInfo(directory.FullPath)));
+
+            Assert.Equal(
+                Path.Combine(
+                    directory.FullPath,
+                    "signed",
+                    input.Name),
+                plan.Output.FullName);
+        }
+
+        [Fact]
         public void Create_WhenInPlaceInputUsesCaseAlias_UsesExistingPathSpelling()
         {
             using TestDirectory directory = new();
@@ -104,6 +130,38 @@ namespace Sign.Core.Test
                         "nested",
                         "second.dll"),
                     plan.Output.FullName));
+        }
+
+        [Fact]
+        public void Create_WhenMultipleInputsUseCaseAlias_UsesExistingRelativePathSpelling()
+        {
+            using TestDirectory directory = new();
+            FileInfo first = new(
+                Path.Combine(directory.FullPath, "first.dll"));
+            FileInfo second = directory.CreateFile(
+                relativePath: Path.Combine(
+                    "Nested",
+                    "Second.dll"),
+                contents: "content");
+            FileInfo alias = new(
+                Path.Combine(
+                    directory.FullPath,
+                    "nested",
+                    "second.dll"));
+
+            IReadOnlyList<SigningOperationPlan> plans =
+                SigningOperationPlanner.Create(
+                    new[] { first, alias },
+                    "signed",
+                    new DirectoryInfo(directory.FullPath));
+
+            Assert.Equal(
+                Path.Combine(
+                    directory.FullPath,
+                    "signed",
+                    "Nested",
+                    second.Name),
+                plans[1].Output.FullName);
         }
 
         [Fact]

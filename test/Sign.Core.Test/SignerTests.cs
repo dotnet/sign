@@ -1606,6 +1606,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(null)]
         [InlineData("signed")]
+        [InlineData(".")]
         public async Task SignAsync_IsolatedAndGroupedClickOnceInputs_SignEachFileOnce(
             string? outputFile)
         {
@@ -1683,12 +1684,12 @@ namespace Sign.Core.Test
             int exitCode = await SignAsync(
                 aggregatingSigner,
                 outputFile,
-                maxConcurrency: 2,
-                application,
+                maxConcurrency: 1,
                 new FileInfo(
                     Path.Combine(
                         publish.FullName,
                         "payload.exe")),
+                application,
                 otherApplication);
 
             Assert.Equal(ExitCode.Success, exitCode);
