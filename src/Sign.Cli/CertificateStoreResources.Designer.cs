@@ -70,7 +70,7 @@ namespace Sign.Cli {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA fingerprint used to identify a certificate..
+        ///   Looks up a localized string similar to SHA fingerprint used to identify a certificate. Required unless --certificate-file is provided and contains a single certificate..
         /// </summary>
         internal static string CertificateFingerprintOptionDescription {
             get {
@@ -122,7 +122,14 @@ namespace Sign.Cli {
                 return ResourceManager.GetString("KeyContainerOptionDescription", resourceCulture);
             }
         }
-        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate fingerprint missing. Use --certificate-fingerprint to specify a certificate fingerprint, or use --certificate-file to provide a certificate file..
+        /// </summary>
+        internal static string MissingCertificateFingerprintError {
+            get {
+                return ResourceManager.GetString("MissingCertificateFingerprintError", resourceCulture);
+            }
+        }
         /// <summary>
         ///   Looks up a localized string similar to Cryptographic Service Provider missing.  Use /csp to specify a CSP..
         /// </summary>

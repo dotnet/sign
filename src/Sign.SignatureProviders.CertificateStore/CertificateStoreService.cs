@@ -20,7 +20,7 @@ namespace Sign.SignatureProviders.CertificateStore
     /// </summary>
     internal sealed class CertificateStoreService : ISignatureAlgorithmProvider, ICertificateProvider
     {
-        private readonly string _certificateFingerprint;
+        private readonly string? _certificateFingerprint;
         private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
@@ -33,7 +33,7 @@ namespace Sign.SignatureProviders.CertificateStore
 
         internal CertificateStoreService(
             IServiceProvider serviceProvider,
-            string certificateFingerprint,
+            string? certificateFingerprint,
             HashAlgorithmName certificateFingerprintAlgorithm,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
@@ -43,7 +43,12 @@ namespace Sign.SignatureProviders.CertificateStore
             bool isInteractive)
         {
             ArgumentNullException.ThrowIfNull(serviceProvider, nameof(serviceProvider));
-            ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
+            // The fingerprint is optional (it can be omitted when the certificate file contains
+            // a single certificate), but when it is provided it cannot be empty.
+            if (certificateFingerprint is not null)
+            {
+                ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
+            }
 
             _certificateFingerprint = certificateFingerprint;
             _certificateFingerprintAlgorithm = certificateFingerprintAlgorithm;
@@ -123,6 +128,19 @@ namespace Sign.SignatureProviders.CertificateStore
                 _logger.LogTrace(Resources.FetchingCertificateFromFile);
 
                 X509Certificate2Collection certCollection = LoadCertificates(_certificatePath, _certificatePassword);
+
+                if (_certificateFingerprint is null && certCollection.Count == 1)
+                {
+                    _logger.LogTrace(Resources.FetchedCertificateFromFile, stopwatch.Elapsed.TotalMilliseconds);
+
+                    return Task.FromResult(new X509Certificate2(certCollection[0]));
+                }
+
+                if (_certificateFingerprint is null && certCollection.Count > 1)
+                {
+                    throw new ArgumentException(
+                        string.Format(Resources.MultipleCertificatesInFile, Path.GetFileName(_certificatePath)));
+                }
 
                 foreach (var cert in certCollection)
                 {
@@ -213,7 +231,7 @@ namespace Sign.SignatureProviders.CertificateStore
             return Convert.TryFromBase64Chars(text, destination, out bytesWritten);
         }
 
-        private bool TryFindCertificate(StoreLocation storeLocation, string expectedFingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
+        private bool TryFindCertificate(StoreLocation storeLocation, string? expectedFingerprint, [NotNullWhen(true)] out X509Certificate2? certificate)
         {
             // Check machine certificate store.
             using (X509Store store = new(StoreName.My, storeLocation))

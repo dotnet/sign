@@ -8,9 +8,9 @@
         <note>{Locked="PFX", "P7B", "CER"} are file extensions.</note>
       </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
-        <source>SHA fingerprint used to identify a certificate.</source>
-        <target state="translated">Impronta digitale SHA usata per identificare un certificato.</target>
-        <note>{Locked="SHA"} is a cryptographic algorithm.</note>
+        <source>SHA fingerprint used to identify a certificate. Required unless --certificate-file is provided and contains a single certificate.</source>
+        <target state="needs-review-translation">Impronta digitale SHA usata per identificare un certificato.</target>
+        <note>{Locked="SHA"} is a cryptographic algorithm. {Locked="--certificate-file"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
         <source>Password for certificate file.</source>
@@ -36,6 +36,11 @@
         <source>Private key container name.</source>
         <target state="translated">Nome del contenitore di chiavi private.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="MissingCertificateFingerprintError">
+        <source>Certificate fingerprint missing. Use --certificate-fingerprint to specify a certificate fingerprint, or use --certificate-file to provide a certificate file.</source>
+        <target state="new">Certificate fingerprint missing. Use --certificate-fingerprint to specify a certificate fingerprint, or use --certificate-file to provide a certificate file.</target>
+        <note>{Locked="--certificate-fingerprint", "--certificate-file"} are command line options.</note>
       </trans-unit>
       <trans-unit id="MissingCspError">
         <source>Cryptographic Service Provider missing.  Use /csp to specify a CSP.</source>

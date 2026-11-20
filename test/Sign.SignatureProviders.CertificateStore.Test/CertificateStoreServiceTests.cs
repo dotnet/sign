@@ -42,15 +42,6 @@ namespace Sign.SignatureProviders.CertificateStore.Test
         }
 
         [Fact]
-        public void Constructor_WhenCertificateFingerprintIsNull_Throws()
-        {
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
-                () => new CertificateStoreService(serviceProvider, certificateFingerprint: null!, CertificateFingerprintAlgorithm, CryptoServiceProvider, PrivateKeyContainer, CertificateFilePath, CertificateFilePassword, IsMachineKeyContainer, IsInteractive));
-
-            Assert.Equal("certificateFingerprint", exception.ParamName);
-        }
-
-        [Fact]
         public void Constructor_WhenCertificateFingerprintIsEmpty_Throws()
         {
             ArgumentException exception = Assert.Throws<ArgumentException>(
@@ -171,7 +162,95 @@ namespace Sign.SignatureProviders.CertificateStore.Test
             Assert.Contains(contentType.ToString(), exception.Message);
         }
 #endif
+        [Fact]
+        public async Task GetCertificateAsync_WhenFingerprintIsOmittedAndCerFileProvided_ReturnsCertificate()
+        {
+            using X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate();
+            using DirectoryService directoryService = new(new TestLogger<IDirectoryService>());
+            using TemporaryDirectory directory = new(directoryService);
+            string path = Path.Combine(directory.Directory.FullName, "certificate.cer");
+            File.WriteAllBytes(path, certificate.Export(X509ContentType.Cert));
 
+            CertificateStoreService service = new(
+                serviceProvider,
+                certificateFingerprint: null,
+                CertificateFingerprintAlgorithm,
+                cryptoServiceProvider: null,
+                privateKeyContainer: null,
+                certificatePath: path,
+                certificatePassword: null,
+                isPrivateMachineKeyContainer: false,
+                isInteractive: false);
+
+            using X509Certificate2 result = await service.GetCertificateAsync(CancellationToken.None);
+
+            Assert.Equal(certificate.Thumbprint, result.Thumbprint);
+        }
+        [Theory]
+        [InlineData(X509ContentType.Pfx)]
+        [InlineData(X509ContentType.Pkcs7)]
+        public async Task GetCertificateAsync_WhenFingerprintIsOmittedAndFileHasSingleCertificate_ReturnsCertificate(
+            X509ContentType contentType)
+        {
+            using X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate();
+            X509Certificate2Collection certificates = [certificate];
+            byte[] rawData = certificates.Export(contentType)!;
+            using DirectoryService directoryService = new(new TestLogger<IDirectoryService>());
+            using TemporaryDirectory directory = new(directoryService);
+            string path = Path.Combine(directory.Directory.FullName, "certificate");
+            File.WriteAllBytes(path, rawData);
+
+            CertificateStoreService service = new(
+                serviceProvider,
+                certificateFingerprint: null,
+                CertificateFingerprintAlgorithm,
+                cryptoServiceProvider: null,
+                privateKeyContainer: null,
+                certificatePath: path,
+                certificatePassword: null,
+                isPrivateMachineKeyContainer: false,
+                isInteractive: false);
+
+            using X509Certificate2 result = await service.GetCertificateAsync(CancellationToken.None);
+
+            Assert.Equal(certificate.Thumbprint, result.Thumbprint);
+            if (contentType == X509ContentType.Pfx)
+            {
+                Assert.True(result.HasPrivateKey);
+            }
+        }
+
+        [Theory]
+        [InlineData(X509ContentType.Pfx)]
+        [InlineData(X509ContentType.Pkcs7)]
+        public async Task GetCertificateAsync_WhenFingerprintIsOmittedAndFileHasMultipleCertificates_Throws(
+            X509ContentType contentType)
+        {
+            using X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate();
+            using X509Certificate2 otherCertificate = SelfIssuedCertificateCreator.CreateCertificate();
+            X509Certificate2Collection certificates = [certificate, otherCertificate];
+            byte[] rawData = certificates.Export(contentType)!;
+            using DirectoryService directoryService = new(new TestLogger<IDirectoryService>());
+            using TemporaryDirectory directory = new(directoryService);
+            string path = Path.Combine(directory.Directory.FullName, "certificate");
+            File.WriteAllBytes(path, rawData);
+
+            CertificateStoreService service = new(
+                serviceProvider,
+                certificateFingerprint: null,
+                CertificateFingerprintAlgorithm,
+                cryptoServiceProvider: null,
+                privateKeyContainer: null,
+                certificatePath: path,
+                certificatePassword: null,
+                isPrivateMachineKeyContainer: false,
+                isInteractive: false);
+
+            ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
+                () => service.GetCertificateAsync(CancellationToken.None));
+
+            Assert.Contains("--certificate-fingerprint", exception.Message);
+        }
         private static byte[] CreatePkcs7WithEmbeddedPem(X509Certificate2 certificate, X509Certificate2 embeddedCertificate)
         {
             X509Certificate2Collection embeddedCertificates = new(embeddedCertificate);
