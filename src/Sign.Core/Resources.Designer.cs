@@ -141,6 +141,12 @@ namespace Sign.Core {
             }
         }
 
+        internal static string ClickOnceApplicationManifestChangedAfterClassification {
+            get {
+                return ResourceManager.GetString("ClickOnceApplicationManifestChangedAfterClassification", resourceCulture);
+            }
+        }
+
         internal static string ClickOnceApplicationManifestWrongType {
             get {
                 return ResourceManager.GetString("ClickOnceApplicationManifestWrongType", resourceCulture);

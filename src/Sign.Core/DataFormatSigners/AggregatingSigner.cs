@@ -108,6 +108,13 @@ namespace Sign.Core
                 nameof(coordinator));
 
             List<SigningFile> signingFiles = files.ToList();
+            ClickOnceVersion2Signer? version2 = _signers.OfType<ClickOnceVersion2Signer>().SingleOrDefault();
+            if (version2 is not null)
+            {
+                await version2.ExecuteAsync(signingFiles.Select(file =>
+                    new SigningOperationPlan(file, file.File)).ToArray(), options, coordinator, insideOperation: true);
+                return;
+            }
             List<SigningFile> containerFiles = signingFiles
                 .Where(file => IsContainer(file.File))
                 .ToList();
