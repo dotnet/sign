@@ -4,9 +4,10 @@
 
 namespace Sign.Core
 {
-    internal enum ClickOnceApplicationSigningPolicy
+    internal enum ClickOnceApplicationSigningMode
     {
-        SignPayloads,
-        UpdateManifestOnly
+        Full,
+        UpdateManifestOnly,
+        SignAsIs
     }
 }

@@ -59,17 +59,13 @@ namespace Sign.Core
             SigningOperationPlan plan,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy,
-            bool updateManifest = true,
+            ClickOnceApplicationSigningMode mode,
             ClickOnceApplicationSigningContext? context = null)
         {
             ArgumentNullException.ThrowIfNull(plan, nameof(plan));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
             ArgumentNullException.ThrowIfNull(coordinator, nameof(coordinator));
-            if (!Enum.IsDefined(policy))
-            {
-                throw new ArgumentOutOfRangeException(nameof(policy));
-            }
+            ValidateMode(mode, context);
 
             SigningOperationResult result =
                 await coordinator.WaitAsync(coordinator.ExecuteArtifactAsync(
@@ -78,14 +74,15 @@ namespace Sign.Core
                         plan.Source,
                         options,
                         coordinator,
-                        policy,
-                        updateManifest,
+                        mode,
                         context)));
 
-            if (updateManifest && ClickOncePathSpelling.IsSameDirectory(plan.Source.File.Directory!, plan.Output.Directory!))
+            if (mode != ClickOnceApplicationSigningMode.SignAsIs &&
+                ClickOncePathSpelling.IsSameDirectory(plan.Source.File.Directory!, plan.Output.Directory!))
             {
                 result.Materialize(plan.Output,
-                    file => BindExistingPublicationDestination(file, plan.Output.Directory!));
+                    file => BindExistingPublicationDestination(file, plan.Output.Directory!),
+                    collisionPolicy: SigningOperationCollisionPolicy.Reject);
             }
             else
             {
@@ -97,19 +94,15 @@ namespace Sign.Core
             SigningFile input,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy,
-            bool updateManifest = true,
+            ClickOnceApplicationSigningMode mode,
             ClickOnceApplicationSigningContext? context = null)
         {
             ArgumentNullException.ThrowIfNull(input, nameof(input));
             ArgumentNullException.ThrowIfNull(options, nameof(options));
             ArgumentNullException.ThrowIfNull(coordinator, nameof(coordinator));
-            if (!Enum.IsDefined(policy))
-            {
-                throw new ArgumentOutOfRangeException(nameof(policy));
-            }
+            ValidateMode(mode, context);
 
-            if (!updateManifest)
+            if (mode == ClickOnceApplicationSigningMode.SignAsIs)
             {
                 return await SignAsIsOwnerAsync(input, options);
             }
@@ -121,14 +114,14 @@ namespace Sign.Core
                     input.File);
             }
 
-            return await SignOwnerAsync(input, options, coordinator, policy, layout, context: context);
+            return await SignOwnerAsync(input, options, coordinator, mode, layout, context: context);
         }
 
         internal async Task<SigningOperationArtifact> SignOwnerAsync(
             SigningFile input,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy,
+            ClickOnceApplicationSigningMode mode,
             ResolvedClickOncePublishLayout layout,
             SigningFile? layoutOrigin = null,
             ClickOnceApplicationSigningContext? context = null)
@@ -137,9 +130,10 @@ namespace Sign.Core
             ArgumentNullException.ThrowIfNull(options, nameof(options));
             ArgumentNullException.ThrowIfNull(coordinator, nameof(coordinator));
             ArgumentNullException.ThrowIfNull(layout, nameof(layout));
-            if (!Enum.IsDefined(policy))
+            ValidateMode(mode, context);
+            if (mode == ClickOnceApplicationSigningMode.SignAsIs)
             {
-                throw new ArgumentOutOfRangeException(nameof(policy));
+                throw new ArgumentException("A resolved application layout requires manifest updates.", nameof(mode));
             }
             if (layout.Deployment is not null)
             {
@@ -150,7 +144,61 @@ namespace Sign.Core
             manifest.ReadOnly = false;
             SigningFile origin = layoutOrigin ?? input;
             DirectoryInfo sourceRoot = origin.File.Directory!;
-            ClickOnceStagingSession session = _stager.Stage(layout, payload =>
+            ClickOnceStagingSession session = StageLayout(input, layout, sourceRoot);
+
+            try
+            {
+                StagedPayload[] payloads = PreparePayloads(origin, sourceRoot, session);
+                StagedPayload[] selected;
+                List<ClickOncePayloadSigningOutput> additionalOutputs = new();
+                IDisposable suffixScope = session.BeginManifestFileInfoUpdate();
+                try
+                {
+                    ResolvePayloads(manifest, input.File, session, payloads);
+                    selected = mode == ClickOnceApplicationSigningMode.Full
+                        ? SelectPayloads(origin, payloads, options)
+                        : Array.Empty<StagedPayload>();
+                    if (mode == ClickOnceApplicationSigningMode.UpdateManifestOnly)
+                    {
+                        await MaterializeExplicitPayloadsAsync(payloads, context!, coordinator);
+                    }
+                    if (selected.Length > 0)
+                    {
+                        await SignSelectedPayloadsAsync(layout, session, selected, additionalOutputs, options, coordinator);
+                    }
+                    RefreshManifestMetadata(manifest, input.File, session, payloads);
+                }
+                catch (Exception exception)
+                {
+                    DisposeAfterFailure(suffixScope, exception);
+                    throw;
+                }
+                suffixScope.Dispose();
+
+                await WriteAndSignManifestAsync(manifest, session.ApplicationManifest.Destination, options);
+
+                return SigningOperationArtifact.OwnedLayout(
+                    session.ApplicationManifest.Destination,
+                    session.Directory,
+                    selected.Select(payload => payload.File.Destination)
+                        .Concat(additionalOutputs.Select(output => output.Plan.Output))
+                        .Append(session.ApplicationManifest.Destination)
+                        .DistinctBy(file => file.FullName, StringComparer.OrdinalIgnoreCase),
+                    session);
+            }
+            catch (Exception exception)
+            {
+                DisposeAfterFailure(session, exception);
+                throw;
+            }
+        }
+
+        private ClickOnceStagingSession StageLayout(
+            SigningFile input,
+            ResolvedClickOncePublishLayout layout,
+            DirectoryInfo sourceRoot)
+        {
+            return _stager.Stage(layout, payload =>
             {
                 try
                 {
@@ -166,155 +214,175 @@ namespace Sign.Core
                         layout.Diagnostics, exception);
                 }
             });
+        }
 
-            try
+        private static StagedPayload[] PreparePayloads(
+            SigningFile origin,
+            DirectoryInfo sourceRoot,
+            ClickOnceStagingSession session)
+        {
+            StagedPayload[] payloads = session.Payloads.Select(pair =>
+                new StagedPayload(
+                    new ClickOncePayloadSigningRequest(
+                        origin.GetSibling(pair.Value.Source, sourceRoot),
+                        sourceRoot,
+                        session.Directory,
+                        pair.Value))).ToArray();
+            foreach (FileInfo file in payloads
+                .Select(payload => payload.File.Destination)
+                .Append(session.ApplicationManifest.Destination)
+                .Distinct(FileInfoComparer.Instance))
             {
-                StagedPayload[] payloads = session.Payloads.Select(pair =>
-                    new StagedPayload(
-                        new ClickOncePayloadSigningRequest(
-                            origin.GetSibling(pair.Value.Source, sourceRoot),
-                            sourceRoot,
-                            session.Directory,
-                            pair.Value))).ToArray();
-                foreach (FileInfo file in payloads
-                    .Select(payload => payload.File.Destination)
-                    .Append(session.ApplicationManifest.Destination)
-                    .Distinct(FileInfoComparer.Instance))
-                {
-                    file.IsReadOnly = false;
-                }
-
-                StagedPayload[] selected;
-                List<ClickOncePayloadSigningOutput> additionalOutputs = new();
-                IDisposable suffixScope = session.BeginManifestFileInfoUpdate();
-                try
-                {
-                    foreach (StagedPayload payload in payloads)
-                    {
-                        BaseReference reference = payload.File.ManifestReference!;
-                        reference.SourcePath = payload.UpdateFile.FullName;
-                        reference.ResolvedPath = null;
-                    }
-
-                    RunManifestOperation(
-                        manifest, input.File,
-                        Resources.ClickOnceApplicationManifestResolveFailed,
-                        () => manifest.ResolveFiles(
-                            new[] { session.ApplicationManifest.Destination.Directory! }));
-                    ValidateReferences(input.File, session, payloads);
-
-                    selected = policy == ClickOnceApplicationSigningPolicy.SignPayloads
-                        ? SelectPayloads(origin, payloads, options)
-                        : Array.Empty<StagedPayload>();
-                    if (policy == ClickOnceApplicationSigningPolicy.UpdateManifestOnly && context is not null)
-                    {
-                        foreach (StagedPayload payload in payloads.Where(payload =>
-                            context.IsExplicitPayload(payload.Source.SourceIdentity)))
-                        {
-                            if (!coordinator.TryGetResult(payload.Source.SourceIdentity,
-                                out Task<SigningOperationResult>? prerequisite))
-                            {
-                                throw new InvalidOperationException(
-                                    $"The explicit payload operation for '{payload.Source.File.FullName}' was not registered before application signing.");
-                            }
-
-                            SigningOperationResult result = await coordinator.WaitAsync(prerequisite!);
-                            result.MaterializePrimary(payload.UpdateFile);
-                        }
-                    }
-                    if (selected.Length > 0)
-                    {
-                        StagedPayload[] ordinary = selected.Where(payload => !payload.Handled).ToArray();
-                        if (ordinary.Length > 0)
-                        {
-                            await _payloadSigner.SignAsync(
-                                ordinary.Select(payload => payload.Source.WithFile(payload.UpdateFile)),
-                                options,
-                                coordinator);
-                        }
-
-                        List<(StagedPayload Payload, ClickOncePayloadSigningResult Result)> results = new();
-                        foreach (StagedPayload payload in selected.Where(payload => payload.Handled))
-                        {
-                            ClickOncePayloadSigningResult result =
-                                await _payloadHandler!.SignAsync(payload.Request, options, coordinator);
-                            if (result is null)
-                            {
-                                throw new InvalidOperationException("The payload handler returned no result.");
-                            }
-                            results.Add((payload, result));
-                            additionalOutputs.AddRange(result.AdditionalOutputs);
-                        }
-
-                        _stager.ValidateAdditionalOutputs(
-                            layout, session, additionalOutputs.Select(output => output.Plan).ToArray());
-                        Dictionary<string, (FileInfo File, SigningOperationResult Result)> materializations =
-                            new(StringComparer.OrdinalIgnoreCase);
-                        foreach ((StagedPayload payload, ClickOncePayloadSigningResult result) in results)
-                        {
-                            AddMaterialization(payload.UpdateFile, result.Primary);
-                        }
-                        foreach (ClickOncePayloadSigningOutput output in additionalOutputs)
-                        {
-                            AddMaterialization(output.Plan.Output, output.Result);
-                        }
-                        foreach ((FileInfo file, SigningOperationResult result) in materializations.Values)
-                        {
-                            result.MaterializePrimary(file);
-                        }
-
-                        void AddMaterialization(FileInfo file, SigningOperationResult result)
-                        {
-                            if (materializations.TryGetValue(file.FullName, out (FileInfo File, SigningOperationResult Result) existing))
-                            {
-                                if (!ReferenceEquals(existing.Result, result))
-                                {
-                                    throw new InvalidOperationException(
-                                        "The payload handler returned different coordinated results for one destination.");
-                                }
-                                return;
-                            }
-                            materializations[file.FullName] = (file, result);
-                        }
-                    }
-
-                    // Signing and materialization can change files or reference
-                    // state. Never refresh hashes using an unchecked result.
-                    ValidateReferences(input.File, session, payloads);
-                    manifest.SynchronizeAssemblyIdentities();
-                    ValidateReferences(input.File, session, payloads);
-                    RunManifestOperation(
-                        manifest, input.File,
-                        Resources.ClickOnceApplicationManifestUpdateFailed,
-                        manifest.UpdateFileInfo);
-                }
-                catch (Exception exception)
-                {
-                    DisposeAfterFailure(suffixScope, exception);
-                    throw;
-                }
-                suffixScope.Dispose();
-
-                if (!string.IsNullOrWhiteSpace(options.ApplicationName))
-                {
-                    manifest.AssemblyIdentity.Name = options.ApplicationName;
-                }
-                manifest.Write(session.ApplicationManifest.Destination);
-                await SignManifestAsync(session.ApplicationManifest.Destination, options);
-
-                return SigningOperationArtifact.OwnedLayout(
-                    session.ApplicationManifest.Destination,
-                    session.Directory,
-                    selected.Select(payload => payload.File.Destination)
-                        .Concat(additionalOutputs.Select(output => output.Plan.Output))
-                        .Append(session.ApplicationManifest.Destination)
-                        .DistinctBy(file => file.FullName, StringComparer.OrdinalIgnoreCase),
-                    session);
+                file.IsReadOnly = false;
             }
-            catch (Exception exception)
+            return payloads;
+        }
+
+        private void ResolvePayloads(
+            IApplicationManifest manifest,
+            FileInfo source,
+            ClickOnceStagingSession session,
+            IReadOnlyList<StagedPayload> payloads)
+        {
+            foreach (StagedPayload payload in payloads)
             {
-                DisposeAfterFailure(session, exception);
-                throw;
+                BaseReference reference = payload.File.ManifestReference!;
+                reference.SourcePath = payload.UpdateFile.FullName;
+                reference.ResolvedPath = null;
+            }
+            RunManifestOperation(
+                manifest, source,
+                Resources.ClickOnceApplicationManifestResolveFailed,
+                () => manifest.ResolveFiles(
+                    new[] { session.ApplicationManifest.Destination.Directory! }));
+            ValidateReferences(source, session, payloads);
+        }
+
+        private static async Task MaterializeExplicitPayloadsAsync(
+            IReadOnlyList<StagedPayload> payloads,
+            ClickOnceApplicationSigningContext context,
+            SigningOperationCoordinator coordinator)
+        {
+            foreach (StagedPayload payload in payloads.Where(payload =>
+                context.IsExplicitPayload(payload.Source.SourceIdentity)))
+            {
+                if (!coordinator.TryGetResult(payload.Source.SourceIdentity,
+                    out Task<SigningOperationResult>? prerequisite))
+                {
+                    throw new InvalidOperationException(
+                        $"The explicit payload operation for '{payload.Source.File.FullName}' was not registered before application signing.");
+                }
+                SigningOperationResult result = await coordinator.WaitAsync(prerequisite!);
+                result.MaterializePrimary(payload.UpdateFile);
+            }
+        }
+
+        private async Task SignSelectedPayloadsAsync(
+            ResolvedClickOncePublishLayout layout,
+            ClickOnceStagingSession session,
+            IReadOnlyList<StagedPayload> selected,
+            List<ClickOncePayloadSigningOutput> additionalOutputs,
+            SignOptions options,
+            SigningOperationCoordinator coordinator)
+        {
+            StagedPayload[] ordinary = selected.Where(payload => !payload.Handled).ToArray();
+            if (ordinary.Length > 0)
+            {
+                await _payloadSigner.SignAsync(
+                    ordinary.Select(payload => payload.Source.WithFile(payload.UpdateFile)),
+                    options,
+                    coordinator);
+            }
+
+            List<(StagedPayload Payload, ClickOncePayloadSigningResult Result)> results = new();
+            foreach (StagedPayload payload in selected.Where(payload => payload.Handled))
+            {
+                ClickOncePayloadSigningResult result =
+                    await _payloadHandler!.SignAsync(payload.Request, options, coordinator);
+                if (result is null)
+                {
+                    throw new InvalidOperationException("The payload handler returned no result.");
+                }
+                results.Add((payload, result));
+                additionalOutputs.AddRange(result.AdditionalOutputs);
+            }
+
+            _stager.ValidateAdditionalOutputs(
+                layout, session, additionalOutputs.Select(output => output.Plan).ToArray());
+            Dictionary<string, (FileInfo File, SigningOperationResult Result)> materializations =
+                new(StringComparer.OrdinalIgnoreCase);
+            foreach ((StagedPayload payload, ClickOncePayloadSigningResult result) in results)
+            {
+                AddMaterialization(materializations, payload.UpdateFile, result.Primary);
+            }
+            foreach (ClickOncePayloadSigningOutput output in additionalOutputs)
+            {
+                AddMaterialization(materializations, output.Plan.Output, output.Result);
+            }
+            foreach ((FileInfo file, SigningOperationResult result) in materializations.Values)
+            {
+                result.MaterializePrimary(file);
+            }
+        }
+
+        private static void AddMaterialization(
+            Dictionary<string, (FileInfo File, SigningOperationResult Result)> materializations,
+            FileInfo file,
+            SigningOperationResult result)
+        {
+            if (materializations.TryGetValue(file.FullName, out (FileInfo File, SigningOperationResult Result) existing))
+            {
+                if (!ReferenceEquals(existing.Result, result))
+                {
+                    throw new InvalidOperationException(
+                        "The payload handler returned different coordinated results for one destination.");
+                }
+                return;
+            }
+            materializations[file.FullName] = (file, result);
+        }
+
+        private void RefreshManifestMetadata(
+            IApplicationManifest manifest,
+            FileInfo source,
+            ClickOnceStagingSession session,
+            IReadOnlyList<StagedPayload> payloads)
+        {
+            // Signing and materialization can change files or reference
+            // state. Never refresh hashes using an unchecked result.
+            ValidateReferences(source, session, payloads);
+            manifest.SynchronizeAssemblyIdentities();
+            ValidateReferences(source, session, payloads);
+            RunManifestOperation(
+                manifest, source,
+                Resources.ClickOnceApplicationManifestUpdateFailed,
+                manifest.UpdateFileInfo);
+        }
+
+        private async Task WriteAndSignManifestAsync(
+            IApplicationManifest manifest,
+            FileInfo destination,
+            SignOptions options)
+        {
+            if (!string.IsNullOrWhiteSpace(options.ApplicationName))
+            {
+                manifest.AssemblyIdentity.Name = options.ApplicationName;
+            }
+            manifest.Write(destination);
+            await SignManifestAsync(destination, options);
+        }
+
+        private static void ValidateMode(
+            ClickOnceApplicationSigningMode mode,
+            ClickOnceApplicationSigningContext? context)
+        {
+            if (!Enum.IsDefined(mode))
+            {
+                throw new ArgumentOutOfRangeException(nameof(mode));
+            }
+            if (mode == ClickOnceApplicationSigningMode.UpdateManifestOnly)
+            {
+                ArgumentNullException.ThrowIfNull(context, nameof(context));
             }
         }
 

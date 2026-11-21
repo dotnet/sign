@@ -167,7 +167,7 @@ namespace Sign.Core.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task ExecuteAsync_WhenPolicyIsUpdateManifestOnly_SignsManifestWithoutSigningOrPublishingPayloads(bool mapped)
+        public async Task ExecuteAsync_WhenModeIsUpdateManifestOnly_SignsManifestWithoutSigningOrPublishingPayloads(bool mapped)
         {
             await using Harness harness = new();
             string physicalName = mapped ? "payload.dll.deploy" : "payload.dll";
@@ -176,7 +176,8 @@ namespace Sign.Core.Test
             FileInfo output = new(Path.Combine(harness.Source.FullName, "out", "App.manifest"));
 
             await harness.ExecuteAsync(manifest, output,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly,
+                context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             Assert.Empty(harness.PayloadCalls);
             Assert.Single(harness.ManifestCalls);
@@ -705,7 +706,7 @@ namespace Sign.Core.Test
 
             await harness.Pipeline.ExecuteAsync(
                 plan, harness.Options(), harness.Coordinator,
-                ClickOnceApplicationSigningPolicy.SignPayloads);
+                ClickOnceApplicationSigningMode.Full);
 
             Assert.Empty(harness.PayloadCalls);
             Assert.Equal("explicit signed", File.ReadAllText(payload.FullName));
@@ -911,13 +912,12 @@ namespace Sign.Core.Test
                 FileInfo manifest,
                 FileInfo? output = null,
                 SignOptions? options = null,
-                ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
-                bool updateManifest = true,
+                ClickOnceApplicationSigningMode mode = ClickOnceApplicationSigningMode.Full,
                 ClickOnceApplicationSigningContext? context = null)
             {
                 return Pipeline.ExecuteAsync(
                     new SigningOperationPlan(SigningFile.Capture(manifest), output ?? manifest),
-                    options ?? Options(), Coordinator, policy, updateManifest, context);
+                    options ?? Options(), Coordinator, mode, context);
             }
 
             internal SignOptions Options(Matcher? matcher = null, Matcher? antiMatcher = null)

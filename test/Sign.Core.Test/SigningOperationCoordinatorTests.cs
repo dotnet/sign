@@ -985,7 +985,7 @@ namespace Sign.Core.Test
                 ++bindings;
                 Assert.Equal("payload.dll", file.Name);
                 return new FileInfo(Path.Combine(file.DirectoryName!, existing.Name));
-            });
+            }, collisionPolicy: SigningOperationCollisionPolicy.Reject);
             FileInfo defaultOutput = new(Path.Combine(directory.FullPath, "default", primary.Name));
             result.Materialize(defaultOutput);
 
@@ -1020,7 +1020,7 @@ namespace Sign.Core.Test
                 "directory" => new FileInfo(Path.Combine(file.DirectoryName!, "sub", file.Name)),
                 "name" => new FileInfo(Path.Combine(file.DirectoryName!, "different.dll")),
                 _ => null!
-            }));
+            }, collisionPolicy: SigningOperationCollisionPolicy.Reject));
 
             Assert.Equal("old", File.ReadAllText(existing.FullName));
             Assert.False(File.Exists(output.FullName));
@@ -1041,9 +1041,84 @@ namespace Sign.Core.Test
                 () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
 
             Assert.Throws<InvalidOperationException>(() => result.Materialize(existing,
-                file => new FileInfo(Path.Combine(file.DirectoryName!, "Payload.dll"))));
+                file => new FileInfo(Path.Combine(file.DirectoryName!, "Payload.dll")),
+                collisionPolicy: SigningOperationCollisionPolicy.Reject));
 
             Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
+        }
+
+        [Fact]
+        public async Task Materialize_WhenPrimaryWinsPolicyHasBinder_SkipsCollidingSibling()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "stale sibling");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+            int bindings = 0;
+
+            result.Materialize(existing, file =>
+            {
+                ++bindings;
+                return file;
+            }, collisionPolicy: SigningOperationCollisionPolicy.PrimaryWins);
+
+            Assert.Equal(0, bindings);
+            Assert.Equal("manifest", File.ReadAllText(existing.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
+            Assert.Empty(existing.Directory.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Fact]
+        public async Task Materialize_WhenRejectPolicyHasNoBinder_RejectsBeforeAnyCopy()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "companion.dll"), "companion");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+
+            Assert.Throws<InvalidOperationException>(() => result.Materialize(existing,
+                collisionPolicy: SigningOperationCollisionPolicy.Reject));
+
+            Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.Single(existing.Directory!.EnumerateFiles());
+            Assert.Empty(existing.Directory.EnumerateFiles(".sign-*.tmp"));
+        }
+
+        [Fact]
+        public async Task Materialize_WhenCollisionPolicyIsInvalid_RejectsBeforeBindingOrCopying()
+        {
+            using TestDirectory directory = new();
+            using DirectoryServiceStub directoryService = new();
+            await using SigningOperationCoordinator coordinator = new(directoryService);
+            FileInfo primary = directory.CreateFile(Path.Combine("signed", "App.manifest"), "manifest");
+            directory.CreateFile(Path.Combine("signed", "payload.dll"), "signed");
+            FileInfo existing = directory.CreateFile(Path.Combine("out", "payload.dll"), "old");
+            FileInfo output = new(Path.Combine(existing.DirectoryName!, primary.Name));
+            SigningOperationResult result = await coordinator.ExecuteArtifactAsync(CreateIdentity(),
+                () => Task.FromResult(SigningOperationArtifact.Layout(primary, primary.Directory!)));
+            int bindings = 0;
+
+            ArgumentOutOfRangeException failure = Assert.Throws<ArgumentOutOfRangeException>(() =>
+                result.Materialize(output, file =>
+                {
+                    ++bindings;
+                    return file;
+                }, collisionPolicy: (SigningOperationCollisionPolicy)(-1)));
+
+            Assert.Equal("collisionPolicy", failure.ParamName);
+            Assert.Equal(0, bindings);
+            Assert.Equal("old", File.ReadAllText(existing.FullName));
+            Assert.False(File.Exists(output.FullName));
             Assert.Single(existing.Directory!.EnumerateFiles());
         }
 

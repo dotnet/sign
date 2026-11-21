@@ -144,9 +144,9 @@ namespace Sign.Core.Test
             await Assert.ThrowsAsync<ClickOnceStagingException>(() =>
                 harness.Pipeline.SignOwnerAsync(OriginalInput(harness, app, container: true),
                     harness.Options(), harness.Coordinator,
-                    mode == 0 ? ClickOnceApplicationSigningPolicy.SignPayloads
-                        : ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
-                    layout));
+                    mode == 0 ? ClickOnceApplicationSigningMode.Full
+                        : ClickOnceApplicationSigningMode.UpdateManifestOnly,
+                    layout, context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>())));
 
             Assert.Empty(harness.PayloadCalls);
             Assert.Empty(harness.ManifestCalls);
@@ -345,7 +345,7 @@ namespace Sign.Core.Test
             FileInfo output = new(Path.Combine(harness.Source.FullName, "out", app.Name));
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, output),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
 
             Assert.Equal("unsigned", File.ReadAllText(payload.FullName));
             Assert.Empty(harness.PayloadCalls);
@@ -384,7 +384,7 @@ namespace Sign.Core.Test
             FileInfo output = new(Path.Combine(harness.Source.FullName, "out", app.Name));
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, output),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.UpdateManifestOnly,
                 context: new ClickOnceApplicationSigningContext(new[] { identity }));
 
             Assert.Equal(1, owners);
@@ -427,7 +427,7 @@ namespace Sign.Core.Test
             ClickOnceApplicationSigningContext context = new(new[] { identity });
             FileInfo output = new(Path.Combine(harness.Source.FullName, "out", app.Name));
             Task owner = harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, output),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.UpdateManifestOnly,
                 context: context);
             Task? waiter = null;
             Exception? failure = failureKind == 0 ? null : failureKind == 1
@@ -438,7 +438,7 @@ namespace Sign.Core.Test
                 await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
                 FileInfo waiterOutput = new(Path.Combine(harness.Source.FullName, "waiter-out", app.Name));
                 waiter = harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, waiterOutput),
-                    harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+                    harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.UpdateManifestOnly,
                     context: context);
                 Assert.False(owner.IsCompleted);
                 Assert.Empty(order);
@@ -484,8 +484,8 @@ namespace Sign.Core.Test
             FileInfo app = harness.CreateManifest("App.manifest", targets);
             SigningFile input = OriginalInput(harness, app, container: true);
             SigningSourceIdentity identity = input.GetSibling(payload, harness.Source).SourceIdentity;
-            ClickOnceApplicationSigningPolicy policy = (ClickOnceApplicationSigningPolicy)mode;
-            if (policy == ClickOnceApplicationSigningPolicy.UpdateManifestOnly)
+            ClickOnceApplicationSigningMode signingMode = (ClickOnceApplicationSigningMode)mode;
+            if (signingMode == ClickOnceApplicationSigningMode.UpdateManifestOnly)
             {
                 await harness.Coordinator.ExecuteAsync(identity,
                     () => Task.FromResult(harness.CreateFile("signed.bin", "unsigned signed")));
@@ -493,7 +493,7 @@ namespace Sign.Core.Test
             FileInfo output = new(Path.Combine(harness.Source.FullName, "out", app.Name));
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, output),
-                harness.Options(), harness.Coordinator, policy,
+                harness.Options(), harness.Coordinator, signingMode,
                 context: new ClickOnceApplicationSigningContext(new[] { identity }));
 
             Assert.Equal(mode == 0 ? 1 : 0, harness.PayloadCalls.Count);
@@ -553,7 +553,7 @@ namespace Sign.Core.Test
 
             Exception failure = await Assert.ThrowsAnyAsync<Exception>(() =>
                 harness.Pipeline.SignOwnerAsync(input, harness.Options(), harness.Coordinator,
-                    ClickOnceApplicationSigningPolicy.SignPayloads, layout));
+                    ClickOnceApplicationSigningMode.Full, layout));
 
             if (ambiguous)
             {
@@ -601,12 +601,12 @@ namespace Sign.Core.Test
                 ? new FileInfo(Path.Combine(harness.Source.FullName, "out2", second.Name)) : second;
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(firstInput, firstOutput),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
             FileInfo afterFirst = Assert.Single(payload.Directory!.EnumerateFiles());
             string nameAfterFirst = afterFirst.Name;
             SigningSourceIdentity identityAfterFirst = secondInput.GetSibling(afterFirst, harness.Source).SourceIdentity;
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(secondInput, secondOutput),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
 
             Assert.Single(harness.PayloadCalls);
             Assert.Equal(physical, nameAfterFirst);
@@ -635,7 +635,7 @@ namespace Sign.Core.Test
             foreach (FileInfo destination in outOfPlaceFirst ? new[] { output, app } : new[] { app, output })
             {
                 await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, destination),
-                    harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                    harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
             }
 
             Assert.Single(harness.PayloadCalls);
@@ -690,12 +690,12 @@ namespace Sign.Core.Test
             harness.Pipeline = harness.CreatePipeline(harness.Reader, payloadHandler: handler);
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(firstInput, first),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
             string payloadName = Assert.Single(payload.Directory!.EnumerateFiles()).Name;
             string companionName = harness.Source.EnumerateFiles().Single(file =>
                 file.Name.Equals("Meta.bin", StringComparison.OrdinalIgnoreCase)).Name;
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(secondInput, second),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
 
             Assert.Equal(1, owners);
             Assert.Equal(payload.Name, payloadName);
@@ -762,7 +762,7 @@ namespace Sign.Core.Test
             SigningFile input = SigningFile.ContainerEntry(app, parent, "Publish/App.manifest");
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, output),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
 
             Assert.Equal("unsigned", File.ReadAllText(payload.FullName));
             Assert.Equal("unsigned signed", File.ReadAllText(Path.Combine(outputRoot.FullName, "Payload.dll")));

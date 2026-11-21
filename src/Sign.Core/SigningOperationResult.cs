@@ -44,11 +44,16 @@ namespace Sign.Core
 
         internal FileInfo Materialize(
             FileInfo destination,
-            Func<FileInfo, FileInfo>? bindLayoutDestination = null)
+            Func<FileInfo, FileInfo>? bindLayoutDestination = null,
+            SigningOperationCollisionPolicy collisionPolicy = SigningOperationCollisionPolicy.PrimaryWins)
         {
             ArgumentNullException.ThrowIfNull(
                 destination,
                 nameof(destination));
+            if (!Enum.IsDefined(collisionPolicy))
+            {
+                throw new ArgumentOutOfRangeException(nameof(collisionPolicy));
+            }
             BeginMaterialization();
 
             try
@@ -57,7 +62,7 @@ namespace Sign.Core
 
                 return Materialize(
                     destination,
-                    CreateMaterializations(destination, bindLayoutDestination));
+                    CreateMaterializations(destination, bindLayoutDestination, collisionPolicy));
             }
             finally
             {
@@ -227,7 +232,8 @@ namespace Sign.Core
 
         private IReadOnlyList<Materialization> CreateMaterializations(
             FileInfo destination,
-            Func<FileInfo, FileInfo>? bindLayoutDestination)
+            Func<FileInfo, FileInfo>? bindLayoutDestination,
+            SigningOperationCollisionPolicy collisionPolicy)
         {
             string destinationRoot = destination.DirectoryName!;
             string containedRoot = PathContainment.GetFullDirectoryPath(
@@ -251,7 +257,7 @@ namespace Sign.Core
                         snapshot.RelativePath);
 
                 if (!snapshot.IsPrimary &&
-                    bindLayoutDestination is null &&
+                    collisionPolicy == SigningOperationCollisionPolicy.PrimaryWins &&
                     destinationComparer.Equals(
                         materializationDestination.FullName,
                         destination.FullName))

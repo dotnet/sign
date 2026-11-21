@@ -64,7 +64,7 @@ namespace Sign.Core.Test
             harness.Pipeline = harness.CreatePipeline(harness.Reader, payloadHandler: handler);
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, app),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.SignPayloads);
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.Full);
 
             Assert.Equal("composed", File.ReadAllText(payload.FullName));
             Assert.Empty(harness.PayloadCalls);
@@ -107,7 +107,7 @@ namespace Sign.Core.Test
 
             using SigningOperationArtifact artifact = await harness.Pipeline.SignOwnerAsync(
                 SigningFile.Capture(app), harness.Options(), harness.Coordinator,
-                ClickOnceApplicationSigningPolicy.SignPayloads, layout, SigningFile.Capture(deployment));
+                ClickOnceApplicationSigningMode.Full, layout, SigningFile.Capture(deployment));
 
             Assert.Empty(unusedReader.ReceivedCalls());
             Assert.Equal("signed", File.ReadAllText(Path.Combine(artifact.RootDirectory.FullName, "payload.dll.deploy")));
@@ -298,8 +298,65 @@ namespace Sign.Core.Test
             }
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        public async Task ExecuteAsync_WhenUpdateOnlyContextIsMissing_RejectsBeforeClaimingOrStaging(int entryPoint)
+        {
+            await using Harness harness = new();
+            FileInfo app = harness.CreateManifest("App.manifest", "missing.dll");
+            SigningFile input = SigningFile.Capture(app);
+            IClickOnceManifestReader reader = Substitute.For<IClickOnceManifestReader>();
+            harness.Pipeline = harness.CreatePipeline(reader);
+            using IApplicationManifest manifest = Substitute.For<IApplicationManifest>();
+            ResolvedClickOncePublishLayout layout = new(null,
+                new ResolvedClickOnceApplication(app, manifest, Array.Empty<ResolvedClickOncePayload>()),
+                Array.Empty<ResolvedClickOnceAdjacentExecutable>(), Array.Empty<ClickOnceManifestDiagnostic>());
+
+            ArgumentNullException failure = await Assert.ThrowsAsync<ArgumentNullException>(() => entryPoint switch
+            {
+                0 => harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, app),
+                    harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.UpdateManifestOnly),
+                1 => harness.Pipeline.SignOwnerAsync(input, harness.Options(), harness.Coordinator,
+                    ClickOnceApplicationSigningMode.UpdateManifestOnly),
+                _ => harness.Pipeline.SignOwnerAsync(input, harness.Options(), harness.Coordinator,
+                    ClickOnceApplicationSigningMode.UpdateManifestOnly, layout)
+            });
+
+            Assert.Equal("context", failure.ParamName);
+            Assert.False(harness.Coordinator.TryGetResult(input.SourceIdentity, out _));
+            Assert.Empty(reader.ReceivedCalls());
+            manifest.DidNotReceive().ReadOnly = false;
+            Assert.Empty(harness.PayloadCalls);
+            Assert.Empty(harness.ManifestCalls);
+            AssertNoStagingDirectories(harness);
+        }
+
         [Fact]
-        public async Task ExecuteAsync_WhenPolicyIsUpdateManifestOnly_SkipsCompositeHandlerAndDependencyPublication()
+        public async Task SignOwnerAsync_WhenResolvedLayoutModeIsSignAsIs_RejectsBeforeStaging()
+        {
+            await using Harness harness = new();
+            FileInfo app = harness.CreateManifest("App.manifest", "missing.dll");
+            SigningFile input = SigningFile.Capture(app);
+            using IApplicationManifest manifest = Substitute.For<IApplicationManifest>();
+            ResolvedClickOncePublishLayout layout = new(null,
+                new ResolvedClickOnceApplication(app, manifest, Array.Empty<ResolvedClickOncePayload>()),
+                Array.Empty<ResolvedClickOnceAdjacentExecutable>(), Array.Empty<ClickOnceManifestDiagnostic>());
+
+            ArgumentException failure = await Assert.ThrowsAsync<ArgumentException>(() =>
+                harness.Pipeline.SignOwnerAsync(input, harness.Options(), harness.Coordinator,
+                    ClickOnceApplicationSigningMode.SignAsIs, layout));
+
+            Assert.Equal("mode", failure.ParamName);
+            manifest.DidNotReceive().ReadOnly = false;
+            Assert.Empty(harness.PayloadCalls);
+            Assert.Empty(harness.ManifestCalls);
+            AssertNoStagingDirectories(harness);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WhenModeIsUpdateManifestOnly_SkipsCompositeHandlerAndDependencyPublication()
         {
             await using Harness harness = new();
             FileInfo child = harness.CreateFile("Child.application");
@@ -308,7 +365,8 @@ namespace Sign.Core.Test
             IClickOncePayloadSigningHandler handler = Substitute.For<IClickOncePayloadSigningHandler>();
             harness.Pipeline = harness.CreatePipeline(harness.Reader, payloadHandler: handler);
 
-            await harness.ExecuteAsync(app, output, policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly);
+            await harness.ExecuteAsync(app, output, mode: ClickOnceApplicationSigningMode.UpdateManifestOnly,
+                context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             Assert.Empty(handler.ReceivedCalls());
             Assert.Equal("payload", File.ReadAllText(child.FullName));
@@ -329,7 +387,7 @@ namespace Sign.Core.Test
             IClickOncePayloadSigningHandler handler = Substitute.For<IClickOncePayloadSigningHandler>();
             harness.Pipeline = harness.CreatePipeline(harness.Reader, payloadHandler: handler);
 
-            await harness.ExecuteAsync(app, output, updateManifest: false);
+            await harness.ExecuteAsync(app, output, mode: ClickOnceApplicationSigningMode.SignAsIs);
 
             Assert.Equal(original + "\n<!--signed-->", File.ReadAllText(output.FullName));
             if (outOfPlace)
@@ -388,7 +446,7 @@ namespace Sign.Core.Test
             harness.Pipeline = harness.CreatePipeline(harness.Reader, payloadHandler: handler);
 
             await harness.Pipeline.ExecuteAsync(new SigningOperationPlan(input, output),
-                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+                harness.Options(), harness.Coordinator, ClickOnceApplicationSigningMode.UpdateManifestOnly,
                 context: context);
 
             Assert.Equal(1, owners);
@@ -446,7 +504,7 @@ namespace Sign.Core.Test
                 payloads.Select(SigningSourceIdentity.Capture));
             FileInfo output = new(Path.Combine(harness.Source.FullName, "out", app.Name));
             Task operation = harness.ExecuteAsync(app, output,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             try
             {
                 await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -488,10 +546,10 @@ namespace Sign.Core.Test
             harness.AfterResolve = _ => entered.TrySetResult();
             ClickOnceApplicationSigningContext context = new(new[] { SigningSourceIdentity.Capture(payload) });
             Task owner = harness.ExecuteAsync(app,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Task waiter = harness.ExecuteAsync(app,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             Exception failure = cancellation ? new OperationCanceledException("explicit payload") :
                 new SigningException("explicit payload");
             completion.SetException(failure);
@@ -516,7 +574,7 @@ namespace Sign.Core.Test
             ClickOnceApplicationSigningContext context = new(new[] { SigningSourceIdentity.Capture(payload) });
 
             InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => harness.ExecuteAsync(app, policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+                () => harness.ExecuteAsync(app, mode: ClickOnceApplicationSigningMode.UpdateManifestOnly,
                     context: context));
 
             Assert.Contains(payload.FullName, failure.Message, StringComparison.Ordinal);
@@ -536,7 +594,7 @@ namespace Sign.Core.Test
             await harness.Coordinator.ExecuteAsync(SigningSourceIdentity.Capture(payload),
                 () => Task.FromResult(harness.CreateFile("signed.bin", "signed")));
 
-            await harness.ExecuteAsync(app, policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+            await harness.ExecuteAsync(app, mode: ClickOnceApplicationSigningMode.UpdateManifestOnly,
                 context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             using FileStream stream = app.OpenRead();
@@ -559,7 +617,7 @@ namespace Sign.Core.Test
                 new FileInfo(Path.Combine(harness.Source.FullName, "missing.dll")));
             string original = File.ReadAllText(app.FullName);
 
-            await harness.ExecuteAsync(app, updateManifest: false,
+            await harness.ExecuteAsync(app, mode: ClickOnceApplicationSigningMode.SignAsIs,
                 context: new ClickOnceApplicationSigningContext(new[] { missing }));
 
             Assert.False(harness.Coordinator.TryGetResult(missing, out _));
@@ -589,10 +647,10 @@ namespace Sign.Core.Test
             harness.AfterResolve = _ => entered.TrySetResult();
             ClickOnceApplicationSigningContext context = new(new[] { SigningSourceIdentity.Capture(payload) });
             Task owner = harness.ExecuteAsync(app,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             Task waiter = harness.ExecuteAsync(app,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             startDependency.SetResult();
 
             InvalidOperationException expected = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -626,9 +684,9 @@ namespace Sign.Core.Test
                 });
             ClickOnceApplicationSigningContext context = new(new[] { SigningSourceIdentity.Capture(payload) });
             Task first = harness.ExecuteAsync(firstApp,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             Task second = harness.ExecuteAsync(secondApp,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly, context: context);
+                mode: ClickOnceApplicationSigningMode.UpdateManifestOnly, context: context);
             completion.SetResult(harness.CreateFile("signed.bin", "signed"));
 
             await Task.WhenAll(first, second, prerequisite).WaitAsync(TimeSpan.FromSeconds(5));
@@ -660,7 +718,8 @@ namespace Sign.Core.Test
                     "App.manifest", "missing.manifest");
             string original = File.ReadAllText(file.FullName);
 
-            await Assert.ThrowsAsync<SigningException>(() => harness.ExecuteAsync(file, updateManifest: false));
+            await Assert.ThrowsAsync<SigningException>(() => harness.ExecuteAsync(file,
+                mode: ClickOnceApplicationSigningMode.SignAsIs));
 
             Assert.Equal(original, File.ReadAllText(file.FullName));
             Assert.Empty(harness.ManifestCalls);
@@ -760,7 +819,7 @@ namespace Sign.Core.Test
             IClickOncePayloadSigningHandler handler = Substitute.For<IClickOncePayloadSigningHandler>();
             harness.Pipeline = harness.CreatePipeline(harness.Reader, payloadHandler: handler);
 
-            await harness.ExecuteAsync(app, updateManifest: false);
+            await harness.ExecuteAsync(app, mode: ClickOnceApplicationSigningMode.SignAsIs);
 
             manifest.DidNotReceive().ReadOnly = false;
             manifest.DidNotReceive().ResolveFiles(Arg.Any<IReadOnlyList<DirectoryInfo>>());
@@ -798,7 +857,8 @@ namespace Sign.Core.Test
                 }
             }
 
-            await harness.ExecuteAsync(app, options: options, updateManifest: updateManifest);
+            await harness.ExecuteAsync(app, options: options,
+                mode: updateManifest ? ClickOnceApplicationSigningMode.Full : ClickOnceApplicationSigningMode.SignAsIs);
 
             harness.ManifestSigner.Received(1).Sign(Arg.Any<FileInfo>(),
                 Arg.Any<System.Security.Cryptography.X509Certificates.X509Certificate2>(), Arg.Any<RSA>(),
@@ -817,9 +877,9 @@ namespace Sign.Core.Test
         [InlineData(1, "Requested")]
         [InlineData(1, "Requested.exe")]
         public async Task ExecuteAsync_WhenUpdatingWithApplicationNameOverride_AppliesNameLiterally(
-            int policyValue, string name)
+            int modeValue, string name)
         {
-            ClickOnceApplicationSigningPolicy policy = (ClickOnceApplicationSigningPolicy)policyValue;
+            ClickOnceApplicationSigningMode mode = (ClickOnceApplicationSigningMode)modeValue;
             await using Harness harness = new();
             FileInfo app = harness.CreateManifest("App.manifest");
             SignOptions options = new(name, null, null, null,
@@ -828,7 +888,8 @@ namespace Sign.Core.Test
                 XDocument.Load(file.FullName).Root!.Elements()
                     .Single(element => element.Name.LocalName == "assemblyIdentity").Attribute("name")!.Value);
 
-            await harness.ExecuteAsync(app, options: options, policy: policy);
+            await harness.ExecuteAsync(app, options: options, mode: mode,
+                context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             using FileStream stream = app.OpenRead();
             Assert.True(harness.Reader.TryReadApplicationManifest(stream, out IApplicationManifest? updated));
@@ -847,9 +908,9 @@ namespace Sign.Core.Test
         [InlineData(1, "")]
         [InlineData(1, " \t ")]
         public async Task ExecuteAsync_WhenUpdatingWithoutNonWhitespaceNameOverride_PreservesOriginalName(
-            int policyValue, string? name)
+            int modeValue, string? name)
         {
-            ClickOnceApplicationSigningPolicy policy = (ClickOnceApplicationSigningPolicy)policyValue;
+            ClickOnceApplicationSigningMode mode = (ClickOnceApplicationSigningMode)modeValue;
             await using Harness harness = new();
             FileInfo app = harness.CreateManifest("App.manifest");
             XDocument original = XDocument.Load(app.FullName);
@@ -858,7 +919,8 @@ namespace Sign.Core.Test
             SignOptions options = new(name, null, null, null,
                 HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, null!, null, null, true);
 
-            await harness.ExecuteAsync(app, options: options, policy: policy);
+            await harness.ExecuteAsync(app, options: options, mode: mode,
+                context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             using FileStream stream = app.OpenRead();
             Assert.True(harness.Reader.TryReadApplicationManifest(stream, out IApplicationManifest? updated));
@@ -881,7 +943,7 @@ namespace Sign.Core.Test
                 HashAlgorithmName.SHA256, HashAlgorithmName.SHA256, null!, null, null, true);
             harness.BeforeManifestSign = file => Assert.Equal(original, File.ReadAllBytes(file.FullName));
 
-            await harness.ExecuteAsync(app, options: options, updateManifest: false);
+            await harness.ExecuteAsync(app, options: options, mode: ClickOnceApplicationSigningMode.SignAsIs);
 
             Assert.Equal("Original", identity.Name);
             manifest.DidNotReceive().Write(Arg.Any<FileInfo>());
@@ -894,9 +956,9 @@ namespace Sign.Core.Test
         [InlineData(0)]
         [InlineData(1)]
         public async Task ExecuteAsync_WhenVstoApplicationNameIsOverridden_PreservesVstoFieldsAndPayloadIdentity(
-            int policyValue)
+            int modeValue)
         {
-            ClickOnceApplicationSigningPolicy policy = (ClickOnceApplicationSigningPolicy)policyValue;
+            ClickOnceApplicationSigningMode mode = (ClickOnceApplicationSigningMode)modeValue;
             await using Harness harness = new();
             XDocument original = XDocument.Load(ClickOnceResolutionTestUtilities.GetVstoManifestPath());
             XElement description = original.Descendants(XName.Get("description", "urn:schemas-microsoft-com:asm.v1"))
@@ -909,7 +971,8 @@ namespace Sign.Core.Test
                 new Uri("https://requested.test/support"), HashAlgorithmName.SHA256, HashAlgorithmName.SHA256,
                 null!, null, null, true);
 
-            await harness.ExecuteAsync(app, options: options, policy: policy);
+            await harness.ExecuteAsync(app, options: options, mode: mode,
+                context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             XDocument updated = XDocument.Load(app.FullName);
             Assert.Equal("Requested.exe", updated.Root!.Elements()
@@ -936,13 +999,13 @@ namespace Sign.Core.Test
         }
 
         [Theory]
-        [InlineData(0, true)]
-        [InlineData(1, true)]
-        [InlineData(0, false)]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
         public async Task ExecuteAsync_WhenRealSigningUsesApplicationNameOption_SignatureCoversEffectiveNameWithoutTimestamp(
-            int policyValue, bool updateManifest)
+            int modeValue)
         {
-            ClickOnceApplicationSigningPolicy policy = (ClickOnceApplicationSigningPolicy)policyValue;
+            ClickOnceApplicationSigningMode mode = (ClickOnceApplicationSigningMode)modeValue;
             await using Harness harness = new();
             using X509Certificate2 certificate = SelfIssuedCertificateCreator.CreateCertificate();
             harness.CertificateProvider.GetCertificateAsync()
@@ -957,13 +1020,15 @@ namespace Sign.Core.Test
             string originalName = XDocument.Load(app.FullName).Root!.Elements()
                 .Single(element => element.Name.LocalName == "assemblyIdentity").Attribute("name")!.Value;
 
-            await harness.ExecuteAsync(app, options: options, policy: policy, updateManifest: updateManifest);
+            await harness.ExecuteAsync(app, options: options,
+                mode: mode,
+                context: new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>()));
 
             XmlDocument document = new() { PreserveWhitespace = true };
             document.Load(app.FullName);
             XmlElement identity = document.DocumentElement!.ChildNodes.OfType<XmlElement>()
                 .Single(element => element.LocalName == "assemblyIdentity");
-            string expectedName = updateManifest ? "Requested.exe" : originalName;
+            string expectedName = mode == ClickOnceApplicationSigningMode.SignAsIs ? originalName : "Requested.exe";
             Assert.Equal(expectedName, identity.GetAttribute("name"));
             XmlElement licenseIdentity = Assert.Single(document.GetElementsByTagName(
                 "assemblyIdentity", "http://schemas.microsoft.com/windows/pki/2005/Authenticode")

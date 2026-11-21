@@ -10,6 +10,7 @@ namespace Sign.Core
 
         // Orchestration registers independently selected operations before
         // starting applications that consume them. This context never claims work.
+        // Update-only signing requires an explicit context, even when empty.
         internal ClickOnceApplicationSigningContext(IEnumerable<SigningSourceIdentity> explicitPayloads)
         {
             ArgumentNullException.ThrowIfNull(explicitPayloads);
