@@ -152,7 +152,7 @@ namespace Sign.Core
             return payloads;
         }
 
-        private static List<BaseReference> GetPhysicalReferences(IApplicationManifest applicationManifest)
+        internal static List<BaseReference> GetPhysicalReferences(IApplicationManifest applicationManifest)
         {
             List<BaseReference> references = applicationManifest.AssemblyReferences
                 .Cast<AssemblyReference>()
