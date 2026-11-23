@@ -7,12 +7,14 @@ namespace Sign.Core.Test
     internal sealed class DirectoryServiceStub : IDirectoryService
     {
         private readonly List<DirectoryInfo> _directories;
+        private readonly Action<DirectoryInfo>? _directoryCreated;
 
         internal IReadOnlyList<DirectoryInfo> Directories { get; }
 
-        internal DirectoryServiceStub()
+        internal DirectoryServiceStub(Action<DirectoryInfo>? directoryCreated = null)
         {
             Directories = _directories = new List<DirectoryInfo>();
+            _directoryCreated = directoryCreated;
         }
 
         public DirectoryInfo CreateTemporaryDirectory()
@@ -22,6 +24,15 @@ namespace Sign.Core.Test
             directory.Create();
 
             _directories.Add(directory);
+            try
+            {
+                _directoryCreated?.Invoke(directory);
+            }
+            catch
+            {
+                Delete(directory);
+                throw;
+            }
 
             return directory;
         }
