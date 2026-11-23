@@ -250,8 +250,8 @@ namespace Sign.Core.Test
 
             SigningException failure = await Assert.ThrowsAsync<SigningException>(() =>
                 harness.Pipeline.ExecuteAsync(plans, harness.Options, harness.Coordinator, concurrency,
-                    noSignDependencies ? ClickOnceApplicationSigningPolicy.UpdateManifestOnly :
-                        ClickOnceApplicationSigningPolicy.SignPayloads));
+                    noSignDependencies ? ClickOnceApplicationSigningMode.UpdateManifestOnly :
+                        ClickOnceApplicationSigningMode.Full));
 
             Assert.Contains(ordinary.FullName, failure.Message);
             Assert.Contains(payload.FullName, failure.Message);
@@ -344,8 +344,8 @@ namespace Sign.Core.Test
             };
 
             await harness.Pipeline.ExecuteAsync(plans, harness.Options, harness.Coordinator, concurrency,
-                mode == 1 ? ClickOnceApplicationSigningPolicy.UpdateManifestOnly :
-                    ClickOnceApplicationSigningPolicy.SignPayloads,
+                mode == 1 ? ClickOnceApplicationSigningMode.UpdateManifestOnly :
+                    ClickOnceApplicationSigningMode.Full,
                 updateManifest: mode != 2);
 
             Assert.Equal("ordinary signed", System.IO.File.ReadAllText(destination.FullName));

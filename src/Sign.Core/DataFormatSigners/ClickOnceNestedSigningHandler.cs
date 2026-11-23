@@ -97,7 +97,7 @@ namespace Sign.Core
             SigningFile input,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+            ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
             bool updateManifest = true,
             ClickOnceApplicationSigningContext? context = null,
             ResolvedClickOncePublishLayout? layout = null,
@@ -116,9 +116,16 @@ namespace Sign.Core
                     layoutOrigin = prepared.Origin;
                 }
                 ClickOnceApplicationManifestSigner signer = _deployment.CreateApplicationSigner();
+                ClickOnceApplicationSigningMode mode = updateManifest
+                    ? policy
+                    : ClickOnceApplicationSigningMode.SignAsIs;
+                if (mode == ClickOnceApplicationSigningMode.UpdateManifestOnly && context is null)
+                {
+                    context = new ClickOnceApplicationSigningContext(Array.Empty<SigningSourceIdentity>());
+                }
                 artifact = layout is null
-                    ? await signer.SignOwnerAsync(input, options, coordinator, policy, updateManifest, context)
-                    : await signer.SignOwnerAsync(input, options, coordinator, policy, layout, layoutOrigin, context);
+                    ? await signer.SignOwnerAsync(input, options, coordinator, mode, context)
+                    : await signer.SignOwnerAsync(input, options, coordinator, mode, layout, layoutOrigin, context);
                 List<ClickOnceGraphOutput> outputs = new();
                 foreach (FileInfo file in artifact.GetFiles().Where(file =>
                     !FileInfoComparer.Instance.Equals(file, artifact.PrimaryFile)))

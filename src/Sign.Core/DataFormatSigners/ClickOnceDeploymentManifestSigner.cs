@@ -36,7 +36,7 @@ namespace Sign.Core
             SigningOperationPlan plan,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+            ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
             bool updateManifest = true)
         {
             ArgumentNullException.ThrowIfNull(plan);
@@ -84,7 +84,7 @@ namespace Sign.Core
             SigningOperationPlan plan,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+            ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
             bool updateManifest = true,
             ClickOnceApplicationSigningContext? context = null)
         {
@@ -134,7 +134,7 @@ namespace Sign.Core
             SignOptions options,
             SigningOperationCoordinator coordinator,
             int maxConcurrency,
-            ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+            ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
             bool updateManifest = true)
         {
             ArgumentNullException.ThrowIfNull(plans);
@@ -266,7 +266,7 @@ namespace Sign.Core
                 }
                 for (int index = 0; index < applications.Length; ++index)
                 {
-                    if (updateManifest && policy == ClickOnceApplicationSigningPolicy.SignPayloads &&
+                    if (updateManifest && policy == ClickOnceApplicationSigningMode.Full &&
                         deployments.Concat(applications).Any(owner => _nested.GetOutputs(owner.Source.SourceIdentity)
                             .Any(output => output.Source.SourceIdentity.Equals(applications[index].Source.SourceIdentity) &&
                                 string.Equals(output.Source.File.FullName, applications[index].Source.File.FullName,
@@ -313,7 +313,7 @@ namespace Sign.Core
             SigningFile input,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+            ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
             bool updateManifest = true)
         {
             ArgumentNullException.ThrowIfNull(input);
@@ -388,10 +388,10 @@ namespace Sign.Core
             SigningOperationPlan plan,
             SigningOperationResult result,
             bool updateManifest,
-            ClickOnceApplicationSigningPolicy policy)
+            ClickOnceApplicationSigningMode policy)
         {
             yield return new(plan.Output, plan.Source, plan.Source, result);
-            if (updateManifest && policy == ClickOnceApplicationSigningPolicy.SignPayloads)
+            if (updateManifest && policy == ClickOnceApplicationSigningMode.Full)
             {
                 foreach (ClickOnceGraphOutput output in _nested.GetOutputs(plan.Source.SourceIdentity))
                 {
@@ -412,7 +412,7 @@ namespace Sign.Core
             IEnumerable<SigningOperationPlan> manifests,
             IReadOnlyDictionary<SigningSourceIdentity, SigningOperationResult> explicitResults,
             bool updateManifest,
-            ClickOnceApplicationSigningPolicy policy,
+            ClickOnceApplicationSigningMode policy,
             IReadOnlyList<SigningFile> protectedSources)
         {
             try
@@ -438,7 +438,7 @@ namespace Sign.Core
             IReadOnlyList<SigningOperationPlan> deployments,
             IReadOnlyList<SigningFile> applications,
             SignOptions options,
-            ClickOnceApplicationSigningPolicy policy)
+            ClickOnceApplicationSigningMode policy)
         {
             try
             {
@@ -446,7 +446,7 @@ namespace Sign.Core
                     _services.GetRequiredService<IFileMatcher>(), options.Matcher, options.AntiMatcher));
                 return ClickOnceDeploymentSigningContext.Create(deployments, applications,
                     _resolver, new(_reader, new ClickOncePayloadResolver()),
-                    policy == ClickOnceApplicationSigningPolicy.SignPayloads,
+                    policy == ClickOnceApplicationSigningMode.Full,
                     (file, directory) => selection.Value.IsSelected(file, directory), _nested.IsApplication);
             }
             catch (SigningException exception)
@@ -512,9 +512,9 @@ namespace Sign.Core
             SigningFile input,
             SignOptions options,
             SigningOperationCoordinator coordinator,
-            ClickOnceApplicationSigningPolicy policy)
+            ClickOnceApplicationSigningMode policy)
         {
-            bool signDependencies = policy == ClickOnceApplicationSigningPolicy.SignPayloads;
+            bool signDependencies = policy == ClickOnceApplicationSigningMode.Full;
             ClickOnceDeploymentSigningContext? context = _context.Value;
             ResolvedClickOncePublishLayout? preparedLayout = context?.GetDeployment(input.SourceIdentity);
             ResolvedClickOncePublishLayout layout = preparedLayout ??

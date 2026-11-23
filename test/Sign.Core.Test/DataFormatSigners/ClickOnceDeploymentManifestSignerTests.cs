@@ -108,7 +108,7 @@ namespace Sign.Core.Test
             string originalApplication = System.IO.File.ReadAllText(application.FullName);
             FileInfo output = outOfPlace ? harness.Output(deployment.Name) : deployment;
 
-            await harness.ExecuteAsync(deployment, output, ClickOnceApplicationSigningPolicy.UpdateManifestOnly);
+            await harness.ExecuteAsync(deployment, output, ClickOnceApplicationSigningMode.UpdateManifestOnly);
 
             Assert.Equal(new[] { "App.application" }, harness.Calls.ToArray());
             Assert.Equal(originalApplication, System.IO.File.ReadAllText(application.FullName));
@@ -446,7 +446,7 @@ namespace Sign.Core.Test
             string original = System.IO.File.ReadAllText(deployment.FullName);
 
             await Assert.ThrowsAsync<SigningException>(() => harness.ExecuteAsync(deployment,
-                policy: ClickOnceApplicationSigningPolicy.UpdateManifestOnly));
+                policy: ClickOnceApplicationSigningMode.UpdateManifestOnly));
 
             Assert.Empty(harness.Calls);
             Assert.Equal(original, System.IO.File.ReadAllText(deployment.FullName));
@@ -494,8 +494,8 @@ namespace Sign.Core.Test
             }
         }
 
-        private static ClickOnceApplicationSigningPolicy Policy(int mode) =>
-            mode == 1 ? ClickOnceApplicationSigningPolicy.UpdateManifestOnly : ClickOnceApplicationSigningPolicy.SignPayloads;
+        private static ClickOnceApplicationSigningMode Policy(int mode) =>
+            mode == 1 ? ClickOnceApplicationSigningMode.UpdateManifestOnly : ClickOnceApplicationSigningMode.Full;
 
         [Fact]
         public async Task ExecuteAsync_WhenNoSignBatchIncludesUnsupportedExplicitPayload_CopiesPayloadUnsignedAndSignsExplicitManifests()
@@ -510,7 +510,7 @@ namespace Sign.Core.Test
                 new SigningOperationPlan(SigningFile.Capture(deployment), harness.Output(deployment.Name)),
                 new SigningOperationPlan(SigningFile.Capture(application), harness.Output(application.Name)),
                 new SigningOperationPlan(SigningFile.Capture(data), harness.Output(data.Name))
-            }, harness.Options, harness.Coordinator, 1, ClickOnceApplicationSigningPolicy.UpdateManifestOnly);
+            }, harness.Options, harness.Coordinator, 1, ClickOnceApplicationSigningMode.UpdateManifestOnly);
 
             Assert.Equal(new[] { application.Name, deployment.Name }, harness.Calls.ToArray());
             Assert.Equal("unsigned data", System.IO.File.ReadAllText(harness.Output(data.Name).FullName));
@@ -589,7 +589,7 @@ namespace Sign.Core.Test
                     harness.Output(Path.GetRelativePath(harness.Source.FullName, file.FullName)))).ToArray();
 
             await harness.Pipeline.ExecuteAsync(plans, harness.Options, harness.Coordinator, maxConcurrency,
-                ClickOnceApplicationSigningPolicy.UpdateManifestOnly).WaitAsync(TimeSpan.FromSeconds(20));
+                ClickOnceApplicationSigningMode.UpdateManifestOnly).WaitAsync(TimeSpan.FromSeconds(20));
 
             Assert.Equal(5, harness.Calls.Count);
             Assert.Equal(1, harness.Calls.Count(name => name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)));
@@ -815,7 +815,7 @@ namespace Sign.Core.Test
             }
 
             internal Task ExecuteAsync(FileInfo input, FileInfo? output = null,
-                ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+                ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
                 bool updateManifest = true) =>
                 Pipeline.ExecuteAsync(new SigningOperationPlan(SigningFile.Capture(input), output ?? input),
                     Options, Coordinator, policy, updateManifest);

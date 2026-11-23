@@ -73,8 +73,8 @@ namespace Sign.Core.Test
             {
                 SigningException failure = await Assert.ThrowsAsync<SigningException>(() =>
                     harness.Pipeline.ExecuteAsync(plans, harness.Options, harness.Coordinator, concurrency,
-                        updateOnly ? ClickOnceApplicationSigningPolicy.UpdateManifestOnly :
-                            ClickOnceApplicationSigningPolicy.SignPayloads));
+                        updateOnly ? ClickOnceApplicationSigningMode.UpdateManifestOnly :
+                            ClickOnceApplicationSigningMode.Full));
 
                 Assert.Equal(string.Format(CultureInfo.CurrentCulture, Resources.ClickOnceReadOnlySource,
                     payload.FullName), failure.Message);
@@ -146,7 +146,7 @@ namespace Sign.Core.Test
                 SigningException failure = await Assert.ThrowsAsync<SigningException>(() =>
                     harness.Pipeline.ExecuteApplicationAsync(new(SigningFile.Capture(application),
                         outOfPlace ? harness.Output(application.Name) : application),
-                        harness.Options, harness.Coordinator, ClickOnceApplicationSigningPolicy.UpdateManifestOnly));
+                        harness.Options, harness.Coordinator, ClickOnceApplicationSigningMode.UpdateManifestOnly));
 
                 Assert.Equal(string.Format(CultureInfo.CurrentCulture, Resources.ClickOnceReadOnlySource,
                     application.FullName), failure.Message);
@@ -215,8 +215,8 @@ namespace Sign.Core.Test
                     }
                 };
                 await harness.ExecuteAsync(deployment, harness.Output(deployment.Name),
-                    mode == 2 ? ClickOnceApplicationSigningPolicy.UpdateManifestOnly :
-                        ClickOnceApplicationSigningPolicy.SignPayloads);
+                    mode == 2 ? ClickOnceApplicationSigningMode.UpdateManifestOnly :
+                        ClickOnceApplicationSigningMode.Full);
 
                 foreach (FileInfo file in readOnly)
                 {

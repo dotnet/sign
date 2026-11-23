@@ -290,9 +290,9 @@ namespace Sign.Core.Test
             Dictionary<string, byte[]> originals = NestedSnapshot(harness.Source);
             FileInfo entry = deploymentEntry ? root : app;
             FileInfo output = harness.Output(entry.Name);
-            ClickOnceApplicationSigningPolicy policy = noUpdate
-                ? ClickOnceApplicationSigningPolicy.SignPayloads
-                : ClickOnceApplicationSigningPolicy.UpdateManifestOnly;
+            ClickOnceApplicationSigningMode policy = noUpdate
+                ? ClickOnceApplicationSigningMode.Full
+                : ClickOnceApplicationSigningMode.UpdateManifestOnly;
 
             await NestedExecuteAsync(harness, entry, output, deploymentEntry, policy, updateManifest: !noUpdate)
                 .WaitAsync(TimeSpan.FromSeconds(20));
@@ -330,7 +330,7 @@ namespace Sign.Core.Test
             };
 
             await harness.Pipeline.ExecuteAsync(plans, harness.Options, harness.Coordinator, 1,
-                noUpdate ? ClickOnceApplicationSigningPolicy.SignPayloads : ClickOnceApplicationSigningPolicy.UpdateManifestOnly,
+                noUpdate ? ClickOnceApplicationSigningMode.Full : ClickOnceApplicationSigningMode.UpdateManifestOnly,
                 updateManifest: !noUpdate).WaitAsync(TimeSpan.FromSeconds(20));
 
             Assert.All(new[] { root, app, child },
@@ -377,7 +377,7 @@ namespace Sign.Core.Test
 
             await Assert.ThrowsAsync<ClickOnceStagingException>(() => pipeline.ExecuteAsync(
                 new SigningOperationPlan(SigningFile.Capture(app), output), harness.Options, harness.Coordinator,
-                ClickOnceApplicationSigningPolicy.SignPayloads).WaitAsync(TimeSpan.FromSeconds(20)));
+                ClickOnceApplicationSigningMode.Full).WaitAsync(TimeSpan.FromSeconds(20)));
 
             NestedAssertUnchanged(harness.Source, originals);
             Assert.DoesNotContain(app.Name, harness.Calls);
@@ -1028,7 +1028,7 @@ namespace Sign.Core.Test
             }
 
             await harness.Pipeline.ExecuteAsync(plans, harness.Options, harness.Coordinator, maxConcurrency,
-                noSign ? ClickOnceApplicationSigningPolicy.UpdateManifestOnly : ClickOnceApplicationSigningPolicy.SignPayloads)
+                noSign ? ClickOnceApplicationSigningMode.UpdateManifestOnly : ClickOnceApplicationSigningMode.Full)
                 .WaitAsync(TimeSpan.FromSeconds(20));
 
             Assert.Equal(noSign ? 2 : 3, harness.Calls.Count);
@@ -2205,7 +2205,7 @@ namespace Sign.Core.Test
         }
 
         private static Task NestedExecuteAsync(Harness harness, FileInfo input, FileInfo output,
-            bool deploymentEntry, ClickOnceApplicationSigningPolicy policy = ClickOnceApplicationSigningPolicy.SignPayloads,
+            bool deploymentEntry, ClickOnceApplicationSigningMode policy = ClickOnceApplicationSigningMode.Full,
             bool updateManifest = true) =>
             deploymentEntry
                 ? harness.ExecuteAsync(input, output, policy, updateManifest)
