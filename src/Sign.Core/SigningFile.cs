@@ -47,5 +47,29 @@ namespace Sign.Core
                     parentIdentity,
                     entryPath));
         }
+
+        internal SigningFile GetSibling(
+            FileInfo file,
+            DirectoryInfo sourceDirectory)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+            ArgumentNullException.ThrowIfNull(
+                sourceDirectory,
+                nameof(sourceDirectory));
+
+            return new SigningFile(
+                file,
+                SourceIdentity.GetSibling(
+                    Path.GetRelativePath(
+                        sourceDirectory.FullName,
+                        file.FullName)));
+        }
+
+        internal SigningFile WithFile(FileInfo file)
+        {
+            ArgumentNullException.ThrowIfNull(file, nameof(file));
+
+            return new SigningFile(file, SourceIdentity);
+        }
     }
 }

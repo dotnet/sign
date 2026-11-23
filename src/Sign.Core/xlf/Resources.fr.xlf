@@ -52,10 +52,35 @@
         <target state="translated">Nous n’avons pas pu lire le manifeste de l’application « {0} ».</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestReferenceMismatch">
+        <source>Application manifest '{0}' reference '{1}' must resolve to the staged file '{2}', which must exist inside staging.</source>
+        <target state="new">Application manifest '{0}' reference '{1}' must resolve to the staged file '{2}', which must exist inside staging.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a manifest target path. {NumberedPlaceholder="{2}"} is the required staged path.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceApplicationManifestRequiredFileNotFound">
         <source>Application manifest '{0}' references required file '{1}', but it could not be found.</source>
         <target state="translated">Le manifeste de l’application '{0}' référence le fichier requis '{1}', mais il est introuvable.</target>
         <note>{NumberedPlaceholder="{0}"} is an application manifest file path. {NumberedPlaceholder="{1}"} is a referenced target path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestResolveFailed">
+        <source>Failed to resolve files referenced by application manifest '{0}'.</source>
+        <target state="new">Failed to resolve files referenced by application manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestUpdateFailed">
+        <source>Failed to update file information in application manifest '{0}'.</source>
+        <target state="new">Failed to update file information in application manifest '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is an application manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceApplicationManifestWrongType">
+        <source>File '{0}' is not a ClickOnce application manifest.</source>
+        <target state="new">File '{0}' is not a ClickOnce application manifest.</target>
+        <note>{NumberedPlaceholder="{0}"} is an input manifest file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceAssemblyIdentityReadFailed">
+        <source>Failed to read the assembly identity of staged payload '{0}'.</source>
+        <target state="new">Failed to read the assembly identity of staged payload '{0}'.</target>
+        <note>{NumberedPlaceholder="{0}"} is a staged payload file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestApplicationManifestNotFound">
         <source>Deployment manifest '{0}' references application manifest '{1}', but the file does not exist. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
@@ -169,7 +194,7 @@
       </trans-unit>
       <trans-unit id="DynamicsBusinessCentralArm64NotSupported">
         <source>Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</source>
-        <target state="new">Signing Dynamics Business Central .app files requires Windows x64 because NavSip.dll is not available for ARM64.</target>
+        <target state="translated">La signature des fichiers .app Dynamics Business Central nécessite Windows x64, car NavSip.dll n’est pas disponible pour ARM64.</target>
         <note>{Locked="NavSip.dll"} is a file name. {Locked=".app"} is a file extension.</note>
       </trans-unit>
       <trans-unit id="EditingAppInstaller">
@@ -231,6 +256,11 @@
         <source>SignAsync called for {filePath}. Using {localFilePath} locally.</source>
         <target state="translated">SignAsync appelé pour {filePath}. Utilisation locale de {localFilePath}.</target>
         <note>{Placeholder="{filePath}", "{localFilePath}"} are both file paths.</note>
+      </trans-unit>
+      <trans-unit id="SignedArtifactUnavailable">
+        <source>The signed artifact is unavailable.</source>
+        <target state="new">The signed artifact is unavailable.</target>
+        <note />
       </trans-unit>
       <trans-unit id="SigningAttempt">
         <source>Performing attempt #{attempt} of {maxAttempts} attempts after {seconds} s.</source>

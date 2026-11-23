@@ -11,15 +11,16 @@ namespace Sign.Core
     {
         internal ClickOnceStagingPlan Build(
             ResolvedClickOncePublishLayout layout,
-            DirectoryInfo stagingDirectory)
+            DirectoryInfo stagingDirectory,
+            IReadOnlyDictionary<ResolvedClickOncePayload, FileInfo>? originalSources = null)
         {
             ArgumentNullException.ThrowIfNull(layout, nameof(layout));
             ArgumentNullException.ThrowIfNull(
                 stagingDirectory,
                 nameof(stagingDirectory));
 
-            string rootPath = EnsureTrailingSeparator(
-                Path.GetFullPath(stagingDirectory.FullName));
+            string rootPath = PathContainment.GetFullDirectoryPath(
+                stagingDirectory.FullName);
             DestinationAllocator allocator = new(layout, rootPath);
             Dictionary<BaseReference, AllocatedStagingPlanEntry>
                 referenceDestinations =
@@ -73,7 +74,7 @@ namespace Sign.Core
                     payload => Allocate(
                         applicationDirectoryPath,
                         new StagingSource(
-                            payload.Source,
+                            originalSources is null ? payload.Source : originalSources[payload],
                             payload.TargetPath,
                             payload.Reference,
                             payload.IsFileExtensionMapped
@@ -93,6 +94,20 @@ namespace Sign.Core
                                 mappingAddedSuffix: null)));
 
             ValidateDestinations(layout, entries);
+            if (originalSources is not null)
+            {
+                Dictionary<string, AllocatedStagingPlanEntry> sourceDestinations = new(StringComparer.OrdinalIgnoreCase);
+                foreach (AllocatedStagingPlanEntry entry in payloads.Values)
+                {
+                    if (sourceDestinations.TryGetValue(entry.Destination.FullName,
+                        out AllocatedStagingPlanEntry? existing) &&
+                        !string.Equals(existing.Source.File.FullName, entry.Source.File.FullName, StringComparison.Ordinal))
+                    {
+                        throw CreateCollisionException(layout, existing, entry);
+                    }
+                    sourceDestinations[entry.Destination.FullName] = entry;
+                }
+            }
 
             return new ClickOnceStagingPlan(
                 deploymentManifest?.Entry,
@@ -103,6 +118,67 @@ namespace Sign.Core
                 adjacentExecutables.ToDictionary(
                     pair => pair.Key,
                     pair => pair.Value.Entry));
+        }
+
+        internal void ValidateAdditionalOutputs(
+            ResolvedClickOncePublishLayout layout,
+            ClickOnceStagingSession session,
+            IReadOnlyList<SigningOperationPlan> outputs)
+        {
+            string rootPath = PathContainment.GetFullDirectoryPath(session.Directory.FullName);
+            DestinationAllocator allocator = new(layout, rootPath);
+            List<AllocatedStagingPlanEntry> entries = new();
+            foreach (ClickOnceStagedFile file in session.Payloads.Values
+                .Append(session.ApplicationManifest))
+            {
+                entries.Add(allocator.Allocate(
+                    rootPath,
+                    new StagingSource(
+                        file.Source,
+                        Path.GetRelativePath(
+                            session.Directory.FullName,
+                            (file.FileInfoUpdateFile ?? file.Destination).FullName),
+                        file.ManifestReference,
+                        file.FileInfoUpdateFile is null ? null : ".deploy")));
+            }
+
+            AllocatedStagingPlanEntry[] reserved = entries.ToArray();
+            foreach (SigningOperationPlan output in outputs)
+            {
+                string destinationPath = output.Output.FullName;
+                if (!PathContainment.IsContained(rootPath, destinationPath) ||
+                    (!destinationPath.StartsWith(rootPath, StringComparison.Ordinal) &&
+                        !ClickOncePathSpelling.IsSameDirectory(
+                            new DirectoryInfo(Path.TrimEndingDirectorySeparator(rootPath)),
+                            new DirectoryInfo(Path.TrimEndingDirectorySeparator(destinationPath[..rootPath.Length])))))
+                {
+                    throw CreateUnsafePathException(layout, new StagingSource(
+                        output.Source.File, destinationPath, manifestReference: null, mappingAddedSuffix: null));
+                }
+
+                AllocatedStagingPlanEntry entry = allocator.Allocate(
+                    rootPath,
+                    new StagingSource(
+                        output.Source.File,
+                        Path.GetRelativePath(session.Directory.FullName, output.Output.FullName),
+                        manifestReference: null,
+                        mappingAddedSuffix: null));
+                // Check the actual materialization path, not the allocator's
+                // case-insensitive representative of a duplicate claim.
+                entry = new AllocatedStagingPlanEntry(
+                    entry.Source, output.Output, fileInfoUpdateDestination: null, entry.Claim);
+                foreach (AllocatedStagingPlanEntry existing in reserved)
+                {
+                    if (PathsEqual(entry.Destination.FullName, existing.Destination.FullName) ||
+                        (existing.FileInfoUpdateDestination is not null &&
+                            PathsEqual(entry.Destination.FullName, existing.FileInfoUpdateDestination.FullName)))
+                    {
+                        throw CreateCollisionException(layout, existing, entry);
+                    }
+                }
+                entries.Add(entry);
+            }
+            ValidateDestinations(layout, entries);
         }
 
         private static void ValidateDestinations(
@@ -223,7 +299,7 @@ namespace Sign.Core
                         basePath,
                         NormalizeSeparators(relativePath)));
 
-                return IsContained(rootPath, destinationPath)
+                return PathContainment.IsContained(rootPath, destinationPath)
                     ? destinationPath
                     : null;
             }
@@ -393,27 +469,13 @@ namespace Sign.Core
                 layout.Diagnostics);
         }
 
-        private static string EnsureTrailingSeparator(string path)
-        {
-            return Path.EndsInDirectorySeparator(path)
-                ? path
-                : $"{path}{Path.DirectorySeparatorChar}";
-        }
-
-        private static bool IsContained(string rootPath, string path)
-        {
-            return path.StartsWith(
-                rootPath,
-                StringComparison.OrdinalIgnoreCase);
-        }
-
         private static bool IsFileDirectoryCollision(string left, string right)
         {
             return right.StartsWith(
-                    EnsureTrailingSeparator(left),
+                    PathContainment.EnsureTrailingSeparator(left),
                     StringComparison.OrdinalIgnoreCase) ||
                 left.StartsWith(
-                    EnsureTrailingSeparator(right),
+                    PathContainment.EnsureTrailingSeparator(right),
                     StringComparison.OrdinalIgnoreCase);
         }
 

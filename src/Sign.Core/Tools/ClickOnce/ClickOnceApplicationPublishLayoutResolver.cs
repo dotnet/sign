@@ -12,6 +12,8 @@ namespace Sign.Core
         private readonly IClickOnceManifestReader _manifestReader;
         private readonly ClickOncePayloadResolver _payloadResolver;
 
+        internal IClickOnceManifestReader ManifestReader => _manifestReader;
+
         internal ClickOnceApplicationPublishLayoutResolver(
             IClickOnceManifestReader manifestReader,
             ClickOncePayloadResolver payloadResolver)
@@ -58,24 +60,32 @@ namespace Sign.Core
                     innerException: exception);
             }
 
-            applicationManifest.ReadOnly = false;
+            try
+            {
+                applicationManifest.ReadOnly = false;
 
-            List<ClickOnceManifestDiagnostic> diagnostics = new();
-            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
-                applicationManifestFile,
-                applicationManifest,
-                diagnostics);
-
-            layout = new ResolvedClickOncePublishLayout(
-                deployment: null,
-                new ResolvedClickOnceApplication(
+                List<ClickOnceManifestDiagnostic> diagnostics = new();
+                IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForExplicitApplication(
                     applicationManifestFile,
                     applicationManifest,
-                    payloads),
-                adjacentExecutables: Array.Empty<ResolvedClickOnceAdjacentExecutable>(),
-                diagnostics);
+                    diagnostics);
 
-            return true;
+                layout = new ResolvedClickOncePublishLayout(
+                    deployment: null,
+                    new ResolvedClickOnceApplication(
+                        applicationManifestFile,
+                        applicationManifest,
+                        payloads),
+                    adjacentExecutables: Array.Empty<ResolvedClickOnceAdjacentExecutable>(),
+                    diagnostics);
+
+                return true;
+            }
+            catch
+            {
+                applicationManifest.Dispose();
+                throw;
+            }
         }
     }
 }
