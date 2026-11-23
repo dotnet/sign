@@ -259,7 +259,7 @@
       </trans-unit>
       <trans-unit id="SignedArtifactUnavailable">
         <source>The signed artifact is unavailable.</source>
-        <target state="new">The signed artifact is unavailable.</target>
+        <target state="translated">Das signierte Artefakt ist nicht verfügbar.</target>
         <note />
       </trans-unit>
       <trans-unit id="SigningAttempt">
