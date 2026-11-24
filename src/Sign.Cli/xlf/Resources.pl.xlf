@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="FileListOptionDescription">
         <source>Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</source>
-        <target state="new">Path to an include/exclude pattern file for standalone inputs and container/ClickOnce contents. File arguments are still required.</target>
+        <target state="translated">Ścieżka do pliku wzorców uwzględniania/wykluczania dla autonomicznych danych wejściowych oraz zawartości kontenera ClickOnce. Nadal wymagane są argumenty plików.</target>
         <note />
       </trans-unit>
       <trans-unit id="FilesArgumentDescription">
