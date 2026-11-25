@@ -321,6 +321,9 @@ namespace Sign.Core
             internal IReadOnlyList<SigningOperationPlan> Plans =>
                 _group.Plans;
 
+            internal int RemainingPlanCount =>
+                Volatile.Read(ref _remainingPlanCount);
+
             internal async Task ExecuteAsync(
                 SigningOperationPlan plan,
                 SignOptions options)
@@ -378,7 +381,8 @@ namespace Sign.Core
                     }
 
                     coordinator = _coordinator;
-                    isLastPlan = --_remainingPlanCount == 0;
+                    isLastPlan =
+                        Interlocked.Decrement(ref _remainingPlanCount) == 0;
                     coordinator?.CompleteScope(scope);
                 }
 

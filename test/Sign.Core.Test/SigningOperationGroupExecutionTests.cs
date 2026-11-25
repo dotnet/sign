@@ -67,9 +67,6 @@ namespace Sign.Core.Test
             FieldInfo groupGateField = GetField(
                 typeof(Signer.SigningOperationGroupExecution),
                 "_gate");
-            FieldInfo remainingPlanCountField = GetField(
-                typeof(Signer.SigningOperationGroupExecution),
-                "_remainingPlanCount");
             FieldInfo coordinatorGateField = GetField(
                 typeof(SigningOperationCoordinator),
                 "_gate");
@@ -86,15 +83,16 @@ namespace Sign.Core.Test
 
             try
             {
-                firstCompletion = Task.Run(
+                firstCompletion = Task.Factory.StartNew(
                     () => execution.CompletePlanAsync(
                         first,
-                        DisposeAsync));
+                        DisposeAsync),
+                    CancellationToken.None,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default).Unwrap();
                 Assert.True(
                     SpinWait.SpinUntil(
-                        () =>
-                            (int)remainingPlanCountField.GetValue(
-                                execution)! == 1,
+                        () => execution.RemainingPlanCount == 1,
                         TimeSpan.FromSeconds(5)));
 
                 // The old implementation released the group gate before
