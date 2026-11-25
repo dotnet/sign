@@ -17,6 +17,7 @@ namespace Sign.Core
 
         // Whether any signer for the file requires the staged file to keep its original file name.
         bool IsOriginalFileNameRequired(FileInfo file);
+        bool IsOwnStagingRequired(FileInfo file) => false;
 
         Task SignAsync(
             IEnumerable<SigningFile> files,

@@ -9,14 +9,17 @@ namespace Sign.Core
         internal ClickOncePublishLayoutResolutionException(
             string message,
             IEnumerable<ClickOnceManifestDiagnostic>? diagnostics = null,
-            Exception? innerException = null)
+            Exception? innerException = null,
+            bool isMissingPayload = false)
             : base(message, innerException)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(message, nameof(message));
 
             Diagnostics = diagnostics?.ToArray() ?? Array.Empty<ClickOnceManifestDiagnostic>();
+            IsMissingPayload = isMissingPayload;
         }
 
         internal IReadOnlyList<ClickOnceManifestDiagnostic> Diagnostics { get; }
+        internal bool IsMissingPayload { get; }
     }
 }

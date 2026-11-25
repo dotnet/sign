@@ -34,11 +34,29 @@ namespace Sign.Core
             _fileExists = fileExists;
         }
 
-        internal ResolvedClickOncePublishLayout Resolve(FileInfo deploymentManifestFile)
+        internal ResolvedClickOncePublishLayout Resolve(
+            FileInfo deploymentManifestFile,
+            bool resolvePayloads = true)
         {
             ArgumentNullException.ThrowIfNull(deploymentManifestFile, nameof(deploymentManifestFile));
 
             IDeployManifest deploymentManifest = ReadDeployManifest(deploymentManifestFile);
+            try
+            {
+                return Resolve(deploymentManifestFile, deploymentManifest, resolvePayloads);
+            }
+            catch
+            {
+                deploymentManifest.Dispose();
+                throw;
+            }
+        }
+
+        private ResolvedClickOncePublishLayout Resolve(
+            FileInfo deploymentManifestFile,
+            IDeployManifest deploymentManifest,
+            bool resolvePayloads)
+        {
             AssemblyReference? entryPoint = deploymentManifest.EntryPoint;
             List<ClickOnceManifestDiagnostic> diagnostics = GetDiagnostics(deploymentManifest);
 
@@ -96,36 +114,53 @@ namespace Sign.Core
                 deploymentManifestFile,
                 applicationManifestFile,
                 diagnostics);
-            applicationManifest.ReadOnly = false;
+            try
+            {
+                if (resolvePayloads)
+                {
+                    applicationManifest.ReadOnly = false;
+                }
+                else
+                {
+                    diagnostics.AddRange(applicationManifest.Diagnostics);
+                }
 
-            IReadOnlyList<ResolvedClickOncePayload> payloads = _payloadResolver.ResolveForDeployment(
-                applicationManifestFile,
-                applicationManifest,
-                deploymentManifestFile.Directory!,
-                deploymentManifest.MapFileExtensions,
-                diagnostics);
-
-            IReadOnlyList<ResolvedClickOnceAdjacentExecutable> adjacentExecutables =
-                ResolveAdjacentExecutables(
-                    deploymentManifestFile,
-                    deploymentManifestFile.Directory!,
-                    payloads,
-                    diagnostics);
-
-            return new ResolvedClickOncePublishLayout(
-                new ResolvedClickOnceDeployment(
-                    deploymentManifestFile,
-                    deploymentManifest,
-                    entryPoint),
-                new ResolvedClickOnceApplication(
+                IReadOnlyList<ResolvedClickOncePayload> payloads = resolvePayloads
+                    ? _payloadResolver.ResolveForDeployment(
                     applicationManifestFile,
                     applicationManifest,
-                    payloads),
-                adjacentExecutables,
-                diagnostics);
+                    deploymentManifestFile.Directory!,
+                    deploymentManifest.MapFileExtensions,
+                    diagnostics)
+                    : Array.Empty<ResolvedClickOncePayload>();
+
+                IReadOnlyList<ResolvedClickOnceAdjacentExecutable> adjacentExecutables =
+                    resolvePayloads ? ResolveAdjacentExecutables(
+                        deploymentManifestFile,
+                        deploymentManifestFile.Directory!,
+                        payloads,
+                        diagnostics) : Array.Empty<ResolvedClickOnceAdjacentExecutable>();
+
+                return new ResolvedClickOncePublishLayout(
+                    new ResolvedClickOnceDeployment(
+                        deploymentManifestFile,
+                        deploymentManifest,
+                        entryPoint),
+                    new ResolvedClickOnceApplication(
+                        applicationManifestFile,
+                        applicationManifest,
+                        payloads),
+                    adjacentExecutables,
+                    diagnostics);
+            }
+            catch
+            {
+                applicationManifest.Dispose();
+                throw;
+            }
         }
 
-        private IDeployManifest ReadDeployManifest(FileInfo deploymentManifestFile)
+        internal IDeployManifest ReadDeployManifest(FileInfo deploymentManifestFile)
         {
             try
             {

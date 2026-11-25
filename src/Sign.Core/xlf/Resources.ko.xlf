@@ -87,6 +87,16 @@
         <target state="translated">배포 매니페스트 '{0}'에서 애플리케이션 매니페스트 '{1}'을(를) 참조하지만 파일이 없습니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
         <note>{NumberedPlaceholder="{0}"} is a deployment manifest file path. {NumberedPlaceholder="{1}"} is the expected application manifest file path.</note>
       </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestAmbiguousApplicationContexts">
+        <source>The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</source>
+        <target state="new">The ClickOnce application-manifest contexts are ambiguous because selecting one invalidates another's supporting deployment routes: {0}.</target>
+        <note>{0} is the sorted list of original application manifest paths with mutually invalidating context selections.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceDeploymentManifestConflictingApplicationContexts">
+        <source>The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</source>
+        <target state="new">The ClickOnce application manifest '{0}' has incompatible source, destination, or file-mapping contexts in these deployment manifests: {1}.</target>
+        <note>{0} is the original application manifest path; {1} is the sorted list of original deployment manifest paths.</note>
+      </trans-unit>
       <trans-unit id="ClickOnceDeploymentManifestInvalidTargetPath">
         <source>Deployment manifest '{0}' references application manifest target path '{1}', which cannot be represented beneath the staging directory. To sign without updating ClickOnce manifest metadata, use '--clickonce-signing-version 2 --no-update-clickonce-manifest'.</source>
         <target state="translated">배포 매니페스트 '{0}'에서 애플리케이션 매니페스트 대상 경로 '{1}'을(를) 참조하지만, 이 경로는 스테이징 디렉터리 아래에 나타낼 수 없습니다. ClickOnce 매니페스트 메타데이터를 업데이트하지 않고 서명하려면 '--clickonce-signing-version 2 --no-update-clickonce-manifest'를 사용하세요.</target>
@@ -141,6 +151,16 @@
         <source>File '{0}' is not a deployment manifest.</source>
         <target state="translated">파일 '{0}'은(는) 배포 매니페스트가 아닙니다.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceOwnershipCollision">
+        <source>Output '{0}' for input '{1}' conflicts with owner '{2}' of signing source '{3}'. Choose a separate output directory or remove the overlapping input.</source>
+        <target state="new">Output '{0}' for input '{1}' conflicts with owner '{2}' of signing source '{3}'. Choose a separate output directory or remove the overlapping input.</target>
+        <note>{0} is the conflicting destination; {1} is the explicit input owner; {2} is the source owner or ClickOnce publisher; {3} is the protected or published source.</note>
+      </trans-unit>
+      <trans-unit id="ClickOnceReadOnlySource">
+        <source>Cannot modify or sign read-only ClickOnce source '{0}'. Remove its read-only attribute before signing.</source>
+        <target state="new">Cannot modify or sign read-only ClickOnce source '{0}'. Remove its read-only attribute before signing.</target>
+        <note>{NumberedPlaceholder="{0}"} is the original source file path.</note>
       </trans-unit>
       <trans-unit id="ClickOnceSignatureProviderSigning">
         <source>Signing Mage job with {count} files.</source>
