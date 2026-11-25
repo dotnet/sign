@@ -98,7 +98,6 @@ namespace Sign.Cli
 
                 if (string.IsNullOrEmpty(certificateFingerprint))
                 {
-                    // Without a certificate file, the fingerprint is the only way to identify a certificate in a certificate store.
                     if (string.IsNullOrEmpty(certificatePath))
                     {
                         Console.Error.WriteLine(CertificateStoreResources.MissingCertificateFingerprintError);
