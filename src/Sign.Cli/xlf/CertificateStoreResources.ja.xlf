@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="CertificateFingerprintOptionDescription">
         <source>SHA fingerprint used to identify a certificate. Required unless --certificate-file is provided and contains a single certificate.</source>
-        <target state="needs-review-translation">証明書の識別に使用される SHA フィンガープリント。</target>
+        <target state="new">SHA fingerprint used to identify a certificate. Required unless --certificate-file is provided and contains a single certificate.</target>
         <note>{Locked="SHA"} is a cryptographic algorithm. {Locked="--certificate-file"} is a command line option.</note>
       </trans-unit>
       <trans-unit id="CertificatePasswordOptionDescription">
