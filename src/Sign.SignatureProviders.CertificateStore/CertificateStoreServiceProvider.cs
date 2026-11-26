@@ -12,7 +12,7 @@ namespace Sign.SignatureProviders.CertificateStore
     /// </summary>
     internal class CertificateStoreServiceProvider : ISignatureProvider
     {
-        private readonly string _certificateFingerprint;
+        private readonly string? _certificateFingerprint;
         private readonly HashAlgorithmName _certificateFingerprintAlgorithm;
         private readonly string? _cryptoServiceProvider;
         private readonly string? _privateKeyContainer;
@@ -27,7 +27,7 @@ namespace Sign.SignatureProviders.CertificateStore
         /// <summary>
         /// Creates a new service provider for accessing certificates within a store.
         /// </summary>
-        /// <param name="certificateFingerprint">Required fingerprint used to identify the certificate in the store.</param>
+        /// <param name="certificateFingerprint">Optional fingerprint used to identify the certificate in the store.</param>
         /// <param name="certificateFingerprintAlgorithm">Fingerprint algorithm used to identify the algorithm type of the fingerprint.</param>
         /// <param name="cryptoServiceProvider">Optional Cryptographic service provider used to access 3rd party certificate stores.</param>
         /// <param name="privateKeyContainer">Optional Key Container stored in either the per-user or per-machine location.</param>
@@ -37,7 +37,7 @@ namespace Sign.SignatureProviders.CertificateStore
         /// <param name="isInteractive">Optional Flag used to denote when user interactions are expected during key retrieval.</param>
         /// <exception cref="ArgumentException">Thrown when a required argument is empty not valid.</exception>
         internal CertificateStoreServiceProvider(
-            string certificateFingerprint,
+            string? certificateFingerprint,
             HashAlgorithmName certificateFingerprintAlgorithm,
             string? cryptoServiceProvider,
             string? privateKeyContainer,
@@ -46,7 +46,12 @@ namespace Sign.SignatureProviders.CertificateStore
             bool isMachineKeyContainer,
             bool isInteractive)
         {
-            ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
+            // The fingerprint is optional (it can be omitted when the certificate file contains
+            // a single certificate), but when it is provided it cannot be empty.
+            if (certificateFingerprint is not null)
+            {
+                ArgumentException.ThrowIfNullOrEmpty(certificateFingerprint, nameof(certificateFingerprint));
+            }
 
             // Both or neither can be provided when accessing a certificate.
             if (!string.IsNullOrEmpty(cryptoServiceProvider) == string.IsNullOrEmpty(privateKeyContainer))

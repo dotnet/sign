@@ -32,8 +32,7 @@ namespace Sign.Cli
             CertificateFingerprintOption = new Option<string?>("--certificate-fingerprint", "-cfp")
             {
                 CustomParser = ParseCertificateFingerprint,
-                Description = CertificateStoreResources.CertificateFingerprintOptionDescription,
-                Required = true
+                Description = CertificateStoreResources.CertificateFingerprintOptionDescription
             };
             CertificateFileOption = new Option<string?>("--certificate-file", "-cf")
             {
@@ -87,9 +86,7 @@ namespace Sign.Cli
                     return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
-                // Some of the options are required and that is why we can safely use
-                // the null-forgiving operator (!) to simplify the code.
-                string certificateFingerprint = parseResult.GetValue(CertificateFingerprintOption)!;
+                string? certificateFingerprint = parseResult.GetValue(CertificateFingerprintOption);
                 string? certificatePath = parseResult.GetValue(CertificateFileOption);
                 string? certificatePassword = parseResult.GetValue(CertificatePasswordOption);
                 string? cryptoServiceProvider = parseResult.GetValue(CryptoServiceProviderOption);
@@ -97,17 +94,20 @@ namespace Sign.Cli
                 bool useMachineKeyContainer = parseResult.GetValue(UseMachineKeyContainerOption);
                 bool isInteractive = parseResult.GetValue(InteractiveOption);
 
-                // Certificate fingerprint is required in case the provided certificate container contains multiple certificates.
+                HashAlgorithmName certificateFingerprintAlgorithm = HashAlgorithmName.SHA256;
+
                 if (string.IsNullOrEmpty(certificateFingerprint))
                 {
-                    Console.Error.WriteFormattedLine(
-                        Resources.InvalidCertificateFingerprintValue,
-                        CertificateFingerprintOption);
+                    if (string.IsNullOrEmpty(certificatePath))
+                    {
+                        Console.Error.WriteLine(CertificateStoreResources.MissingCertificateFingerprintError);
 
-                    return Task.FromResult(ExitCode.InvalidOptions);
+                        return Task.FromResult(ExitCode.InvalidOptions);
+                    }
+
+                    certificateFingerprint = null;
                 }
-
-                if (!TryDeduceHashAlgorithm(certificateFingerprint, out HashAlgorithmName certificateFingerprintAlgorithm))
+                else if (!TryDeduceHashAlgorithm(certificateFingerprint, out certificateFingerprintAlgorithm))
                 {
                     Console.Error.WriteFormattedLine(
                         Resources.InvalidCertificateFingerprintValue,

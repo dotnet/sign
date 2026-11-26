@@ -47,6 +47,11 @@
         <target state="translated">Récupération d’un certificat à partir du fichier.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MultipleCertificatesInFile">
+        <source>The certificate file '{0}' contains multiple certificates. Use --certificate-fingerprint to specify which certificate to use.</source>
+        <target state="new">The certificate file '{0}' contains multiple certificates. Use --certificate-fingerprint to specify which certificate to use.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file path.  {Locked="--certificate-fingerprint"} is a command line option and should not be localized.</note>
+      </trans-unit>
       <trans-unit id="UnsupportedCertificateFileFormat">
         <source>Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</source>
         <target state="translated">Le format de fichier de certificat '{0}' n’est pas pris en charge. Utilisez un certificat X.509, un fichier PKCS#12 (PFX) ou PKCS#7.</target>

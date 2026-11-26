@@ -142,6 +142,14 @@ namespace Sign.SignatureProviders.CertificateStore {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The certificate file '{0}' contains multiple certificates. Use --certificate-fingerprint to specify which certificate to use..
+        /// </summary>
+        internal static string MultipleCertificatesInFile {
+            get {
+                return ResourceManager.GetString("MultipleCertificatesInFile", resourceCulture);
+            }
+        }
+        /// <summary>
         ///   Looks up a localized string similar to Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file..
         /// </summary>
         internal static string UnsupportedCertificateFileFormat {

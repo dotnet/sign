@@ -36,9 +36,9 @@ namespace Sign.Cli.Test
         }
 
         [Fact]
-        public void CertificateFingerprintOption_Always_IsRequired()
+        public void CertificateFingerprintOption_Always_IsNotRequired()
         {
-            Assert.True(_command.CertificateFingerprintOption.Required);
+            Assert.False(_command.CertificateFingerprintOption.Required);
         }
 
         [Fact]
@@ -86,7 +86,6 @@ namespace Sign.Cli.Test
             }
 
             [Theory]
-            [InlineData("code certificate-store a")]
             [InlineData("code certificate-store a -cfp")]
             [InlineData("code certificate-store a -cfp -cf")]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf")]
@@ -117,6 +116,8 @@ namespace Sign.Cli.Test
 
             [Theory]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint}")]
+            [InlineData("code certificate-store a -cf filePath")]
+            [InlineData("code certificate-store a -cf filePath -p password")]
             [InlineData($"code certificate-store a -cfp {Sha384Fingerprint} -cf filePath")]
             [InlineData($"code certificate-store a -cfp {Sha512Fingerprint} -cf filePath -p password")]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -csp sampleCSP -k keyContainer ")]
@@ -124,11 +125,19 @@ namespace Sign.Cli.Test
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer ")]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -p password -csp sampleCSP -k keyContainer")]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer -km")]
-            public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
+             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _rootCommand.Parse(command);
 
                 Assert.Empty(result.Errors);
+            }
+
+            [Fact]
+            public async Task Command_WhenCertificateFingerprintAndCertificateFileAreOmitted_ReturnsInvalidOptions()
+            {
+                int exitCode = await _rootCommand.Parse("code certificate-store a").InvokeAsync();
+
+                Assert.Equal(ExitCode.InvalidOptions, exitCode);
             }
         }
     }
