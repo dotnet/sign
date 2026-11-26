@@ -149,6 +149,15 @@ namespace Sign.SignatureProviders.CertificateStore {
                 return ResourceManager.GetString("MultipleCertificatesInFile", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate file '{0}' contains no certificates..
+        /// </summary>
+        internal static string NoCertificatesInFile {
+            get {
+                return ResourceManager.GetString("NoCertificatesInFile", resourceCulture);
+            }
+        }
         /// <summary>
         ///   Looks up a localized string similar to Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file..
         /// </summary>

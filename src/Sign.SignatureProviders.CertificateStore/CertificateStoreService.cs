@@ -129,6 +129,12 @@ namespace Sign.SignatureProviders.CertificateStore
 
                 X509Certificate2Collection certCollection = LoadCertificates(_certificatePath, _certificatePassword);
 
+                if (_certificateFingerprint is null && certCollection.Count == 0)
+                {
+                    throw new ArgumentException(
+                        string.Format(Resources.NoCertificatesInFile, Path.GetFileName(_certificatePath)));
+                }
+
                 if (_certificateFingerprint is null && certCollection.Count == 1)
                 {
                     _logger.LogTrace(Resources.FetchedCertificateFromFile, stopwatch.Elapsed.TotalMilliseconds);

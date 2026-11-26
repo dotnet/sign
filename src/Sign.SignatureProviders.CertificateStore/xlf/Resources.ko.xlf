@@ -52,6 +52,11 @@
         <target state="new">The certificate file '{0}' contains multiple certificates. Use --certificate-fingerprint to specify which certificate to use.</target>
         <note>{NumberedPlaceholder="{0}"} is a file path.  {Locked="--certificate-fingerprint"} is a command line option and should not be localized.</note>
       </trans-unit>
+      <trans-unit id="NoCertificatesInFile">
+        <source>The certificate file '{0}' contains no certificates.</source>
+        <target state="new">The certificate file '{0}' contains no certificates.</target>
+        <note>{NumberedPlaceholder="{0}"} is a file name.</note>
+      </trans-unit>
       <trans-unit id="UnsupportedCertificateFileFormat">
         <source>Certificate file format '{0}' is not supported. Use an X.509 certificate, PKCS#12 (PFX), or PKCS#7 file.</source>
         <target state="translated">'{0}' 인증서 파일 형식이 지원되지 않습니다. X.509 인증서, PKCS#12(PFX) 또는 PKCS#7 파일을 사용합니다.</target>

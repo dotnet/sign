@@ -251,6 +251,40 @@ namespace Sign.SignatureProviders.CertificateStore.Test
 
             Assert.Contains("--certificate-fingerprint", exception.Message);
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(CertificateFingerprint)]
+        public async Task GetCertificateAsync_WhenPkcs7FileHasNoCertificates_ReportsAppropriateError(
+            string? fingerprint)
+        {
+            X509Certificate2Collection certificates = [];
+            byte[] rawData = certificates.Export(X509ContentType.Pkcs7)!;
+            using DirectoryService directoryService = new(new TestLogger<IDirectoryService>());
+            using TemporaryDirectory directory = new(directoryService);
+            string path = Path.Combine(directory.Directory.FullName, "empty.p7b");
+            File.WriteAllBytes(path, rawData);
+
+            CertificateStoreService service = new(
+                serviceProvider,
+                fingerprint,
+                CertificateFingerprintAlgorithm,
+                cryptoServiceProvider: null,
+                privateKeyContainer: null,
+                certificatePath: path,
+                certificatePassword: null,
+                isPrivateMachineKeyContainer: false,
+                isInteractive: false);
+
+            ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(
+                () => service.GetCertificateAsync(CancellationToken.None));
+
+            string expectedMessage = fingerprint is null
+                ? string.Format(Resources.NoCertificatesInFile, "empty.p7b")
+                : string.Format(Resources.CertificateNotFoundInFile, fingerprint, "empty.p7b");
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         private static byte[] CreatePkcs7WithEmbeddedPem(X509Certificate2 certificate, X509Certificate2 embeddedCertificate)
         {
             X509Certificate2Collection embeddedCertificates = new(embeddedCertificate);

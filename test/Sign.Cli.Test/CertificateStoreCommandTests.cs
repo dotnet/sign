@@ -125,7 +125,7 @@ namespace Sign.Cli.Test
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer ")]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -p password -csp sampleCSP -k keyContainer")]
             [InlineData($"code certificate-store a -cfp {Sha256Fingerprint} -cf filePath -csp sampleCSP -k keyContainer -km")]
-             public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
+            public void Command_WhenRequiredArgumentsArePresent_HasNoError(string command)
             {
                 ParseResult result = _rootCommand.Parse(command);
 
